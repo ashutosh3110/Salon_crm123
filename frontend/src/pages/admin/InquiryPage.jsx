@@ -3,7 +3,9 @@ import { createPortal } from 'react-dom';
 import {
     Plus, Search, Phone, Edit, Trash2, TrendingUp,
     ClipboardList, Calendar, Clock, CheckCircle,
-    ChevronDown, Eye, X, Filter, RefreshCw
+    ChevronDown, Eye, X, Filter, RefreshCw,
+    Instagram, Globe, MessageCircle, User, Facebook,
+    Star, XCircle, MapPin, Activity
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -22,21 +24,21 @@ const FOLLOW_UP_OPTIONS = [
 ];
 
 const SOURCE_STYLES = {
-    'Walk-in': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-    'Phone Call': { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
-    'Instagram': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
-    'Facebook': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
-    'WhatsApp': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-    'Website': { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
-    'Referral': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-    'Other': { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-200' },
+    'Walk-in': { bg: 'bg-emerald-500/10 dark:bg-emerald-500/15', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-500/20', icon: User, className: 'badge-walk-in' },
+    'Phone Call': { bg: 'bg-emerald-500/10 dark:bg-emerald-500/15', text: 'text-emerald-700 dark:text-emerald-400', border: 'border-emerald-500/20', icon: Phone, className: 'badge-phone' },
+    'Instagram': { bg: 'bg-purple-500/10 dark:bg-purple-500/15', text: 'text-purple-700 dark:text-purple-400', border: 'border-purple-500/20', icon: Instagram, className: 'badge-instagram' },
+    'Facebook': { bg: 'bg-blue-500/10 dark:bg-blue-500/15', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-500/20', icon: Facebook, className: 'badge-facebook' },
+    'WhatsApp': { bg: 'bg-green-500/10 dark:bg-green-500/15', text: 'text-green-700 dark:text-green-400', border: 'border-green-500/20', icon: MessageCircle, className: 'badge-whatsapp' },
+    'Website': { bg: 'bg-indigo-500/10 dark:bg-indigo-500/15', text: 'text-indigo-700 dark:text-indigo-400', border: 'border-indigo-500/20', icon: Globe, className: 'badge-website' },
+    'Referral': { bg: 'bg-amber-500/10 dark:bg-amber-500/15', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-500/20', icon: User, className: 'badge-referral' },
+    'Other': { bg: 'bg-slate-500/10 dark:bg-slate-500/15', text: 'text-slate-700 dark:text-slate-400', border: 'border-slate-500/20', icon: Globe, className: 'badge-other' },
 };
 
 const STATUS_STYLES = {
-    'new': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'New' },
-    'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow-up' },
-    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Converted' },
-    'lost': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Not Interested' },
+    'new': { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', label: 'New', icon: Star },
+    'follow-up': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Follow-up', icon: Clock },
+    'converted': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Converted', icon: CheckCircle },
+    'lost': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Not Interested', icon: XCircle },
 };
 
 /* ─── Helpers ─────────────────────────────────────────────────────────── */
@@ -65,6 +67,26 @@ function formatDate(dateStr) {
     }
 }
 
+function getInitials(name) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function getAvatarStyles(name) {
+    const colors = [
+        { bg: 'bg-indigo-50 dark:bg-indigo-950/30', text: 'text-indigo-600 dark:text-indigo-400' },
+        { bg: 'bg-sky-50 dark:bg-sky-950/30', text: 'text-sky-600 dark:text-sky-400' },
+        { bg: 'bg-emerald-50 dark:bg-emerald-950/30', text: 'text-emerald-600 dark:text-emerald-400' },
+        { bg: 'bg-purple-50 dark:bg-purple-950/30', text: 'text-purple-600 dark:text-purple-400' },
+        { bg: 'bg-amber-50 dark:bg-amber-950/30', text: 'text-amber-600 dark:text-amber-400' },
+    ];
+    if (!name) return colors[0];
+    const index = name.length % colors.length;
+    return colors[index];
+}
+
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function InquiryPage() {
@@ -75,6 +97,8 @@ export default function InquiryPage() {
     const [inquiries, setInquiries] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+    const [searchFocused, setSearchFocused] = useState(false);
     const [search, setSearch] = useState('');
     const [filterSource, setFilterSource] = useState('All');
     const [filterStatus, setFilterStatus] = useState('All');
@@ -90,6 +114,14 @@ export default function InquiryPage() {
         outletId: '', interestedService: '',
         status: 'new'
     });
+
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
 
     const fetchCustomers = async () => {
         try {
@@ -127,12 +159,12 @@ export default function InquiryPage() {
         const converted = inquiries.filter(i => i.status === 'converted').length;
         const rate = total > 0 ? Math.round((converted / total) * 100) : 0;
         return [
-            { label: 'Total Enquiries', value: total, icon: ClipboardList, color: '#D97706', iconBg: '#FEF3C7', subtext: 'Logged Leads' },
-            { label: 'Needs Follow-up', value: pending, icon: Clock, color: '#9333EA', iconBg: '#F3E8FF', subtext: 'Action Required' },
-            { label: 'Converted', value: converted, icon: CheckCircle, color: '#16A34A', iconBg: '#DCFCE7', subtext: 'Converted Bookings' },
-            { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, color: '#2563EB', iconBg: '#DBEAFE', subtext: 'Success Ratio' },
+            { label: 'Total Enquiries', value: total, icon: ClipboardList, color: isDark ? '#fbbf24' : '#D97706', iconBg: isDark ? 'rgba(245, 158, 11, 0.15)' : '#FEF3C7', subtext: 'Logged Leads' },
+            { label: 'Needs Follow-up', value: pending, icon: Clock, color: isDark ? '#c084fc' : '#9333EA', iconBg: isDark ? 'rgba(168, 85, 247, 0.15)' : '#F3E8FF', subtext: 'Action Required' },
+            { label: 'Converted', value: converted, icon: CheckCircle, color: isDark ? '#4ade80' : '#16A34A', iconBg: isDark ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7', subtext: 'Converted Bookings' },
+            { label: 'Conversion Rate', value: `${rate}%`, icon: TrendingUp, color: isDark ? '#60a5fa' : '#2563EB', iconBg: isDark ? 'rgba(59, 130, 246, 0.15)' : '#DBEAFE', subtext: 'Success Ratio' },
         ];
-    }, [inquiries]);
+    }, [inquiries, isDark]);
 
     const filtered = useMemo(() => {
         return inquiries.filter(i => {
@@ -292,6 +324,179 @@ export default function InquiryPage() {
                     color: #ffffff !important;
                     stroke: #ffffff !important;
                 }
+                
+                .source-badge {
+                    border-radius: 8px !important;
+                }
+                
+                /* Light Mode Badge Overrides */
+                html:not(.dark) .badge-walk-in {
+                    background-color: rgba(16, 185, 129, 0.1) !important;
+                    color: #047857 !important;
+                    border-color: rgba(16, 185, 129, 0.2) !important;
+                }
+                html:not(.dark) .badge-walk-in svg, html:not(.dark) .badge-walk-in svg * {
+                    color: #047857 !important;
+                    stroke: #047857 !important;
+                }
+                
+                html:not(.dark) .badge-phone {
+                    background-color: rgba(16, 185, 129, 0.1) !important;
+                    color: #047857 !important;
+                    border-color: rgba(16, 185, 129, 0.2) !important;
+                }
+                html:not(.dark) .badge-phone svg, html:not(.dark) .badge-phone svg * {
+                    color: #047857 !important;
+                    stroke: #047857 !important;
+                }
+                
+                html:not(.dark) .badge-instagram {
+                    background-color: rgba(168, 85, 247, 0.1) !important;
+                    color: #7e22ce !important;
+                    border-color: rgba(168, 85, 247, 0.2) !important;
+                }
+                html:not(.dark) .badge-instagram svg, html:not(.dark) .badge-instagram svg * {
+                    color: #7e22ce !important;
+                    stroke: #7e22ce !important;
+                }
+                
+                html:not(.dark) .badge-facebook {
+                    background-color: rgba(59, 130, 246, 0.1) !important;
+                    color: #1d4ed8 !important;
+                    border-color: rgba(59, 130, 246, 0.2) !important;
+                }
+                html:not(.dark) .badge-facebook svg, html:not(.dark) .badge-facebook svg * {
+                    color: #1d4ed8 !important;
+                    stroke: #1d4ed8 !important;
+                }
+                
+                html:not(.dark) .badge-whatsapp {
+                    background-color: rgba(34, 197, 94, 0.1) !important;
+                    color: #15803d !important;
+                    border-color: rgba(34, 197, 94, 0.2) !important;
+                }
+                html:not(.dark) .badge-whatsapp svg, html:not(.dark) .badge-whatsapp svg * {
+                    color: #15803d !important;
+                    stroke: #15803d !important;
+                }
+                
+                html:not(.dark) .badge-website {
+                    background-color: rgba(99, 102, 241, 0.1) !important;
+                    color: #4338ca !important;
+                    border-color: rgba(99, 102, 241, 0.2) !important;
+                }
+                html:not(.dark) .badge-website svg, html:not(.dark) .badge-website svg * {
+                    color: #4338ca !important;
+                    stroke: #4338ca !important;
+                }
+                
+                html:not(.dark) .badge-referral {
+                    background-color: rgba(245, 158, 11, 0.1) !important;
+                    color: #b45309 !important;
+                    border-color: rgba(245, 158, 11, 0.2) !important;
+                }
+                html:not(.dark) .badge-referral svg, html:not(.dark) .badge-referral svg * {
+                    color: #b45309 !important;
+                    stroke: #b45309 !important;
+                }
+                
+                html:not(.dark) .badge-other {
+                    background-color: rgba(100, 116, 139, 0.1) !important;
+                    color: #475569 !important;
+                    border-color: rgba(100, 116, 139, 0.2) !important;
+                }
+                html:not(.dark) .badge-other svg, html:not(.dark) .badge-other svg * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+                
+                /* Dark Mode Badge Overrides */
+                .dark .badge-walk-in {
+                    background-color: rgba(16, 185, 129, 0.15) !important;
+                    color: #34d399 !important;
+                    border-color: rgba(16, 185, 129, 0.2) !important;
+                }
+                .dark .badge-walk-in svg, .dark .badge-walk-in svg * {
+                    color: #34d399 !important;
+                    stroke: #34d399 !important;
+                }
+                
+                .dark .badge-phone {
+                    background-color: rgba(16, 185, 129, 0.15) !important;
+                    color: #34d399 !important;
+                    border-color: rgba(16, 185, 129, 0.2) !important;
+                }
+                .dark .badge-phone svg, .dark .badge-phone svg * {
+                    color: #34d399 !important;
+                    stroke: #34d399 !important;
+                }
+                
+                .dark .badge-instagram {
+                    background-color: rgba(168, 85, 247, 0.15) !important;
+                    color: #c084fc !important;
+                    border-color: rgba(168, 85, 247, 0.2) !important;
+                }
+                .dark .badge-instagram svg, .dark .badge-instagram svg * {
+                    color: #c084fc !important;
+                    stroke: #c084fc !important;
+                }
+                
+                .dark .badge-facebook {
+                    background-color: rgba(59, 130, 246, 0.15) !important;
+                    color: #60a5fa !important;
+                    border-color: rgba(59, 130, 246, 0.2) !important;
+                }
+                .dark .badge-facebook svg, .dark .badge-facebook svg * {
+                    color: #60a5fa !important;
+                    stroke: #60a5fa !important;
+                }
+                
+                .dark .badge-whatsapp {
+                    background-color: rgba(34, 197, 94, 0.15) !important;
+                    color: #4ade80 !important;
+                    border-color: rgba(34, 197, 94, 0.2) !important;
+                }
+                .dark .badge-whatsapp svg, .dark .badge-whatsapp svg * {
+                    color: #4ade80 !important;
+                    stroke: #4ade80 !important;
+                }
+                
+                .dark .badge-website {
+                    background-color: rgba(99, 102, 241, 0.15) !important;
+                    color: #818cf8 !important;
+                    border-color: rgba(99, 102, 241, 0.2) !important;
+                }
+                .dark .badge-website svg, .dark .badge-website svg * {
+                    color: #818cf8 !important;
+                    stroke: #818cf8 !important;
+                }
+                
+                .dark .badge-referral {
+                    background-color: rgba(245, 158, 11, 0.15) !important;
+                    color: #fbbf24 !important;
+                    border-color: rgba(245, 158, 11, 0.2) !important;
+                }
+                .dark .badge-referral svg, .dark .badge-referral svg * {
+                    color: #fbbf24 !important;
+                    stroke: #fbbf24 !important;
+                }
+                
+                .dark .badge-other {
+                    background-color: rgba(100, 116, 139, 0.15) !important;
+                    color: #94a3b8 !important;
+                    border-color: rgba(100, 116, 139, 0.2) !important;
+                }
+                .dark .badge-other svg, .dark .badge-other svg * {
+                    color: #94a3b8 !important;
+                    stroke: #94a3b8 !important;
+                }
+
+                /* Stat Card Icon Overrides */
+                .stat-card-icon svg,
+                .stat-card-icon svg * {
+                    color: inherit !important;
+                    stroke: currentColor !important;
+                }
             `}</style>
             {/* Header Section */}
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 px-1">
@@ -319,7 +524,7 @@ export default function InquiryPage() {
                         onClick={() => { closeModal(); setShowModal(true); }}
                         className="flex items-center gap-2 bg-[#B4912B] hover:bg-black dark:hover:bg-white dark:hover:text-black text-white px-5 py-2.5 text-[10px] font-black uppercase tracking-widest shadow-md transition-all rounded-xl active:scale-95 cursor-pointer border-none"
                     >
-                        <Plus className="w-3.5 h-3.5" /> Add Enquiry
+                        <Plus className="w-3.5 h-3.5 text-white" style={{ color: 'white', stroke: 'white' }} /> Add Enquiry
                     </button>
                 </div>
             </div>
@@ -328,8 +533,10 @@ export default function InquiryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
                     <div key={i} className="bg-white dark:bg-slate-900 p-4.5 border border-slate-100 dark:border-slate-800/80 flex items-center gap-4 group hover:border-black dark:hover:border-white transition-all min-h-[100px] relative overflow-hidden rounded-[16px] shadow-sm">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 animate-pulse-subtle" style={{ backgroundColor: stat.iconBg }}>
-                            <stat.icon className="w-5 h-5" style={{ color: stat.color, stroke: stat.color }} strokeWidth={2.5} />
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ backgroundColor: stat.iconBg }}>
+                            <div className="stat-card-icon flex items-center justify-center" style={{ color: stat.color }}>
+                                <stat.icon className="w-6 h-6" strokeWidth={2.5} />
+                            </div>
                         </div>
                         <div className="flex flex-col text-left">
                             <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">{stat.label}</span>
@@ -345,51 +552,64 @@ export default function InquiryPage() {
             </div>
 
             {/* Filters Section */}
-            <div className="bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3 rounded-xl items-center shadow-sm">
-                <div className="flex items-center gap-3 flex-1 h-10 px-4 w-full">
-                    <Search className="w-4 h-4 text-slate-400 shrink-0" />
+            <div className="bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3 rounded-xl items-center shadow-sm justify-between">
+                
+                {/* Search Box */}
+                <div className={`flex items-center gap-3 flex-1 h-9 px-3 w-full md:max-w-[350px] rounded-lg transition-all border ${searchFocused ? 'bg-white dark:bg-slate-900 border-primary' : 'bg-slate-50 dark:bg-slate-800/80 border-transparent dark:border-transparent hover:border-slate-200 dark:hover:border-slate-700'}`}>
+                    <Search className={`w-3.5 h-3.5 shrink-0 transition-colors ${searchFocused ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`} style={{ color: searchFocused ? '#B4912B' : '#64748b' }} />
                     <input
                         type="text"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        placeholder="Search enquiries by name, phone or interest..."
-                        className="w-full h-full text-[11px] font-bold uppercase tracking-wider outline-none text-neutral-800 dark:text-neutral-200 bg-transparent border-none shadow-none placeholder-slate-400"
+                        onFocus={() => setSearchFocused(true)}
+                        onBlur={() => setSearchFocused(false)}
+                        placeholder="Search enquiries by name..."
+                        className="w-full h-full text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-transparent !bg-transparent focus:!bg-transparent active:!bg-transparent outline-none border-none shadow-none focus:ring-0 placeholder-slate-400"
+                        style={{ outline: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, background: 'transparent' }}
+                        autoComplete="off"
+                        spellCheck="false"
                     />
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2 w-full md:w-auto items-center justify-end">
                     <div className="min-w-[160px] h-9">
                         <CustomDropdown
+                            icon={MapPin}
                             value={filterOutlet}
                             onChange={setFilterOutlet}
                             options={[
                                 { label: 'ALL OUTLETS', value: 'All' },
                                 ...outlets.map(o => ({ label: o.name.toUpperCase(), value: o._id || o.id }))
                             ]}
-                            className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
-                        />
-                    </div>
-                    
-                    <div className="min-w-[140px] h-9">
-                        <CustomDropdown
-                            value={filterStatus}
-                            onChange={setFilterStatus}
-                            options={[
-                                { label: 'ALL STATUSES', value: 'All' },
-                                ...STATUSES.map(s => ({ label: (STATUS_STYLES[s]?.label || s).toUpperCase(), value: s }))
-                            ]}
+                            textClassName="text-slate-900 dark:text-slate-200"
                             className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
                         />
                     </div>
 
                     <div className="min-w-[140px] h-9">
                         <CustomDropdown
+                            icon={Activity}
+                            value={filterStatus}
+                            onChange={setFilterStatus}
+                            options={[
+                                { label: 'ALL STATUSES', value: 'All' },
+                                ...STATUSES.map(s => ({ label: (STATUS_STYLES[s]?.label || s).toUpperCase(), value: s }))
+                            ]}
+                            textClassName="text-slate-900 dark:text-slate-200"
+                            className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
+                        />
+                    </div>
+
+                    <div className="min-w-[140px] h-9">
+                        <CustomDropdown
+                            icon={Globe}
                             value={filterSource}
                             onChange={setFilterSource}
                             options={[
                                 { label: 'ALL SOURCES', value: 'All' },
                                 ...SOURCES.map(s => ({ label: s.toUpperCase(), value: s }))
                             ]}
+                            textClassName="text-slate-900 dark:text-slate-200"
                             className="w-full h-full [&>.custom-dropdown-trigger]:h-full [&>.custom-dropdown-trigger]:!py-0 [&>.custom-dropdown-trigger]:shadow-none [&>.custom-dropdown-trigger]:bg-transparent [&>.custom-dropdown-trigger]:!text-[10px]"
                         />
                     </div>
@@ -407,7 +627,7 @@ export default function InquiryPage() {
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Source</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Interest / Service</th>
                                 <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest">Lead Status</th>
-                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest text-right">Actions</th>
+                                <th className="px-4 py-3 text-[9px] font-black text-text-muted uppercase tracking-widest" style={{ textAlign: 'center' }}>Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50 dark:divide-slate-850">
@@ -423,8 +643,21 @@ export default function InquiryPage() {
                                     return (
                                         <tr key={inq.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
                                             <td className="px-4 py-3.5">
-                                                <div className="font-black text-text text-[11px] uppercase italic">{inq.name}</div>
-                                                <div className="text-[9.5px] text-text-muted font-bold tracking-wide mt-0.5">{inq.phone}</div>
+                                                <div className="flex items-center gap-3">
+                                                    {(() => {
+                                                        const initials = getInitials(inq.name);
+                                                        const colors = getAvatarStyles(inq.name);
+                                                        return (
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 allow-curve ${colors.bg} ${colors.text}`}>
+                                                                {initials}
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                    <div className="text-left">
+                                                        <div className="font-black text-text text-[11px] uppercase italic">{inq.name}</div>
+                                                        <div className="text-[9.5px] text-text-muted font-bold tracking-wide mt-0.5">{inq.phone}</div>
+                                                    </div>
+                                                </div>
                                             </td>
                                             <td className="px-4 py-3.5">
                                                 <span className="text-[9px] font-black uppercase bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-2.5 py-1 border border-slate-200 dark:border-slate-700 rounded-lg">
@@ -432,31 +665,39 @@ export default function InquiryPage() {
                                                 </span>
                                             </td>
                                             <td className="px-4 py-3.5">
-                                                <span className="text-[8.5px] font-black uppercase border border-slate-200 dark:border-slate-700 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-                                                    {inq.source}
-                                                </span>
+                                                {(() => {
+                                                    const style = SOURCE_STYLES[inq.source] || SOURCE_STYLES['Other'];
+                                                    const IconComponent = style.icon;
+                                                    return (
+                                                        <span className={`inline-flex items-center gap-1.5 text-[8.5px] font-black uppercase border px-2.5 py-1.5 shadow-sm source-badge allow-curve rounded-lg ${style.className} ${style.bg} ${style.text} ${style.border}`}>
+                                                            {IconComponent && <IconComponent className="w-3.5 h-3.5" strokeWidth={2.5} />}
+                                                            {inq.source}
+                                                        </span>
+                                                    );
+                                                })()}
                                             </td>
                                             <td className="px-4 py-3.5 uppercase text-[10px] font-bold text-text-secondary">
                                                 {inq.serviceInterest || '—'}
                                             </td>
                                             <td className="px-4 py-3.5">
-                                                <div className="relative inline-block min-w-[125px]">
-                                                    <select
+                                                <div className="min-w-[125px] h-8">
+                                                    <CustomDropdown
                                                         value={inq.status}
-                                                        onChange={(e) => changeStatus(inq.id, e.target.value)}
-                                                        className={`text-[9.5px] font-black border uppercase tracking-wider font-sans px-3 py-1.5 cursor-pointer outline-none w-full rounded-xl appearance-none transition-all pr-8 shadow-sm ${stStyle.bg} ${stStyle.text} ${stStyle.border} hover:shadow-md`}
-                                                    >
-                                                        {STATUSES.map((status) => (
-                                                            <option key={status} value={status} className="bg-white dark:bg-slate-900 text-text dark:text-white uppercase font-sans text-[10px]">
-                                                                {STATUS_STYLES[status]?.label || status}
-                                                            </option>
-                                                        ))}
-                                                    </select>
-                                                    <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none ${stStyle.text}`} />
+                                                        onChange={(newVal) => changeStatus(inq.id, newVal)}
+                                                        icon={stStyle.icon}
+                                                        options={STATUSES.map(s => ({
+                                                            label: (STATUS_STYLES[s]?.label || s).toUpperCase(),
+                                                            value: s,
+                                                            icon: STATUS_STYLES[s]?.icon
+                                                        }))}
+                                                        className={`w-full h-full [&>.custom-dropdown-trigger]:!text-[9.5px] [&>.custom-dropdown-trigger]:!px-3`}
+                                                        triggerClassName={`!py-0 h-full shadow-sm ${stStyle.bg} ${stStyle.border}`}
+                                                        textClassName={`${stStyle.text}`}
+                                                    />
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-3.5 text-right">
-                                                <div className="flex items-center gap-2 justify-end">
+                                            <td className="px-4 py-3.5" style={{ textAlign: 'center' }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}>
                                                     <button
                                                         onClick={() => setViewingInquiry(inq)}
                                                         className="w-7 h-7 rounded-[8px] border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer action-btn-custom"
@@ -486,7 +727,7 @@ export default function InquiryPage() {
                             )}
                         </tbody>
                     </table>
-                </div>                                                                  
+                </div>
             </div>
 
             {showModal && createPortal(
