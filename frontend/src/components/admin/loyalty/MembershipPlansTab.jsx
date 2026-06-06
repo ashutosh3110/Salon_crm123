@@ -395,11 +395,11 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     color: #475569 !important;
                     stroke: #475569 !important;
                 }
-                html:not(.dark) .loyalty-modal-container button svg {
+                html:not(.dark) .loyalty-modal-container button:not(.save-btn) svg {
                     color: #475569 !important;
                     stroke: #475569 !important;
                 }
-                html:not(.dark) .loyalty-modal-container button:hover svg {
+                html:not(.dark) .loyalty-modal-container button:not(.save-btn):hover svg {
                     color: #f43f5e !important;
                     stroke: #f43f5e !important;
                 }
@@ -414,6 +414,10 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                     color: #0f172a !important;
                     background-color: #ffffff !important;
                     border-color: #cbd5e1 !important;
+                }
+                .loyalty-modal-container button.save-btn svg {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
                 }
 
                 /* High Specificity Dark Mode Visibility Rules for Loyalty PlanModal */
@@ -675,7 +679,7 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                 <div className="p-6 border-t border-border bg-surface shrink-0">
                     <button 
                         onClick={() => onSave(formData)} 
-                        className="w-full py-4 !bg-[#B4912B] !text-white font-black text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(180,145,43,0.3)] flex items-center justify-center gap-3 rounded-[1rem]"
+                        className="save-btn w-full py-4 !bg-[#B4912B] !text-white font-black text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(180,145,43,0.3)] flex items-center justify-center gap-3 rounded-[1rem]"
                     >
                         SAVE MEMBERSHIP PLAN <Save size={16} />
                     </button>

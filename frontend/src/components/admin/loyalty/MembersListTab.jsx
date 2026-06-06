@@ -35,6 +35,7 @@ import { maskPhone } from '../../../utils/phoneUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../../contexts/BusinessContext';
 import api from '../../../services/api';
+import CustomDropdown from '../../common/CustomDropdown';
 
 export default function MembersListTab() {
     const { customers, outlets, activeOutletId, setActiveOutletId } = useBusiness();
@@ -266,7 +267,7 @@ export default function MembersListTab() {
                 console.error("Error parsing loyaltyExpiry:", e);
             }
         }
-        
+
         setEditingMember(member);
         setEditForm({
             name: member.name || '',
@@ -285,7 +286,7 @@ export default function MembersListTab() {
             toast.error('Name and Phone are required.');
             return;
         }
-        
+
         setUpdating(true);
         try {
             const res = await api.patch(`/loyalty/members/${editingMember._id || editingMember.id}`, {
@@ -297,7 +298,7 @@ export default function MembersListTab() {
                 loyaltyStatus: editForm.loyaltyStatus,
                 loyaltyExpiry: editForm.loyaltyExpiry || undefined
             });
-            
+
             if (res.data?.success) {
                 toast.success('Member updated successfully!');
                 setEditingMember(null);
@@ -318,7 +319,7 @@ export default function MembersListTab() {
             `Are you sure you want to cancel and delete the loyalty membership for ${member.name || 'this client'}?`
         );
         if (!confirmCancel) return;
-        
+
         try {
             const res = await api.delete(`/loyalty/members/${member._id || member.id}`);
             if (res.data?.success) {
@@ -398,7 +399,7 @@ export default function MembersListTab() {
                             className="w-full h-11 bg-white border border-slate-200 rounded-xl pl-11 pr-4 text-sm font-bold text-slate-900 focus:border-[#B4912B] outline-none transition-all shadow-sm"
                         />
                     </div>
-                    
+
                     <button
                         onClick={() => setShowAssignModal(true)}
                         className="h-11 px-5 bg-[#B4912B] hover:bg-[#9a7b24] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm shrink-0"
@@ -459,7 +460,7 @@ export default function MembersListTab() {
                             <p className="text-[10px] text-purple-500 dark:text-purple-400 font-bold mt-1.5 leading-none">Active members</p>
                         </div>
                     </div>
-                    
+
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex items-center gap-4 shadow-sm">
                         <div className="w-12 h-12 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                             <CheckCircle2 className="w-6 h-6" />
@@ -522,10 +523,10 @@ export default function MembersListTab() {
                 </div>
 
                 {/* Table */}
-                <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden text-left">
+                <div className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden text-left">
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[900px]">
-                            <thead className="bg-slate-50/50 border-b border-slate-200">
+                            <thead className="bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
                                 <tr>
                                     <Th>CUSTOMER</Th>
                                     <Th>SUBSCRIPTION TIER</Th>
@@ -535,15 +536,15 @@ export default function MembersListTab() {
                                     <Th className="text-center">ACTIONS</Th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                                 {loading ? (
-                                    <tr><td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-slate-500">Loading active members...</td></tr>
+                                    <tr><td colSpan="6" className="px-6 py-10 text-center text-sm font-bold text-slate-500 dark:text-slate-400">Loading active members...</td></tr>
                                 ) : members.length === 0 ? (
                                     <tr>
                                         <td colSpan="6" className="py-20 text-center bg-surface">
                                             <div className="flex flex-col items-center justify-center gap-3">
                                                 <img src="/vector image 3.png" alt="No members found" className="w-56 h-56 object-contain mix-blend-multiply dark:mix-blend-screen dark:invert opacity-90 dark:opacity-80" />
-                                                <p className="text-sm font-black text-slate-400 dark:text-text uppercase tracking-[0.15em]">No members found</p>
+                                                <p className="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em]">No members found</p>
                                             </div>
                                         </td>
                                     </tr>
@@ -553,27 +554,27 @@ export default function MembersListTab() {
                                         const tier = (member.loyaltyPlan || '').toLowerCase();
                                         const isPremium = tier.includes('premium');
                                         const isPro = tier.includes('pro');
-                                        
+
                                         let TierIcon = Shield;
                                         let tierColor = 'text-blue-500';
-                                        
+
                                         if (isPremium) { TierIcon = Diamond; tierColor = 'text-purple-500'; }
                                         else if (isPro) { TierIcon = Crown; tierColor = 'text-[#B4912B]'; }
 
-                                        let AvatarColor = 'bg-purple-100 text-purple-600';
-                                        if (idx % 3 === 1) AvatarColor = 'bg-orange-100 text-orange-600';
-                                        if (idx % 3 === 2) AvatarColor = 'bg-blue-100 text-blue-600';
+                                        let AvatarColor = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
+                                        if (idx % 3 === 1) AvatarColor = 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
+                                        if (idx % 3 === 2) AvatarColor = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
 
                                         return (
-                                            <tr key={member.id} className="hover:bg-slate-50/50 transition-colors">
+                                            <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-10 h-10 rounded-xl ${AvatarColor} flex items-center justify-center font-black text-lg`}>
                                                             {(member.name || 'U')[0]}
                                                         </div>
                                                         <div>
-                                                            <div className="text-sm font-black text-slate-900">{member.name || 'Unknown'}</div>
-                                                            <div className="text-xs font-bold text-slate-500 flex items-center gap-1 mt-0.5">
+                                                            <div className="text-sm font-black text-slate-900 dark:text-white">{member.name || 'Unknown'}</div>
+                                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1 mt-0.5">
                                                                 <span className="text-[10px]">📞</span>
                                                                 {maskPhone(member.phone || '', user?.role)}
                                                             </div>
@@ -583,11 +584,11 @@ export default function MembersListTab() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
                                                         <TierIcon className={`w-4 h-4 ${tierColor}`} />
-                                                        <span className="text-xs font-black text-slate-900 uppercase tracking-wide">{member.loyaltyPlan || 'BASIC'}</span>
+                                                        <span className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wide">{member.loyaltyPlan || 'BASIC'}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-600 text-[10px] font-black tracking-widest uppercase">
+                                                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-black tracking-widest uppercase">
                                                         <span className="w-1 h-1 rounded-full bg-emerald-500"></span>
                                                         ACTIVE
                                                     </div>
@@ -595,26 +596,26 @@ export default function MembersListTab() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
                                                         <div className="flex items-center gap-1.5">
-                                                            <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                                                            <span className="text-xs font-bold text-slate-700">{new Date(member.createdAt).toLocaleDateString('en-IN')}</span>
+                                                            <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{new Date(member.createdAt).toLocaleDateString('en-IN')}</span>
                                                         </div>
-                                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-5">INITIATED</span>
+                                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-5">INITIATED</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1.5">
                                                         <div className="flex items-center gap-1.5">
-                                                            <Clock className="w-3.5 h-3.5 text-slate-400" />
-                                                            <span className="text-xs font-bold text-slate-700">{member.loyaltyExpiryRaw ? new Date(member.loyaltyExpiryRaw).toLocaleDateString('en-IN') : (member.loyaltyExpiry || 'NEVER')}</span>
+                                                            <Clock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{member.loyaltyExpiryRaw ? new Date(member.loyaltyExpiryRaw).toLocaleDateString('en-IN') : (member.loyaltyExpiry || 'NEVER')}</span>
                                                         </div>
                                                         <div className="ml-5">
                                                             {(() => {
                                                                 if (!member.loyaltyExpiryRaw || member.loyaltyExpiry === 'NEVER') {
                                                                     return (
                                                                         <>
-                                                                            <span className="text-[10px] font-bold text-slate-500 block mb-1">Never Expires</span>
-                                                                            <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
-                                                                                <div className="h-full bg-slate-400 w-full rounded-full"></div>
+                                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block mb-1">Never Expires</span>
+                                                                            <div className="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                                                                <div className="h-full bg-slate-400 dark:bg-slate-500 w-full rounded-full"></div>
                                                                             </div>
                                                                         </>
                                                                     );
@@ -622,17 +623,17 @@ export default function MembersListTab() {
                                                                 const daysLeft = Math.ceil((new Date(member.loyaltyExpiryRaw) - new Date()) / (1000 * 60 * 60 * 24));
                                                                 const isExpired = daysLeft <= 0;
                                                                 const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
-                                                                
-                                                                const textColor = isExpired ? 'text-rose-500' : isExpiringSoon ? 'text-orange-500' : 'text-emerald-600';
+
+                                                                const textColor = isExpired ? 'text-rose-500' : isExpiringSoon ? 'text-orange-500' : 'text-emerald-600 dark:text-emerald-400';
                                                                 const barColor = isExpired ? 'bg-rose-500' : isExpiringSoon ? 'bg-orange-500' : 'bg-emerald-500';
                                                                 const progressPercent = isExpired ? 0 : Math.min(100, (daysLeft / 30) * 100);
-                                                                
+
                                                                 return (
                                                                     <>
                                                                         <span className={`text-[10px] font-bold ${textColor} block mb-1`}>
                                                                             {isExpired ? 'Expired' : `${daysLeft} days left`}
                                                                         </span>
-                                                                        <div className="w-16 h-1 bg-slate-100 rounded-full overflow-hidden">
+                                                                        <div className="w-16 h-1 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                                                             <div className={`h-full ${barColor} rounded-full`} style={{ width: `${progressPercent}%` }}></div>
                                                                         </div>
                                                                     </>
@@ -645,19 +646,19 @@ export default function MembersListTab() {
                                                     <div className="flex items-center justify-center gap-2">
                                                         <button
                                                             onClick={() => { console.log('Eye clicked', member); setSelectedMember(member); }}
-                                                            className="member-action-btn member-view-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-[#B4912B] hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all"
+                                                            className="member-action-btn member-view-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-[#B4912B] dark:hover:text-[#B4912B] hover:border-[#B4912B]/30 hover:bg-[#B4912B]/5 transition-all"
                                                         >
                                                             <Eye size={14} />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => { console.log('Edit clicked', member); handleEditClick(member); }}
-                                                            className="member-action-btn member-edit-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:border-blue-600/30 hover:bg-blue-50 transition-all"
+                                                            className="member-action-btn member-edit-btn w-8 h-8 flex items-center justify-center rounded-lg bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-600/30 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all"
                                                         >
                                                             <Edit2 size={14} />
                                                         </button>
-                                                        <button 
+                                                        <button
                                                             onClick={() => { console.log('Delete clicked', member); handleDeleteMember(member); }}
-                                                            className="member-action-btn member-delete-btn w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
+                                                            className="member-action-btn member-delete-btn w-8 h-8 flex items-center justify-center rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-800 text-rose-500 dark:text-rose-400 hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all"
                                                         >
                                                             <Trash2 size={14} />
                                                         </button>
@@ -710,85 +711,85 @@ export default function MembersListTab() {
                         className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 dark:text-slate-200 flex flex-col max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={e => e.stopPropagation()}
                     >
-                            {/* Modal Header */}
-                            <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between">
+                        {/* Modal Header */}
+                        <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck className="w-5 h-5 text-[#B4912B]" />
+                                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Member Protocol Details</h3>
+                            </div>
+                            <button
+                                onClick={() => setSelectedMember(null)}
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-8 space-y-6 text-left">
+                            {/* Profile Header */}
+                            <div className="flex items-center gap-5">
+                                <div className="w-16 h-16 bg-[#B4912B]/10 border-2 border-[#B4912B]/20 flex items-center justify-center text-[#B4912B] text-2xl font-black italic shadow-inner">
+                                    {(selectedMember.name || 'U')[0]}
+                                </div>
+                                <div>
+                                    <h4 className="text-xl font-black text-slate-900 dark:text-white italic tracking-tight leading-none">
+                                        {selectedMember.name || 'Unknown Client'}
+                                    </h4>
+                                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-2">
+                                        {maskPhone(selectedMember.phone || '', user?.role)}
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Subscription Grid */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-[#B4912B]/30 transition-all text-left">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Current Tier</span>
+                                    <span className="text-sm font-black text-[#B4912B] uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
+                                </div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-emerald-500/30 transition-all text-left">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Protocol Status</span>
+                                    <StatusBadge status={selectedMember.loyaltyStatus || 'active'} />
+                                </div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Activation Date</span>
+                                    <span className="text-sm font-black text-slate-900 dark:text-white italic">
+                                        {selectedMember.createdAt && !isNaN(new Date(selectedMember.createdAt).getTime()) ? new Date(selectedMember.createdAt).toLocaleDateString('en-IN') : '-'}
+                                    </span>
+                                </div>
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
+                                    <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
+                                    <span className="text-sm font-black text-slate-900 dark:text-white italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
+                                </div>
+                            </div>
+
+                            {/* Points Wallet */}
+                            <div className="p-6 bg-[#B4912B]/5 dark:bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <ShieldCheck className="w-5 h-5 text-[#B4912B]" />
-                                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Member Protocol Details</h3>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedMember(null)}
-                                    className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
-                            </div>
-
-                            {/* Modal Body */}
-                            <div className="p-8 space-y-6 text-left">
-                                {/* Profile Header */}
-                                <div className="flex items-center gap-5">
-                                    <div className="w-16 h-16 bg-[#B4912B]/10 border-2 border-[#B4912B]/20 flex items-center justify-center text-[#B4912B] text-2xl font-black italic shadow-inner">
-                                        {(selectedMember.name || 'U')[0]}
+                                    <div className="w-10 h-10 rounded-full bg-[#B4912B]/10 flex items-center justify-center">
+                                        <Star className="w-5 h-5 text-[#B4912B]" fill="currentColor" />
                                     </div>
-                                    <div>
-                                        <h4 className="text-xl font-black text-slate-900 dark:text-white italic tracking-tight leading-none">
-                                            {selectedMember.name || 'Unknown Client'}
-                                        </h4>
-                                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.3em] mt-2">
-                                            {maskPhone(selectedMember.phone || '', user?.role)}
-                                        </p>
+                                    <div className="text-left">
+                                        <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
+                                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Loyalty Ledger Balance</span>
                                     </div>
                                 </div>
-
-                                {/* Subscription Grid */}
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-[#B4912B]/30 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Current Tier</span>
-                                        <span className="text-sm font-black text-[#B4912B] uppercase italic">{selectedMember.loyaltyPlan || 'STANDARD'}</span>
-                                    </div>
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-emerald-500/30 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Protocol Status</span>
-                                        <StatusBadge status={selectedMember.loyaltyStatus || 'active'} />
-                                    </div>
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Activation Date</span>
-                                        <span className="text-sm font-black text-slate-900 dark:text-white italic">
-                                            {selectedMember.createdAt && !isNaN(new Date(selectedMember.createdAt).getTime()) ? new Date(selectedMember.createdAt).toLocaleDateString('en-IN') : '-'}
-                                        </span>
-                                    </div>
-                                    <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 group hover:border-slate-300 dark:hover:border-slate-700 transition-all text-left">
-                                        <span className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Timeline</span>
-                                        <span className="text-sm font-black text-slate-900 dark:text-white italic">{selectedMember.loyaltyExpiry || 'NEVER'}</span>
-                                    </div>
-                                </div>
-
-                                {/* Points Wallet */}
-                                <div className="p-6 bg-[#B4912B]/5 dark:bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-[#B4912B]/10 flex items-center justify-center">
-                                            <Star className="w-5 h-5 text-[#B4912B]" fill="currentColor" />
-                                        </div>
-                                        <div className="text-left">
-                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block leading-none mb-1">Accumulated Points</span>
-                                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tighter">Loyalty Ledger Balance</span>
-                                        </div>
-                                    </div>
-                                    <div className="text-3xl font-black text-[#B4912B] italic tracking-tighter">
-                                        {Number(selectedMember.totalPoints || 0)}
-                                    </div>
+                                <div className="text-3xl font-black text-[#B4912B] italic tracking-tighter">
+                                    {Number(selectedMember.totalPoints || 0)}
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Modal Footer */}
-                            <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end">
-                                <button
-                                    onClick={() => setSelectedMember(null)}
-                                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-800 hover:bg-[#B4912B] dark:hover:bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-xl"
-                                >
-                                    Close Registry
-                                </button>
-                            </div>
+                        {/* Modal Footer */}
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-6 py-4 flex justify-end">
+                            <button
+                                onClick={() => setSelectedMember(null)}
+                                className="px-6 py-2.5 bg-[#B4912B] hover:bg-[#B4912B]/90 text-white text-[10px] font-black uppercase tracking-[0.2em] transition-all shadow-lg rounded-xl"
+                            >
+                                Close Registry
+                            </button>
+                        </div>
                     </div>
                 </div>,
                 document.body
@@ -804,148 +805,148 @@ export default function MembersListTab() {
                         className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 dark:text-slate-200 flex flex-col max-h-[85vh] overflow-y-auto admin-panel"
                         onClick={e => e.stopPropagation()}
                     >
-                            {/* Modal Header */}
-                            <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <Settings className="w-5 h-5 text-[#B4912B]" />
-                                    <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Modify Member Profile</h3>
+                        {/* Modal Header */}
+                        <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <Settings className="w-5 h-5 text-[#B4912B]" />
+                                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Modify Member Profile</h3>
+                            </div>
+                            <button
+                                onClick={() => setEditingMember(null)}
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Modal Body / Form */}
+                        <form onSubmit={handleUpdateMember} className="p-8 space-y-5 text-left overflow-y-auto no-scrollbar flex-1">
+                            {/* Basic Info Section Title */}
+                            <div>
+                                <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Customer Details</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Full Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={editForm.name}
+                                            onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                            className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            placeholder="Enter full name"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Phone Number</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={editForm.phone}
+                                            onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
+                                            className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            placeholder="Enter phone number"
+                                        />
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => setEditingMember(null)}
-                                    className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
                             </div>
 
-                            {/* Modal Body / Form */}
-                            <form onSubmit={handleUpdateMember} className="p-8 space-y-5 text-left overflow-y-auto no-scrollbar flex-1">
-                                {/* Basic Info Section Title */}
-                                <div>
-                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Customer Details</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Full Name</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={editForm.name}
-                                                onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                                placeholder="Enter full name"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Phone Number</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                value={editForm.phone}
-                                                onChange={e => setEditForm(prev => ({ ...prev, phone: e.target.value }))}
-                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                                placeholder="Enter phone number"
-                                            />
-                                        </div>
+                            <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
+
+                            {/* Balances / Ledger Section */}
+                            <div>
+                                <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Financial Ledger</h4>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Loyalty Points</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={editForm.loyaltyPoints}
+                                            onChange={e => setEditForm(prev => ({ ...prev, loyaltyPoints: Number(e.target.value) }))}
+                                            className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Wallet Balance (₹)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            value={editForm.walletBalance}
+                                            onChange={e => setEditForm(prev => ({ ...prev, walletBalance: Number(e.target.value) }))}
+                                            className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                        />
                                     </div>
                                 </div>
-
-                                <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
-
-                                {/* Balances / Ledger Section */}
-                                <div>
-                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Financial Ledger</h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Loyalty Points</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                value={editForm.loyaltyPoints}
-                                                onChange={e => setEditForm(prev => ({ ...prev, loyaltyPoints: Number(e.target.value) }))}
-                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Wallet Balance (₹)</label>
-                                            <input
-                                                type="number"
-                                                min="0"
-                                                step="0.01"
-                                                value={editForm.walletBalance}
-                                                onChange={e => setEditForm(prev => ({ ...prev, walletBalance: Number(e.target.value) }))}
-                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
-
-                                {/* Subscription Section */}
-                                <div>
-                                    <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Membership Subscription</h4>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Assigned Plan</label>
-                                            <select
-                                                value={editForm.loyaltyPlanId}
-                                                onChange={e => setEditForm(prev => ({ ...prev, loyaltyPlanId: e.target.value }))}
-                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                            >
-                                                <option value="">-- No Active Plan / Standard --</option>
-                                                {plans.map(p => (
-                                                    <option key={p._id || p.id} value={p._id || p.id}>
-                                                        {p.name} - ₹{p.price} ({p.duration} Days)
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Status</label>
-                                                <select
-                                                    value={editForm.loyaltyStatus}
-                                                    onChange={e => setEditForm(prev => ({ ...prev, loyaltyStatus: e.target.value }))}
-                                                    className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                                >
-                                                    <option value="active">Active</option>
-                                                    <option value="expired">Expired</option>
-                                                    <option value="cancelled">Cancelled</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Date</label>
-                                                <input
-                                                    type="date"
-                                                    value={editForm.loyaltyExpiry}
-                                                    style={{ colorScheme: 'dark' }}
-                                                    onChange={e => setEditForm(prev => ({ ...prev, loyaltyExpiry: e.target.value }))}
-                                                    className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-
-                            {/* Modal Footer / Actions */}
-                            <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-8 py-4 flex justify-end gap-3 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={() => setEditingMember(null)}
-                                    className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleUpdateMember}
-                                    disabled={updating}
-                                    className="px-6 py-2.5 bg-slate-900 dark:bg-slate-850 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#B4912B] dark:hover:bg-[#B4912B] transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
-                                >
-                                    {updating ? 'Saving...' : 'Save Adjustments'}
-                                </button>
                             </div>
+
+                            <div className="h-[1px] bg-slate-100 dark:bg-slate-800" />
+
+                            {/* Subscription Section */}
+                            <div>
+                                <h4 className="text-[10px] font-black text-[#B4912B] uppercase tracking-[0.2em] mb-4">Membership Subscription</h4>
+                                <div className="space-y-4">
+                                    <div className="relative z-30">
+                                        <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Assigned Plan</label>
+                                        <CustomDropdown
+                                            options={plans.map(p => ({
+                                                label: `${p.name} - ₹${p.price} (${p.duration} Days)`,
+                                                value: p._id || p.id
+                                            }))}
+                                            value={editForm.loyaltyPlanId}
+                                            onChange={val => setEditForm(prev => ({ ...prev, loyaltyPlanId: val }))}
+                                            placeholder="-- No Active Plan / Standard --"
+                                            className="w-full h-11 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-950 dark:text-white rounded-xl"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4 relative z-20">
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Status</label>
+                                            <CustomDropdown
+                                                options={[
+                                                    { label: 'Active', value: 'active' },
+                                                    { label: 'Expired', value: 'expired' },
+                                                    { label: 'Cancelled', value: 'cancelled' }
+                                                ]}
+                                                value={editForm.loyaltyStatus}
+                                                onChange={val => setEditForm(prev => ({ ...prev, loyaltyStatus: val }))}
+                                                placeholder="Select Status"
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white rounded-xl"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-1.5">Expiry Date</label>
+                                            <input
+                                                type="date"
+                                                value={editForm.loyaltyExpiry}
+                                                style={{ colorScheme: 'dark' }}
+                                                onChange={e => setEditForm(prev => ({ ...prev, loyaltyExpiry: e.target.value }))}
+                                                className="w-full h-11 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 text-xs font-bold text-slate-950 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                        {/* Modal Footer / Actions */}
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-8 py-4 flex justify-end gap-3 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setEditingMember(null)}
+                                className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateMember}
+                                disabled={updating}
+                                className="px-6 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#B4912B]/90 transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
+                            >
+                                {updating ? 'Saving...' : 'Save Adjustments'}
+                            </button>
+                        </div>
                     </div>
                 </div>,
                 document.body
@@ -966,331 +967,329 @@ export default function MembersListTab() {
                     }}
                 >
                     <div
-                        className="bg-white border border-slate-200 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 flex flex-col max-h-[90vh]"
+                        className="bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 w-full max-w-lg overflow-hidden shadow-2xl rounded-xl font-sans text-slate-800 dark:text-slate-200 flex flex-col max-h-[90vh] admin-panel"
                         onClick={e => e.stopPropagation()}
                     >
-                            {/* Modal Header */}
-                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <ShieldCheck className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Assign Subscription Plan</h3>
-                                </div>
-                                <button
-                                    onClick={() => {
-                                        setShowAssignModal(false);
-                                        setSelectedCustomerId('');
-                                        setSelectedCustomer(null);
-                                        setSelectedPlanId('');
-                                        setSearchCustomerTerm('');
-                                        setErrorMessage('');
-                                        setSuccessMessage('');
-                                    }}
-                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
+                        {/* Modal Header */}
+                        <div className="bg-white dark:bg-[#0f172a] border-b border-slate-100 dark:border-slate-800 px-6 py-5 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <ShieldCheck className="w-5 h-5 text-[#B4912B]" />
+                                <h3 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest italic">Assign Subscription Plan</h3>
                             </div>
+                            <button
+                                onClick={() => {
+                                    setShowAssignModal(false);
+                                    setSelectedCustomerId('');
+                                    setSelectedCustomer(null);
+                                    setSelectedPlanId('');
+                                    setSearchCustomerTerm('');
+                                    setErrorMessage('');
+                                    setSuccessMessage('');
+                                }}
+                                className="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-rose-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                            {/* Modal Body */}
-                            <form onSubmit={handleAssignMembership} className="p-8 space-y-6 text-left overflow-y-auto no-scrollbar flex-1">
-                                {errorMessage && (
-                                    <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
-                                        <AlertCircle className="w-4 h-4" />
-                                        {errorMessage}
-                                    </div>
-                                )}
+                        {/* Modal Body */}
+                        <form onSubmit={handleAssignMembership} className="p-8 space-y-6 text-left overflow-y-auto no-scrollbar flex-1">
+                            {errorMessage && (
+                                <div className="p-4 bg-rose-500/10 border border-rose-500/30 text-rose-600 text-xs font-bold flex items-center gap-2">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {errorMessage}
+                                </div>
+                            )}
 
-                                {successMessage && (
-                                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
-                                        <ShieldCheck className="w-4 h-4" />
-                                        {successMessage}
-                                    </div>
-                                )}
+                            {successMessage && (
+                                <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 text-xs font-bold flex items-center gap-2">
+                                    <ShieldCheck className="w-4 h-4" />
+                                    {successMessage}
+                                </div>
+                            )}
 
-                                {/* Search & Select Customer */}
-                                <div className="relative" ref={dropdownRef}>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Customer</label>
-                                    <div className="relative group">
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-primary transition-colors" />
-                                        <input
-                                            type="text"
-                                            placeholder="Type to search or select customer..."
-                                            value={searchCustomerTerm}
-                                            onFocus={() => setShowDropdown(true)}
-                                            onChange={(e) => {
-                                                setSearchCustomerTerm(e.target.value);
+                            {/* Search & Select Customer */}
+                            <div className="relative z-40" ref={dropdownRef}>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Select Customer</label>
+                                <div className="relative group">
+                                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-[#B4912B] transition-colors z-10 pointer-events-none" />
+                                    <input
+                                        type="text"
+                                        placeholder="Type to search or select customer..."
+                                        value={searchCustomerTerm}
+                                        onFocus={() => setShowDropdown(true)}
+                                        onChange={(e) => {
+                                            setSearchCustomerTerm(e.target.value);
+                                            setSelectedCustomerId('');
+                                            setSelectedCustomer(null);
+                                            setShowDropdown(true);
+                                        }}
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 pl-12 pr-10 text-xs font-bold text-slate-900 dark:text-white focus:border-[#B4912B] outline-none transition-all shadow-sm rounded-xl"
+                                    />
+                                    {selectedCustomerId ? (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
                                                 setSelectedCustomerId('');
                                                 setSelectedCustomer(null);
-                                                setShowDropdown(true);
+                                                setSearchCustomerTerm('');
+                                                setShowDropdown(false);
                                             }}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 pl-12 pr-10 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
-                                        />
-                                        {selectedCustomerId ? (
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setSelectedCustomerId('');
-                                                    setSelectedCustomer(null);
-                                                    setSearchCustomerTerm('');
-                                                    setShowDropdown(false);
-                                                }}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        ) : (
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowDropdown(!showDropdown)}
-                                                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
-                                            >
-                                                <ChevronDown size={16} className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    {showDropdown && (
-                                        <div className="absolute z-20 w-full mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 shadow-2xl divide-y divide-slate-100">
-                                            {searchCustomerTerm ? (
-                                                searchingCustomers ? (
-                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">Searching customer database...</div>
-                                                ) : searchResults.length === 0 ? (
-                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No matching customers found.</div>
-                                                ) : (
-                                                    searchResults.map(c => (
-                                                        <div
-                                                            key={c._id || c.id}
-                                                            onClick={() => {
-                                                                setSelectedCustomerId(c._id || c.id);
-                                                                setSelectedCustomer(c);
-                                                                setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
-                                                                setSearchResults([]);
-                                                                setShowDropdown(false);
-                                                            }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900"
-                                                        >
-                                                            <span>{c.name || 'Unknown'}</span>
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
-                                                        </div>
-                                                    ))
-                                                )
-                                            ) : (
-                                                /* Show preloaded customers when search input is empty */
-                                                customers && customers.length > 0 ? (
-                                                    customers.slice(0, 15).map(c => (
-                                                        <div
-                                                            key={c._id || c.id}
-                                                            onClick={() => {
-                                                                setSelectedCustomerId(c._id || c.id);
-                                                                setSelectedCustomer(c);
-                                                                setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
-                                                                setShowDropdown(false);
-                                                            }}
-                                                            className="w-full text-left px-4 py-3 hover:bg-slate-50 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900"
-                                                        >
-                                                            <span>{c.name || 'Unknown'}</span>
-                                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
-                                                        </div>
-                                                    ))
-                                                ) : (
-                                                    <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No customers loaded. Start typing to search.</div>
-                                                )
-                                            )}
-                                        </div>
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                                        >
+                                            <X size={16} />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowDropdown(!showDropdown)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                                        >
+                                            <ChevronDown size={16} className={`transition-transform duration-200 ${showDropdown ? 'rotate-180' : ''}`} />
+                                        </button>
                                     )}
                                 </div>
 
-                                {/* Select Membership Plan */}
-                                <div>
-                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Membership Plan</label>
-                                    <select
-                                        value={selectedPlanId}
-                                        onChange={(e) => setSelectedPlanId(e.target.value)}
-                                        className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
-                                    >
-                                        <option value="">-- Choose a Plan --</option>
-                                        {plans.map(p => (
-                                            <option key={p._id || p.id} value={p._id || p.id}>
-                                                {p.name} - ₹{p.price} ({p.duration} Days) — {p.taxType === 'including' ? 'Incl.' : 'Excl.'} {p.taxRate}% GST
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    {/* Select Outlet */}
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Select Outlet</label>
-                                        <select
-                                            value={selectedOutletId}
-                                            onChange={(e) => setSelectedOutletId(e.target.value)}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
-                                        >
-                                            <option value="">-- Choose Outlet --</option>
-                                            {outlets.map(o => (
-                                                <option key={o._id || o.id} value={o._id || o.id}>
-                                                    {o.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    {/* Select Payment Method */}
-                                    <div>
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-2">Payment Method</label>
-                                        <select
-                                            value={paymentMethod}
-                                            onChange={(e) => setPaymentMethod(e.target.value)}
-                                            className="w-full h-12 bg-slate-50 border border-slate-200 px-4 text-xs font-bold text-slate-900 focus:border-primary outline-none transition-all shadow-sm rounded-xl"
-                                        >
-                                            <option value="cash">Cash</option>
-                                            <option value="card">Card</option>
-                                            <option value="online">UPI / Online</option>
-                                            <option value="wallet">Wallet Balance</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {paymentMethod === 'wallet' && (
-                                    selectedCustomer ? (
-                                        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-between rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                                            <div className="flex items-center gap-2.5">
-                                                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
-                                                    <Star className="w-5 h-5 text-emerald-600" fill="currentColor" />
-                                                </div>
-                                                <div className="text-left">
-                                                    <span className="text-[10px] font-black uppercase tracking-wider block">Wallet Balance</span>
-                                                    <span className="text-[10px] font-medium text-emerald-700/80">Available funds in customer's account</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-xl font-black font-mono">
-                                                ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="p-4 bg-amber-50 border border-amber-200 text-amber-600 flex items-center gap-2.5 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
-                                            <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-                                            <span className="text-xs font-bold uppercase tracking-wider text-left">Please select a customer first to view wallet balance.</span>
-                                        </div>
-                                    )
-                                )}
-
-                                {(() => {
-                                    if (paymentMethod !== 'wallet' || !selectedCustomer || !selectedPlanId) return null;
-                                    const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
-                                    if (!selectedPlan) return null;
-
-                                    const basePrice = Number(selectedPlan.price || 0);
-                                    const taxRate = Number(selectedPlan.taxRate || 0);
-                                    let calculatedTotal = 0;
-                                    if (selectedPlan.taxType === 'including') {
-                                        calculatedTotal = basePrice;
-                                    } else {
-                                        calculatedTotal = basePrice + (basePrice * taxRate) / 100;
-                                    }
-
-                                    const isWalletInsufficient = (selectedCustomer.walletBalance || 0) < calculatedTotal;
-                                    if (isWalletInsufficient) {
-                                        return (
-                                            <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                                                <AlertCircle className="w-4 h-4 shrink-0" />
-                                                <span>Insufficient Wallet Balance. Plan cost: ₹{calculatedTotal.toFixed(2)}, Wallet: ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}.</span>
-                                            </div>
-                                        );
-                                    }
-                                    return null;
-                                })()}
-
-                                {/* Detailed Tax & Price Breakdown */}
-                                {selectedPlanId && (() => {
-                                    const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
-                                    if (!selectedPlan) return null;
-
-                                    const basePrice = Number(selectedPlan.price || 0);
-                                    const taxRate = Number(selectedPlan.taxRate || 0);
-                                    let calculatedBase = 0;
-                                    let calculatedTax = 0;
-                                    let calculatedTotal = 0;
-
-                                    if (selectedPlan.taxType === 'including') {
-                                        calculatedTotal = basePrice;
-                                        calculatedBase = basePrice / (1 + taxRate / 100);
-                                        calculatedTax = calculatedTotal - calculatedBase;
-                                    } else {
-                                        calculatedBase = basePrice;
-                                        calculatedTax = basePrice * (taxRate / 100);
-                                        calculatedTotal = basePrice + calculatedTax;
-                                    }
-
-                                    return (
-                                        <div className="p-4 bg-slate-50 border border-slate-200 space-y-2 mt-4 italic text-slate-800">
-                                            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left">Plan Cost & Tax Ledger</div>
-                                            <div className="flex justify-between text-xs font-black">
-                                                <span className="text-slate-400 uppercase">Base Price:</span>
-                                                <span>₹{calculatedBase.toFixed(2)}</span>
-                                            </div>
-                                            <div className="flex justify-between text-xs font-black text-primary">
-                                                <span className="uppercase">GST ({taxRate}%):</span>
-                                                <span>{selectedPlan.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
-                                            </div>
-                                            <div className="h-[1px] bg-slate-200 my-1" />
-                                            <div className="flex justify-between text-sm font-black text-slate-900">
-                                                <span className="uppercase">Total Amount Payable:</span>
-                                                <span>₹{calculatedTotal.toFixed(2)}</span>
-                                            </div>
-                                            {paymentMethod === 'wallet' && selectedCustomer && (
-                                                <>
-                                                    <div className="h-[1px] bg-slate-200 my-1 border-dashed" />
-                                                    <div className="flex justify-between text-xs font-black text-emerald-600">
-                                                        <span className="uppercase">Est. Wallet After Purchase:</span>
-                                                        <span>₹{Math.max(0, (selectedCustomer.walletBalance || 0) - calculatedTotal).toFixed(2)}</span>
+                                {showDropdown && (
+                                    <div className="absolute z-50 w-full mt-1 max-h-48 overflow-y-auto bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-2xl rounded-xl divide-y divide-slate-100 dark:divide-slate-800">
+                                        {searchCustomerTerm ? (
+                                            searchingCustomers ? (
+                                                <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">Searching customer database...</div>
+                                            ) : searchResults.length === 0 ? (
+                                                <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No matching customers found.</div>
+                                            ) : (
+                                                searchResults.map(c => (
+                                                    <div
+                                                        key={c._id || c.id}
+                                                        onClick={() => {
+                                                            setSelectedCustomerId(c._id || c.id);
+                                                            setSelectedCustomer(c);
+                                                            setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
+                                                            setSearchResults([]);
+                                                            setShowDropdown(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900 dark:text-white"
+                                                    >
+                                                        <span>{c.name || 'Unknown'}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
                                                     </div>
-                                                </>
-                                            )}
+                                                ))
+                                            )
+                                        ) : (
+                                            /* Show preloaded customers when search input is empty */
+                                            customers && customers.length > 0 ? (
+                                                customers.slice(0, 15).map(c => (
+                                                    <div
+                                                        key={c._id || c.id}
+                                                        onClick={() => {
+                                                            setSelectedCustomerId(c._id || c.id);
+                                                            setSelectedCustomer(c);
+                                                            setSearchCustomerTerm(`${c.name || 'Unknown'} (${c.phone || ''})`);
+                                                            setShowDropdown(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-xs font-black italic flex justify-between items-center cursor-pointer text-slate-900 dark:text-white"
+                                                    >
+                                                        <span>{c.name || 'Unknown'}</span>
+                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{c.phone || ''}</span>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="px-4 py-3 text-xs font-bold text-slate-400 italic">No customers loaded. Start typing to search.</div>
+                                            )
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Select Membership Plan */}
+                            <div className="relative z-30">
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Select Membership Plan</label>
+                                <CustomDropdown
+                                    options={plans.map(p => ({
+                                        label: `${p.name} - ₹${p.price} (${p.duration} Days) — ${p.taxType === 'including' ? 'Incl.' : 'Excl.'} ${p.taxRate}% GST`,
+                                        value: p._id || p.id
+                                    }))}
+                                    value={selectedPlanId}
+                                    onChange={(val) => setSelectedPlanId(val)}
+                                    placeholder="-- Choose a Plan --"
+                                    className="w-full h-12 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white rounded-xl"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 relative z-20">
+                                {/* Select Outlet */}
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Select Outlet</label>
+                                    <CustomDropdown
+                                        options={outlets.map(o => ({
+                                            label: o.name,
+                                            value: o._id || o.id
+                                        }))}
+                                        value={selectedOutletId}
+                                        onChange={(val) => setSelectedOutletId(val)}
+                                        placeholder="-- Choose Outlet --"
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white rounded-xl"
+                                    />
+                                </div>
+
+                                {/* Select Payment Method */}
+                                <div>
+                                    <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest block mb-2">Payment Method</label>
+                                    <CustomDropdown
+                                        options={[
+                                            { label: 'Cash', value: 'cash' },
+                                            { label: 'Card', value: 'card' },
+                                            { label: 'UPI / Online', value: 'online' },
+                                            { label: 'Wallet Balance', value: 'wallet' }
+                                        ]}
+                                        value={paymentMethod}
+                                        onChange={(val) => setPaymentMethod(val)}
+                                        placeholder="Select Payment Method"
+                                        className="w-full h-12 bg-slate-50 dark:bg-slate-800 text-xs font-bold text-slate-900 dark:text-white rounded-xl"
+                                    />
+                                </div>
+                            </div>
+
+                            {paymentMethod === 'wallet' && (
+                                selectedCustomer ? (
+                                    <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-between rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <div className="flex items-center gap-2.5">
+                                            <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center">
+                                                <Star className="w-5 h-5 text-emerald-600" fill="currentColor" />
+                                            </div>
+                                            <div className="text-left">
+                                                <span className="text-[10px] font-black uppercase tracking-wider block">Wallet Balance</span>
+                                                <span className="text-[10px] font-medium text-emerald-700/80">Available funds in customer's account</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-xl font-black font-mono">
+                                            ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="p-4 bg-amber-50 border border-amber-200 text-amber-600 flex items-center gap-2.5 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200">
+                                        <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+                                        <span className="text-xs font-bold uppercase tracking-wider text-left">Please select a customer first to view wallet balance.</span>
+                                    </div>
+                                )
+                            )}
+
+                            {(() => {
+                                if (paymentMethod !== 'wallet' || !selectedCustomer || !selectedPlanId) return null;
+                                const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                if (!selectedPlan) return null;
+
+                                const basePrice = Number(selectedPlan.price || 0);
+                                const taxRate = Number(selectedPlan.taxRate || 0);
+                                let calculatedTotal = 0;
+                                if (selectedPlan.taxType === 'including') {
+                                    calculatedTotal = basePrice;
+                                } else {
+                                    calculatedTotal = basePrice + (basePrice * taxRate) / 100;
+                                }
+
+                                const isWalletInsufficient = (selectedCustomer.walletBalance || 0) < calculatedTotal;
+                                if (isWalletInsufficient) {
+                                    return (
+                                        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold flex items-center gap-2 animate-in fade-in slide-in-from-top-2 duration-200">
+                                            <AlertCircle className="w-4 h-4 shrink-0" />
+                                            <span>Insufficient Wallet Balance. Plan cost: ₹{calculatedTotal.toFixed(2)}, Wallet: ₹{(selectedCustomer.walletBalance || 0).toFixed(2)}.</span>
                                         </div>
                                     );
-                                })()}
-                            </form>
+                                }
+                                return null;
+                            })()}
 
-                            {/* Modal Footer / Actions */}
-                            <div className="bg-slate-50 border-t border-slate-100 px-8 py-4 flex justify-end gap-3 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setShowAssignModal(false);
-                                        setSelectedCustomerId('');
-                                        setSelectedCustomer(null);
-                                        setSelectedPlanId('');
-                                        setSearchCustomerTerm('');
-                                        setErrorMessage('');
-                                        setSuccessMessage('');
-                                    }}
-                                    className="px-6 py-2.5 border border-slate-200 text-slate-600 hover:bg-slate-100 bg-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={
-                                        assigning ||
-                                        (paymentMethod === 'wallet' && selectedCustomer && (() => {
-                                            const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
-                                            if (!selectedPlan) return false;
-                                            const basePrice = Number(selectedPlan.price || 0);
-                                            const taxRate = Number(selectedPlan.taxRate || 0);
-                                            const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
-                                            return (selectedCustomer.walletBalance || 0) < calculatedTotal;
-                                        })())
-                                    }
-                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
-                                >
-                                    {assigning ? 'Activating...' : 'Activate Subscription'}
-                                </button>
-                            </div>
+                            {/* Detailed Tax & Price Breakdown */}
+                            {selectedPlanId && (() => {
+                                const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                if (!selectedPlan) return null;
+
+                                const basePrice = Number(selectedPlan.price || 0);
+                                const taxRate = Number(selectedPlan.taxRate || 0);
+                                let calculatedBase = 0;
+                                let calculatedTax = 0;
+                                let calculatedTotal = 0;
+
+                                if (selectedPlan.taxType === 'including') {
+                                    calculatedTotal = basePrice;
+                                    calculatedBase = basePrice / (1 + taxRate / 100);
+                                    calculatedTax = calculatedTotal - calculatedBase;
+                                } else {
+                                    calculatedBase = basePrice;
+                                    calculatedTax = basePrice * (taxRate / 100);
+                                    calculatedTotal = basePrice + calculatedTax;
+                                }
+
+                                return (
+                                    <div className="p-4 bg-slate-50 border border-slate-200 space-y-2 mt-4 italic text-slate-800">
+                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-left">Plan Cost & Tax Ledger</div>
+                                        <div className="flex justify-between text-xs font-black">
+                                            <span className="text-slate-400 uppercase">Base Price:</span>
+                                            <span>₹{calculatedBase.toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs font-black text-primary">
+                                            <span className="uppercase">GST ({taxRate}%):</span>
+                                            <span>{selectedPlan.taxType === 'including' ? 'INCLUDED' : '+'} ₹{calculatedTax.toFixed(2)}</span>
+                                        </div>
+                                        <div className="h-[1px] bg-slate-200 my-1" />
+                                        <div className="flex justify-between text-sm font-black text-slate-900">
+                                            <span className="uppercase">Total Amount Payable:</span>
+                                            <span>₹{calculatedTotal.toFixed(2)}</span>
+                                        </div>
+                                        {paymentMethod === 'wallet' && selectedCustomer && (
+                                            <>
+                                                <div className="h-[1px] bg-slate-200 my-1 border-dashed" />
+                                                <div className="flex justify-between text-xs font-black text-emerald-600">
+                                                    <span className="uppercase">Est. Wallet After Purchase:</span>
+                                                    <span>₹{Math.max(0, (selectedCustomer.walletBalance || 0) - calculatedTotal).toFixed(2)}</span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                );
+                            })()}
+                        </form>
+
+                        {/* Modal Footer / Actions */}
+                        <div className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-800 px-8 py-4 flex justify-end gap-3 shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowAssignModal(false);
+                                    setSelectedCustomerId('');
+                                    setSelectedCustomer(null);
+                                    setSelectedPlanId('');
+                                    setSearchCustomerTerm('');
+                                    setErrorMessage('');
+                                    setSuccessMessage('');
+                                }}
+                                className="px-6 py-2.5 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 bg-white dark:bg-slate-800 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={
+                                    assigning ||
+                                    (paymentMethod === 'wallet' && selectedCustomer && (() => {
+                                        const selectedPlan = plans.find(p => String(p._id || p.id) === String(selectedPlanId));
+                                        if (!selectedPlan) return false;
+                                        const basePrice = Number(selectedPlan.price || 0);
+                                        const taxRate = Number(selectedPlan.taxRate || 0);
+                                        const calculatedTotal = selectedPlan.taxType === 'including' ? basePrice : basePrice + (basePrice * taxRate) / 100;
+                                        return (selectedCustomer.walletBalance || 0) < calculatedTotal;
+                                    })())
+                                }
+                                className="px-6 py-2.5 !bg-[#B4912B] !text-white text-[10px] font-black uppercase tracking-[0.2em] hover:!bg-[#B4912B]/90 transition-all disabled:opacity-50 flex items-center gap-2 rounded-xl shadow-lg"
+                            >
+                                {assigning ? 'Activating...' : 'ACTIVATE SUBSCRIPTION'}
+                            </button>
                         </div>
-                    </div>,
-                    document.body
-                )}
+                    </div>
+                </div>,
+                document.body
+            )}
 
             {/* Invoice Preview Modal (Standard/Thermal) */}
             {selectedInvoice && createPortal(
@@ -1302,206 +1301,206 @@ export default function MembersListTab() {
                         className="bg-white border border-slate-200 w-full max-w-2xl overflow-hidden shadow-2xl rounded-xl font-sans flex flex-col max-h-[90vh]"
                         onClick={e => e.stopPropagation()}
                     >
-                            {/* Modal Header */}
-                            <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
-                                <div className="flex items-center gap-3">
-                                    <FileText className="w-5 h-5 text-primary" />
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Invoice Billing Ledger</h3>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedInvoice(null)}
-                                    className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
-                                >
-                                    <X size={20} />
-                                </button>
+                        {/* Modal Header */}
+                        <div className="bg-white border-b border-slate-100 px-6 py-5 flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-3">
+                                <FileText className="w-5 h-5 text-primary" />
+                                <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest italic">Invoice Billing Ledger</h3>
                             </div>
+                            <button
+                                onClick={() => setSelectedInvoice(null)}
+                                className="p-2 rounded-xl hover:bg-slate-100 text-slate-400 hover:text-rose-500 transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
 
-                            {/* Format Switcher Tab Bar */}
-                            <div className="flex border-b border-slate-100 bg-slate-50 p-1 shrink-0">
-                                <button
-                                    onClick={() => setInvoiceTab('standard')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'standard'
-                                            ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-950'
-                                        }`}
-                                >
-                                    Standard Invoice (A4)
-                                </button>
-                                <button
-                                    onClick={() => setInvoiceTab('thermal')}
-                                    className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'thermal'
-                                            ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
-                                            : 'text-slate-400 hover:text-slate-950'
-                                        }`}
-                                >
-                                    Thermal POS Receipt (80mm)
-                                </button>
-                            </div>
+                        {/* Format Switcher Tab Bar */}
+                        <div className="flex border-b border-slate-100 bg-slate-50 p-1 shrink-0">
+                            <button
+                                onClick={() => setInvoiceTab('standard')}
+                                className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'standard'
+                                    ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-950'
+                                    }`}
+                            >
+                                Standard Invoice (A4)
+                            </button>
+                            <button
+                                onClick={() => setInvoiceTab('thermal')}
+                                className={`flex-1 py-3 text-center text-[10px] font-black uppercase tracking-widest transition-all rounded-xl ${invoiceTab === 'thermal'
+                                    ? 'bg-white text-slate-900 border border-slate-200 font-extrabold shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-950'
+                                    }`}
+                            >
+                                Thermal POS Receipt (80mm)
+                            </button>
+                        </div>
 
-                            {/* Modal Body / Invoice Sheet */}
-                            <div className="p-8 overflow-y-auto bg-slate-100 flex justify-center flex-1 no-scrollbar">
-                                {invoiceTab === 'standard' ? (
-                                    /* Standard A4 Styled Invoice Sheet */
-                                    <div id="invoice-print-area" className="w-full bg-white border border-slate-200 shadow-sm p-8 text-black text-left font-mono text-[11px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
-                                        <div className="flex justify-between items-start border-b border-black/80 pb-6 mb-6">
-                                            <div>
-                                                <h1 className="text-xl font-black uppercase tracking-tight text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
-                                                <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">Official Invoice & Subscription Manifest</p>
-                                                <p className="text-[9px] text-gray-500 mt-1">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <h2 className="text-md font-black uppercase italic text-primary">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</h2>
-                                                <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-1">Date: {new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</p>
-                                            </div>
+                        {/* Modal Body / Invoice Sheet */}
+                        <div className="p-8 overflow-y-auto bg-slate-100 flex justify-center flex-1 no-scrollbar">
+                            {invoiceTab === 'standard' ? (
+                                /* Standard A4 Styled Invoice Sheet */
+                                <div id="invoice-print-area" className="w-full bg-white border border-slate-200 shadow-sm p-8 text-black text-left font-mono text-[11px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                    <div className="flex justify-between items-start border-b border-black/80 pb-6 mb-6">
+                                        <div>
+                                            <h1 className="text-xl font-black uppercase tracking-tight text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
+                                            <p className="text-[9px] font-bold text-gray-500 uppercase tracking-widest mt-1">Official Invoice & Subscription Manifest</p>
+                                            <p className="text-[9px] text-gray-500 mt-1">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
                                         </div>
-
-                                        <div className="grid grid-cols-2 gap-6 mb-6 text-[10px]">
-                                            <div className="space-y-1">
-                                                <div className="font-black text-gray-500 uppercase tracking-widest">Billed To</div>
-                                                <div className="font-extrabold text-sm">{selectedInvoice.clientId?.name || 'Walk-in Customer'}</div>
-                                                <div>Phone: {selectedInvoice.clientId?.phone || '-'}</div>
-                                                {selectedInvoice.clientId?.email && <div>Email: {selectedInvoice.clientId?.email}</div>}
-                                            </div>
-                                            <div className="space-y-1 text-right">
-                                                <div className="font-black text-gray-500 uppercase tracking-widest">Transaction details</div>
-                                                <div>Payment Method: <span className="font-extrabold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
-                                                <div>Status: <span className="font-extrabold uppercase text-emerald-600">{selectedInvoice.paymentStatus || 'PAID'}</span></div>
-                                                {selectedInvoice.staffId && <div>Billed By: <span className="font-extrabold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
-                                            </div>
-                                        </div>
-
-                                        <table className="w-full border-collapse mb-6 text-[10px]">
-                                            <thead>
-                                                <tr className="border-y border-black font-black uppercase tracking-wider text-left bg-gray-50">
-                                                    <th className="py-2.5 px-2">Description</th>
-                                                    <th className="py-2.5 px-2 text-right">Qty</th>
-                                                    <th className="py-2.5 px-2 text-right">Rate</th>
-                                                    <th className="py-2.5 px-2 text-right">Total</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-gray-200">
-                                                {selectedInvoice.items?.map((item, idx) => (
-                                                    <tr key={idx}>
-                                                        <td className="py-3 px-2 font-extrabold text-black uppercase">{item.name || 'Membership Subscription Plan'}</td>
-                                                        <td className="py-3 px-2 text-right">{item.quantity || 1}</td>
-                                                        <td className="py-3 px-2 text-right">₹{(item.price || 0).toLocaleString('en-IN')}</td>
-                                                        <td className="py-3 px-2 text-right font-extrabold">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-
-                                        <div className="w-full flex justify-end">
-                                            <div className="w-72 space-y-2 border-t border-black/20 pt-4 text-[10px]">
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500 uppercase">Subtotal:</span>
-                                                    <span className="font-bold">₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
-                                                </div>
-                                                <div className="flex justify-between">
-                                                    <span className="text-gray-500 uppercase">Base Amount:</span>
-                                                    <span className="font-bold">₹{(selectedInvoice.baseAmount || 0).toLocaleString('en-IN')}</span>
-                                                </div>
-                                                <div className="flex justify-between text-primary">
-                                                    <span className="uppercase">CGST (9%):</span>
-                                                    <span>₹{(selectedInvoice.cgst || 0).toLocaleString('en-IN')}</span>
-                                                </div>
-                                                <div className="flex justify-between text-primary">
-                                                    <span className="uppercase">SGST (9%):</span>
-                                                    <span>₹{(selectedInvoice.sgst || 0).toLocaleString('en-IN')}</span>
-                                                </div>
-                                                {selectedInvoice.discount > 0 && (
-                                                    <div className="flex justify-between text-rose-500">
-                                                        <span className="uppercase">Discount:</span>
-                                                        <span>-₹{(selectedInvoice.discount || 0).toLocaleString('en-IN')}</span>
-                                                    </div>
-                                                )}
-                                                <div className="h-[1px] bg-black/40 my-2" />
-                                                <div className="flex justify-between text-sm font-black text-black">
-                                                    <span>TOTAL AMOUNT:</span>
-                                                    <span>₹{(selectedInvoice.total || 0).toLocaleString('en-IN')}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div className="mt-12 pt-6 border-t border-gray-200 text-[8px] text-center text-gray-400 uppercase tracking-widest">
-                                            *** THIS IS A COMPUTER GENERATED INVOICE. THANK YOU FOR YOUR BUSINESS! ***
+                                        <div className="text-right">
+                                            <h2 className="text-md font-black uppercase italic text-primary">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</h2>
+                                            <p className="text-[9px] text-gray-500 uppercase tracking-wider mt-1">Date: {new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>
-                                ) : (
-                                    /* POS Thermal Receipt 80mm Styled Sheet */
-                                    <div id="invoice-print-area" className="w-[300px] bg-white border border-dashed border-gray-400 shadow-sm p-6 text-black text-left font-mono text-[10px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
-                                        <div className="text-center space-y-1 pb-4 border-b border-dashed border-black">
-                                            <h1 className="text-md font-black uppercase tracking-tighter text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
-                                            <p className="text-[8px] uppercase tracking-widest text-gray-500">RECEIPT MANIFEST</p>
-                                            <p className="text-[8px] text-gray-500 leading-none">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
-                                        </div>
 
-                                        <div className="py-4 space-y-1 text-[8px] border-b border-dashed border-black/40">
-                                            <div>REC NO : <span className="font-bold">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</span></div>
-                                            <div>DATE   : <span>{new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</span></div>
-                                            <div>CLIENT : <span className="font-bold uppercase">{selectedInvoice.clientId?.name || 'Walk-in'}</span></div>
-                                            <div>PHONE  : <span>{selectedInvoice.clientId?.phone || '-'}</span></div>
-                                            <div>METHOD : <span className="font-bold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
-                                            {selectedInvoice.staffId && <div>STAFF  : <span className="font-bold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
+                                    <div className="grid grid-cols-2 gap-6 mb-6 text-[10px]">
+                                        <div className="space-y-1">
+                                            <div className="font-black text-gray-500 uppercase tracking-widest">Billed To</div>
+                                            <div className="font-extrabold text-sm">{selectedInvoice.clientId?.name || 'Walk-in Customer'}</div>
+                                            <div>Phone: {selectedInvoice.clientId?.phone || '-'}</div>
+                                            {selectedInvoice.clientId?.email && <div>Email: {selectedInvoice.clientId?.email}</div>}
                                         </div>
+                                        <div className="space-y-1 text-right">
+                                            <div className="font-black text-gray-500 uppercase tracking-widest">Transaction details</div>
+                                            <div>Payment Method: <span className="font-extrabold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
+                                            <div>Status: <span className="font-extrabold uppercase text-emerald-600">{selectedInvoice.paymentStatus || 'PAID'}</span></div>
+                                            {selectedInvoice.staffId && <div>Billed By: <span className="font-extrabold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
+                                        </div>
+                                    </div>
 
-                                        <div className="py-4 border-b border-dashed border-black/40 text-[9px]">
-                                            <div className="flex justify-between font-black uppercase tracking-tight mb-2">
-                                                <span>ITEM DESCRIPTION</span>
-                                                <span>TOTAL</span>
-                                            </div>
+                                    <table className="w-full border-collapse mb-6 text-[10px]">
+                                        <thead>
+                                            <tr className="border-y border-black font-black uppercase tracking-wider text-left bg-gray-50">
+                                                <th className="py-2.5 px-2">Description</th>
+                                                <th className="py-2.5 px-2 text-right">Qty</th>
+                                                <th className="py-2.5 px-2 text-right">Rate</th>
+                                                <th className="py-2.5 px-2 text-right">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-200">
                                             {selectedInvoice.items?.map((item, idx) => (
-                                                <div key={idx} className="flex justify-between items-start">
-                                                    <span className="uppercase font-bold max-w-[200px]">{item.name || 'Membership Plan'} x{item.quantity || 1}</span>
-                                                    <span>₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</span>
-                                                </div>
+                                                <tr key={idx}>
+                                                    <td className="py-3 px-2 font-extrabold text-black uppercase">{item.name || 'Membership Subscription Plan'}</td>
+                                                    <td className="py-3 px-2 text-right">{item.quantity || 1}</td>
+                                                    <td className="py-3 px-2 text-right">₹{(item.price || 0).toLocaleString('en-IN')}</td>
+                                                    <td className="py-3 px-2 text-right font-extrabold">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</td>
+                                                </tr>
                                             ))}
-                                        </div>
+                                        </tbody>
+                                    </table>
 
-                                        <div className="py-4 space-y-1.5 text-[8px]">
+                                    <div className="w-full flex justify-end">
+                                        <div className="w-72 space-y-2 border-t border-black/20 pt-4 text-[10px]">
                                             <div className="flex justify-between">
-                                                <span>SUBTOTAL:</span>
-                                                <span>₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
+                                                <span className="text-gray-500 uppercase">Subtotal:</span>
+                                                <span className="font-bold">₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span>TAX (GST):</span>
-                                                <span>₹{((selectedInvoice.cgst || 0) + (selectedInvoice.sgst || 0)).toLocaleString('en-IN')}</span>
+                                                <span className="text-gray-500 uppercase">Base Amount:</span>
+                                                <span className="font-bold">₹{(selectedInvoice.baseAmount || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="flex justify-between text-primary">
+                                                <span className="uppercase">CGST (9%):</span>
+                                                <span>₹{(selectedInvoice.cgst || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="flex justify-between text-primary">
+                                                <span className="uppercase">SGST (9%):</span>
+                                                <span>₹{(selectedInvoice.sgst || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                             {selectedInvoice.discount > 0 && (
-                                                <div className="flex justify-between text-rose-600">
-                                                    <span>DISCOUNT:</span>
+                                                <div className="flex justify-between text-rose-500">
+                                                    <span className="uppercase">Discount:</span>
                                                     <span>-₹{(selectedInvoice.discount || 0).toLocaleString('en-IN')}</span>
                                                 </div>
                                             )}
-                                            <div className="border-t border-dashed border-black/30 my-1" />
-                                            <div className="flex justify-between text-xs font-black text-black">
-                                                <span>TOTAL PAYABLE:</span>
+                                            <div className="h-[1px] bg-black/40 my-2" />
+                                            <div className="flex justify-between text-sm font-black text-black">
+                                                <span>TOTAL AMOUNT:</span>
                                                 <span>₹{(selectedInvoice.total || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="text-center pt-4 border-t border-dashed border-black text-[8px] uppercase tracking-tighter">
-                                            *** THANKS FOR VISITING US ***
-                                            <br />
-                                            HAVE A GREAT DAY!
+                                    <div className="mt-12 pt-6 border-t border-gray-200 text-[8px] text-center text-gray-400 uppercase tracking-widest">
+                                        *** THIS IS A COMPUTER GENERATED INVOICE. THANK YOU FOR YOUR BUSINESS! ***
+                                    </div>
+                                </div>
+                            ) : (
+                                /* POS Thermal Receipt 80mm Styled Sheet */
+                                <div id="invoice-print-area" className="w-[300px] bg-white border border-dashed border-gray-400 shadow-sm p-6 text-black text-left font-mono text-[10px] leading-relaxed select-text print:border-0 print:shadow-none print:p-0 print:m-0 print:w-full">
+                                    <div className="text-center space-y-1 pb-4 border-b border-dashed border-black">
+                                        <h1 className="text-md font-black uppercase tracking-tighter text-black">{selectedInvoice.salonId?.brandName || 'SALON LEDGER'}</h1>
+                                        <p className="text-[8px] uppercase tracking-widest text-gray-500">RECEIPT MANIFEST</p>
+                                        <p className="text-[8px] text-gray-500 leading-none">{selectedInvoice.outletId?.name || 'Main Branch'}</p>
+                                    </div>
+
+                                    <div className="py-4 space-y-1 text-[8px] border-b border-dashed border-black/40">
+                                        <div>REC NO : <span className="font-bold">{selectedInvoice.invoiceNumber || 'INV-TEMP'}</span></div>
+                                        <div>DATE   : <span>{new Date(selectedInvoice.createdAt).toLocaleString('en-IN')}</span></div>
+                                        <div>CLIENT : <span className="font-bold uppercase">{selectedInvoice.clientId?.name || 'Walk-in'}</span></div>
+                                        <div>PHONE  : <span>{selectedInvoice.clientId?.phone || '-'}</span></div>
+                                        <div>METHOD : <span className="font-bold uppercase">{selectedInvoice.paymentMethod || 'CASH'}</span></div>
+                                        {selectedInvoice.staffId && <div>STAFF  : <span className="font-bold uppercase">{selectedInvoice.staffId.name || selectedInvoice.staffId}</span></div>}
+                                    </div>
+
+                                    <div className="py-4 border-b border-dashed border-black/40 text-[9px]">
+                                        <div className="flex justify-between font-black uppercase tracking-tight mb-2">
+                                            <span>ITEM DESCRIPTION</span>
+                                            <span>TOTAL</span>
+                                        </div>
+                                        {selectedInvoice.items?.map((item, idx) => (
+                                            <div key={idx} className="flex justify-between items-start">
+                                                <span className="uppercase font-bold max-w-[200px]">{item.name || 'Membership Plan'} x{item.quantity || 1}</span>
+                                                <span>₹{((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="py-4 space-y-1.5 text-[8px]">
+                                        <div className="flex justify-between">
+                                            <span>SUBTOTAL:</span>
+                                            <span>₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>TAX (GST):</span>
+                                            <span>₹{((selectedInvoice.cgst || 0) + (selectedInvoice.sgst || 0)).toLocaleString('en-IN')}</span>
+                                        </div>
+                                        {selectedInvoice.discount > 0 && (
+                                            <div className="flex justify-between text-rose-600">
+                                                <span>DISCOUNT:</span>
+                                                <span>-₹{(selectedInvoice.discount || 0).toLocaleString('en-IN')}</span>
+                                            </div>
+                                        )}
+                                        <div className="border-t border-dashed border-black/30 my-1" />
+                                        <div className="flex justify-between text-xs font-black text-black">
+                                            <span>TOTAL PAYABLE:</span>
+                                            <span>₹{(selectedInvoice.total || 0).toLocaleString('en-IN')}</span>
                                         </div>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Modal Footer / Actions */}
-                            <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3 text-right shrink-0">
-                                <button
-                                    onClick={() => setSelectedInvoice(null)}
-                                    className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        const style = document.createElement('style');
-                                        style.id = 'print-style-helper';
-                                        style.innerHTML = `
+                                    <div className="text-center pt-4 border-t border-dashed border-black text-[8px] uppercase tracking-tighter">
+                                        *** THANKS FOR VISITING US ***
+                                        <br />
+                                        HAVE A GREAT DAY!
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer / Actions */}
+                        <div className="bg-slate-50 border-t border-slate-100 px-6 py-4 flex justify-end gap-3 text-right shrink-0">
+                            <button
+                                onClick={() => setSelectedInvoice(null)}
+                                className="px-6 py-2.5 border border-slate-200 bg-white text-slate-600 hover:bg-slate-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all"
+                            >
+                                Close
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const style = document.createElement('style');
+                                    style.id = 'print-style-helper';
+                                    style.innerHTML = `
                                             @media print {
                                                 body * {
                                                     visibility: hidden !important;
@@ -1521,22 +1520,22 @@ export default function MembersListTab() {
                                                 }
                                             }
                                         `;
-                                        document.head.appendChild(style);
-                                        window.print();
-                                        setTimeout(() => {
-                                            const helper = document.getElementById('print-style-helper');
-                                            if (helper) helper.remove();
-                                        }, 1000);
-                                    }}
-                                    className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-2 rounded-xl shadow-lg"
-                                >
-                                    <Printer className="w-4 h-4" /> Print Receipt
-                                </button>
-                            </div>
+                                    document.head.appendChild(style);
+                                    window.print();
+                                    setTimeout(() => {
+                                        const helper = document.getElementById('print-style-helper');
+                                        if (helper) helper.remove();
+                                    }, 1000);
+                                }}
+                                className="px-6 py-2.5 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary transition-all flex items-center gap-2 rounded-xl shadow-lg"
+                            >
+                                <Printer className="w-4 h-4" /> Print Receipt
+                            </button>
                         </div>
-                    </div>,
-                    document.body
-                )}
+                    </div>
+                </div>,
+                document.body
+            )}
         </div>
     );
 }

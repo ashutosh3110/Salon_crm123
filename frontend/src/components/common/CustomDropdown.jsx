@@ -36,7 +36,7 @@ export default function CustomDropdown({ options = [], value, onChange, label, c
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 bg-white border transition-all duration-200 text-left allow-curve rounded-xl
-                    ${className.includes('h-11') ? 'h-11' : 'py-2'}
+                    ${className.includes('h-12') ? 'h-12' : className.includes('h-11') ? 'h-11' : 'py-2'}
                     ${isOpen
                         ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
                         : 'border-border hover:border-primary/40 shadow-sm hover:shadow-md'
