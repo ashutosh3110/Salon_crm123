@@ -174,7 +174,6 @@ export default function SATenantDetailPage() {
         { id: 'info', label: 'Basic Info', icon: Building2 },
         { id: 'plan', label: 'Subscription', icon: CreditCard },
         { id: 'whatsapp', label: 'WhatsApp', icon: Phone },
-        { id: 'fiscal', label: 'Fiscal', icon: Settings2 },
     ];
 
     return (
@@ -422,35 +421,35 @@ export default function SATenantDetailPage() {
 
                         {tab === 'whatsapp' && (
                             <div className="grid md:grid-cols-5 gap-6">
-                                <div className="md:col-span-2 bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl relative overflow-hidden group">
+                                <div className="md:col-span-2 bg-white dark:bg-slate-900 border border-border dark:border-slate-800 rounded-[2.5rem] p-10 text-black dark:text-white shadow-sm dark:shadow-2xl relative overflow-hidden group">
                                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                                     <div className="relative z-10 space-y-10">
                                         <div className="flex items-center justify-between">
                                             <div className="space-y-1">
-                                                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">System Engine</p>
-                                                <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2">
+                                                <p className="text-[10px] font-black text-black/60 dark:text-white/30 uppercase tracking-[0.3em]">System Engine</p>
+                                                <h3 className="text-lg font-black uppercase tracking-widest flex items-center gap-2 text-black dark:text-white">
                                                     WhatsApp API 
-                                                    <div className={`w-2 h-2 rounded-full ${selectedTenant.whatsappSettings?.whatsappNotifications ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-white/20'}`} />
+                                                    <div className={`w-2 h-2 rounded-full ${selectedTenant.whatsappSettings?.whatsappNotifications ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]' : 'bg-black/20 dark:bg-white/20'}`} />
                                                 </h3>
                                             </div>
-                                            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                                            <div className="w-12 h-12 rounded-2xl bg-surface border border-border dark:bg-white/5 dark:border-white/10 flex items-center justify-center">
                                                 <Sparkles className="w-5 h-5 text-indigo-500" />
                                             </div>
                                         </div>
                                         
                                         <div className="space-y-2">
-                                            <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.3em]">Available Credits</p>
+                                            <p className="text-[10px] font-black text-black/60 dark:text-white/30 uppercase tracking-[0.3em]">Available Credits</p>
                                             <div className="flex items-baseline gap-4">
-                                                <h2 className="text-7xl font-black tracking-tighter tabular-nums">
+                                                <h2 className="text-7xl font-black tracking-tighter tabular-nums text-black dark:text-white">
                                                     {selectedTenant.whatsappSettings?.whatsappCredits || 0}
                                                 </h2>
-                                                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em] mb-3">Balance Unit</span>
+                                                <span className="text-[10px] font-black !text-black dark:!text-white/40 uppercase tracking-[0.2em] mb-3">Balance Unit</span>
                                             </div>
                                         </div>
 
-                                        <div className="pt-8 border-t border-white/10 flex items-center gap-4">
+                                        <div className="pt-8 border-t border-border dark:border-white/10 flex items-center gap-4">
                                             <div className="flex-1">
-                                                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
+                                                <div className="h-2 w-full bg-surface-alt border border-border dark:border-none dark:bg-white/5 rounded-full overflow-hidden">
                                                     <motion.div 
                                                         initial={{ width: 0 }}
                                                         animate={{ width: `${Math.min((selectedTenant.whatsappSettings?.whatsappCredits / 5000) * 100, 100)}%` }}
@@ -458,7 +457,7 @@ export default function SATenantDetailPage() {
                                                     />
                                                 </div>
                                             </div>
-                                            <p className="text-[9px] font-black text-white/30 uppercase">Health Check: Normal</p>
+                                            <p className="text-[9px] font-black text-black/60 dark:text-white/30 uppercase">Health Check: Normal</p>
                                         </div>
                                     </div>
                                 </div>

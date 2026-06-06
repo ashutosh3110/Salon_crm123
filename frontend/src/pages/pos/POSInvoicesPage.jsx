@@ -256,16 +256,47 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
                     </View>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>========================================</Text>
 
-                    {invoice.items?.map((item, i) => (
-                        <View key={i} style={{ flexDirection: 'row', fontSize: 7, marginTop: 4, alignItems: 'flex-start' }}>
-                            <Text style={{ width: 15 }}>{i + 1}</Text>
-                            <Text style={{ flex: 1.5 }}>{item.name || '-'} {item.isInclusiveTax ? '(INCL. GST)' : ''}</Text>
-                            <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
-                            <Text style={{ width: 20, textAlign: 'center' }}>{item.quantity || 1}</Text>
-                            <Text style={{ width: 35, textAlign: 'right' }}>{(item.price || 0).toFixed(2)}</Text>
-                            <Text style={{ width: 40, textAlign: 'right' }}>{(item.total || (item.price * (item.quantity || 1))).toFixed(2)}</Text>
-                        </View>
-                    ))}
+                    {invoice.items?.map((item, i) => {
+                        const qty = item.quantity || 1;
+                        const price = item.price || 0;
+                        const gross = price * qty;
+                        
+                        let itemDiscountStr = '';
+                        if (item.membershipDiscountValue > 0) {
+                            if (item.membershipDiscountType === 'percentage') {
+                                itemDiscountStr = `Disc: ${item.membershipDiscountValue}% (-Rs.${((gross * item.membershipDiscountValue) / 100).toFixed(2)})`;
+                            } else {
+                                itemDiscountStr = `Disc: -Rs.${item.membershipDiscountValue.toFixed(2)}`;
+                            }
+                        }
+
+                        const itemTotal = item.total != null ? item.total : gross;
+                        const isInclusive = item.isInclusiveTax !== undefined ? item.isInclusiveTax : invoice.includingGst;
+                        const gstRate = item.gstPercent !== undefined ? item.gstPercent : (item.type === 'service' ? (invoice.serviceGstPercent || 5) : (invoice.productGstPercent || 10));
+                        const gstAmount = isInclusive 
+                            ? (itemTotal - (itemTotal * 100) / (100 + gstRate))
+                            : (itemTotal * gstRate) / 100;
+                        
+                        const cgst = (gstAmount / 2).toFixed(2);
+                        const sgst = (gstAmount / 2).toFixed(2);
+
+                        return (
+                            <View key={i} style={{ fontSize: 7, marginTop: 4 }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                    <Text style={{ width: 15 }}>{i + 1}</Text>
+                                    <Text style={{ flex: 1.5 }}>{item.name || '-'}</Text>
+                                    <Text style={{ width: 45, fontSize: 6 }}>{item.stylistIds?.map(s => s.name || '-').join(', ') || '-'}</Text>
+                                    <Text style={{ width: 20, textAlign: 'center' }}>{qty}</Text>
+                                    <Text style={{ width: 35, textAlign: 'right' }}>{price.toFixed(2)}</Text>
+                                    <Text style={{ width: 40, textAlign: 'right' }}>{itemTotal.toFixed(2)}</Text>
+                                </View>
+                                <View style={{ paddingLeft: 15, fontSize: 6, color: '#555', gap: 1, marginTop: 1 }}>
+                                    {itemDiscountStr ? <Text style={{ color: '#10b981', fontWeight: 700 }}>- {itemDiscountStr}</Text> : null}
+                                    <Text>- GST ({gstRate}%): CGST: {cgst} | SGST: {sgst} | Total: {gstAmount.toFixed(2)}</Text>
+                                </View>
+                            </View>
+                        );
+                    })}
                 </View>
 
                 {/* Financials */}
@@ -300,18 +331,28 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
                                 <Text style={{ width: 45, textAlign: 'right' }}>: {(invoice.tax || 0).toFixed(2)}</Text>
                             </View>
                         )}
-                        {(invoice.discount || 0) > 0 && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
-                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Discount</Text>
-                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.discount || 0).toFixed(2)}</Text>
-                            </View>
-                        )}
-                        {(invoice.membershipDiscount || 0) > 0 && (
-                            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
-                                <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>Membership Disc</Text>
-                                <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
-                            </View>
-                        )}
+                        {(invoice.discount || 0) > 0 && (() => {
+                            const pct = invoice.subtotal > 0 ? Math.round(((invoice.discount || 0) / invoice.subtotal) * 100) : 0;
+                            return (
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', fontSize: 8 }}>
+                                    <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>
+                                        {pct > 0 ? `Discount (${pct}%)` : 'Discount'}
+                                    </Text>
+                                    <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.discount || 0).toFixed(2)}</Text>
+                                </View>
+                            );
+                        })()}
+                        {(invoice.membershipDiscount || 0) > 0 && (() => {
+                            const pct = invoice.subtotal > 0 ? Math.round(((invoice.membershipDiscount || 0) / invoice.subtotal) * 100) : 0;
+                            return (
+                                <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontSize: 8 }}>
+                                    <Text style={{ width: 80, textAlign: 'right', paddingRight: 4 }}>
+                                        {pct > 0 ? `Membership Disc (${pct}%)` : 'Membership Disc'}
+                                    </Text>
+                                    <Text style={{ width: 45, textAlign: 'right' }}>: -{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
+                                </View>
+                            );
+                        })()}
                     </View>
                     <Text style={{ textAlign: 'center', fontSize: 8 }}>----------------------------------------</Text>
                     <View style={{ flexDirection: 'row', justifyContent: 'flex-end', fontWeight: 700, fontSize: 10, marginVertical: 2 }}>
@@ -457,13 +498,44 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <Text style={{ flex: 1.5 }}>Staff Name</Text>
                         <Text style={{ flex: 1, textAlign: 'right' }}>Amount</Text>
                     </View>
-                    {invoice.items?.map((item, i) => (
-                        <View key={i} style={{ flexDirection: 'row', padding: 10, borderBottom: 1, borderColor: '#eee', alignItems: 'center' }}>
-                            <Text style={{ flex: 2 }}>{item.name} {item.isInclusiveTax ? '(Incl. GST)' : ''}</Text>
-                            <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => typeof s === 'object' ? s.name : s).join(', ') || '-'}</Text>
-                            <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>â‚¹{(item.total || (item.price * item.quantity) || 0).toFixed(2)}</Text>
-                        </View>
-                    ))}
+                    {invoice.items?.map((item, i) => {
+                        const qty = item.quantity || 1;
+                        const price = item.price || 0;
+                        const gross = price * qty;
+                        
+                        let itemDiscountStr = '';
+                        if (item.membershipDiscountValue > 0) {
+                            if (item.membershipDiscountType === 'percentage') {
+                                itemDiscountStr = `Disc: ${item.membershipDiscountValue}% (-Rs.${((gross * item.membershipDiscountValue) / 100).toFixed(2)})`;
+                            } else {
+                                itemDiscountStr = `Disc: -Rs.${item.membershipDiscountValue.toFixed(2)}`;
+                            }
+                        }
+
+                        const itemTotal = item.total != null ? item.total : gross;
+                        const isInclusive = item.isInclusiveTax !== undefined ? item.isInclusiveTax : invoice.includingGst;
+                        const gstRate = item.gstPercent !== undefined ? item.gstPercent : (item.type === 'service' ? (invoice.serviceGstPercent || 5) : (invoice.productGstPercent || 10));
+                        const gstAmount = isInclusive 
+                            ? (itemTotal - (itemTotal * 100) / (100 + gstRate))
+                            : (itemTotal * gstRate) / 100;
+                        
+                        const cgst = (gstAmount / 2).toFixed(2);
+                        const sgst = (gstAmount / 2).toFixed(2);
+
+                        return (
+                            <View key={i} style={{ padding: 10, borderBottom: 1, borderColor: '#eee' }}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                    <Text style={{ flex: 2 }}>{item.name} (Qty: {qty} @ Rs.{price.toFixed(2)})</Text>
+                                    <Text style={{ flex: 1.5, fontSize: 9 }}>{item.stylistIds?.map(s => typeof s === 'object' ? s.name : s).join(', ') || '-'}</Text>
+                                    <Text style={{ flex: 1, textAlign: 'right', fontWeight: 700 }}>Rs.{itemTotal.toFixed(2)}</Text>
+                                </View>
+                                <View style={{ marginTop: 4, fontSize: 8, color: '#666', gap: 2 }}>
+                                    {itemDiscountStr ? <Text style={{ color: '#10b981', fontWeight: 700 }}>- {itemDiscountStr}</Text> : null}
+                                    <Text>- GST ({gstRate}%): CGST Rs.{cgst} | SGST Rs.{sgst} | Total GST Rs.{gstAmount.toFixed(2)} ({isInclusive ? 'Incl. Tax' : 'Excl. Tax'})</Text>
+                                </View>
+                            </View>
+                        );
+                    })}
                 </View>
 
                 {/* Bill Summary & Payment Details */}
@@ -474,53 +546,63 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         <View style={{ borderTop: 1, borderColor: '#eee', paddingTop: 10 }}>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Taxable Value</Text>
-                                <Text>â‚¹{(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
+                                <Text>Rs.{(invoice.baseAmount || invoice.subtotal || 0).toFixed(2)}</Text>
                             </View>
                             {invoice.cgst > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>CGST ({(invoice.gstPercent) / 2}%)</Text>
-                                    <Text>+â‚¹{(invoice.cgst || 0).toFixed(2)}</Text>
+                                    <Text>+Rs.{(invoice.cgst || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {invoice.sgst > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>SGST ({(invoice.gstPercent) / 2}%)</Text>
-                                    <Text>+â‚¹{(invoice.sgst || 0).toFixed(2)}</Text>
+                                    <Text>+Rs.{(invoice.sgst || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(!invoice.cgst && (invoice.tax || 0) > 0) && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#666' }}>GST ({invoice.gstPercent}%)</Text>
-                                    <Text>+â‚¹{(invoice.tax || 0).toFixed(2)}</Text>
+                                    <Text>+Rs.{(invoice.tax || 0).toFixed(2)}</Text>
                                 </View>
                             )}
-                            {(invoice.membershipDiscount || 0) > 0 && (
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                    <Text style={{ color: '#10b981' }}>Membership Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
-                                </View>
-                            )}
-                            {(invoice.discount || 0) > 0 && (
-                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
-                                    <Text style={{ color: '#10b981' }}>Additional Discount</Text>
-                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.discount || 0).toFixed(2)}</Text>
-                                </View>
-                            )}
+                            {(invoice.membershipDiscount || 0) > 0 && (() => {
+                                const pct = invoice.subtotal > 0 ? Math.round(((invoice.membershipDiscount || 0) / invoice.subtotal) * 100) : 0;
+                                return (
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                        <Text style={{ color: '#10b981' }}>
+                                            {pct > 0 ? `Membership Discount (${pct}%)` : 'Membership Discount'}
+                                        </Text>
+                                        <Text style={{ color: '#10b981' }}>-Rs.{(invoice.membershipDiscount || 0).toFixed(2)}</Text>
+                                    </View>
+                                );
+                            })()}
+                            {(invoice.discount || 0) > 0 && (() => {
+                                const pct = invoice.subtotal > 0 ? Math.round(((invoice.discount || 0) / invoice.subtotal) * 100) : 0;
+                                return (
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
+                                        <Text style={{ color: '#10b981' }}>
+                                            {pct > 0 ? `Additional Discount (${pct}%)` : 'Additional Discount'}
+                                        </Text>
+                                        <Text style={{ color: '#10b981' }}>-Rs.{(invoice.discount || 0).toFixed(2)}</Text>
+                                    </View>
+                                );
+                            })()}
                             {(invoice.walletRedeemed || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#10b981' }}>Wallet Redeemed</Text>
-                                    <Text style={{ color: '#10b981' }}>-â‚¹{(invoice.walletRedeemed || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#10b981' }}>-Rs.{(invoice.walletRedeemed || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             {(invoice.previousDueCollected || 0) > 0 && (
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                     <Text style={{ color: '#3b82f6' }}>Prev. Due Collected</Text>
-                                    <Text style={{ color: '#3b82f6' }}>+â‚¹{(invoice.previousDueCollected || 0).toFixed(2)}</Text>
+                                    <Text style={{ color: '#3b82f6' }}>+Rs.{(invoice.previousDueCollected || 0).toFixed(2)}</Text>
                                 </View>
                             )}
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, paddingTop: 10, borderTop: 2, borderColor: '#C8956C' }}>
                                 <Text style={{ fontSize: 14, fontWeight: 700 }}>Grand Total</Text>
-                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>â‚¹{((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 700, color: '#C8956C' }}>Rs.{((invoice.total || 0) + (invoice.previousDueCollected || 0)).toFixed(2)}</Text>
                             </View>
                         </View>
                     </View>
@@ -535,15 +617,15 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Cash Paid</Text>
-                                <Text>â‚¹{cashPaid.toFixed(2)}</Text>
+                                <Text>Rs.{cashPaid.toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#666' }}>Online Paid</Text>
-                                <Text>â‚¹{onlinePaid.toFixed(2)}</Text>
+                                <Text>Rs.{onlinePaid.toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
                                 <Text style={{ color: '#e11d48', fontWeight: 700 }}>Due Amount</Text>
-                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>â‚¹{(invoice.dueAmount || 0).toFixed(2)}</Text>
+                                <Text style={{ color: '#e11d48', fontWeight: 700 }}>Rs.{(invoice.dueAmount || 0).toFixed(2)}</Text>
                             </View>
                             <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 5 }}>
                                 <Text style={{ color: '#666' }}>Payment Status</Text>
@@ -1246,9 +1328,19 @@ export default function POSInvoicesPage() {
                                     <Clock className="w-3 h-3" /> {formatDate(selectedInvoice.createdAt)}
                                 </p>
                             </div>
-                            <button onClick={() => setSelectedInvoice(null)} className="modal-close-btn p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
-                                <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => handleEditInvoice(selectedInvoice)}
+                                    className="p-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl transition-all flex items-center gap-1.5 text-[10px] font-black uppercase px-3.5 shadow-md shadow-amber-500/10 cursor-pointer"
+                                    title="Edit Invoice"
+                                >
+                                    <Edit className="w-3.5 h-3.5" />
+                                    Edit
+                                </button>
+                                <button onClick={() => setSelectedInvoice(null)} className="modal-close-btn p-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                    <X className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="p-6 space-y-5 max-h-[60vh] overflow-y-auto">

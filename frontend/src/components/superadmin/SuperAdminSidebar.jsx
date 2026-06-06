@@ -162,14 +162,14 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                             <item.icon className={`shrink-0 w-5 h-5 transition-colors ${active ? 'text-white' : 'text-text-muted group-hover:text-text-secondary'}`} />
 
                             {!effectiveCollapsed && (
-                                <span className="flex-1 whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-300">
+                                <span className="flex-1 whitespace-nowrap">
                                     {item.label}
                                 </span>
                             )}
 
                             {/* Badge (expanded only) */}
                             {!effectiveCollapsed && item.badge && (
-                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center animate-in fade-in duration-300 ${active ? 'bg-white/20 text-white' : item.badgeColor
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-white/20 text-white' : item.badgeColor
                                     }`} title={item.badgeTitle}>
                                     {item.badge}
                                 </span>
@@ -192,9 +192,8 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                 })}
             </nav>
 
-            {/* ── User profile chip ── */}
             {!effectiveCollapsed && (
-                <div className="px-3 pb-3 animate-in fade-in duration-300">
+                <div className="px-3 pb-3">
                     <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-surface border border-border">
                         <div className="w-8 h-8 flex items-center justify-center overflow-hidden shrink-0">
                             <img src={logoSrc} alt="" className="w-full h-full object-contain" />
@@ -217,7 +216,7 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                     title={effectiveCollapsed ? 'Logout' : undefined}
                 >
                     <LogOut className="shrink-0 w-5 h-5 text-text-muted group-hover:text-red-600 transition-colors" />
-                    {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300">Logout</span>}
+                    {!effectiveCollapsed && <span>Logout</span>}
                     {effectiveCollapsed && (
                         <div className="absolute left-[52px] px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-surface-alt text-white text-[11px] whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-xl transition-opacity border border-slate-700 dark:border-border">
                             Logout

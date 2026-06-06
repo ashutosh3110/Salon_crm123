@@ -384,32 +384,32 @@ export default function OutletDetailPage() {
 
                 {/* Right Side: Quick Actions / Small Info */}
                 <div className="space-y-6">
-                    <div className="bg-primary p-8 rounded-xl text-white shadow-2xl shadow-primary/20 relative overflow-hidden group">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-xl text-text dark:text-white border border-border dark:border-slate-800 shadow-sm dark:shadow-2xl relative overflow-hidden group">
                         <div className="relative z-10">
-                            <h4 className="text-[10px] font-black text-white opacity-60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
-                            <p className="text-xl font-black text-white mb-6 uppercase tracking-tight">Manage Salon</p>
+                            <h4 className="text-[10px] font-black text-text-muted/60 dark:text-white/60 uppercase tracking-[0.3em] mb-2">Salon Oversight</h4>
+                            <p className="text-xl font-black text-text dark:text-white mb-6 uppercase tracking-tight">Manage Salon</p>
                             <div className="space-y-3">
                                 <button 
                                     onClick={() => setActiveTab('staff')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-[#B4912B] hover:bg-[#8B6F23] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg shadow-[#B4912B]/20"
                                 >
                                     <Users className="w-4 h-4" /> Manage Staff
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('hours')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-[#B4912B] hover:bg-[#8B6F23] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg shadow-[#B4912B]/20"
                                 >
                                     <Clock className="w-4 h-4" /> Manage Opening Hours
                                 </button>
                                 <button 
                                     onClick={() => setActiveTab('products')}
-                                    className="w-full py-4 bg-primary-foreground/10 hover:bg-primary-foreground/20 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 border border-primary-foreground/10"
+                                    className="w-full py-4 bg-[#B4912B] hover:bg-[#8B6F23] text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3 shadow-md hover:shadow-lg shadow-[#B4912B]/20"
                                 >
                                     <Package className="w-4 h-4" /> Manage Inventory
                                 </button>
                             </div>
                         </div>
-                        <Store className="absolute -right-8 -bottom-8 w-40 h-40 opacity-10 group-hover:scale-110 transition-transform" />
+                        <Store className="absolute -right-8 -bottom-8 w-40 h-40 opacity-5 dark:opacity-10 text-primary group-hover:scale-110 transition-transform" />
                     </div>
 
                     <div className="bg-surface p-6 rounded-xl border border-border shadow-sm">

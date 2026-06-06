@@ -2312,3 +2312,21 @@ html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
 .dark .bg-\[\#B4912B\] * {
   color: #ffffff !important;
 }
+
+/* Specific overrides to preserve active gold text and inactive slate text inside light mode admin panels */
+html:not(.dark) .admin-panel [class*="text-[#B4912B]"],
+html:not(.dark) .admin-panel span[class*="text-[#B4912B]"],
+html:not(.dark) .admin-panel p[class*="text-[#B4912B]"],
+html:not(.dark) .admin-panel label[class*="text-[#B4912B]"] {
+  color: #B4912B !important;
+}
+
+html:not(.dark) .admin-panel .text-slate-400,
+html:not(.dark) .admin-panel .text-slate-500,
+html:not(.dark) .admin-panel .text-slate-600,
+html:not(.dark) .admin-panel .text-slate-700,
+html:not(.dark) .admin-panel span[class*="text-slate-"],
+html:not(.dark) .admin-panel p[class*="text-slate-"],
+html:not(.dark) .admin-panel label[class*="text-slate-"] {
+  color: #64748B !important;
+}

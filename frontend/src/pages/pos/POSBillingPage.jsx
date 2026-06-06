@@ -7,7 +7,8 @@ import {
     Sparkles, User, UserPlus, ArrowRight, Percent, Info,
     Tag, Star, Wallet, Printer, Banknote, Smartphone, FileText, Download,
     ShoppingBag, CreditCard, Ticket, Gift, History, Calendar, Globe, Building2, ChevronDown,
-    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, Clock, Brush, Droplet
+    AlertTriangle, CheckCircle2, UserMinus, LayoutGrid, ArrowDown, Clock, Brush, Droplet,
+    Edit
 } from 'lucide-react';
 import api from '../../services/api';
 import {
@@ -517,6 +518,7 @@ export default function POSBillingPage() {
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
     const [invoiceIdToEdit, setInvoiceIdToEdit] = useState(null);
+    const [editInvoiceData, setEditInvoiceData] = useState(null);
 
     // ── Handle Incoming Navigation State (from Appointments or Edit Invoice) ──
     useEffect(() => {
@@ -531,21 +533,33 @@ export default function POSBillingPage() {
                 setSelectedClient({ name, phone, email: '', loyaltyPoints: 0, walletBalance: 0, dueAmount: 0 });
                 setShowClientInfo(true);
             }
-
-            // If a service was pre-selected, add it to cart
-            if (location.state.preSelectService) {
-                const serviceName = location.state.preSelectService;
-                // Handle different possible ways services are listed
-                const serviceObj = services.find(s => s.name.toLowerCase().includes(serviceName.toLowerCase()));
-                if (serviceObj) {
-                    const preSelectStaffId = location.state.preSelectStaffId;
-                    setCart([{
-                        ...serviceObj,
-                        itemId: serviceObj.id || serviceObj._id,
-                        quantity: 1,
+        }
+        if (location.state?.activeTab) {
+            setActiveTab(location.state.activeTab);
+            if (location.state.activeTab === 'services' && location.state.serviceMode) {
+                setServiceMode(location.state.serviceMode);
+            }
+        }
+        if (location.state?.client) {
+            setSelectedClient(location.state.client);
+            setShowClientInfo(true);
+            // Pre-select booking ID if routing directly from booking page
+            if (location.state.bookingId) {
+                const bId = location.state.bookingId;
+                const booking = businessBookings.find(b => b._id === bId);
+                if (booking) {
+                    const staffId = booking.staffId?._id || booking.staffId;
+                    const newCartItem = {
+                        ...booking,
+                        itemId: booking.serviceId?._id || booking.serviceId || booking._id,
                         type: 'service',
-                        staffIds: preSelectStaffId ? [preSelectStaffId] : []
-                    }]);
+                        quantity: 1,
+                        staffIds: staffId ? [staffId] : [],
+                        appointmentId: booking._id
+                    };
+                    setCart([newCartItem]);
+                    setSelectedBookingIds([bId]);
+                    setAppointmentId(bId);
                 }
             }
             // If an appointmentId was passed, store it for status updates
@@ -554,31 +568,49 @@ export default function POSBillingPage() {
             }
         }
 
-        // Handle Edit Invoice
         if (location.state?.editInvoice) {
             const invoice = location.state.editInvoice;
-            if (invoice.customerId) {
-                setSelectedClient(invoice.customerId);
-                setShowClientInfo(true);
+            // Quick Invoices do not have bookingId or orderId
+            const isQuickInvoice = !invoice.bookingId && !invoice.orderId;
+            if (isQuickInvoice) {
+                setEditInvoiceData(invoice);
+                setShowQuickInvoice(true);
+                setInvoiceIdToEdit(invoice._id);
+                toast.success(`Loaded Quick Invoice ${invoice.invoiceNumber || ''} for editing.`);
+            } else {
+                if (invoice.customerId || invoice.client) {
+                    setSelectedClient(invoice.customerId || invoice.client);
+                    setShowClientInfo(true);
+                }
+                if (invoice.items && Array.isArray(invoice.items)) {
+                    setCart(invoice.items.map(item => ({
+                        ...item,
+                        itemId: item.itemId?._id || item.itemId || item.id,
+                        quantity: item.quantity,
+                        price: item.price,
+                        name: item.name,
+                        type: item.type,
+                        stylistIds: (item.stylistIds || []).map(s => s._id || s)
+                    })));
+                }
+                if (invoice.payments && invoice.payments.length > 0) {
+                    setPayments(invoice.payments);
+                }
+                if (invoice.bookingId) {
+                    const bId = invoice.bookingId._id || invoice.bookingId;
+                    setAppointmentId(bId);
+                    setSelectedBookingIds([bId]);
+                }
+                if (invoice.orderId) {
+                    const oId = invoice.orderId._id || invoice.orderId;
+                    setOrderId(oId);
+                    setSelectedOrderIds([oId]);
+                }
+                setInvoiceIdToEdit(invoice._id);
+                toast.success(`Loaded Invoice ${invoice.invoiceNumber} for editing.`);
             }
-            if (invoice.items && Array.isArray(invoice.items)) {
-                setCart(invoice.items.map(item => ({
-                    ...item,
-                    itemId: item.itemId?._id || item.itemId || item.id,
-                    quantity: item.quantity,
-                    price: item.price,
-                    name: item.name,
-                    type: item.type,
-                    stylistIds: (item.stylistIds || []).map(s => s._id || s)
-                })));
-            }
-            if (invoice.payments && invoice.payments.length > 0) {
-                setPayments(invoice.payments);
-            }
-            setInvoiceIdToEdit(invoice._id);
-            toast.success(`Loaded Invoice ${invoice.invoiceNumber} for editing.`);
         }
-    }, [location.state, businessCustomers]);
+    }, [location.state, businessCustomers, businessBookings]);
 
     // Refs
     const searchInputRef = useRef(null);
@@ -670,7 +702,7 @@ export default function POSBillingPage() {
             manualDiscount,
             appliedPromotion,
             appliedVoucher,
-            activeMembership,
+            activeMembership: (appointmentId || orderId) ? null : activeMembership,
             serviceGstRate: Number(platformSettings?.serviceGst ?? fiscal.serviceGst ?? 5),
             productGstRate: Number(platformSettings?.productGst ?? fiscal.productGst ?? 10),
             inclusiveTaxFallback: !!fiscal.inclusiveTax,
@@ -681,7 +713,7 @@ export default function POSBillingPage() {
             redeemWallet,
             payments
         });
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState, payments]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState, payments, appointmentId, orderId]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -947,7 +979,7 @@ export default function POSBillingPage() {
                 setCart(prev => prev.filter(c => c.appointmentId !== item._id));
                 if (appointmentId === item._id) setAppointmentId(null);
             } else {
-                // SELECT: Add booking ID and its cart item
+                // SELECT: Replace cart with this single booking
                 if (item.clientId?._id || item.clientId) {
                     const clientIdStr = String(item.clientId?._id || item.clientId);
                     const client = businessCustomers.find(c => String(c._id || c.id) === clientIdStr);
@@ -974,10 +1006,11 @@ export default function POSBillingPage() {
                     staffIds: staffId ? [staffId] : [],
                     appointmentId: item._id
                 };
-                setCart(prev => [...prev, newCartItem]);
+                // ── Single selection: replace the cart entirely ──
+                setCart([newCartItem]);
+                setSelectedBookingIds([item._id]);
                 const bookingOutletId = item.outletId?._id || item.outletId;
                 if (bookingOutletId) setActiveOutletId(String(bookingOutletId), { quiet: true, background: true });
-                setSelectedBookingIds(prev => [...prev, item._id]);
                 setAppointmentId(item._id);
                 setOrderId(null);
             }
@@ -992,7 +1025,7 @@ export default function POSBillingPage() {
                 setCart(prev => prev.filter(c => c.orderId !== item._id));
                 if (orderId === item._id) setOrderId(null);
             } else {
-                // SELECT: Add order ID and its cart items
+                // SELECT: Replace cart with this single order
                 if (item.customerId?._id || item.customerId) {
                     const customerIdStr = String(item.customerId?._id || item.customerId);
                     const client = businessCustomers.find(c => String(c._id || c.id) === customerIdStr);
@@ -1026,8 +1059,9 @@ export default function POSBillingPage() {
 
                 const orderOutletId = item.outletId?._id || item.outletId;
                 if (orderOutletId) setActiveOutletId(String(orderOutletId), { quiet: true, background: true });
-                setCart(prev => [...prev, ...newCartItems]);
-                setSelectedOrderIds(prev => [...prev, item._id]);
+                // ── Single selection: replace the cart entirely ──
+                setCart(newCartItems);
+                setSelectedOrderIds([item._id]);
                 setOrderId(item._id);
                 setAppointmentId(null);
             }
@@ -1147,12 +1181,20 @@ export default function POSBillingPage() {
             alert('Please select a payment date');
             return;
         }
+
+        // In bookings/orders mode: customer already paid online — auto-set payment
+        if (serviceMode === 'bookings' || serviceMode === 'orders') {
+            const fullAmount = totals.total - (redeemWallet || 0);
+            setPayments([{ method: 'online', amount: Math.max(0, fullAmount) }]);
+        }
+
         const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
 
         // Allow partial payment
         const balanceDue = totals.total - paidAmount;
 
         setCheckingOut(true);
+
         setTimeout(async () => {
             try {
                 // Robust Outlet ID determination
@@ -1575,55 +1617,7 @@ export default function POSBillingPage() {
                     </div>
                 </div>
 
-                {/* ─── Control Actions ─── */}
-                <div className="w-full max-w-sm space-y-4 pt-4 lg:pt-10">
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 p-6 text-center space-y-3">
-                        <div className="w-16 h-16 bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-                            <Check className="w-8 h-8" />
-                        </div>
-                        <h3 className="text-lg font-black text-emerald-600 uppercase">Transaction Success</h3>
-                        <p className="text-sm text-text-secondary font-medium italic">Log #{successInvoice.number} generated.</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-2">
-                        <button
-                            onClick={() => window.print()}
-                            className="bg-text text-background p-4 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 hover:opacity-90 active:scale-[0.98] transition-all"
-                        >
-                            <Printer className="w-4 h-4" /> Print Thermal (80mm)
-                        </button>
-                        <button
-                            disabled={isGeneratingPDF}
-                            onClick={handleDownloadPDF}
-                            className={`bg-surface border border-border p-4 font-black uppercase tracking-widest text-[10px] text-text flex items-center justify-center gap-3 active:scale-[0.98] transition-all shadow-sm ${isGeneratingPDF ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary hover:text-white hover:border-primary'}`}
-                        >
-                            {isGeneratingPDF ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-                            {isGeneratingPDF ? 'Generating Document...' : 'Download Invoice PDF'}
-                        </button>
-
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => sendWhatsAppBill(successInvoice)}
-                                className="bg-[#25D366] text-white p-3 font-black uppercase tracking-widest text-[9px] flex items-center justify-center gap-2 hover:opacity-90 transition-all rounded-none"
-                            >
-                                <Smartphone className="w-3.5 h-3.5" /> {isWhatsAppSending ? 'Sending...' : 'WhatsApp'}
-                            </button>
-                            <button
-                                onClick={() => navigate('/pos/invoices')}
-                                className="bg-background border border-border p-3 font-black uppercase tracking-widest text-[9px] text-text-secondary flex items-center justify-center gap-2 active:scale-[0.98] transition-all hover:bg-surface-alt"
-                            >
-                                <History className="w-3.5 h-3.5 text-emerald-500" /> View All Invoices
-                            </button>
-                        </div>
-
-                        <button
-                            onClick={resetBill}
-                            className="bg-primary text-white p-4 font-black uppercase tracking-widest text-[10px] flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:bg-primary-dark active:scale-[0.98] transition-all"
-                        >
-                            <Plus className="w-4 h-4" /> New Billing
-                        </button>
-                    </div>
-                </div>
+             
             </div>
         );
     }
@@ -1732,7 +1726,7 @@ export default function POSBillingPage() {
                                 }}
                                 className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'bookings'
                                     ? '!bg-[#cca839] !text-white shadow-sm font-black'
-                                    : '!bg-transparent !text-slate-500 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!text-slate-200'
+                                    : '!bg-transparent !text-[#cca839] hover:!text-[#cca839]/80 dark:!text-[#cca839] dark:hover:!text-[#cca839]/80'
                                     }`}
                             >Completed Bookings</button>
                             <button
@@ -1743,13 +1737,16 @@ export default function POSBillingPage() {
                                 }}
                                 className={`px-4 py-1.5 text-xs font-semibold uppercase tracking-wider rounded-md transition-all ${activeTab === 'services' && serviceMode === 'orders'
                                     ? '!bg-[#cca839] !text-white shadow-sm font-black'
-                                    : '!bg-transparent !text-slate-500 hover:!text-slate-700 dark:!text-slate-400 dark:hover:!text-slate-200'
+                                    : '!bg-transparent !text-[#cca839] hover:!text-[#cca839]/80 dark:!text-[#cca839] dark:hover:!text-[#cca839]/80'
                                     }`}
                             >Completed Orders</button>
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3 p-1 pr-2 custom-scrollbar">
+                    <div className={`flex-1 overflow-y-auto gap-3 p-1 pr-2 custom-scrollbar content-start ${serviceMode === 'bookings' || serviceMode === 'orders'
+                            ? 'grid grid-cols-1 md:grid-cols-2'
+                            : 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+                        }`}>
                         {filteredItems.map((item, idx) => {
                             const isSelected = item.isAppointment
                                 ? selectedBookingIds.includes(item._id)
@@ -1757,35 +1754,221 @@ export default function POSBillingPage() {
                                     ? selectedOrderIds.includes(item._id)
                                     : cart.some(c => String(c.itemId) === String(item._id || item.id));
                             const isFocused = idx === focusedItemIndex;
+
+                            // ── BOOKING CARD ──────────────────────────────────
+                            if (item.isAppointment) {
+                                const b = item.originalBooking || item;
+                                const clientName = b.clientId?.name || b.clientName || 'Walk-in';
+                                const serviceName = b.serviceId?.name || b.serviceName || 'Service';
+                                const stylistName = b.staffId?.name || b.stylistId?.name || b.staffName || null;
+                                const dateStr = b.date ? new Date(b.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : null;
+                                const timeStr = b.startTime || b.time || null;
+                                const initials = clientName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                                return (
+                                    <button
+                                        id={`pos-item-${idx}`}
+                                        key={item._id}
+                                        onClick={() => addToCart(item)}
+                                        className={`relative bg-white text-left transition-all duration-200 group rounded-2xl overflow-hidden shadow-sm hover:shadow-md active:scale-[0.98] border ${isSelected
+                                                ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
+                                                : 'border-slate-100 hover:border-[#cca839]/50'
+                                            }`}
+                                    >
+
+                                        <div className="p-3.5">
+                                            {/* Header row: avatar + name + badge */}
+                                            <div className="flex items-center gap-2.5 mb-2.5">
+                                                {/* Client Avatar */}
+                                                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${isSelected ? 'bg-[#cca839] text-white' : 'bg-gradient-to-br from-violet-500 to-indigo-600 text-white'
+                                                    }`}>
+                                                    {initials}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[12px] font-black text-slate-800 truncate leading-tight">{clientName}</p>
+                                                    {b.clientId?.phone && <p className="text-[9px] font-semibold text-slate-400 tracking-wider">{b.clientId.phone.replace(/(\d{5})(\d{5})/, '•••••$2')}</p>}
+                                                </div>
+                                                {isSelected ? (
+                                                    <div className="bg-blue-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 flex items-center gap-1">
+                                                        <Check className="w-2.5 h-2.5" /> Billed
+                                                    </div>
+                                                ) : (
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 text-blue-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                                        Bill
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Service Name */}
+                                            <div className="flex items-center gap-1.5 mb-2">
+                                                <Scissors className="w-3 h-3 text-violet-500 shrink-0" />
+                                                <p className="text-[11px] font-bold text-slate-700 truncate">{serviceName}</p>
+                                            </div>
+
+                                            {/* Meta row: stylist + date/time */}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {stylistName && (
+                                                    <span className="flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                                                        <User className="w-2.5 h-2.5" /> {stylistName}
+                                                    </span>
+                                                )}
+                                                {dateStr && (
+                                                    <span className="flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                                                        <Calendar className="w-2.5 h-2.5" /> {dateStr}
+                                                    </span>
+                                                )}
+                                                {timeStr && (
+                                                    <span className="flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                                                        <Clock className="w-2.5 h-2.5" /> {timeStr}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Price row */}
+                                            <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700/60">
+                                                <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${item.isInclusiveTax
+                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                        : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                                    }`}>{item.isInclusiveTax ? 'Incl. GST' : 'Excl. GST'}</span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                );
+                            }
+
+                            // ── ORDER CARD ────────────────────────────────────
+                            if (item.isOrder) {
+                                const o = item.originalOrder || item;
+                                const customerName = o.customerId?.name || 'Walk-in';
+                                const itemCount = Array.isArray(o.items) ? o.items.length : 0;
+                                const orderId = `#${o._id?.toString().slice(-6).toUpperCase()}`;
+                                const orderDate = o.createdAt ? new Date(o.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : null;
+                                const initials = customerName.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
+                                return (
+                                    <button
+                                        id={`pos-item-${idx}`}
+                                        key={item._id}
+                                        onClick={() => addToCart(item)}
+                                        className={`relative bg-white text-left transition-all duration-200 group rounded-2xl overflow-hidden shadow-sm hover:shadow-md active:scale-[0.98] border ${isSelected
+                                                ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
+                                                : 'border-slate-100 hover:border-[#cca839]/50'
+                                            }`}
+                                    >
+
+                                        <div className="p-3.5">
+                                            {/* Header: Order ID + status badge */}
+                                            <div className="flex items-center justify-between mb-2.5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${isSelected ? 'bg-[#cca839] text-white' : 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
+                                                        }`}>
+                                                        {initials}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-[11px] font-black text-slate-800 leading-tight">{customerName}</p>
+                                                        <p className="text-[9px] font-bold text-emerald-600 tracking-wider">{orderId}</p>
+                                                    </div>
+                                                </div>
+                                                {isSelected ? (
+                                                    <div className="bg-blue-600 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider flex items-center gap-1">
+                                                        <Check className="w-2.5 h-2.5" /> Billed
+                                                    </div>
+                                                ) : (
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 text-blue-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                        Bill
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Items preview */}
+                                            {itemCount > 0 && (
+                                                <div className="flex items-center gap-1.5 mb-2">
+                                                    <Package className="w-3 h-3 text-teal-500 shrink-0" />
+                                                    <p className="text-[10px] font-semibold text-slate-600 truncate">
+                                                        {Array.isArray(o.items) && o.items.slice(0, 2).map(i => i.productId?.name || i.name || 'Item').join(', ')}
+                                                        {itemCount > 2 && ` +${itemCount - 2} more`}
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            {/* Meta: date + items count */}
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                {orderDate && (
+                                                    <span className="flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                                                        <Calendar className="w-2.5 h-2.5" /> {orderDate}
+                                                    </span>
+                                                )}
+                                                {itemCount > 0 && (
+                                                    <span className="flex items-center gap-1 text-[9px] font-semibold text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md">
+                                                        <ShoppingBag className="w-2.5 h-2.5" /> {itemCount} {itemCount === 1 ? 'item' : 'items'}
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Price row */}
+                                            <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700/60">
+                                                <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    Paid Order
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </button>
+                                );
+                            }
+
+                            // ── CATALOG CARD (Services / Products) ────────────
+                            const img = item.image || item.images?.[0];
                             return (
                                 <button
                                     id={`pos-item-${idx}`}
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
-                                    className={`relative bg-background border rounded-xl p-3 text-left hover:border-primary transition-all group flex flex-col justify-between h-[80px] shadow-sm hover:shadow-md active:scale-95 ${isSelected ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border'
+                                    className={`relative bg-white dark:bg-slate-900/50 border rounded-2xl text-left transition-all duration-200 group flex flex-col overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] ${isSelected
+                                            ? 'border-[#cca839] ring-1 ring-[#cca839]/40'
+                                            : 'border-slate-100 dark:border-slate-800/80 hover:border-[#cca839]/40'
                                         }`}
                                 >
-                                    {isSelected ? (
-                                        <div className="absolute top-1.5 right-1.5 !bg-[#cca839] !text-slate-950 text-[9px] font-black px-2 py-0.5 uppercase tracking-wider rounded-md shadow-sm z-10">
-                                            In Cart
+                                    {/* Image thumbnail */}
+                                    <div className="relative w-full h-[80px] bg-slate-50 dark:bg-slate-800/50 overflow-hidden flex items-center justify-center flex-shrink-0">
+                                        {img ? (
+                                            <img
+                                                src={getImageUrl(img)}
+                                                alt={item.name}
+                                                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                                onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                                            />
+                                        ) : null}
+                                        <div className={`w-full h-full items-center justify-center bg-slate-100 dark:bg-slate-800 ${img ? 'hidden' : 'flex'}`}>
+                                            {activeTab === 'services'
+                                                ? <Scissors className="w-6 h-6 text-slate-400" strokeWidth={1.5} />
+                                                : <Package className="w-6 h-6 text-slate-400" strokeWidth={1.5} />
+                                            }
                                         </div>
-                                    ) : (
-                                        <div className="absolute top-1.5 right-1.5 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                            <span className="text-[10px] font-bold text-primary transition-colors">ADD</span>
-                                        </div>
-                                    )}
-                                    <div className="w-full h-full flex flex-col justify-between">
-                                        <div className="flex items-center justify-between gap-2 w-full">
-                                            <h4 className="text-xs font-bold text-text line-clamp-1 uppercase tracking-tight leading-tight flex-1 pr-6">{item.name}</h4>
-                                            <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md uppercase shrink-0 transition-opacity duration-200 ${isSelected ? 'opacity-0' : 'group-hover:opacity-0'} ${item.isInclusiveTax ? 'bg-emerald-500/10 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
-                                                {item.isInclusiveTax ? 'Incl' : 'Excl'}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-baseline justify-between gap-1 mt-1">
-                                            <p className="text-sm font-bold text-primary">₹{item.price}</p>
-                                            {item.barcode && (
-                                                <p className="text-[8px] font-mono text-text-muted/60 truncate max-w-[80px]">{item.barcode}</p>
-                                            )}
+                                        {/* In Cart / ADD badge overlay */}
+                                        {isSelected ? (
+                                            <div className="absolute inset-0 bg-[#cca839]/15 flex items-center justify-center">
+                                                <div className="bg-[#cca839] text-white text-[8px] font-black px-2 py-1 uppercase tracking-wider rounded-lg shadow flex items-center gap-1">
+                                                    <Check className="w-2.5 h-2.5" /> In Cart
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 flex items-end justify-end p-1.5">
+                                                <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-black text-white bg-[#cca839] px-2 py-0.5 rounded-md uppercase tracking-wider shadow">ADD</span>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Info section */}
+                                    <div className="flex flex-col flex-1 p-2.5 gap-1">
+                                        <h4 className="text-[10px] font-black text-slate-800 dark:text-slate-200 line-clamp-2 uppercase tracking-tight leading-tight">
+                                            {item.name}
+                                        </h4>
+                                        <div className="flex items-center justify-between gap-1 mt-auto pt-1 border-t border-dashed border-slate-100 dark:border-slate-800/60">
+                                            <p className="text-sm font-black text-slate-900 dark:text-slate-100">₹{item.price}</p>
+                                            <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase tracking-wider ${item.isInclusiveTax
+                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                                                    : 'bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400'
+                                                }`}>{item.isInclusiveTax ? 'Incl' : 'Excl'}</span>
                                         </div>
                                     </div>
                                 </button>
@@ -1794,552 +1977,761 @@ export default function POSBillingPage() {
                     </div>
                 </div>
 
-                <div className="w-full lg:w-[400px] h-full p-2 bg-background">
-                    <div className="h-full rounded-2xl border border-border bg-surface flex flex-col overflow-hidden">
+                {/* ══════════════════════════════════════════════
+                    RIGHT PANEL — BILLING SUMMARY
+                    ══════════════════════════════════════════════ */}
+                <div className="w-full lg:w-[420px] h-full flex flex-col bg-[#f8fafc] border-l border-slate-200 dark:border-slate-800 dark:bg-slate-950 overflow-hidden">
 
-                        {/* HEADER */}
-                        <div className="px-3 py-2 border-b border-border flex items-center justify-between">
-                            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                                Billing Cart
-                            </h2>
+                    {serviceMode === 'bookings' || serviceMode === 'orders' ? (
+                        /* ══ ENTERPRISE BILLING SUMMARY — pre-paid bookings/orders ══ */
+                        <>
+                            {/* Glass header */}
+                            <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between shrink-0">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="w-8 h-8 rounded-xl bg-[#cca839]/20 flex items-center justify-center">
+                                        <FileText className="w-4 h-4" style={{ color: '#cca839' }} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 leading-none">Billing Summary</h2>
+                                        <p className="text-[9px] text-slate-400 font-medium mt-0.5">
+                                            {serviceMode === 'bookings' ? 'Service Booking' : 'Product Order'}
+                                        </p>
+                                    </div>
+                                </div>
+                                {cart.length > 0 && (
+                                    <span className="bg-[#cca839] text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+                                        {cart.length} item{cart.length !== 1 ? 's' : ''}
+                                    </span>
+                                )}
+                            </div>
 
-                            <span className="text-[10px] font-bold text-text-muted">
-                                {cart.length} Items
-                            </span>
-                        </div>
+                            {/* Scrollable body */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-3 pb-40">
 
-                        {/* CONTENT - Scrollable area */}
-                        <div className="flex-1 p-2 pb-36 space-y-3 overflow-y-auto custom-scrollbar">
+                                {/* ── 1. CUSTOMER INFORMATION ── */}
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                        <User className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Customer Information</span>
+                                    </div>
+                                    <div className="p-4 flex items-start gap-3">
+                                        {selectedClient ? (
+                                            <>
+                                                {/* Avatar */}
+                                                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-[12px] font-black shrink-0 shadow-sm ${
+                                                    activeMembership
+                                                        ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
+                                                        : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
+                                                }`}>
+                                                    {selectedClient.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CL'}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-[13px] font-black text-slate-900 dark:text-white leading-tight">{selectedClient.name}</p>
+                                                    <p className="text-[10px] text-slate-500 font-semibold mt-0.5">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                                    {selectedClient.email && <p className="text-[10px] text-slate-400 font-medium mt-0.5 truncate">{selectedClient.email}</p>}
+                                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                                        {selectedClient._id && (
+                                                            <span className="text-[8px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-md uppercase">
+                                                                ID: {String(selectedClient._id).slice(-6).toUpperCase()}
+                                                            </span>
+                                                        )}
+                                                        {selectedClient.createdAt && (
+                                                            <span className="text-[8px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded-md uppercase">
+                                                                Since {new Date(selectedClient.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                            </span>
+                                                        )}
+                                                        {Number(selectedClient.dueAmount || 0) > 0 && (
+                                                            <span className="text-[8px] font-bold bg-rose-50 text-rose-600 border border-rose-200 px-1.5 py-0.5 rounded-md uppercase animate-pulse flex items-center gap-0.5">
+                                                                <AlertTriangle className="w-2.5 h-2.5" /> Due ₹{Number(selectedClient.dueAmount).toFixed(0)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    {activeMembership && (
+                                                        <div className="mt-2 flex items-center gap-1.5 text-[9px] font-black text-emerald-700 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800/40 px-2 py-1 rounded-lg w-fit">
+                                                            <Star className="w-2.5 h-2.5 fill-emerald-500 text-emerald-500" />
+                                                            {activeMembership.planId?.name || 'Member'} — Active
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center gap-3 opacity-40">
+                                                <div className="w-11 h-11 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-slate-400" />
+                                                </div>
+                                                <p className="text-[11px] italic text-slate-400">No client selected</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
 
-                            {/* CLIENT + OUTLET */}
-                            <div className="grid grid-cols-2 gap-2">
-                                {/* CLIENT */}
-                                <div className="border border-border rounded-xl p-2 bg-background relative overflow-hidden">
-                                    <p className="text-[10px] font-semibold uppercase text-text-muted mb-1">Client</p>
-                                    {selectedClient ? (
-                                        <>
-                                            <p className="text-xs font-bold truncate">{selectedClient.name}</p>
-                                            <p className="text-[10px] text-text-muted font-semibold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
-                                            {Number(selectedClient.dueAmount || 0) > 0 && (
-                                                <div className="text-[9px] font-bold text-rose-600 flex items-center gap-0.5 mt-0.5 animate-pulse">
-                                                    <AlertTriangle className="w-3 h-3 text-rose-500 shrink-0" /> Dues: ₹{Number(selectedClient.dueAmount).toFixed(0)}
+                                {/* ── 2. OUTLET & BOOKING INFO ── */}
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                        <Building2 className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Outlet Information</span>
+                                    </div>
+                                    <div className="p-4 space-y-2.5">
+                                        {(() => {
+                                            const booking = appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
+                                            const order = orderId ? businessOrders?.find(o => o._id === orderId) : null;
+                                            const bOutletId = (booking || order) ? (booking?.outletId?._id || booking?.outletId || order?.outletId?._id || order?.outletId) : activeOutletId;
+                                            const sel = outlets.find(o => String(o._id) === String(bOutletId));
+                                            const source = booking || order;
+                                            const bookingIdStr = appointmentId ? `BK-${String(appointmentId).slice(-8).toUpperCase()}` :
+                                                orderId ? `ORD-${String(orderId).slice(-8).toUpperCase()}` : null;
+                                            const bookedBy = source?.createdBy?.name || source?.staffId?.name || 'Admin';
+                                            const bookedAt = source?.createdAt || source?.date;
+                                            return (
+                                                <>
+                                                    <div className="flex items-center justify-between relative">
+                                                        <div className="flex items-center gap-2">
+                                                            <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                                                            <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">{sel ? sel.name : 'Select Outlet'}</span>
+                                                        </div>
+                                                        {!(appointmentId || orderId) && (
+                                                            <button
+                                                                onClick={() => setShowOutletPickerMain(!showOutletPickerMain)}
+                                                                className="text-[9px] font-bold text-[#cca839] hover:underline flex items-center gap-0.5"
+                                                            >
+                                                                Change <ChevronDown className="w-3 h-3" />
+                                                            </button>
+                                                        )}
+                                                        <AnimatePresence>
+                                                            {showOutletPickerMain && !appointmentId && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0, y: 6 }}
+                                                                    animate={{ opacity: 1, y: 0 }}
+                                                                    exit={{ opacity: 0, y: 6 }}
+                                                                    className="absolute top-full right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80] min-w-[160px]"
+                                                                >
+                                                                    {outlets.map(o => (
+                                                                        <button
+                                                                            key={o._id}
+                                                                            onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
+                                                                            className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
+                                                                        >
+                                                                            {o.name}
+                                                                        </button>
+                                                                    ))}
+                                                                </motion.div>
+                                                            )}
+                                                        </AnimatePresence>
+                                                    </div>
+                                                    {bookingIdStr && (
+                                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5">
+                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Booking ID</p>
+                                                                <p className="text-[10px] font-black text-slate-800 dark:text-slate-200 font-mono">{bookingIdStr}</p>
+                                                            </div>
+                                                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5">
+                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Order Type</p>
+                                                                <p className="text-[10px] font-black text-slate-800 dark:text-slate-200">{serviceMode === 'bookings' ? 'Service Booking' : 'Product Order'}</p>
+                                                            </div>
+                                                            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5">
+                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Booked By</p>
+                                                                <p className="text-[10px] font-black text-slate-800 dark:text-slate-200">{bookedBy}</p>
+                                                            </div>
+                                                            {bookedAt && (
+                                                                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl p-2.5">
+                                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-1">Date</p>
+                                                                    <p className="text-[10px] font-black text-slate-800 dark:text-slate-200">{new Date(bookedAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+
+                                {/* ── 3. ORDER SUMMARY ── */}
+                                {cart.length > 0 && (
+                                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                        <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                            <ShoppingBag className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Order Summary</span>
+                                            <span className="ml-auto text-[8px] font-bold bg-[#cca839]/10 text-[#cca839] px-1.5 py-0.5 rounded-full">{cart.length} items</span>
+                                        </div>
+                                        <div className="divide-y divide-slate-50 dark:divide-slate-800/60">
+                                            {cart.map((item, idx) => {
+                                                const lineTotal = (Number(item.price) || 0) * (Number(item.quantity) || 1);
+                                                return (
+                                                    <div key={idx} className="flex items-center gap-3 px-4 py-3">
+                                                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                                            {item.type === 'service'
+                                                                ? <Scissors className="w-3.5 h-3.5 text-[#cca839]" />
+                                                                : <Package className="w-3.5 h-3.5 text-slate-500" />
+                                                            }
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate">{item.name}</p>
+                                                            <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Qty {item.quantity} × ₹{Number(item.price).toFixed(0)}</p>
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            <p className="text-[12px] font-black text-slate-900 dark:text-white">₹{lineTotal.toFixed(2)}</p>
+                                                            <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase ${
+                                                                (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30'
+                                                                    : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30'
+                                                            }`}>
+                                                                {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl. GST' : 'Excl. GST'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── 4. PRICE BREAKDOWN ── */}
+                                {cart.length > 0 && (
+                                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                        <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                            <Tag className="w-3.5 h-3.5 text-[#cca839]" />
+                                            <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Price Breakdown</span>
+                                        </div>
+                                        <div className="px-4 py-3 space-y-2">
+                                            {/* Subtotal */}
+                                            <div className="flex items-center justify-between">
+                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Subtotal</span>
+                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.subtotal?.toFixed(2) ?? cart.reduce((s,i) => s + (Number(i.price)||0)*(Number(i.quantity)||1), 0).toFixed(2)}</span>
+                                            </div>
+
+                                            {/* Membership discount */}
+                                            {totals.membershipDiscount > 0 && (
+                                                <div className="flex items-center justify-between text-[#16a34a]">
+                                                    <span className="text-[11px] font-semibold flex items-center gap-1">
+                                                        <Star className="w-3 h-3 fill-current" />
+                                                        Membership Disc ({activeMembership?.planId?.name || 'Member'})
+                                                    </span>
+                                                    <span className="text-[11px] font-black">− ₹{totals.membershipDiscount.toFixed(2)}</span>
                                                 </div>
                                             )}
-                                            {activeMembership && (
-                                                <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[8px] font-bold px-1.5 py-0.5 uppercase tracking-tighter rounded-bl-lg">
-                                                    VIP Member
+
+                                            {/* Manual/admin discount */}
+                                            {totals.discount > 0 && (
+                                                <div className="flex items-center justify-between text-[#16a34a]">
+                                                    <span className="text-[11px] font-semibold flex items-center gap-1">
+                                                        <Tag className="w-3 h-3" />
+                                                        {manualDiscount?.value > 0 ? `Admin Discount (${manualDiscount.type === 'percentage' ? `${manualDiscount.value}%` : `₹${manualDiscount.value}`})` :
+                                                            appliedPromotion ? `Promo: ${appliedPromotion.name || 'Promo'}` :
+                                                                appliedVoucher ? `Voucher` : 'Discount'}
+                                                    </span>
+                                                    <span className="text-[11px] font-black">− ₹{totals.discount.toFixed(2)}</span>
                                                 </div>
                                             )}
-                                        </>
+
+                                            {/* Wallet */}
+                                            {totals.redeemWallet > 0 && (
+                                                <div className="flex items-center justify-between text-[#16a34a]">
+                                                    <span className="text-[11px] font-semibold flex items-center gap-1">
+                                                        <Wallet className="w-3 h-3" /> Wallet Used
+                                                    </span>
+                                                    <span className="text-[11px] font-black">− ₹{totals.redeemWallet.toFixed(2)}</span>
+                                                </div>
+                                            )}
+
+                                            {/* Total discount line */}
+                                            {(totals.discount + totals.membershipDiscount + totals.redeemWallet) > 0 && (
+                                                <div className="flex items-center justify-between border-t border-dashed border-slate-200 dark:border-slate-700 pt-2 text-[#16a34a]">
+                                                    <span className="text-[10px] font-black uppercase tracking-wider">Total Discount</span>
+                                                    <span className="text-[11px] font-black">− ₹{(totals.discount + totals.membershipDiscount + totals.redeemWallet).toFixed(2)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ── 5. GST SECTION ── */}
+                                {cart.length > 0 && (totals.cgst > 0 || totals.sgst > 0 || totals.igst > 0) && (
+                                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                        {(() => {
+                                            const hasIncl = cart.some(i => i.isInclusiveTax === true || String(i.isInclusiveTax) === 'true' || (i.isInclusiveTax === undefined && fiscal?.inclusiveTax));
+                                            const hasExcl = cart.some(i => !(i.isInclusiveTax === true || String(i.isInclusiveTax) === 'true' || (i.isInclusiveTax === undefined && fiscal?.inclusiveTax)));
+                                            return (
+                                                <>
+                                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                                        <Percent className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">GST Details</span>
+                                                        <div className="flex gap-1 ml-auto">
+                                                            {hasIncl && <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 !text-emerald-700 border border-emerald-200">GST Included</span>}
+                                                            {hasExcl && <span className="text-[7px] font-bold px-1.5 py-0.5 rounded-full bg-orange-100 !text-orange-700 border border-orange-200">GST Exclusive</span>}
+                                                        </div>
+                                                    </div>
+                                                    <div className="px-4 py-3 space-y-2">
+                                                        {totals.cgst > 0 && (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                                                    CGST ({(totals.serviceGstRate / 2).toFixed(1)}%)
+                                                                    {totals.cgst > totals.cgstExcl && <span className="ml-1 text-[8px] text-emerald-600">(Incl.)</span>}
+                                                                </span>
+                                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.cgst.toFixed(2)}</span>
+                                                            </div>
+                                                        )}
+                                                        {totals.sgst > 0 && (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">
+                                                                    SGST ({(totals.serviceGstRate / 2).toFixed(1)}%)
+                                                                    {totals.sgst > totals.sgstExcl && <span className="ml-1 text-[8px] text-emerald-600">(Incl.)</span>}
+                                                                </span>
+                                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.sgst.toFixed(2)}</span>
+                                                            </div>
+                                                        )}
+                                                        {totals.igst > 0 && (
+                                                            <div className="flex items-center justify-between">
+                                                                <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">IGST ({totals.serviceGstRate}%)</span>
+                                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.igst.toFixed(2)}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                )}
+
+                                {/* ── 6. APPLIED BENEFITS ── */}
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                        <Gift className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Applied Benefits</span>
+                                    </div>
+                                    <div className="px-4 py-3">
+                                        {(() => {
+                                            const benefits = [];
+                                            if (activeMembership) benefits.push({ label: `${activeMembership.planId?.name || 'Membership'} Discount`, icon: <Star className="w-3 h-3 fill-emerald-500 text-emerald-500" />, color: 'emerald' });
+                                            if (manualDiscount?.value > 0) benefits.push({ label: `Admin Discount (${manualDiscount.type === 'percentage' ? `${manualDiscount.value}%` : `₹${manualDiscount.value}`})`, icon: <Tag className="w-3 h-3 text-blue-500" />, color: 'blue' });
+                                            if (appliedPromotion) benefits.push({ label: `Promo: ${appliedPromotion.name || appliedPromotion.code || 'Code'}`, icon: <Ticket className="w-3 h-3 text-purple-500" />, color: 'purple' });
+                                            if (appliedVoucher) benefits.push({ label: `Voucher: ${appliedVoucher.code || 'Applied'}`, icon: <Gift className="w-3 h-3 text-rose-500" />, color: 'rose' });
+                                            if (redeemWallet > 0) benefits.push({ label: `Wallet: ₹${redeemWallet.toFixed(2)} used`, icon: <Wallet className="w-3 h-3 text-amber-500" />, color: 'amber' });
+                                            if (benefits.length === 0) return <p className="text-[10px] text-slate-400 italic text-center py-2">No discounts applied</p>;
+                                            return (
+                                                <div className="space-y-1.5">
+                                                    {benefits.map((b, i) => (
+                                                        <div key={i} className={`flex items-center gap-2 text-[10px] font-semibold text-${b.color}-700 bg-${b.color}-50 dark:bg-${b.color}-900/20 px-2.5 py-1.5 rounded-xl border border-${b.color}-100 dark:border-${b.color}-900/30`}>
+                                                            <Check className="w-3 h-3 shrink-0" />
+                                                            {b.icon}
+                                                            <span>{b.label}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+
+                                {/* ── 7. PAYMENT STATUS ── */}
+                                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
+                                    <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
+                                        <Wallet className="w-3.5 h-3.5 text-[#cca839]" />
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Status</span>
+                                    </div>
+                                    <div className="px-4 py-3">
+                                        {(() => {
+                                            const isImportedPaid = serviceMode === 'bookings' || serviceMode === 'orders';
+                                            const grandTotal = totals.total;
+                                            const paid = isImportedPaid ? grandTotal : redeemWallet;
+                                            const pending = isImportedPaid ? 0 : Math.max(0, grandTotal - paid);
+                                            const isPaid = isImportedPaid || pending <= 0.5;
+                                            const isPartial = paid > 0 && !isPaid;
+
+                                            return (
+                                                <div className="space-y-2">
+                                                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-black w-fit ${
+                                                        isPaid
+                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40'
+                                                            : isPartial
+                                                                ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40'
+                                                                : 'bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400'
+                                                    }`}>
+                                                        <div className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : isPartial ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
+                                                        {isPaid ? 'Pre-Paid' : isPartial ? 'Partial Paid' : 'Pending'}
+                                                    </div>
+                                                    {isPartial && (
+                                                        <div className="grid grid-cols-2 gap-2 mt-2">
+                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2.5">
+                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Paid</p>
+                                                                <p className="text-[13px] font-black text-emerald-700">₹{paid.toFixed(2)}</p>
+                                                            </div>
+                                                            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-2.5">
+                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pending</p>
+                                                                <p className="text-[13px] font-black text-amber-700">₹{pending.toFixed(2)}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            {/* ── STICKY FOOTER — Grand Total + Actions ── */}
+                            <div className="shrink-0 border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md px-5 py-4 space-y-3">
+                                {/* Grand Total Box */}
+                                <div className="bg-[#f8fafc] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
+                                    <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-2">
+                                        <span>Subtotal</span>
+                                        <span>₹{(totals.subtotal ?? cart.reduce((s,i) => s + (Number(i.price)||0)*(Number(i.quantity)||1), 0)).toFixed(2)}</span>
+                                    </div>
+                                    {(totals.discount + totals.membershipDiscount) > 0 && (
+                                        <div className="flex items-center justify-between text-[10px] font-semibold text-[#16a34a] mb-2">
+                                            <span>Discounts</span>
+                                            <span>− ₹{(totals.discount + totals.membershipDiscount).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {(totals.cgst + totals.sgst + totals.igst) > 0 && (
+                                        <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-2">
+                                            <span>GST</span>
+                                            <span className={totals.cgst > totals.cgstExcl ? 'text-slate-400' : ''}>
+                                                {totals.cgst > totals.cgstExcl ? '(Included)' : `+ ₹${(totals.cgst + totals.sgst + totals.igst).toFixed(2)}`}
+                                            </span>
+                                        </div>
+                                    )}
+                                    {totals.redeemWallet > 0 && (
+                                        <div className="flex items-center justify-between text-[10px] font-semibold text-[#16a34a] mb-2">
+                                            <span>Wallet</span>
+                                            <span>− ₹{totals.redeemWallet.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="border-t border-slate-200 dark:border-slate-700 mt-2 pt-3 flex items-center justify-between">
+                                        <span className="text-[11px] font-black uppercase tracking-widest text-[#16a34a]">Grand Total</span>
+                                        <span className="text-[28px] font-black leading-none text-slate-900 dark:text-white tracking-tight">₹{totals.total.toFixed(2)}</span>
+                                    </div>
+                                </div>
+
+                                {/* Action buttons */}
+                                <div className="flex gap-2">
+                                    {/* Wallet toggle */}
+                                    {selectedClient && clientWalletBalance > 0 && (
+                                        <button
+                                            onClick={handleRedeemWallet}
+                                            title={`Wallet: ₹${clientWalletBalance.toFixed(2)}`}
+                                            className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${
+                                                redeemWallet > 0
+                                                    ? 'bg-[#cca839] border-[#cca839] text-white shadow-md'
+                                                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-[#cca839]/60 hover:text-[#cca839]'
+                                            }`}
+                                        >
+                                            <Wallet className="w-4 h-4" />
+                                        </button>
+                                    )}
+                                    {/* Discount */}
+                                    <button
+                                        onClick={() => setShowDiscountModal(true)}
+                                        title="Discount / Offers"
+                                        className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${
+                                            (manualDiscount?.value > 0 || appliedPromotion)
+                                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                                                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600'
+                                        }`}
+                                    >
+                                        <Tag className="w-4 h-4" />
+                                    </button>
+                                    {/* Generate Bill */}
+                                    <button
+                                        onClick={handleCheckout}
+                                        disabled={checkingOut || cart.length === 0}
+                                        className="flex-1 h-11 rounded-xl bg-[#cca839] text-white text-xs font-black uppercase tracking-wider hover:bg-[#b8932c] active:scale-95 transition-all shadow-lg shadow-[#cca839]/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {checkingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                                        {checkingOut ? 'Generating...' : 'Generate Bill'}
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        /* ══ CLASSIC CATALOG BILLING CART ══ */
+                        <div className="h-full rounded-2xl border border-border bg-surface flex flex-col overflow-hidden">
+
+                            {/* Header */}
+                            <div className="px-4 py-3 border-b border-border flex items-center justify-between bg-white dark:bg-slate-900">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-7 h-7 rounded-xl bg-[#cca839]/10 flex items-center justify-center">
+                                        <ShoppingCart className="w-3.5 h-3.5 text-[#cca839]" />
+                                    </div>
+                                    <h2 className="text-xs font-black uppercase tracking-wider text-slate-800 dark:text-slate-200">Billing Cart</h2>
+                                </div>
+                                {cart.length > 0 && (
+                                    <span className="bg-[#cca839] text-white text-[9px] font-black px-2 py-0.5 rounded-full">
+                                        {cart.length} item{cart.length !== 1 ? 's' : ''}
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 p-3 pb-36 space-y-3 overflow-y-auto custom-scrollbar">
+
+                                {/* Client + Outlet */}
+                                <div className="rounded-xl border border-border bg-white dark:bg-slate-900 overflow-hidden">
+                                    <div className="flex items-center gap-2.5 p-2.5 relative">
+                                        {selectedClient ? (
+                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${
+                                                activeMembership ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white' : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
+                                            }`}>
+                                                {selectedClient.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
+                                            </div>
+                                        ) : (
+                                            <div className="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                                <User className="w-4 h-4 text-slate-400" />
+                                            </div>
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            {selectedClient ? (
+                                                <>
+                                                    <p className="text-[11px] font-black text-slate-800 dark:text-slate-200 truncate leading-tight">{selectedClient.name}</p>
+                                                    <p className="text-[9px] text-slate-400 font-semibold truncate">{maskPhone(selectedClient.phone, user?.role)}</p>
+                                                    {Number(selectedClient.dueAmount || 0) > 0 && (
+                                                        <div className="text-[8px] font-bold text-rose-600 flex items-center gap-0.5 mt-0.5 animate-pulse">
+                                                            <AlertTriangle className="w-2.5 h-2.5 text-rose-500 shrink-0" /> Due: ₹{Number(selectedClient.dueAmount).toFixed(0)}
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p className="text-[10px] italic text-slate-400">No client selected</p>
+                                            )}
+                                        </div>
+                                        {activeMembership && (
+                                            <div className="bg-emerald-500 text-white text-[7px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">VIP</div>
+                                        )}
+                                    </div>
+                                    <div className="border-t border-border/60 px-2.5 py-1.5 flex items-center justify-between relative">
+                                        <div className="flex items-center gap-1.5">
+                                            <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
+                                            <button
+                                                onClick={() => setShowOutletPickerMain(!showOutletPickerMain)}
+                                                className="flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#cca839] transition-colors"
+                                            >
+                                                <span className="truncate max-w-[150px]">
+                                                    {(() => {
+                                                        const sel = outlets.find(o => String(o._id) === String(activeOutletId));
+                                                        return sel ? sel.name : 'Select Outlet';
+                                                    })()}
+                                                </span>
+                                                <ChevronDown className="w-3 h-3 shrink-0" />
+                                            </button>
+                                        </div>
+                                        <AnimatePresence>
+                                            {showOutletPickerMain && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, y: 6 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    exit={{ opacity: 0, y: 6 }}
+                                                    className="absolute top-full left-0 right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80]"
+                                                >
+                                                    {outlets.map(o => (
+                                                        <button
+                                                            key={o._id}
+                                                            onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
+                                                            className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
+                                                        >
+                                                            {o.name}
+                                                        </button>
+                                                    ))}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+
+                                {/* Cart items */}
+                                <div className="space-y-2">
+                                    {cart.length === 0 ? (
+                                        <div className="py-10 text-center border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20">
+                                            <div className="w-12 h-12 mx-auto mb-2 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                                                <ShoppingCart className="w-5 h-5 text-slate-400" />
+                                            </div>
+                                            <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Cart is empty</p>
+                                            <p className="text-[9px] text-slate-400 mt-0.5">Add items from the left panel</p>
+                                        </div>
                                     ) : (
-                                        <p className="text-[10px] italic text-text-muted">No client selected</p>
+                                        cart.map((item, idx) => (
+                                            <div key={idx} className="flex items-start gap-2.5 border border-slate-100 dark:border-slate-800 rounded-xl px-3 py-2.5 bg-white dark:bg-slate-900 shadow-sm">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-xs font-bold truncate">{item.name}</p>
+                                                    <div className="flex flex-col">
+                                                        <p className="text-xs font-bold text-primary leading-none mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
+                                                        {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? (
+                                                            <span className="text-[9px] font-semibold uppercase text-emerald-600 mt-1">INCLUDING GST</span>
+                                                        ) : (
+                                                            <span className="text-[9px] font-semibold uppercase text-blue-600 mt-1">EXCLUDING GST</span>
+                                                        )}
+                                                        {(item.type === 'service' || item.type === 'product') && (
+                                                            <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
+                                                                <Sparkles className="w-2.5 h-2.5 text-primary animate-pulse" />
+                                                                <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">{activeMembership ? 'Mem. Disc:' : 'Discount:'}</span>
+                                                                <div className="flex items-center bg-white border border-primary/10 rounded-md overflow-hidden h-4">
+                                                                    <button type="button" onClick={() => updateItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0))}
+                                                                        className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType ?? (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage' ? 'bg-primary text-white' : 'text-slate-400 hover:bg-slate-50'}`}>%</button>
+                                                                    <button type="button" onClick={() => updateItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0))}
+                                                                        className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType ?? (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed' ? 'bg-primary text-white' : 'text-slate-400 hover:bg-slate-50'}`}>₹</button>
+                                                                </div>
+                                                                <input type="number" min="0" max={(item.membershipDiscountType ?? 'percentage') === 'percentage' ? '100' : String(item.price)}
+                                                                    value={item.membershipDiscountValue ?? (activeMembership?.planId?.serviceDiscountValue || 0)}
+                                                                    onChange={(e) => { const val = Math.max(0, Number(e.target.value) || 0); updateItemMembershipDiscount(idx, item.membershipDiscountType ?? (activeMembership?.planId?.serviceDiscountType || 'percentage'), val); }}
+                                                                    className="w-10 bg-white border border-primary/10 rounded-md text-[10px] font-bold text-center h-4 focus:outline-none focus:border-primary/50 text-slate-800" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                                                    <button onClick={() => removeItem(idx)} className="text-slate-300 hover:text-rose-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                                                    <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden">
+                                                        <button onClick={() => updateQty(idx, -1)} className="w-6 h-6 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"><Minus className="w-2.5 h-2.5 text-slate-600 dark:text-slate-400" /></button>
+                                                        <span className="px-2 text-[10px] font-black text-slate-800 dark:text-slate-200">{item.quantity}</span>
+                                                        <button onClick={() => updateQty(idx, 1)} className="w-6 h-6 flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"><Plus className="w-2.5 h-2.5 text-slate-600 dark:text-slate-400" /></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))
                                     )}
                                 </div>
 
-                                {/* OUTLET */}
-                                <div className="border border-border rounded-xl p-2 bg-background relative">
-                                    <p className="text-[10px] font-semibold uppercase text-text-muted mb-1">Outlet</p>
-                                    <button
-                                        onClick={() => !(appointmentId || orderId) && setShowOutletPickerMain(!showOutletPickerMain)}
-                                        className={`w-full flex items-center justify-between text-xs font-bold ${(appointmentId || orderId) ? 'opacity-80 cursor-not-allowed' : ''}`}
-                                    >
-                                        <span className="truncate">
-                                            {(() => {
-                                                const booking = appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
-                                                const order = orderId ? businessOrders?.find(o => o._id === orderId) : null;
-                                                const bOutletId = (booking || order) ? (booking?.outletId?._id || booking?.outletId || order?.outletId?._id || order?.outletId) : activeOutletId;
-                                                const sel = outlets.find(o => String(o._id) === String(bOutletId));
-                                                return sel ? sel.name : 'Select Outlet';
-                                            })()}
-                                        </span>
-                                        {!(appointmentId || orderId) && <ChevronDown className="w-3 h-3 text-text-muted" />}
-                                    </button>
-
-                                    <AnimatePresence>
-                                        {showOutletPickerMain && !appointmentId && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: 6 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: 6 }}
-                                                className="absolute top-full left-0 right-0 mt-1 bg-white border border-border shadow-2xl rounded-xl overflow-hidden z-[80]"
-                                            >
-                                                {outlets.map(o => (
-                                                    <button
-                                                        key={o._id}
-                                                        onClick={() => { setActiveOutletId(o._id); setShowOutletPickerMain(false); }}
-                                                        className={`w-full text-left px-3 py-2 text-[10px] font-bold uppercase border-b border-border/50 last:border-0 hover:bg-slate-50 transition-colors ${String(o._id) === String(activeOutletId) ? 'text-primary bg-primary/5' : 'text-slate-800'}`}
-                                                    >
-                                                        {o.name}
-                                                    </button>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            </div>
-
-                            {/* CART ITEMS */}
-                            <div className="space-y-2">
-                                {cart.length === 0 ? (
-                                    <div className="py-8 text-center opacity-40 border border-dashed border-border rounded-xl">
-                                        <ShoppingCart className="w-6 h-6 mx-auto mb-1" />
-                                        <p className="text-xs font-bold uppercase tracking-wider">Empty Cart</p>
+                                {/* Payment section */}
+                                <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
+                                    <div className="flex items-center justify-between px-1 border-b border-border/50 pb-2 mb-2">
+                                        <span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Payment Date <span className="text-rose-500 font-bold">*</span></span>
+                                        <input type="date" required value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)}
+                                            className={`bg-surface border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 dark:text-slate-200 dark:[color-scheme:dark] focus:border-primary/50 cursor-pointer ${!paymentDate ? 'border-rose-300 bg-rose-50/20' : 'border-border'}`} />
                                     </div>
-                                ) : (
-                                    cart.map((item, idx) => (
-                                        <div key={idx} className="flex items-center gap-2 border border-border rounded-lg px-2 py-2 bg-surface-alt">
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-bold truncate">{item.name}</p>
-                                                <div className="flex flex-col">
-                                                    <p className="text-xs font-bold text-primary leading-none mt-1">₹{(item.price * item.quantity).toFixed(2)}</p>
-                                                    {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal.inclusiveTax)) ? (
-                                                        <span className="text-[9px] font-semibold uppercase text-emerald-600 mt-1">INCLUDING GST</span>
-                                                    ) : (
-                                                        <span className="text-[9px] font-semibold uppercase text-blue-600 mt-1">EXCLUDING GST</span>
-                                                    )}
-                                                    {(item.type === 'service' || item.type === 'product') && (
-                                                        <div className="mt-1.5 flex items-center gap-1 bg-primary/5 border border-primary/10 rounded-lg p-1 transition-all w-fit">
-                                                            <Sparkles className="w-2.5 h-2.5 text-primary animate-pulse" />
-                                                            <span className="text-[10px] font-semibold text-primary uppercase tracking-wider">
-                                                                {activeMembership ? 'Mem. Disc:' : 'Discount:'}
-                                                            </span>
-
-                                                            {/* Toggle between % and ₹ */}
-                                                            <div className="flex items-center bg-white border border-primary/10 rounded-md overflow-hidden h-4">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => updateItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
-                                                                    className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage'
-                                                                        ? 'bg-primary text-white'
-                                                                        : 'text-slate-400 hover:bg-slate-50'
-                                                                        }`}
-                                                                >
-                                                                    %
-                                                                </button>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => updateItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : (activeMembership?.planId?.serviceDiscountType === 'fixed' ? activeMembership.planId.serviceDiscountValue : (activeMembership?.planId?.serviceDiscountValue || 0)))}
-                                                                    className={`px-1 text-[9px] font-bold h-full flex items-center ${(item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'fixed'
-                                                                        ? 'bg-primary text-white'
-                                                                        : 'text-slate-400 hover:bg-slate-50'
-                                                                        }`}
-                                                                >
-                                                                    ₹
-                                                                </button>
-                                                            </div>
-
-                                                            {/* Numeric Input */}
-                                                            <input
-                                                                type="number"
-                                                                min="0"
-                                                                max={
-                                                                    (item.membershipDiscountType !== undefined ? item.membershipDiscountType : (activeMembership?.planId?.serviceDiscountType || 'percentage')) === 'percentage'
-                                                                        ? '100'
-                                                                        : String(item.price)
-                                                                }
-                                                                value={
-                                                                    item.membershipDiscountValue !== undefined
-                                                                        ? item.membershipDiscountValue
-                                                                        : (activeMembership?.planId?.serviceDiscountValue || 0)
-                                                                }
-                                                                onChange={(e) => {
-                                                                    const val = Math.max(0, Number(e.target.value) || 0);
-                                                                    const currentType = item.membershipDiscountType !== undefined
-                                                                        ? item.membershipDiscountType
-                                                                        : (activeMembership?.planId?.serviceDiscountType || 'percentage');
-                                                                    updateItemMembershipDiscount(idx, currentType, val);
-                                                                }}
-                                                                className="w-10 bg-white border border-primary/10 rounded-md text-[10px] font-bold text-center h-4 focus:outline-none focus:border-primary/50 text-slate-800"
-                                                            />
-                                                        </div>
-                                                    )}
-
-                                                    {/* CGST / SGST Breakdown for the item */}
-                                                    {(() => {
-                                                        const qty = Number(item.quantity) || 1;
-                                                        const itemPrice = Number(item.price) || 0;
-                                                        const gross = itemPrice * qty;
-
-                                                        // Membership discount
-                                                        let ownDiscount = 0;
-                                                        if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
-                                                            const discType = item.membershipDiscountType;
-                                                            const discVal = Number(item.membershipDiscountValue) || 0;
-                                                            if (discType === 'percentage') {
-                                                                ownDiscount = (gross * discVal) / 100;
-                                                            } else {
-                                                                ownDiscount = discVal;
-                                                            }
-                                                        } else if (activeMembership && activeMembership.planId) {
-                                                            const plan = activeMembership.planId;
-                                                            if (item.type === 'service') {
-                                                                if (plan.serviceDiscountType === 'percentage') {
-                                                                    ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                                } else {
-                                                                    ownDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                                }
-                                                            } else if (item.type === 'product') {
-                                                                if (plan.productDiscountType === 'percentage') {
-                                                                    ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                                } else {
-                                                                    ownDiscount = (Number(plan.productDiscountValue) || 0);
-                                                                }
-                                                            }
-                                                        }
-                                                        ownDiscount = Math.min(ownDiscount, gross);
-                                                        const remaining = gross - ownDiscount;
-
-                                                        // General discount calculation
-                                                        let totalSubtotal = cart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
-                                                        let generalDiscount = 0;
-                                                        if (manualDiscount) {
-                                                            if (manualDiscount.type === 'percentage') {
-                                                                generalDiscount += (totalSubtotal * (Number(manualDiscount.value) || 0)) / 100;
-                                                            } else {
-                                                                generalDiscount += Number(manualDiscount.value) || 0;
-                                                            }
-                                                        }
-                                                        if (appliedPromotion) {
-                                                            let eligibleSubtotal = totalSubtotal;
-                                                            const appOn = String(appliedPromotion.applicableOn || 'BOTH').toUpperCase();
-                                                            if (appOn === 'SERVICE') {
-                                                                eligibleSubtotal = cart.filter(it => it.type === 'service').reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
-                                                            } else if (appOn === 'PRODUCT') {
-                                                                eligibleSubtotal = cart.filter(it => it.type === 'product').reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
-                                                            }
-                                                            const promoType = String(appliedPromotion.discountType || appliedPromotion.type || '').toLowerCase();
-                                                            const promoVal = Number(appliedPromotion.discountValue !== undefined ? appliedPromotion.discountValue : appliedPromotion.value) || 0;
-                                                            if (promoType === 'percentage') {
-                                                                generalDiscount += (eligibleSubtotal * promoVal) / 100;
-                                                            } else {
-                                                                generalDiscount += Math.min(promoVal, eligibleSubtotal);
-                                                            }
-                                                        }
-                                                        if (appliedVoucher) {
-                                                            if (appliedVoucher.type === 'percentage') {
-                                                                generalDiscount += (totalSubtotal * (Number(appliedVoucher.value) || 0)) / 100;
-                                                            } else {
-                                                                generalDiscount += Number(appliedVoucher.value) || 0;
-                                                            }
-                                                        }
-
-                                                        // Total remaining of all items
-                                                        let totalRemaining = cart.reduce((sum, it) => {
-                                                            const itQty = Number(it.quantity) || 1;
-                                                            const itPrice = Number(it.price) || 0;
-                                                            const itGross = itPrice * itQty;
-                                                            let itOwnDiscount = 0;
-                                                            if (it.membershipDiscountType !== undefined && it.membershipDiscountValue !== undefined) {
-                                                                if (it.membershipDiscountType === 'percentage') {
-                                                                    itOwnDiscount = (itGross * Number(it.membershipDiscountValue)) / 100;
-                                                                } else {
-                                                                    itOwnDiscount = Number(it.membershipDiscountValue);
-                                                                }
-                                                            } else if (activeMembership && activeMembership.planId) {
-                                                                const plan = activeMembership.planId;
-                                                                if (it.type === 'service') {
-                                                                    if (plan.serviceDiscountType === 'percentage') {
-                                                                        itOwnDiscount = (itGross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                                    } else {
-                                                                        itOwnDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                                    }
-                                                                } else if (it.type === 'product') {
-                                                                    if (plan.productDiscountType === 'percentage') {
-                                                                        itOwnDiscount = (itGross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                                    } else {
-                                                                        itOwnDiscount = (Number(plan.productDiscountValue) || 0);
-                                                                    }
-                                                                }
-                                                            }
-                                                            return sum + Math.max(0, itGross - itOwnDiscount);
-                                                        }, 0);
-
-                                                        const generalDiscountRatio = 0;
-                                                        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
-                                                        const discountedAmount = Math.max(0, remaining - itemGeneralDiscount);
-
-                                                        // GST calculation
-                                                        const rateSetting = item.type === 'service' ? (Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5)) : (Number(platformSettings?.productGst ?? fiscal?.productGst ?? 10));
-                                                        const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
-                                                        const isItemInclusive = item.isInclusiveTax !== undefined
-                                                            ? (String(item.isInclusiveTax) === 'true')
-                                                            : !!fiscal?.inclusiveTax;
-
-                                                        let gstAmount = 0;
-                                                        if (isItemInclusive) {
-                                                            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
-                                                            gstAmount = discountedAmount - taxableAmount;
-                                                        } else {
-                                                            gstAmount = (discountedAmount * itemTaxPercent) / 100;
-                                                        }
-
-                                                        const cgstVal = gstAmount / 2;
-                                                        const sgstVal = gstAmount / 2;
-                                                        const cgstPercent = itemTaxPercent / 2;
-                                                        const sgstPercent = itemTaxPercent / 2;
-
-                                                        return (
-                                                            <div className="flex items-center gap-1.5 mt-1.5 text-[9px] font-bold text-slate-500 w-full">
-                                                                <div className="flex-1 flex items-center justify-between bg-slate-100/60 dark:bg-slate-800/40 px-1.5 py-0.5 rounded">
-                                                                    <span>CGST ({cgstPercent.toFixed(1)}%):</span>
-                                                                    <span className="font-mono text-slate-700">&#8377;{cgstVal.toFixed(2)}</span>
-                                                                </div>
-                                                                <div className="flex-1 flex items-center justify-between bg-slate-100/60 dark:bg-slate-800/40 px-1.5 py-0.5 rounded">
-                                                                    <span>SGST ({sgstPercent.toFixed(1)}%):</span>
-                                                                    <span className="font-mono text-slate-700">&#8377;{sgstVal.toFixed(2)}</span>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })()}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center border border-border rounded-lg overflow-hidden h-7">
-                                                <button onClick={() => updateQty(idx, -1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Minus className="w-3 h-3" /></button>
-                                                <span className="px-2 text-[10px] font-bold">{item.quantity}</span>
-                                                <button onClick={() => updateQty(idx, 1)} className="w-6 h-full flex items-center justify-center hover:bg-border/30"><Plus className="w-3 h-3" /></button>
-                                            </div>
-                                            <button onClick={() => removeItem(idx)} className="text-rose-500 hover:bg-rose-50 p-1 rounded-md transition-colors"><X className="w-3 h-3" /></button>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-
-                            {/* PAYMENT SECTION */}
-                            <div className="border border-border rounded-xl bg-background p-2 space-y-2 relative overflow-hidden">
-                                <div className="flex items-center justify-between px-1 border-b border-border/50 pb-2 mb-2">
-                                    <span className="text-[10px] font-black text-text-muted uppercase tracking-wider">Payment Date <span className="text-rose-500 font-bold">*</span></span>
-                                    <input
-                                        type="date"
-                                        required
-                                        value={paymentDate}
-                                        onChange={(e) => setPaymentDate(e.target.value)}
-                                        className={`bg-surface border text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 dark:text-slate-200 dark:[color-scheme:dark] focus:border-primary/50 cursor-pointer ${!paymentDate ? 'border-rose-300 bg-rose-50/20 dark:border-rose-900/60 dark:bg-rose-950/20' : 'border-border'}`}
-                                    />
-                                </div>
-                                <div className="flex items-center justify-between px-1 mb-1">
-                                    <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
-                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
-                                        <input
-                                            type="checkbox"
-                                            checked={isManualPayment}
-                                            onChange={(e) => {
-                                                setIsManualPayment(e.target.checked);
-                                                if (e.target.checked) {
-                                                    setTimeout(() => {
-                                                        const el = document.querySelector('input[type="number"][data-payment-idx="0"]');
-                                                        el?.focus();
-                                                        el?.select();
-                                                    }, 100);
-                                                }
-                                            }}
-                                            className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20 cursor-pointer"
-                                        />
-                                        <span className="uppercase tracking-tight text-text-muted">Partial Pay</span>
-                                    </label>
-                                </div>
-                                {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
-                                    <div className="flex items-center pb-2 mb-2 border-b border-border/50">
-                                        <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
-                                            <input
-                                                type="checkbox"
-                                                checked={includePreviousDue}
-                                                onChange={(e) => {
-                                                    setIncludePreviousDue(e.target.checked);
-                                                    if (!isManualPayment && payments.length === 1) {
-                                                        const extra = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
-                                                        setPayments([{ ...payments[0], amount: totals.currentBillTotal + extra }]);
-                                                    }
-                                                }}
-                                                className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer"
-                                            />
-                                            <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
+                                    <div className="flex items-center justify-between px-1 mb-1">
+                                        <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
+                                        <label className="flex items-center gap-1.5 text-xs font-semibold text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
+                                            <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20 cursor-pointer" />
+                                            <span className="uppercase tracking-tight text-text-muted">Partial Pay</span>
                                         </label>
                                     </div>
-                                )}
-
-                                {payments.map((p, i) => (
-                                    <div key={i} className="flex flex-col gap-1.5 border-b border-border/50 last:border-0 pb-2 last:pb-0">
-                                        <div className="flex gap-2">
-                                            <select
-                                                value={p.method}
-                                                onChange={(e) => updatePayment(i, "method", e.target.value)}
-                                                className="flex-1 h-8 rounded-lg !border !border-slate-200 dark:!border-slate-700 !bg-white dark:!bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase !text-slate-800 dark:!text-white"
-                                            >
-                                                <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
-                                                <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
-                                            </select>
-
-                                            <div className="relative">
-                                                <input
-                                                    type="number"
-                                                    data-payment-idx={i}
-                                                    value={p.amount}
-                                                    onChange={(e) => updatePayment(i, "amount", Number(e.target.value))}
-                                                    className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                />
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                    {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
+                                        <div className="flex items-center pb-2 mb-2 border-b border-border/50">
+                                            <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
+                                                <input type="checkbox" checked={includePreviousDue} onChange={(e) => { setIncludePreviousDue(e.target.checked); if (!isManualPayment && payments.length === 1) { const extra = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0; setPayments([{ ...payments[0], amount: totals.currentBillTotal + extra }]); } }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
+                                            </label>
+                                        </div>
+                                    )}
+                                    {payments.map((p, i) => (
+                                        <div key={i} className="flex flex-col gap-1.5 border-b border-border/50 last:border-0 pb-2 last:pb-0">
+                                            <div className="flex gap-2">
+                                                <select value={p.method} onChange={(e) => updatePayment(i, "method", e.target.value)} className="flex-1 h-8 rounded-lg !border !border-slate-200 dark:!border-slate-700 !bg-white dark:!bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase !text-slate-800 dark:!text-white">
+                                                    <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
+                                                    <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
+                                                </select>
+                                                <div className="relative">
+                                                    <input type="number" data-payment-idx={i} value={p.amount} onChange={(e) => updatePayment(i, "amount", Number(e.target.value))} className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                                </div>
+                                                {payments.length > 1 && (
+                                                    <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0"><X className="w-3.5 h-3.5" /></button>
+                                                )}
                                             </div>
-
-                                            {payments.length > 1 && (
-                                                <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0">
-                                                    <X className="w-3.5 h-3.5" />
-                                                </button>
+                                            {payments.length === 1 && totals.total > p.amount && (
+                                                <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                                    <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">₹{(totals.total - p.amount).toFixed(2)} will be marked as Due</span>
+                                                </div>
                                             )}
                                         </div>
+                                    ))}
+                                    {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
+                                        <button onClick={addPaymentMethod} className="w-full h-8 border border-dashed border-primary/40 bg-primary/5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1">
+                                            <Plus className="w-3 h-3" /> Split Payment
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
 
-                                        {payments.length === 1 && totals.total > p.amount && (
-                                            <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
-                                                <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                                <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">
-                                                    ₹{(totals.total - p.amount).toFixed(2)} will be marked as Due
-                                                </span>
-                                            </div>
-                                        )}
+                            {/* Footer */}
+                            <div className="p-3 border-t border-border bg-surface space-y-3 shrink-0">
+                                <div className="pos-billing-cart-total-box border border-border rounded-xl bg-surface-alt p-3 shadow-lg">
+                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                        <span>Subtotal</span>
+                                        <span>₹{totals.total.toFixed(2)}</span>
                                     </div>
-                                ))}
-
-                                {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
-                                    <button
-                                        onClick={addPaymentMethod}
-                                        className="w-full h-8 border border-dashed border-primary/40 bg-primary/5 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1"
-                                    >
-                                        <Plus className="w-3 h-3" /> Split Payment
-                                    </button>
-                                )}
+                                    {totals.cgst > 0 && (
+                                        <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                            <span>CGST {cart.every(i => i.type === 'service') ? `(${totals.serviceGstRate / 2}%)` : cart.every(i => i.type === 'product') ? `(${totals.productGstRate / 2}%)` : totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate / 2}%)` : ''}</span>
+                                            <div className="flex gap-1 text-right">{totals.cgst > totals.cgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}{totals.cgstExcl > 0 && <span>+</span>}<span>₹{totals.cgst.toFixed(2)}</span></div>
+                                        </div>
+                                    )}
+                                    {totals.sgst > 0 && (
+                                        <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
+                                            <span>SGST {cart.every(i => i.type === 'service') ? `(${totals.serviceGstRate / 2}%)` : cart.every(i => i.type === 'product') ? `(${totals.productGstRate / 2}%)` : totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate / 2}%)` : ''}</span>
+                                            <div className="flex gap-1 text-right">{totals.sgst > totals.sgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}{totals.sgstExcl > 0 && <span>+</span>}<span>₹{totals.sgst.toFixed(2)}</span></div>
+                                        </div>
+                                    )}
+                                    {totals.discount > 0 && <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400"><span>Discount</span><span>-₹{totals.discount.toFixed(2)}</span></div>}
+                                    {totals.membershipDiscount > 0 && <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400"><span>Membership Disc</span><span>-₹{totals.membershipDiscount.toFixed(2)}</span></div>}
+                                    {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
+                                        <div className="flex justify-between text-[11px] font-bold mb-1 text-rose-600 dark:text-rose-400 animate-pulse"><span>Previous Dues Added</span><span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span></div>
+                                    )}
+                                    <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
+                                        <span className="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TOTAL</span>
+                                        <span className="text-2xl font-bold tracking-tight text-text">₹{totals.total.toFixed(2)}</span>
+                                    </div>
+                                    {totals.redeemWallet > 0 && <div className="flex justify-between text-[11px] font-bold mt-2 text-emerald-600 dark:text-emerald-400"><span>Wallet Used</span><span>-₹{totals.redeemWallet.toFixed(2)}</span></div>}
+                                    {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Balance Due</span>
+                                            <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Overpaid</span>
+                                            <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="flex gap-2">
+                                    <button onClick={() => setShowDiscountModal(true)} className="h-10 rounded-xl !border !border-slate-300 dark:!border-slate-800 !bg-slate-100 dark:!bg-slate-900 text-xs font-bold uppercase hover:!bg-slate-200 dark:hover:!bg-slate-800 transition-colors !text-slate-800 dark:!text-slate-200 px-4">Offers</button>
+                                    <button onClick={handleCheckout} className="flex-1 h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">Complete Bill</button>
+                                </div>
                             </div>
                         </div>
-
-                        {/* FOOTER - Fixed at bottom */}
-                        <div className="p-3 border-t border-border bg-surface space-y-3 shrink-0">
-                            {/* TOTAL */}
-                            <div className="pos-billing-cart-total-box border border-border rounded-xl bg-surface-alt p-3 shadow-lg">
-                                <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
-                                    <span>Subtotal</span>
-                                    <span>₹{totals.total.toFixed(2)}</span>
-                                </div>
-
-                                {totals.cgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
-                                        <span>
-                                            CGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
-                                                cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
-                                                    totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
-                                        </span>
-                                        <div className="flex gap-1 text-right">
-                                            {totals.cgst > totals.cgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.cgstExcl > 0 && <span>+</span>}
-                                            <span>₹{totals.cgst.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {totals.sgst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
-                                        <span>
-                                            SGST {cart.every(i => i.type === 'service') ? `(${(totals.serviceGstRate) / 2}%)` :
-                                                cart.every(i => i.type === 'product') ? `(${(totals.productGstRate) / 2}%)` :
-                                                    totals.serviceGstRate === totals.productGstRate ? `(${(totals.serviceGstRate) / 2}%)` : ''}
-                                        </span>
-                                        <div className="flex gap-1 text-right">
-                                            {totals.sgst > totals.sgstExcl && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.sgstExcl > 0 && <span>+</span>}
-                                            <span>₹{totals.sgst.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {totals.igst > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
-                                        <span>IGST {totals.serviceGstRate === totals.productGstRate ? `(${totals.serviceGstRate}%)` : ''}</span>
-                                        <div className="flex gap-1 text-right">
-                                            {totals.igst > totals.totalExclusiveTax && <span className="text-emerald-600 dark:text-emerald-400/80 font-normal">(Included)</span>}
-                                            {totals.totalExclusiveTax > 0 && <span>+</span>}
-                                            <span>₹{totals.igst.toFixed(2)}</span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {totals.discount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400">
-                                        <span>Discount</span>
-                                        <span>-₹{totals.discount.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                {totals.membershipDiscount > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-emerald-600 dark:text-emerald-400">
-                                        <span>Membership Disc</span>
-                                        <span>-₹{totals.membershipDiscount.toFixed(2)}</span>
-                                    </div>
-                                )}
-                                {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mb-1 text-rose-600 dark:text-rose-400 animate-pulse">
-                                        <span>Previous Dues Added</span>
-                                        <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
-                                    </div>
-                                )}
-                                <div className="border-t border-border/50 mt-2 pt-2 flex items-center justify-between">
-                                    <span className="text-sm font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">TOTAL</span>
-                                    <span className="text-2xl font-bold tracking-tight text-text">₹{totals.total.toFixed(2)}</span>
-                                </div>
-
-                                {totals.redeemWallet > 0 && (
-                                    <div className="flex justify-between text-[11px] font-bold mt-2 text-emerald-600 dark:text-emerald-400">
-                                        <span>Wallet Used</span>
-                                        <span>-₹{totals.redeemWallet.toFixed(2)}</span>
-                                    </div>
-                                )}
-
-                                {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
-                                    <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
-                                        <span className="uppercase tracking-widest">Balance Due</span>
-                                        <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
-                                    </div>
-                                )}
-
-                                {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
-                                    <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
-                                        <span className="uppercase tracking-widest">Overpaid</span>
-                                        <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* ACTIONS */}
-                            <div className="grid grid-cols-2 gap-2">
-                                <button
-                                    onClick={() => setShowDiscountModal(true)}
-                                    className="h-10 rounded-xl !border !border-slate-300 dark:!border-slate-800 !bg-slate-100 dark:!bg-slate-900 text-xs font-bold uppercase hover:!bg-slate-200 dark:hover:!bg-slate-800 transition-colors !text-slate-800 dark:!text-slate-200"
-                                >
-                                    Offers
-                                </button>
-
-                                <button
-                                    onClick={handleCheckout}
-                                    className="h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-                                >
-                                    Complete Bill
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    )}
                 </div>
 
             </div>
 
             {/* ─── Modals rendered outside panel flex but inside outer wrapper ─── */}
             {showDiscountModal && (
-                <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-surface w-full max-w-md p-0 animate-in zoom-in-95 duration-200 border border-border shadow-2xl overflow-hidden rounded-2xl">
-                        <div className="flex bg-surface-alt p-4 items-center justify-between border-b border-border">
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-text">Applied Offers & Adjustments</h3>
-                            <button onClick={() => setShowDiscountModal(false)} className="text-text-muted hover:text-rose-500"><X className="w-5 h-5" /></button>
+                <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
+                    <div className="bg-white dark:bg-slate-900 w-full max-w-md p-0 animate-in zoom-in-95 duration-250 border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden rounded-3xl">
+                        
+                        {/* Header */}
+                        <div className="flex bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800 px-6 py-4 items-center justify-between border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex items-center gap-2">
+                                <span className="p-1.5 bg-[#cca839]/10 text-[#cca839] rounded-lg">
+                                    <Percent className="w-4 h-4" />
+                                </span>
+                                <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-100">Offers & Adjustments</h3>
+                            </div>
+                            <button 
+                                onClick={() => setShowDiscountModal(false)} 
+                                className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 p-1.5 rounded-full transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto custom-scrollbar max-h-[60vh]">
+                        {/* Body */}
+                        <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar max-h-[60vh]">
                             <div className="space-y-6">
-                                <div className="bg-surface-alt p-4 border border-border rounded-xl">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-3 block">Flat or Percentage Adjustment</label>
-                                    <div className="flex !border !border-slate-300 dark:!border-slate-700 !bg-white dark:!bg-slate-800 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                
+                                {/* Discount Selector Section */}
+                                <div className="bg-slate-50 dark:bg-slate-800/40 p-5 border border-slate-100 dark:border-slate-800/60 rounded-2xl transition-all hover:border-[#cca839]/20">
+                                    <div className="flex items-center gap-1.5 mb-3">
+                                        <Tag className="w-3.5 h-3.5 text-[#cca839]" />
+                                        <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block">Flat or Percentage Discount</label>
+                                    </div>
+                                    
+                                    <div className="flex border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#cca839]/20 focus-within:border-[#cca839] transition-all">
                                         <select
-                                            className="bg-transparent border-r !border-slate-300 dark:!border-slate-700 text-[10px] font-bold p-3 !text-slate-800 dark:!text-white outline-none"
+                                            className="bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 text-[10px] font-black p-3.5 text-[#cca839] dark:text-[#cca839] outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                                             value={manualDiscount.type}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, type: e.target.value })}
                                         >
@@ -2348,7 +2740,8 @@ export default function POSBillingPage() {
                                         </select>
                                         <input
                                             type="number"
-                                            className="flex-1 p-3 text-sm font-black bg-transparent !text-slate-800 dark:!text-white outline-none"
+                                            placeholder="Enter discount amount"
+                                            className="flex-1 p-3.5 text-sm font-black bg-transparent text-slate-800 dark:text-white outline-none placeholder:text-slate-400/60 placeholder:font-normal"
                                             value={manualDiscount.value || ''}
                                             onChange={(e) => setManualDiscount({ ...manualDiscount, value: Number(e.target.value) })}
                                             onFocus={(e) => { if (manualDiscount.value === 0) setManualDiscount({ ...manualDiscount, value: '' }) }}
@@ -2357,86 +2750,55 @@ export default function POSBillingPage() {
                                     </div>
                                 </div>
 
-                                <div className="bg-surface-alt p-4 border border-border rounded-xl">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-3 block">Coupon Code</label>
-                                    {appliedPromotion ? (
-                                        <div className="flex items-center justify-between p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                                            <div className="text-left">
-                                                <p className="text-xs font-black text-primary uppercase tracking-tight">{appliedPromotion.name}</p>
-                                                <p className="text-[9px] text-text-muted uppercase tracking-wider mt-0.5">Code: {appliedPromotion.couponCode || 'Auto'}</p>
+                                {/* Wallet Balance Section */}
+                                {selectedClient && (
+                                    <div className="bg-emerald-50/30 dark:bg-emerald-950/10 p-5 border border-emerald-100 dark:border-emerald-900/20 rounded-2xl transition-all hover:border-emerald-300/30">
+                                        <div className="flex justify-between items-center mb-3">
+                                            <div className="flex items-center gap-1.5">
+                                                <Wallet className="w-3.5 h-3.5 text-emerald-500" />
+                                                <span className="text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">Redeem Wallet Balance</span>
                                             </div>
-                                            <button
-                                                type="button"
-                                                onClick={() => setAppliedPromotion(null)}
-                                                className="px-3 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-600 text-[9px] font-black uppercase tracking-widest rounded-md transition-colors"
-                                            >
-                                                Remove
-                                            </button>
+                                            <span className="text-xs font-black text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 px-2 py-0.5 rounded-md">₹{clientWalletBalance.toFixed(0)}</span>
                                         </div>
-                                    ) : (
-                                        <div className="flex !border !border-slate-300 dark:!border-slate-700 !bg-white dark:!bg-slate-800 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-primary/10 transition-all">
+                                        <div className="flex gap-2">
                                             <input
-                                                type="text"
-                                                placeholder="ENTER COUPON CODE"
-                                                className="flex-1 p-3 text-xs font-black bg-transparent !text-slate-800 dark:!text-white outline-none uppercase tracking-widest placeholder:opacity-50"
-                                                value={couponCodeInput}
-                                                onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                                                type="number"
+                                                placeholder="Enter amount to redeem"
+                                                className="flex-1 p-3 text-xs font-black bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/10 rounded-xl transition-all placeholder:font-normal"
+                                                value={redeemWallet || ''}
+                                                onChange={(e) => {
+                                                    const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
+                                                    const maxAllowed = Math.max(0, totals.total - totalPaid);
+                                                    const val = Math.min(Number(e.target.value), Math.min(clientWalletBalance, maxAllowed));
+                                                    setRedeemWallet(val);
+                                                }}
                                             />
                                             <button
-                                                type="button"
-                                                onClick={handleApplyCoupon}
-                                                disabled={applyingCoupon || !couponCodeInput}
-                                                className="!bg-slate-900 dark:!bg-white hover:!bg-slate-800 dark:hover:!bg-slate-100 !text-white dark:!text-slate-900 font-black text-[10px] uppercase tracking-wider px-5 rounded-r-lg transition-all disabled:opacity-40"
+                                                onClick={handleRedeemWallet}
+                                                className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
+                                                    redeemWallet > 0 
+                                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/10' 
+                                                        : 'bg-[#cca839] hover:bg-[#b59533] text-white shadow-md shadow-[#cca839]/10'
+                                                }`}
                                             >
-                                                {applyingCoupon ? 'Checking...' : 'Apply'}
+                                                {redeemWallet > 0 ? 'Reset' : 'Use Max'}
                                             </button>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {selectedClient && (
-                                    <div className="space-y-4">
-                                        {/* Wallet Balance */}
-                                        <div className="!bg-emerald-50/5 dark:!bg-emerald-950/20 p-4 !border !border-emerald-200/50 dark:!border-emerald-900/20 rounded-xl">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <div className="flex items-center gap-2">
-                                                    <Wallet className="w-4 h-4 !text-emerald-500" />
-                                                    <span className="text-[10px] font-black !text-emerald-700 dark:!text-emerald-400 uppercase tracking-widest">Wallet Balance</span>
-                                                </div>
-                                                <span className="text-xs font-black !text-emerald-600 dark:!text-emerald-400">₹{clientWalletBalance.toFixed(0)}</span>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="number"
-                                                    placeholder="Amount to redeem"
-                                                    className="flex-1 p-2.5 text-sm font-black !bg-white dark:!bg-slate-800 !text-slate-800 dark:!text-white !border !border-slate-300 dark:!border-slate-700 outline-none focus:border-emerald-500 rounded-lg transition-all"
-                                                    value={redeemWallet || ''}
-                                                    onChange={(e) => {
-                                                        const totalPaid = payments.reduce((acc, p) => acc + (Number(p.amount) || 0), 0);
-                                                        const maxAllowed = Math.max(0, totals.total - totalPaid);
-                                                        const val = Math.min(Number(e.target.value), Math.min(clientWalletBalance, maxAllowed));
-                                                        setRedeemWallet(val);
-                                                    }}
-                                                />
-                                                <button
-                                                    onClick={handleRedeemWallet}
-                                                    className={`px-4 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all ${redeemWallet > 0 ? '!bg-[#cca839] !text-slate-950 shadow-lg shadow-black/10' : '!bg-slate-200 dark:!bg-slate-700 !text-slate-700 dark:!text-slate-300'}`}
-                                                >
-                                                    {redeemWallet > 0 ? 'Reset' : 'Use Max'}
-                                                </button>
-                                            </div>
                                         </div>
                                     </div>
                                 )}
                             </div>
                         </div>
 
-                        <div className="p-6 bg-surface-alt border-t border-border flex justify-between items-center">
+                        {/* Footer */}
+                        <div className="p-6 bg-slate-50 dark:bg-slate-800/40 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <div className="text-left">
-                                <p className="text-[9px] font-black text-text-muted uppercase">Total Reductions</p>
-                                <p className="text-xl font-black text-primary">₹{(Number(totals.discount) + Number(totals.membershipDiscount) + Number(totals.redeemWallet || 0)).toFixed(0)}</p>
+                                <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Reductions</p>
+                                <p className="text-xl font-black text-slate-900 dark:text-white">₹{(Number(totals.discount) + Number(totals.membershipDiscount) + Number(totals.redeemWallet || 0)).toFixed(0)}</p>
                             </div>
-                            <button onClick={() => setShowDiscountModal(false)} className="px-10 py-3 !bg-[#cca839] !text-slate-950 hover:!bg-[#b59533] font-black text-xs uppercase tracking-widest transition-opacity shadow-lg shadow-black/10 active:scale-95 transition-all">
+                            <button 
+                                onClick={() => setShowDiscountModal(false)} 
+                                className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95"
+                            >
                                 Confirm & Apply
                             </button>
                         </div>
@@ -2566,10 +2928,17 @@ export default function POSBillingPage() {
             {/* Quick Invoice Modal */}
             {showQuickInvoice && (
                 <QuickInvoiceModal
-                    onClose={() => setShowQuickInvoice(false)}
+                    invoiceToEdit={editInvoiceData}
+                    onClose={() => {
+                        setShowQuickInvoice(false);
+                        setEditInvoiceData(null);
+                        setInvoiceIdToEdit(null);
+                    }}
                     onSuccess={(inv) => {
                         setShowQuickInvoice(false);
-                        navigate('/pos/invoices');
+                        setEditInvoiceData(null);
+                        setInvoiceIdToEdit(null);
+                        setSuccessInvoice(inv);
                     }}
                     outlets={outlets}
                     services={services}
@@ -2588,7 +2957,7 @@ export default function POSBillingPage() {
 }
 
 // ─── Quick Invoice Modal Component ───
-function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings, allWallets }) {
+function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings, allWallets, invoiceToEdit }) {
     const { salon } = useBusiness();
     const { user } = useAuth();
     const [qOutletId, setQOutletId] = useState(activeOutletId || (outlets?.[0]?._id || ''));
@@ -2617,6 +2986,53 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [qActiveMembership, setQActiveMembership] = useState(null);
     const [qPaymentDate, setQPaymentDate] = useState(getTodayDateString());
     const [qSearchItem, setQSearchItem] = useState('');
+
+    useEffect(() => {
+        if (invoiceToEdit) {
+            if (invoiceToEdit.outletId) {
+                setQOutletId(invoiceToEdit.outletId._id || invoiceToEdit.outletId);
+            }
+            if (invoiceToEdit.customerId || invoiceToEdit.client) {
+                setQClient(invoiceToEdit.customerId || invoiceToEdit.client);
+            }
+            if (invoiceToEdit.items && Array.isArray(invoiceToEdit.items)) {
+                setQCart(invoiceToEdit.items.map(item => ({
+                    ...item,
+                    itemId: item.itemId?._id || item.itemId || item.id || item._id,
+                    quantity: item.quantity || 1,
+                    price: item.price || 0,
+                    name: item.name,
+                    type: item.type || 'service',
+                    staffIds: (item.stylistIds || []).map(s => s._id || s)
+                })));
+            }
+            if (invoiceToEdit.payments && Array.isArray(invoiceToEdit.payments)) {
+                const cashAmt = invoiceToEdit.payments.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0);
+                const onlineAmt = invoiceToEdit.payments.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0);
+                setQPayments({ cash: cashAmt, online: onlineAmt });
+                setIsPaymentEdited(true);
+            }
+            if (invoiceToEdit.discount || invoiceToEdit.discountType) {
+                setQManualDiscount({
+                    type: invoiceToEdit.discountType || 'fixed',
+                    value: invoiceToEdit.discount || 0
+                });
+            }
+            if (invoiceToEdit.createdAt) {
+                const d = new Date(invoiceToEdit.createdAt);
+                const yr = d.getFullYear();
+                const mo = String(d.getMonth() + 1).padStart(2, '0');
+                const dy = String(d.getDate()).padStart(2, '0');
+                setQPaymentDate(`${yr}-${mo}-${dy}`);
+            }
+            if (invoiceToEdit.previousDueCollected) {
+                setQCollectedPrevDue(invoiceToEdit.previousDueCollected);
+            }
+            if (invoiceToEdit.walletRedeemed) {
+                setQRedeemWallet(invoiceToEdit.walletRedeemed);
+            }
+        }
+    }, [invoiceToEdit]);
 
     useEffect(() => {
         setQSearchItem('');
@@ -3009,8 +3425,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 couponCode: undefined
             };
 
-            const res = await api.post('/pos/checkout', payload);
-            toast.success('Invoice Generated!');
+            let res;
+            if (invoiceToEdit) {
+                res = await api.put(`/pos/invoices/${invoiceToEdit._id}`, payload);
+                toast.success('Invoice Updated!');
+            } else {
+                res = await api.post('/pos/checkout', payload);
+                toast.success('Invoice Generated!');
+            }
 
             const dbInvoice = res.data.data;
             const invoiceData = {
@@ -4071,29 +4493,29 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Add Note */}
-             
+
 
                         {/* NET BILL + FINALIZE CARD */}
                         <div className="px-3 pb-3 shrink-0">
                             <div className="qi-bottom-card rounded-xl p-4 shadow-lg border border-transparent">
 
-                                 {/* Client Due & Payment Details */}
-                                 {qClient && (
-                                     <div className="flex flex-col gap-1.5 border-b border-slate-200 dark:border-white/10 pb-2.5 mb-2.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                                         <div className="flex justify-between">
-                                             <span>Previous Outstanding:</span>
-                                             <span className="font-mono text-slate-800 dark:text-white">&#8377;{Number(qClient.dueAmount || 0).toFixed(2)}</span>
-                                         </div>
-                                         <div className="flex justify-between">
-                                             <span>Current Paid Amount:</span>
-                                             <span className="font-mono text-slate-800 dark:text-white">&#8377;{(Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0)).toFixed(2)}</span>
-                                         </div>
-                                         <div className="flex justify-between text-rose-600 dark:text-rose-400">
-                                             <span>Remaining Outstanding:</span>
-                                             <span className="font-mono font-black">&#8377;{Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0))).toFixed(2)}</span>
-                                         </div>
-                                     </div>
-                                 )}
+                                {/* Client Due & Payment Details */}
+                                {qClient && (
+                                    <div className="flex flex-col gap-1.5 border-b border-slate-200 dark:border-white/10 pb-2.5 mb-2.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                        <div className="flex justify-between">
+                                            <span>Previous Outstanding:</span>
+                                            <span className="font-mono text-slate-800 dark:text-white">&#8377;{Number(qClient.dueAmount || 0).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <span>Current Paid Amount:</span>
+                                            <span className="font-mono text-slate-800 dark:text-white">&#8377;{(Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0)).toFixed(2)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-rose-600 dark:text-rose-400">
+                                            <span>Remaining Outstanding:</span>
+                                            <span className="font-mono font-black">&#8377;{Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0))).toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Amounts */}
                                 <div className="flex items-start justify-between mb-4 text-slate-800 dark:text-white">

@@ -90,7 +90,7 @@ function getAvatarStyles(name) {
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function InquiryPage() {
-    const { outlets: contextOutlets, services: contextServices } = useBusiness();
+    const { outlets: contextOutlets, services: contextServices, fetchOutlets, fetchServices } = useBusiness();
     const outlets = contextOutlets || [];
     const services = contextServices || [];
 
@@ -151,7 +151,9 @@ export default function InquiryPage() {
     useEffect(() => {
         fetchInquiries();
         fetchCustomers();
-    }, []);
+        fetchOutlets();
+        fetchServices();
+    }, [fetchOutlets, fetchServices]);
 
     const stats = useMemo(() => {
         const total = inquiries.length;
@@ -617,8 +619,8 @@ export default function InquiryPage() {
             </div>
 
             {/* Table Registry */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-[20px] overflow-hidden pt-5 px-6 pb-3">
-                <div className="overflow-x-auto no-scrollbar">
+            <div className="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-sm rounded-[20px] overflow-hidden pt-5 px-6 pb-3 min-h-[350px]">
+                <div className="overflow-x-auto no-scrollbar min-h-[280px]">
                     <table className="w-full text-left border-collapse min-w-[1000px] relative">
                         <thead>
                             <tr className="border-b border-slate-100 dark:border-slate-800 font-sans">

@@ -48,6 +48,7 @@ import {
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import CustomDropdown from '../../components/common/CustomDropdown';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 const PERMISSION_STRUCTURE = [
     {
@@ -207,6 +208,7 @@ PERMISSION_STRUCTURE.forEach(p => {
 });
 
 export default function RolesPage() {
+    const { staff, fetchStaff } = useBusiness();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -224,6 +226,7 @@ export default function RolesPage() {
 
     useEffect(() => {
         fetchRoles();
+        fetchStaff();
     }, []);
 
     const fetchRoles = async () => {
@@ -459,7 +462,7 @@ export default function RolesPage() {
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Total Roles</span>
                         <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
-                            {roles.length || 5}
+                            {roles.length || 0}
                         </h3>
                         <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             Configured Roles
@@ -489,7 +492,7 @@ export default function RolesPage() {
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Staff Assigned</span>
                         <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
-                            23
+                            {staff.length || 0}
                         </h3>
                         <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             Across All Roles
@@ -504,7 +507,16 @@ export default function RolesPage() {
                     <div className="flex flex-col text-left">
                         <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider">Last Updated</span>
                         <h3 className="text-xl font-black tracking-tight uppercase leading-none mt-1 text-text">
-                            15 May 2024
+                            {(() => {
+                                const latestRoleUpdate = roles.reduce((latest, role) => {
+                                    if (!role.updatedAt) return latest;
+                                    const roleDate = new Date(role.updatedAt);
+                                    return roleDate > latest ? roleDate : latest;
+                                }, new Date(0));
+                                return latestRoleUpdate.getTime() > 0 
+                                    ? latestRoleUpdate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                                    : '15 May 2024';
+                            })()}
                         </h3>
                         <span className="text-[8px] font-bold text-text-muted uppercase tracking-[0.2em] mt-1 opacity-60">
                             By Admin
