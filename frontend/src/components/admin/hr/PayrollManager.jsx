@@ -816,7 +816,7 @@ export default function PayrollManager() {
                                             <button
                                                 type="button"
                                                 onClick={() => setIsStaffDropdownOpen(!isStaffDropdownOpen)}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-xs font-bold text-slate-700 focus:border-primary outline-none uppercase flex items-center justify-between"
+                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:border-primary outline-none uppercase flex items-center justify-between"
                                             >
                                                 <span>
                                                     {individualForm.staffId
@@ -836,7 +836,7 @@ export default function PayrollManager() {
                                                         animate={{ opacity: 1, y: 0, scale: 1 }}
                                                         exit={{ opacity: 0, y: -5, scale: 0.95 }}
                                                         transition={{ duration: 0.15 }}
-                                                        className="absolute left-0 mt-2 w-full bg-white border border-slate-200 rounded-xl shadow-lg z-[100] overflow-hidden"
+                                                        className="absolute left-0 mt-2 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg z-[100] overflow-hidden"
                                                     >
                                                         <div className="py-1 max-h-60 overflow-y-auto custom-scrollbar">
                                                             {addableStaff.map(s => (
@@ -853,14 +853,14 @@ export default function PayrollManager() {
                                                                     }}
                                                                     className={`w-full text-left px-4 py-2.5 text-xs font-bold transition-colors uppercase ${individualForm.staffId === s._id
                                                                             ? 'bg-[#B4912B]/10 text-[#B4912B]'
-                                                                            : 'text-slate-700 hover:bg-slate-50'
+                                                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                                                                         }`}
                                                                 >
                                                                     {s.name} ({s.role}) — {s.outletId?.name || 'No Outlet'}
                                                                 </button>
                                                             ))}
                                                             {addableStaff.length === 0 && (
-                                                                <div className="px-4 py-3 text-xs font-semibold text-slate-400 uppercase text-center">
+                                                                <div className="px-4 py-3 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase text-center">
                                                                     No staff available for selection
                                                                 </div>
                                                             )}
@@ -927,7 +927,7 @@ export default function PayrollManager() {
                                     <div className="flex gap-2">
                                         <button type="button" onClick={() => setIndividualModal(false)} className="px-4 py-2.5 bg-slate-150 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-200 rounded-xl font-bold text-xs transition-all">Cancel</button>
                                         <button onClick={createIndividual} disabled={!individualForm.staffId || loading}
-                                            className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5">
+                                            className="px-5 py-2.5 bg-primary dark:!bg-[#B4912B] hover:bg-primary-dark dark:hover:!bg-[#9a7b24] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5">
                                             {loading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                             Save Record
                                         </button>
@@ -1069,7 +1069,7 @@ export default function PayrollManager() {
                                         <button
                                             onClick={saveDetails}
                                             disabled={isSaving}
-                                            className="px-6 py-2.5 bg-slate-900 text-white hover:bg-primary rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-1.5"
+                                            className="px-6 py-2.5 bg-slate-900 dark:!bg-[#B4912B] text-white hover:bg-primary dark:hover:!bg-[#9a7b24] rounded-xl font-bold text-xs shadow-lg transition-all flex items-center gap-1.5"
                                         >
                                             {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                             Save Changes

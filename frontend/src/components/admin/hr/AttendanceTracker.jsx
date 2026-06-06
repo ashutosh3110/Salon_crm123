@@ -260,6 +260,13 @@ export default function AttendanceTracker() {
                 .dark .admin-panel.admin-panel.admin-panel * svg.text-violet-500 { color: #8b5cf6 !important; stroke: #8b5cf6 !important; }
                 .dark .admin-panel.admin-panel.admin-panel * svg.text-primary { color: #B4912B !important; stroke: #B4912B !important; }
                 .dark .admin-panel.admin-panel.admin-panel * svg.text-amber-500 { color: #f59e0b !important; stroke: #f59e0b !important; }
+                html:not(.dark) .admin-panel td .avatar-color-0 { background-color: #DBEAFE !important; color: #1D4ED8 !important; border-color: #BFDBFE !important; }
+                html:not(.dark) .admin-panel td .avatar-color-1 { background-color: #D1FAE5 !important; color: #047857 !important; border-color: #A7F3D0 !important; }
+                html:not(.dark) .admin-panel td .avatar-color-2 { background-color: #EDE9FE !important; color: #6D28D9 !important; border-color: #DDD6FE !important; }
+                html:not(.dark) .admin-panel td .avatar-color-3 { background-color: #FEF3C7 !important; color: #B45309 !important; border-color: #FDE68A !important; }
+                html:not(.dark) .admin-panel td .avatar-color-4 { background-color: #FFE4E6 !important; color: #BE123C !important; border-color: #FECDD3 !important; }
+                html:not(.dark) .admin-panel td .avatar-color-5 { background-color: #CFFAFE !important; color: #0E7490 !important; border-color: #A5F3FC !important; }
+                html:not(.dark) .admin-panel td .avatar-color-6 { background-color: #FAE8FF !important; color: #A21CAF !important; border-color: #F5D0FE !important; }
             `}</style>
             <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
 
@@ -413,8 +420,15 @@ export default function AttendanceTracker() {
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
                                 {filtered.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="px-6 py-12 text-center text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
-                                            No matching staff records found
+                                        <td colSpan={4} className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <img 
+                                                    src="/vector image attendance .png" 
+                                                    alt="No records" 
+                                                    className="w-48 md:w-56 object-contain drop-shadow-sm mb-4 opacity-90 dark:opacity-80" 
+                                                />
+                                                <p className="text-sm font-bold text-slate-400 dark:text-slate-500 tracking-wider">No matching staff records found</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
@@ -425,15 +439,6 @@ export default function AttendanceTracker() {
 
                                                 {/* Staff details with profile pic */}
                                                 <td className="px-6 py-4 text-left">
-                                                    <style>{`
-                                                        html:not(.dark) .admin-panel td .avatar-color-0 { background-color: #DBEAFE !important; color: #1D4ED8 !important; border-color: #BFDBFE !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-1 { background-color: #D1FAE5 !important; color: #047857 !important; border-color: #A7F3D0 !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-2 { background-color: #EDE9FE !important; color: #6D28D9 !important; border-color: #DDD6FE !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-3 { background-color: #FEF3C7 !important; color: #B45309 !important; border-color: #FDE68A !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-4 { background-color: #FFE4E6 !important; color: #BE123C !important; border-color: #FECDD3 !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-5 { background-color: #CFFAFE !important; color: #0E7490 !important; border-color: #A5F3FC !important; }
-                                                        html:not(.dark) .admin-panel td .avatar-color-6 { background-color: #FAE8FF !important; color: #A21CAF !important; border-color: #F5D0FE !important; }
-                                                    `}</style>
                                                     <div className="flex items-center gap-3">
                                                         <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden shadow-inner ${record.image ? 'bg-slate-100 dark:bg-slate-700 border-slate-200/50' : (() => {
                                                             let hash = 0;
@@ -545,20 +550,27 @@ export default function AttendanceTracker() {
                     <div className="overflow-x-auto no-scrollbar">
                         <table className="w-full border-collapse min-w-[600px]">
                             <thead>
-                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
+                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700">
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-left">Staff Member</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Present</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Absent</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Leaves</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Half Days</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Total Logs</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center">Present</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center">Absent</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center">Leaves</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center">Half Days</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center">Total Logs</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
                                 {filtered.length === 0 ? (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">
-                                            No staff records available
+                                        <td colSpan={6} className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <img 
+                                                    src="/vector image attendance .png" 
+                                                    alt="No records" 
+                                                    className="w-48 md:w-56 object-contain drop-shadow-sm mb-4 opacity-90 dark:opacity-80" 
+                                                />
+                                                <p className="text-sm font-bold text-slate-400 dark:text-slate-500 tracking-wider">No staff records available</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
@@ -568,8 +580,23 @@ export default function AttendanceTracker() {
                                             <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
                                                 <td className="px-6 py-4 text-left">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
-                                                            {record.staff.split(' ').map(n => n[0]).join('').toUpperCase()}
+                                                        <div className={`w-8 h-8 rounded-xl border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden shadow-inner ${(() => {
+                                                            let hash = 0;
+                                                            for (let i = 0; i < record.staff.length; i++) hash = record.staff.charCodeAt(i) + ((hash << 5) - hash);
+                                                            const colorIndex = Math.abs(hash) % 7;
+                                                            
+                                                            const darkClasses = [
+                                                                'dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50',
+                                                                'dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/50',
+                                                                'dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800/50',
+                                                                'dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50',
+                                                                'dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800/50',
+                                                                'dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800/50',
+                                                                'dark:bg-fuchsia-900/30 dark:text-fuchsia-300 dark:border-fuchsia-800/50'
+                                                            ];
+                                                            return `avatar-color-${colorIndex} ${darkClasses[colorIndex]}`;
+                                                        })()}`}>
+                                                            {record.staff.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)}
                                                         </div>
                                                         <div className="text-left leading-tight">
                                                             <p className="text-xs font-bold text-slate-800 dark:text-slate-100">{record.staff}</p>
@@ -577,11 +604,11 @@ export default function AttendanceTracker() {
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-emerald-600 dark:text-emerald-400">{s.present} days</td>
-                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-rose-600 dark:text-rose-450">{s.absent} days</td>
-                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-violet-650 dark:text-violet-400">{s.leave} days</td>
-                                                <td className="px-6 py-4 text-center text-xs font-extrabold text-blue-600 dark:text-blue-450">{s.halfDay} days</td>
-                                                <td className="px-6 py-4 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{s.total} LOGS</td>
+                                                <td className="px-6 py-4 !text-center text-sm font-semibold text-slate-700 dark:text-slate-300">{s.present} days</td>
+                                                <td className="px-6 py-4 !text-center text-sm font-semibold text-slate-700 dark:text-slate-300">{s.absent} days</td>
+                                                <td className="px-6 py-4 !text-center text-sm font-semibold text-slate-700 dark:text-slate-300">{s.leave} days</td>
+                                                <td className="px-6 py-4 !text-center text-sm font-semibold text-slate-700 dark:text-slate-300">{s.halfDay} days</td>
+                                                <td className="px-6 py-4 !text-center text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">{s.total} LOGS</td>
                                             </tr>
                                         );
                                     })
