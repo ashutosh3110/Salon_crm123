@@ -475,21 +475,16 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="col-span-2">
                                 <label className={labelCls}>Salon Name *</label>
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
-                                        <Building2 className="w-4.5 h-4.5" />
-                                    </div>
-                                    <input 
-                                        className={`${inputCls} flex-1`} 
-                                        value={form.name} 
-                                        onChange={e => {
-                                            const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
-                                            set('name', val);
-                                        }} 
-                                        placeholder="e.g. Glam Studio" 
-                                        required 
-                                    />
-                                </div>
+                                <input 
+                                    className={inputCls} 
+                                    value={form.name} 
+                                    onChange={e => {
+                                        const val = e.target.value.replace(/[^a-zA-Z\s]/g, '');
+                                        set('name', val);
+                                    }} 
+                                    placeholder="e.g. Glam Studio" 
+                                    required 
+                                />
                             </div>
                             <div className="col-span-2">
                                 <label className={labelCls}>Brief Description</label>
@@ -547,17 +542,12 @@ function SalonModal({ mode, tenant, onClose, onSave, saving }) {
                             </div>
                             <div className="col-span-2">
                                 <label className={labelCls}>Street Address</label>
-                                <div className="flex items-start gap-3">
-                                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm mt-1">
-                                        <MapPin className="w-4.5 h-4.5" />
-                                    </div>
-                                    <textarea 
-                                        className={`${inputCls} flex-1 min-h-[70px] py-2.5 resize-none`} 
-                                        value={form.address} 
-                                        onChange={e => set('address', e.target.value)} 
-                                        placeholder="Full shop address, street, landmark..."
-                                    />
-                                </div>
+                                <textarea 
+                                    className={`${inputCls} min-h-[70px] py-2.5 resize-none`} 
+                                    value={form.address} 
+                                    onChange={e => set('address', e.target.value)} 
+                                    placeholder="Full shop address, street, landmark..."
+                                />
                             </div>
                             <CityAutocomplete value={form.city} onChange={v => set('city', v)} labelCls={labelCls} inputCls={inputCls} />
                         </div>
@@ -1005,23 +995,31 @@ export default function SATenantsPage() {
     `;
 
     return (
-        <div className="space-y-5 pb-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-6 space-y-6 pb-8">
             <style>{iconStyles}</style>
 
             {/* Toast */}
             {toast && (
-                <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'
-                    }`}>
-                    <CheckCircle className="w-4 h-4 shrink-0" />
-                    {toast.msg}
+                <div className="fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-2xl backdrop-blur-xl bg-white/90 border border-white shadow-2xl text-sm font-semibold animate-in slide-in-from-right-4 duration-300">
+                    {toast.type === 'error'
+                        ? <XCircle className="w-5 h-5 shrink-0 text-red-600" />
+                        : <CheckCircle className="w-5 h-5 shrink-0 text-emerald-600" />}
+                    <span className={toast.type === 'error' ? 'text-red-600' : 'text-emerald-600'}>
+                        {toast.msg}
+                    </span>
                 </div>
             )}
 
             {/* ── Page header ── */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight">Salon Management</h1>
-                    <p className="text-sm text-text-secondary mt-0.5">Manage all registered salons — {stats?.totalSalons || 0} total</p>
+                   
+                    <h1 className="text-2xl font-black text-text tracking-tight mt-1">
+                        Salon Directory
+                    </h1>
+                    <p className="text-slate-500 mt-2 text-sm">
+                        Manage all registered salons — {stats?.totalSalons || 0} total
+                    </p>
                 </div>
                 <div className="flex items-center gap-3">
                     <button
@@ -1029,19 +1027,39 @@ export default function SATenantsPage() {
                             exportToExcel(tenants, 'Wapixo_Onboarded_Salons', 'Tenants');
                             showToast('Salons list exported as Excel!', 'info');
                         }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface border border-border text-text-secondary text-sm font-semibold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
-                        <Download className="w-4 h-4" /> Export
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20">
+                        <Download className="w-4 h-4 text-white" /> Export
                     </button>
                     <button
                         onClick={() => setModal({ mode: 'create' })}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
-                        <Plus className="w-4 h-4" /> Create Salon
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20">
+                        <Plus className="w-4 h-4 text-white" /> Create Salon
                     </button>
                 </div>
             </div>
 
+            {/* Top Stats Dashboard */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Salons</p>
+                    <h3 className="text-3xl font-black mt-2 text-slate-800">{stats?.totalSalons || 0}</h3>
+                </div>
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Active</p>
+                    <h3 className="text-3xl font-black mt-2 text-emerald-600">{counts.active}</h3>
+                </div>
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Free Trial</p>
+                    <h3 className="text-3xl font-black mt-2 text-blue-600">{counts.trial}</h3>
+                </div>
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Pending</p>
+                    <h3 className="text-3xl font-black mt-2 text-amber-600">{counts.pending}</h3>
+                </div>
+            </div>
 
-            <div className="flex flex-col md:flex-row items-center gap-3 mb-6">
+            {/* Search & Filter bar wrapper */}
+            <div className="relative z-20 flex flex-col md:flex-row items-center gap-3 mb-6 bg-white/50 backdrop-blur rounded-3xl p-3 border border-slate-200/50">
                 <div className="flex items-center gap-3 flex-1 w-full">
                     <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
                         <Search className="w-4.5 h-4.5" />
@@ -1051,7 +1069,7 @@ export default function SATenantsPage() {
                         value={search} 
                         onChange={e => setSearch(e.target.value)}
                         placeholder="Search by salon name, owner, or email..."
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-surface border border-border text-text placeholder-text-muted text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm" 
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-text placeholder-slate-400 text-sm focus:outline-none focus:border-[#B4912B] focus:bg-white focus:shadow-lg focus:shadow-[#B4912B]/10 hover:border-[#B4912B]/30 transition-all shadow-sm" 
                     />
                 </div>
                 
@@ -1063,11 +1081,11 @@ export default function SATenantsPage() {
                             onChange={setStatus}
                             placeholder="All Status"
                             options={[
-                                { value: 'active', label: 'Active', icon: CheckCircle },
-                                { value: 'pending', label: 'Pending', icon: Clock },
-                                { value: 'trial', label: 'Trial', icon: Package },
-                                { value: 'expired', label: 'Expired', icon: AlertTriangle },
-                                { value: 'suspended', label: 'Suspended', icon: XCircle },
+                                    { value: 'active', label: 'Active', icon: CheckCircle },
+                                    { value: 'pending', label: 'Pending', icon: Clock },
+                                    { value: 'trial', label: 'Trial', icon: Package },
+                                    { value: 'expired', label: 'Expired', icon: AlertTriangle },
+                                    { value: 'suspended', label: 'Suspended', icon: XCircle },
                             ]}
                         />
                     </div>
@@ -1101,7 +1119,7 @@ export default function SATenantsPage() {
 
 
             {/* ── Table ── */}
-            <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
+            <div className="bg-white/80 backdrop-blur-xl rounded-[24px] border border-white shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
                 {filtered.length === 0 ? (
                     <div className="text-center py-20">
                         <Building2 className="w-12 h-12 text-text-muted mx-auto mb-3 opacity-40" />

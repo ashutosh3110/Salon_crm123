@@ -13,14 +13,14 @@ import { getImageUrl } from '../../utils/imageUtils';
 /* ─── Section card ─────────────────────────────────────────────────── */
 function SectionCard({ title, subtitle, icon: Icon, iconColor = 'bg-primary/10 text-primary', children }) {
     return (
-        <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden">
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-border">
+        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
                 <div className={`w-9 h-9 rounded-xl ${iconColor} flex items-center justify-center shrink-0`}>
                     <Icon style={{ width: 18, height: 18 }} />
                 </div>
                 <div>
-                    <h3 className="font-bold text-text text-sm">{title}</h3>
-                    {subtitle && <p className="text-[11px] text-text-muted mt-0.5">{subtitle}</p>}
+                    <h3 className="text-lg font-black tracking-tight text-text">{title}</h3>
+                    {subtitle && <p className="text-xs text-slate-500 mt-1">{subtitle}</p>}
                 </div>
             </div>
             <div className="p-6">{children}</div>
@@ -48,7 +48,7 @@ function Field({ label, icon: Icon, type = 'text', value, onChange, placeholder,
                         onChange={onChange}
                         placeholder={placeholder}
                         readOnly={readOnly}
-                        className={`w-full pl-3.5 ${suffix ? 'pr-12' : 'pr-3.5'} py-2.5 rounded-xl bg-white border border-border text-text text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-[#B4912B] transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''} ${type === 'number' ? '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none' : ''}`}
+                        className={`w-full pl-3.5 ${suffix ? 'pr-12' : 'pr-3.5'} py-2.5 rounded-xl bg-slate-50/70 border border-slate-200 text-text text-sm focus:outline-none focus:border-[#B4912B] focus:bg-white focus:shadow-lg focus:shadow-[#B4912B]/10 hover:border-[#B4912B]/30 transition-all shadow-sm ${readOnly ? 'bg-surface cursor-not-allowed text-text-muted' : ''} ${type === 'number' ? '[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none' : ''}`}
                     />
                     {suffix && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -332,40 +332,59 @@ export default function SASettingsPage() {
     }
 
     return (
-        <div className="space-y-6 pb-8">
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-6 space-y-6 pb-8">
 
             {/* Toast */}
             {toast && (
-                <div className={`fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-2xl text-white text-sm font-semibold animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : 'bg-emerald-500'}`}>
+                <div className="fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-2xl backdrop-blur-xl bg-white/90 border border-white shadow-2xl text-sm font-semibold animate-in slide-in-from-right-4 duration-300">
                     {toast.type === 'error'
-                        ? <AlertCircle className="w-4 h-4 shrink-0" />
-                        : <CheckCircle className="w-4 h-4 shrink-0" />}
-                    {toast.msg}
+                        ? <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+                        : <CheckCircle className="w-4 h-4 shrink-0 text-emerald-600" />}
+                    <span className={toast.type === 'error' ? 'text-red-600' : 'text-emerald-600'}>
+                        {toast.msg}
+                    </span>
                 </div>
             )}
 
             {/* ── Header ── */}
             <div>
                 <h1 className="text-2xl font-black text-text tracking-tight">Account Settings</h1>
-                <p className="text-sm text-text-secondary mt-0.5">Manage your Super Admin profile and security</p>
+                <p className="text-base text-slate-500 mt-2">Manage your Super Admin profile and security</p>
             </div>
 
             {/* ── Avatar + Quick Info Banner ── */}
-            <div className="bg-[#8B6F23] rounded-2xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl shadow-[#8B6F23]/20">
+            <div className="relative overflow-hidden bg-gradient-to-br from-[#B4912B] via-[#A8841E] to-[#6B5518] rounded-3xl p-6 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-xl">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl" />
                 {/* Avatar circle */}
-                <div className="shrink-0">
-                    <div className="w-20 h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white text-3xl font-black shadow-lg">
+                <div className="shrink-0 relative z-10">
+                    <div className="w-24 h-24 rounded-3xl backdrop-blur-md bg-white/15 border border-white/20 flex items-center justify-center text-white text-4xl font-black shadow-lg">
                         {initials}
                     </div>
                 </div>
                 {/* Info */}
-                <div className="text-center sm:text-left">
-                    <h2 className="text-xl font-black text-white">{profile.name}</h2>
+                <div className="text-center sm:text-left relative z-10">
+                    <h2 className="text-2xl font-black text-white">{profile.name}</h2>
                     <div className="flex items-center gap-2 mt-1 justify-center sm:justify-start">
-                        <BadgeCheck className="w-4 h-4 text-white/80" />
-                        <span className="text-sm text-white/80 font-medium">{profile.role}</span>
+                        <BadgeCheck className="w-4 h-4 text-white/85" />
+                        <span className="text-sm text-white/85 font-medium">{profile.role}</span>
                     </div>
-                    <p className="text-sm text-white/60 mt-1">{profile.email}</p>
+                    <p className="text-sm text-white/75 mt-1">{profile.email}</p>
+                </div>
+            </div>
+
+            {/* ── Statistics Cards ── */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Account Status</p>
+                    <h3 className="text-lg font-black text-emerald-600 mt-1">Active</h3>
+                </div>
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Platform Version</p>
+                    <h3 className="text-lg font-black text-blue-600 mt-1">v1.2.0</h3>
+                </div>
+                <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 hover:-translate-y-1">
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Security Score</p>
+                    <h3 className="text-lg font-black text-[#B4912B] mt-1">98%</h3>
                 </div>
             </div>
 
@@ -399,7 +418,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleSaveProfile}
                             disabled={savingProfile}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl !bg-[#B4912B] hover:!bg-[#8B6F23] !text-white text-sm font-bold disabled:cursor-not-allowed disabled:brightness-90 transition-all active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 disabled:cursor-not-allowed disabled:brightness-90"
                         >
                             {savingProfile
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Saving…</>
@@ -511,7 +530,7 @@ export default function SASettingsPage() {
                         <button
                             onClick={handleChangePassword}
                             disabled={savingPassword || !pwd.current || !pwd.newPwd || !pwd.confirm}
-                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl !bg-[#B4912B] hover:!bg-[#8B6F23] !text-white text-sm font-bold disabled:cursor-not-allowed disabled:brightness-90 transition-all active:scale-[0.98]"
+                            className="w-full flex items-center justify-center gap-2 py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 disabled:cursor-not-allowed disabled:brightness-90"
                         >
                             {savingPassword
                                 ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" /> Changing…</>
@@ -542,7 +561,7 @@ export default function SASettingsPage() {
                                         Platform Logo
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-[#B4912B]/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border-2 border-dashed border-slate-200 bg-gradient-to-br from-slate-50 to-white hover:border-[#B4912B] hover:shadow-lg transition-all shrink-0 cursor-pointer overflow-hidden">
                                             {platform.logoUrl ? (
                                                 <img 
                                                     src={getImageUrl(platform.logoUrl)} 
@@ -555,8 +574,8 @@ export default function SASettingsPage() {
                                             )}
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
-                                                <UploadCloud className="w-4 h-4 text-blue-500" />
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-text border border-border hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer">
+                                                <UploadCloud className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                 <span>{uploadingLogo ? 'Uploading...' : 'Upload Logo'}</span>
                                                 <input 
                                                     type="file" 
@@ -577,7 +596,7 @@ export default function SASettingsPage() {
                                         Platform Favicon
                                     </label>
                                     <div className="flex items-center gap-4">
-                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border border-dashed border-border bg-slate-50 hover:bg-slate-100/50 hover:border-[#B4912B]/50 transition-all shrink-0 cursor-pointer overflow-hidden shadow-inner">
+                                        <div className="relative group flex items-center justify-center w-20 h-20 rounded-2xl border-2 border-dashed border-slate-200 bg-gradient-to-br from-slate-50 to-white hover:border-[#B4912B] hover:shadow-lg transition-all shrink-0 cursor-pointer overflow-hidden">
                                             {platform.faviconUrl ? (
                                                 <img 
                                                     src={getImageUrl(platform.faviconUrl)} 
@@ -590,8 +609,8 @@ export default function SASettingsPage() {
                                             )}
                                         </div>
                                         <div className="flex-1 space-y-2">
-                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-border text-text text-xs font-bold rounded-xl hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm cursor-pointer hover:bg-primary/5">
-                                                <UploadCloud className="w-4 h-4 text-emerald-500" />
+                                            <label className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-text border border-border hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-xs font-bold rounded-xl transition-all shadow-sm cursor-pointer">
+                                                <UploadCloud className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                                 <span>{uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}</span>
                                                 <input 
                                                     type="file" 
@@ -726,7 +745,7 @@ export default function SASettingsPage() {
                             <button
                                 onClick={handleSavePlatform}
                                 disabled={savingPlatform}
-                                className="w-auto flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl !bg-blue-600 hover:!bg-blue-700 !text-white text-sm font-bold disabled:opacity-50 transition-all active:scale-[0.98]"
+                                className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 disabled:opacity-50"
                             >
                                 {savingPlatform ? 'Saving...' : 'Update Platform Settings'}
                             </button>
@@ -755,7 +774,7 @@ export default function SASettingsPage() {
                                     suffix={<span className="text-[10px] font-bold text-text-muted mr-3">₹ / Unit</span>}
                                     value={loyaltyData.redeemValue} 
                                     onChange={e => setLoyal('redeemValue', e.target.value)} 
-                                />
+                                    />
                                 <Field 
                                     label="Min. Redemption Points" 
                                     value={loyaltyData.minRedeemPoints} 
@@ -794,7 +813,7 @@ export default function SASettingsPage() {
                                 <button
                                     onClick={handleSaveLoyalty}
                                     disabled={savingLoyalty}
-                                    className="flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl !bg-emerald-600 hover:!bg-emerald-700 !text-white text-sm font-bold disabled:opacity-50 transition-all active:scale-[0.98]"
+                                    className="inline-flex items-center justify-center gap-2 py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-xl shadow-[#B4912B]/20 disabled:opacity-50"
                                 >
                                     {savingLoyalty ? 'Applying Rules...' : 'Apply Global Rules'}
                                 </button>

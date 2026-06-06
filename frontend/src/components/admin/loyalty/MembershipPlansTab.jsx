@@ -152,7 +152,7 @@ export default function MembershipPlansTab() {
                     onClick={() => { setEditingPlan(null); setShowModal(true); }}
                     className="flex items-center justify-center gap-1.5 px-4 py-2 bg-[#cca839] text-white font-bold text-[9px] uppercase tracking-widest hover:bg-[#b89531] transition-all rounded-xl shadow-sm w-full sm:w-auto"
                 >
-                    <Plus className="w-3.5 h-3.5" /> CREATE NEW PLAN
+                    <Plus className="w-3.5 h-3.5 text-white" /> CREATE NEW PLAN
                 </button>
             </div>
 

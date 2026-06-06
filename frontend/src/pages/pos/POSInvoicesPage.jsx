@@ -693,7 +693,12 @@ export default function POSInvoicesPage() {
 
     const sendWhatsAppBill = async (inv) => {
         const phone = inv.customerId?.phone;
-        if (!phone) return toast('Customer phone not found', { icon: 'â„¹ï¸' });
+        if (!phone) return toast.error('Customer phone not found');
+
+        const cleanPhone = phone.replace(/\D/g, '');
+        if (cleanPhone.length < 10) {
+            return toast.error('WhatsApp number must be a valid 10-digit mobile number.');
+        }
 
         console.log(`[Frontend-POSInvoicesPage] sendWhatsAppBill initiated for Invoice: ${inv.invoiceNumber}, Phone: ${phone}`);
         setIsSendingWhatsApp(inv._id);
@@ -1281,13 +1286,28 @@ export default function POSInvoicesPage() {
                                             <div>
                                                 <p className="font-black text-slate-800 dark:text-slate-200 text-xs uppercase">{item.name}</p>
                                                 <p className="text-[9px] text-slate-400 dark:text-slate-500 font-semibold mt-0.5">
-                                                    Qty: {item.quantity} â€¢ {item.type}
+                                                    Qty: {item.quantity} • {item.type}
                                                     {item.stylistIds?.length > 0 && (
-                                                        <span className="text-[#B4912B] ml-1">â€¢ Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}</span>
+                                                        <span className="text-[#B4912B] ml-1">• Staff: {item.stylistIds.map(s => typeof s === 'object' ? s.name : s).join(', ')}</span>
                                                     )}
+                                                    {(() => {
+                                                        const qty = item.quantity || 1;
+                                                        const price = item.price || 0;
+                                                        const itemTotal = item.total != null ? item.total : (price * qty);
+                                                        const isInclusive = item.isInclusiveTax !== undefined ? item.isInclusiveTax : selectedInvoice.includingGst;
+                                                        const gstRate = item.gstPercent !== undefined ? item.gstPercent : (item.type === 'service' ? (selectedInvoice.serviceGstPercent || 5) : (selectedInvoice.productGstPercent || 10));
+                                                        const gstAmount = isInclusive 
+                                                            ? (itemTotal - (itemTotal * 100) / (100 + gstRate))
+                                                            : (itemTotal * gstRate) / 100;
+                                                        return (
+                                                            <span className="text-slate-500 dark:text-slate-400 ml-1.5">
+                                                                • GST: {gstRate}% (₹{gstAmount.toFixed(2)}) {isInclusive ? 'Incl.' : 'Excl.'}
+                                                            </span>
+                                                        );
+                                                    })()}
                                                 </p>
                                             </div>
-                                            <span className="font-black text-slate-800 dark:text-slate-200 text-sm">\u20B9{(item.total != null ? item.total : (item.price * item.quantity) || 0).toLocaleString()}</span>
+                                            <span className="font-black text-slate-800 dark:text-slate-200 text-sm">₹{(item.total != null ? item.total : (item.price * item.quantity) || 0).toLocaleString()}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -1296,60 +1316,60 @@ export default function POSInvoicesPage() {
                             <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2.5">
                                 <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                     <span>Taxable Value</span>
-                                    <span>\u20B9{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <span>₹{(selectedInvoice.baseAmount || selectedInvoice.subtotal || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                 </div>
                                 {selectedInvoice.cgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>CGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+₹${selectedInvoice.cgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.sgst > 0 && (
                                     <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>SGST {selectedInvoice.items?.every(i => i.type === 'service') ? `(${(selectedInvoice.serviceGstPercent || selectedInvoice.gstPercent || 5) / 2}%)` : ''}</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+₹${selectedInvoice.sgst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.igst > 0 && (
                                     <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>IGST ({selectedInvoice.gstPercent}%)</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+₹${selectedInvoice.igst?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {(!selectedInvoice.cgst && !selectedInvoice.sgst && !selectedInvoice.igst && (selectedInvoice.tax || 0) > 0) && (
                                     <div className="flex justify-between text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                                         <span>GST ({selectedInvoice.gstPercent}%)</span>
-                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+\u20B9${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
+                                        <span>{selectedInvoice.includingGst ? '(Included)' : `+₹${selectedInvoice.tax?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</span>
                                     </div>
                                 )}
                                 {selectedInvoice.discount > 0 && (
                                     <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Discount</span>
-                                        <span>-\u20B9{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-₹{selectedInvoice.discount?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.membershipDiscount || 0) > 0 && (
                                     <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Membership Disc</span>
-                                        <span>-\u20B9{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-₹{(selectedInvoice.membershipDiscount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.walletRedeemed || 0) > 0 && (
                                     <div className="flex justify-between text-[10px] font-bold text-emerald-600 dark:text-emerald-500">
                                         <span>Wallet Used</span>
-                                        <span>-\u20B9{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                        <span>-₹{(selectedInvoice.walletRedeemed || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                     </div>
                                 )}
                                 {(selectedInvoice.previousDueCollected || 0) > 0 && (
                                     <div className="flex justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400">
                                         <span>Prev. Due Collected</span>
-                                        <span>+\u20B9{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
+                                        <span>+₹{(selectedInvoice.previousDueCollected || 0).toLocaleString()}</span>
                                     </div>
                                 )}
                                 <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex justify-between items-end">
                                     <div>
                                         <p className="text-[8px] font-bold text-[#B4912B] uppercase tracking-widest">Grand Total</p>
-                                        <p className="text-xl font-black text-slate-900 dark:text-slate-100">\u20B9{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                        <p className="text-xl font-black text-slate-900 dark:text-slate-100">₹{((selectedInvoice.total || 0) + (selectedInvoice.previousDueCollected || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
                                     </div>
                                     <div className="text-right">
                                         <span className={`inline-flex px-2.5 py-1 text-[8px] font-black uppercase tracking-widest rounded-full ${selectedInvoice.paymentStatus === 'paid' ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/50' : 'bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-800/50'}`}>
@@ -1359,19 +1379,19 @@ export default function POSInvoicesPage() {
                                             {selectedInvoice.payments?.map((p, idx) => (
                                                 <div key={idx} className="flex items-center justify-end gap-1.5">
                                                     <span className="text-[8px] font-bold text-slate-400 dark:text-slate-555 uppercase">{p.method === 'online' ? 'UPI' : p.method?.toUpperCase()}</span>
-                                                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">\u20B9{p.amount?.toLocaleString()}</span>
+                                                    <span className="text-xs font-black text-slate-700 dark:text-slate-300">₹{p.amount?.toLocaleString()}</span>
                                                 </div>
                                             ))}
                                             {(selectedInvoice.walletRedeemed || 0) > 0 && (
                                                 <div className="flex items-center justify-end gap-1.5">
                                                     <span className="text-[8px] font-bold text-emerald-600 dark:text-emerald-500 uppercase">Wallet</span>
-                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">\u20B9{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
+                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-400">₹{selectedInvoice.walletRedeemed?.toLocaleString()}</span>
                                                 </div>
                                             )}
                                             {selectedInvoice.paymentStatus !== 'paid' && (
                                                 <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-dashed border-orange-300 dark:border-orange-850 mt-1">
                                                     <span className="text-[8px] font-bold text-orange-600 dark:text-orange-450 uppercase">Balance Due</span>
-                                                    <span className="text-xs font-black text-orange-600 dark:text-orange-450">\u20B9{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
+                                                    <span className="text-xs font-black text-orange-600 dark:text-orange-450">₹{(selectedInvoice.dueAmount || 0).toLocaleString()}</span>
                                                 </div>
                                             )}
                                         </div>

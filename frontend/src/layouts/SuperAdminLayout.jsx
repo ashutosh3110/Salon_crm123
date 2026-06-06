@@ -165,19 +165,7 @@ export default function SuperAdminLayout() {
                     margin-bottom: 0.5rem !important;
                     display: inline-block !important;
                 }
-                html:not(.dark) .sa-panel input:not(.bg-transparent), 
-                html:not(.dark) .sa-panel select:not(.bg-transparent), 
-                html:not(.dark) .sa-panel textarea:not(.bg-transparent) {
-                    font-size: 0.9rem !important;
-                    font-weight: 400 !important;
-                    padding: 0.75rem 1rem !important; /* Roomy, clickable fields */
-                    border-radius: 0.75rem !important; /* Soft premium rounded corners */
-                    border: 1px solid #cbd5e1 !important;
-                    color: #000000 !important; /* solid black */
-                    background-color: #ffffff !important;
-                    transition: all 0.2s ease-in-out !important;
-                    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
-                }
+
                 html:not(.dark) .sa-panel input:focus, 
                 html:not(.dark) .sa-panel select:focus, 
                 html:not(.dark) .sa-panel textarea:focus {
@@ -785,10 +773,10 @@ export default function SuperAdminLayout() {
                 html:not(.dark) .sa-panel [class*="text-yellow"] svg *,
                 html:not(.dark) .sa-panel svg[class*="text-yellow"],
                 html:not(.dark) .sa-panel svg[class*="text-yellow"] *,
-                html:not(.dark) .sa-panel [class*="text-primary"] svg,
-                html:not(.dark) .sa-panel [class*="text-primary"] svg *,
-                html:not(.dark) .sa-panel svg[class*="text-primary"],
-                html:not(.dark) .sa-panel svg[class*="text-primary"] * {
+                html:not(.dark) .sa-panel [class*="text-primary"]:not([class*="text-primary-foreground"]) svg,
+                html:not(.dark) .sa-panel [class*="text-primary"]:not([class*="text-primary-foreground"]) svg *,
+                html:not(.dark) .sa-panel svg[class*="text-primary"]:not([class*="text-primary-foreground"]),
+                html:not(.dark) .sa-panel svg[class*="text-primary"]:not([class*="text-primary-foreground"]) * {
                     color: #b45309 !important;
                     stroke: #b45309 !important;
                 }

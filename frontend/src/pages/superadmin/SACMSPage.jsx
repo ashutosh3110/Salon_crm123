@@ -165,7 +165,7 @@ export default function SACMSPage() {
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black tracking-tighter">WEBSITE <span className="text-primary">EDITOR</span></h1>
+                    <h1 className="text-4xl font-black text-transparent bg-gradient-to-r from-[#B4912B] to-[#8B6F23] bg-clip-text tracking-tight uppercase mt-1">WEBSITE <span className="text-primary">EDITOR</span></h1>
                     <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Change your website text and legal pages</p>
                 </div>
                 <div className="flex gap-3">

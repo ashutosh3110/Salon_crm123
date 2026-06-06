@@ -1032,10 +1032,10 @@ html:not(.dark) .admin-panel [class*="text-yellow"] svg,
 html:not(.dark) .admin-panel [class*="text-yellow"] svg *,
 html:not(.dark) .admin-panel svg[class*="text-yellow"],
 html:not(.dark) .admin-panel svg[class*="text-yellow"] *,
-html:not(.dark) .admin-panel [class*="text-primary"] svg,
-html:not(.dark) .admin-panel [class*="text-primary"] svg *,
-html:not(.dark) .admin-panel svg[class*="text-primary"],
-html:not(.dark) .admin-panel svg[class*="text-primary"] *,
+html:not(.dark) .admin-panel [class*="text-primary"]:not([class*="text-primary-foreground"]) svg,
+html:not(.dark) .admin-panel [class*="text-primary"]:not([class*="text-primary-foreground"]) svg *,
+html:not(.dark) .admin-panel svg[class*="text-primary"]:not([class*="text-primary-foreground"]),
+html:not(.dark) .admin-panel svg[class*="text-primary"]:not([class*="text-primary-foreground"]) *,
 html:not(.dark) .sa-panel [class*="text-amber"] svg,
 html:not(.dark) .sa-panel [class*="text-amber"] svg *,
 html:not(.dark) .sa-panel svg[class*="text-amber"],
@@ -1190,6 +1190,59 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 }
 
 
+
+/* --- Superadmin Premium Gold Gradient Buttons (Both Light and Dark Mode) --- */
+.sa-panel button.bg-primary,
+.sa-panel a.bg-primary,
+.sa-panel button[type="submit"],
+.sa-panel button[class*="bg-primary"],
+.sa-panel .inline-flex[class*="bg-primary"],
+.sa-panel button.bg-gradient-to-r {
+  background: linear-gradient(to right, #B4912B, #8B6F23) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-weight: 750 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  box-shadow: 0 4px 14px 0 rgba(180, 145, 43, 0.35) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.sa-panel button.bg-primary:hover,
+.sa-panel a.bg-primary:hover,
+.sa-panel button[type="submit"]:hover,
+.sa-panel button[class*="bg-primary"]:hover,
+.sa-panel .inline-flex[class*="bg-primary"]:hover,
+.sa-panel button.bg-gradient-to-r:hover {
+  filter: brightness(1.1) !important;
+  box-shadow: 0 6px 20px 0 rgba(180, 145, 43, 0.45) !important;
+}
+
+.sa-panel button.bg-primary:active,
+.sa-panel a.bg-primary:active,
+.sa-panel button[type="submit"]:active,
+.sa-panel button[class*="bg-primary"]:active,
+.sa-panel .inline-flex[class*="bg-primary"]:active,
+.sa-panel button.bg-gradient-to-r:active {
+  transform: scale(0.98) !important;
+}
+
+/* Ensure SVG icons inside superadmin primary buttons are always white */
+.sa-panel button.bg-primary svg,
+.sa-panel a.bg-primary svg,
+.sa-panel button[type="submit"] svg,
+.sa-panel button[class*="bg-primary"] svg,
+.sa-panel .inline-flex[class*="bg-primary"] svg,
+.sa-panel button.bg-gradient-to-r svg,
+.sa-panel button.bg-primary svg *,
+.sa-panel a.bg-primary svg *,
+.sa-panel button[type="submit"] svg *,
+.sa-panel button[class*="bg-primary"] svg *,
+.sa-panel .inline-flex[class*="bg-primary"] svg *,
+.sa-panel button.bg-gradient-to-r svg * {
+  color: #ffffff !important;
+  stroke: #ffffff !important;
+}
 
 /* --- Dark Mode Primary Buttons Visibility (reloaded) --- */
 .dark .admin-panel button.bg-primary,
