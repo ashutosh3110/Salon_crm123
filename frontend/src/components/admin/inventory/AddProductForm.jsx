@@ -42,14 +42,17 @@ import api from '../../../services/api';
 
 export default function AddProductForm({ onSave, initialData, onCancel }) {
     const { productCategories, shopCategories, products } = useInventory();
-    const { outlets, platformSettings, suppliers = [], fetchSuppliers } = useBusiness();
+    const { outlets, platformSettings, suppliers = [], fetchSuppliers, fetchOutlets } = useBusiness();
     const navigate = useNavigate();
 
     React.useEffect(() => {
         if (fetchSuppliers) {
             fetchSuppliers();
         }
-    }, [fetchSuppliers]);
+        if (fetchOutlets) {
+            fetchOutlets();
+        }
+    }, [fetchSuppliers, fetchOutlets]);
     const defaultFormData = {
         name: '',
         brand: '',
@@ -506,45 +509,20 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                             <p className="text-[8px] font-black text-text-muted uppercase tracking-widest mt-0.5">Deployment Logic</p>
                         </div>
                     </div>
-
-                    <div className="flex flex-col md:flex-row gap-6">
-                        <div className="w-full md:w-1/3 flex flex-col gap-3">
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${formData.availability === 'all'
-                                    ? 'bg-[#B4912B]/10 border-[#B4912B] text-[#B4912B] font-black shadow-sm shadow-[#B4912B]/5'
-                                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
-                                }`}>
-                                <input
-                                    type="radio"
-                                    name="outlet"
-                                    checked={formData.availability === 'all'}
-                                    onChange={() => setFormData({ ...formData, availability: 'all', outletIds: [] })}
-                                    className="hidden"
-                                />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${formData.availability === 'all' ? 'text-[#B4912B]' : 'text-slate-700 dark:text-slate-300'
-                                    }`}>
-                                    Global (All Nodes)
-                                </span>
-                            </label>
-                            <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${formData.availability === 'selected'
-                                    ? 'bg-[#B4912B]/10 border-[#B4912B] text-[#B4912B] font-black shadow-sm shadow-[#B4912B]/5'
-                                    : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
-                                }`}>
-                                <input
-                                    type="radio"
-                                    name="outlet"
-                                    checked={formData.availability === 'selected'}
-                                    onChange={() => setFormData({ ...formData, availability: 'selected' })}
-                                    className="hidden"
-                                />
-                                <span className={`text-[10px] font-black uppercase tracking-widest ${formData.availability === 'selected' ? 'text-[#B4912B]' : 'text-slate-700 dark:text-slate-300'
-                                    }`}>
-                                    Targeted (Manual)
-                                </span>
-                            </label>
+                    <div className="space-y-4">
+                        <div className="w-full max-w-md">
+                            <select
+                                className="w-full px-4 py-3 bg-background border border-border rounded-lg text-sm font-black focus:border-[#B4912B] outline-none transition-all uppercase text-text"
+                                value={formData.availability}
+                                onChange={(e) => setFormData({ ...formData, availability: e.target.value, outletIds: e.target.value === 'all' ? [] : formData.outletIds })}
+                            >
+                                <option value="all">Global (All Outlets)</option>
+                                <option value="selected">Targeted (Select Outlets...)</option>
+                            </select>
                         </div>
 
                         {formData.availability === 'selected' && (
-                            <div className="flex-1 grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-left-4 duration-500">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 animate-in slide-in-from-left-4 duration-500">
                                 {outlets.map(outlet => (
                                     <button
                                         key={outlet._id}
@@ -555,13 +533,13 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                                 : [...(formData.outletIds || []), outlet._id];
                                             setFormData({ ...formData, outletIds: ids });
                                         }}
-                                        className={`flex items-center gap-3 px-4 py-3 border text-left transition-all ${(formData.outletIds || []).includes(outlet._id)
+                                        className={`flex items-center gap-3 px-4 py-3 border text-left transition-all rounded-xl ${(formData.outletIds || []).includes(outlet._id)
                                             ? 'bg-[#B4912B]/5 border-[#B4912B] text-[#B4912B] shadow-sm font-black'
-                                            : 'bg-background border-border text-text-muted opacity-50'
+                                            : 'bg-background border-border text-text-muted opacity-50 hover:opacity-100'
                                             }`}
                                     >
                                         <div className={`w-3 h-3 rounded-full border ${(formData.outletIds || []).includes(outlet._id) ? 'bg-[#B4912B] border-[#B4912B]' : 'bg-background border-border'}`} />
-                                        <span className="text-[9px] uppercase tracking-tighter">{outlet.name}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-wider">{outlet.name}</span>
                                     </button>
                                 ))}
                             </div>

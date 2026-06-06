@@ -264,6 +264,18 @@ exports.updateSalon = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Salon not found' });
         }
 
+        // Handle city/address structure conversion for Schema compatibility
+        if (req.body.city !== undefined || req.body.address !== undefined) {
+            const street = req.body.address !== undefined ? req.body.address : (salon.address?.street || '');
+            const city = req.body.city !== undefined ? req.body.city : (salon.address?.city || '');
+            req.body.address = {
+                ...(salon.address || {}),
+                street,
+                city
+            };
+            delete req.body.city;
+        }
+
         // If status is changing, update isActive flags accordingly
         if (req.body.status) {
             if (req.body.status === 'active' || req.body.status === 'trial') {
@@ -524,6 +536,23 @@ exports.updateMe = async (req, res) => {
         const forbiddenFields = ['_id', 'id', 'email', 'subscriptionPlan', 'features', 'limits', 'isActive', 'password'];
         const updateData = { ...req.body };
         forbiddenFields.forEach(field => delete updateData[field]);
+
+        const existingSalon = await Salon.findById(req.user.salonId);
+        if (!existingSalon) {
+            return res.status(404).json({ success: false, message: 'Salon not found' });
+        }
+
+        // Handle city/address structure conversion for Schema compatibility
+        if (updateData.city !== undefined || updateData.address !== undefined) {
+            const street = updateData.address !== undefined ? updateData.address : (existingSalon.address?.street || '');
+            const city = updateData.city !== undefined ? updateData.city : (existingSalon.address?.city || '');
+            updateData.address = {
+                ...(existingSalon.address || {}),
+                street,
+                city
+            };
+            delete updateData.city;
+        }
 
         const salon = await Salon.findByIdAndUpdate(req.user.salonId, updateData, {
             new: true,

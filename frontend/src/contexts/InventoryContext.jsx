@@ -64,7 +64,7 @@ const normalizeProduct = (p) => {
     const id = p?._id || p?.id;
     const ext = p?.extended && typeof p.extended === 'object' ? p.extended : {};
     const minStock = Number(p?.minStock ?? ext.threshold ?? p?.threshold ?? 5);
-    const stockByOutlet = p?.stockByOutlet || { main: Number(p?.stock || 0) };
+    const stockByOutlet = (p?.stockByOutlet && Object.keys(p.stockByOutlet).length > 0) ? p.stockByOutlet : { main: Number(p?.stock || 0) };
     const { extended: _dropExtended, ...base } = p || {};
     return enrichProduct({ 
         ...base, 

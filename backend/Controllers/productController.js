@@ -68,6 +68,25 @@ exports.updateProduct = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
 
+        // Sync stockByOutlet if stock is modified
+        if (req.body.stock !== undefined) {
+            const newStock = Number(req.body.stock);
+            if (!product.stockByOutlet || product.stockByOutlet.size === 0) {
+                req.body.stockByOutlet = { main: newStock };
+            } else if (product.stockByOutlet.has('main')) {
+                const updatedStockByOutlet = {};
+                for (let [key, val] of product.stockByOutlet.entries()) {
+                    updatedStockByOutlet[key] = key === 'main' ? newStock : val;
+                }
+                req.body.stockByOutlet = updatedStockByOutlet;
+            } else if (product.stockByOutlet.size === 1) {
+                const updatedStockByOutlet = {};
+                const keys = Array.from(product.stockByOutlet.keys());
+                updatedStockByOutlet[keys[0]] = newStock;
+                req.body.stockByOutlet = updatedStockByOutlet;
+            }
+        }
+
         product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         res.status(200).json({ success: true, data: product });
     } catch (error) {

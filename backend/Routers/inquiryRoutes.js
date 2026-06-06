@@ -6,13 +6,14 @@ const {
     updateInquiryStatus, 
     deleteInquiry 
 } = require('../Controllers/inquiryController');
+const { protect } = require('../Middleware/auth');
 
 router.route('/')
-    .get(getInquiries)
+    .get(protect, getInquiries)
     .post(createInquiry);
 
 router.route('/:id')
-    .patch(updateInquiryStatus)
-    .delete(deleteInquiry);
+    .patch(protect, updateInquiryStatus)
+    .delete(protect, deleteInquiry);
 
 module.exports = router;

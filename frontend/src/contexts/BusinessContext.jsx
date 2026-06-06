@@ -1131,10 +1131,8 @@ export function BusinessProvider({ children }) {
             setActiveOutletId(urlOutletId);
         }
 
-        fetchPlatformSettings();
-
         // Skip guest/tenant initialization for auth routes, admin, stylist and superadmin routes
-        const authRoutes = ['/login', '/register', '/admin/login', '/forgot-password'];
+        const authRoutes = ['/login', '/register', '/admin/login', '/forgot-password', '/superadmin/login'];
         const protectedPaths = ['/admin', '/superadmin', '/stylist'];
 
         if (authRoutes.includes(location.pathname) || protectedPaths.some(p => location.pathname.startsWith(p))) {
@@ -1146,11 +1144,13 @@ export function BusinessProvider({ children }) {
             }
         }
 
-        // Final sanity check for superadmin route
-        if (location.pathname.startsWith('/superadmin')) {
+        // Final sanity check for superadmin or admin routes
+        if (location.pathname.startsWith('/superadmin') || location.pathname.startsWith('/admin')) {
             setIsInitializing(false);
             return;
         }
+
+        fetchPlatformSettings();
 
         if ((isAuthenticated || isCustomerAuthenticated) && user?.role !== 'superadmin') {
             // Prevent double initialization if already has data for this salon AND outlet, or already fetching

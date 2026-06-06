@@ -382,7 +382,7 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="pt-2">
                             <div className="space-y-1">
                                 <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">Tax Mode</label>
                                 <select
@@ -392,18 +392,6 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
                                 >
                                     <option value="excluding">Excluding GST</option>
                                     <option value="including">Including GST</option>
-                                </select>
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[11px] font-bold text-text-muted uppercase tracking-tighter italic !mb-1">GST Rate (%)</label>
-                                <select
-                                    className="w-full px-2 py-1.5 rounded-lg bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tighter"
-                                    value={formData.gst}
-                                    onChange={(e) => setFormData({ ...formData, gst: Number(e.target.value) })}
-                                >
-                                    {[0, 5, 12, 18, 28, Number(platformSettings?.serviceGst)].filter((r, idx, self) => r !== undefined && r !== null && !isNaN(r) && self.indexOf(r) === idx).sort((a, b) => a - b).map(rate => (
-                                        <option key={rate} value={rate}>{rate}% {rate === 0 ? 'Exempt' : 'GST'}</option>
-                                    ))}
                                 </select>
                             </div>
                         </div>
