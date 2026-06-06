@@ -555,7 +555,7 @@ export default function InquiryPage() {
 
             {/* Filters Section */}
             <div className="bg-white dark:bg-slate-900 p-2 border border-slate-100 dark:border-slate-800 flex flex-col md:flex-row gap-3 rounded-xl items-center shadow-sm justify-between">
-                
+
                 {/* Search Box */}
                 <div className={`flex items-center gap-3 flex-1 h-9 px-3 w-full md:max-w-[350px] rounded-lg transition-all border ${searchFocused ? 'bg-white dark:bg-slate-900 border-primary' : 'bg-slate-50 dark:bg-slate-800/80 border-transparent dark:border-transparent hover:border-slate-200 dark:hover:border-slate-700'}`}>
                     <Search className={`w-3.5 h-3.5 shrink-0 transition-colors ${searchFocused ? 'text-primary' : 'text-slate-500 dark:text-slate-400'}`} style={{ color: searchFocused ? '#B4912B' : '#64748b' }} />
