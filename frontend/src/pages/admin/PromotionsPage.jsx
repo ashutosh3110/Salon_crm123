@@ -77,6 +77,52 @@ function OutletMultiSelect({ outlets, value, onChange }) {
     );
 }
 
+function CustomSelect({ options, value, onChange }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (ref.current && !ref.current.contains(event.target)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const selectedOption = options.find(o => o.value === value) || options[0];
+
+    return (
+        <div className="relative" ref={ref}>
+            <div 
+                className="w-full px-4 py-3 bg-surface border border-border text-xs font-bold uppercase tracking-widest text-text outline-none rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                <span className="truncate">{selectedOption?.label}</span>
+                <ChevronDown size={14} className={`transition-transform shrink-0 ml-2 text-text-muted ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+
+            {isOpen && (
+                <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
+                    {options.map(o => (
+                        <div 
+                            key={o.value} 
+                            className={`px-4 py-2.5 cursor-pointer text-xs font-bold uppercase tracking-widest transition-colors hover:bg-[#B4912B]/10 hover:text-[#B4912B] ${value === o.value ? 'bg-[#B4912B]/10 text-[#B4912B]' : 'text-text'}`}
+                            onClick={() => {
+                                onChange(o.value);
+                                setIsOpen(false);
+                            }}
+                        >
+                            {o.label}
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export default function PromotionsPage() {
     const { outlets } = useBusiness();
     const { user } = useAuth();
@@ -330,7 +376,7 @@ export default function PromotionsPage() {
                         setForm({ name: '', type: 'percentage', value: '', startDate: '', endDate: '', usageLimit: 1, usageLimitPerCustomer: 1, isActive: true, activationMode: 'COUPON', couponCode: '', applicableOn: 'BOTH', outletIds: [] });
                         setShowModal(true);
                     }}
-                    className="flex items-center justify-center gap-1.5 bg-primary/10 text-primary border border-primary px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(234,179,8,0.4)] hover:shadow-[0_0_20px_rgba(234,179,8,0.6)] transition-all whitespace-nowrap cursor-pointer"
+                    className="flex items-center justify-center gap-1.5 !bg-[#B4912B] !text-white px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(180,145,43,0.4)] hover:shadow-[0_0_20px_rgba(180,145,43,0.6)] hover:!bg-[#9a7b24] transition-all whitespace-nowrap cursor-pointer"
                 >
                     <Plus className="w-3.5 h-3.5" /> Add coupon
                 </button>
@@ -459,10 +505,14 @@ export default function PromotionsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Type *</label>
-                                        <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
-                                            <option value="percentage">Percent Off</option>
-                                            <option value="flat">Fixed ₹ Off</option>
-                                        </select>
+                                        <CustomSelect 
+                                            options={[
+                                                { label: 'Percent Off', value: 'percentage' },
+                                                { label: 'Fixed ₹ Off', value: 'flat' }
+                                            ]}
+                                            value={form.type}
+                                            onChange={(val) => setForm({ ...form, type: val })}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Value *</label>
@@ -496,11 +546,15 @@ export default function PromotionsPage() {
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Discount Applies To *</label>
-                                        <select value={form.applicableOn} onChange={(e) => setForm({ ...form, applicableOn: e.target.value })} className="w-full px-4 py-3 rounded-xl bg-white border border-border text-xs font-bold uppercase tracking-widest focus:border-primary outline-none transition-all cursor-pointer text-text">
-                                            <option value="BOTH">Both Services & Products</option>
-                                            <option value="SERVICE">Services Only</option>
-                                            <option value="PRODUCT">Products Only</option>
-                                        </select>
+                                        <CustomSelect 
+                                            options={[
+                                                { label: 'Both Services & Products', value: 'BOTH' },
+                                                { label: 'Services Only', value: 'SERVICE' },
+                                                { label: 'Products Only', value: 'PRODUCT' }
+                                            ]}
+                                            value={form.applicableOn}
+                                            onChange={(val) => setForm({ ...form, applicableOn: val })}
+                                        />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Applicable Outlets</label>
