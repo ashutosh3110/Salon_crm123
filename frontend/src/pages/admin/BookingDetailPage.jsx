@@ -40,19 +40,19 @@ const getImageUrl = (path) => {
 };
 
 const statusColors = {
-    upcoming: 'bg-blue-50 text-blue-600 border-blue-100',
-    confirmed: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    pending: 'bg-amber-50 text-amber-600 border-amber-100',
-    completed: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    cancelled: 'bg-gray-50 text-gray-400 border-gray-100',
-    'no-show': 'bg-rose-50 text-rose-600 border-rose-100',
+    upcoming: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900',
+    confirmed: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-900',
+    pending: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50',
+    completed: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50',
+    cancelled: 'bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-slate-450 border-gray-100 dark:border-slate-700',
+    'no-show': 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/50',
 };
 
 const paymentStatusColors = {
-    paid: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-    pending: 'bg-amber-50 text-amber-600 border-amber-100',
-    unpaid: 'bg-rose-50 text-rose-600 border-rose-100',
-    failed: 'bg-red-50 text-red-600 border-red-100',
+    paid: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-900/50',
+    pending: 'bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/50',
+    unpaid: 'bg-rose-50 dark:bg-rose-950/30 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-900/50',
+    failed: 'bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/50',
 };
 
 export default function BookingDetailPage() {

@@ -571,14 +571,14 @@ export default function BookingsPage() {
                         <table className="w-full text-left border-collapse min-w-[1000px]">
                             <thead>
                                 <tr className="bg-surface-alt border-b border-border/40">
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Customer</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">ID</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Date & Time ↓</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Service</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Staff</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Outlet</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest">Status</th>
-                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest text-right">Actions</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Customer</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">ID</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Date & Time ↓</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Service</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Staff</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Outlet</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Status</th>
+                                    <th className="px-4 py-2 text-[9px] font-bold text-text-muted uppercase tracking-widest !text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border/20">
@@ -599,11 +599,11 @@ export default function BookingsPage() {
                                             onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                         >
                                             <td className="px-4 py-2">
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center justify-start gap-2 max-w-[180px] mx-auto">
                                                     <div className="w-7 h-7 bg-purple-500/10 flex items-center justify-center text-[10px] font-black text-purple-600 flex-shrink-0 rounded-lg">
                                                         {b.client?.name?.[0]?.toUpperCase() || 'C'}
                                                     </div>
-                                                    <div className="flex flex-col min-w-0">
+                                                    <div className="flex flex-col min-w-0 text-left">
                                                         <span className="text-[11px] font-black text-text uppercase tracking-tight leading-none truncate">{b.client?.name || 'UNKNOWN'}</span>
                                                         <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none flex items-center gap-1 mt-0.5">
                                                             {maskPhone(b.client?.phone, user?.role) || '—'}
@@ -612,7 +612,7 @@ export default function BookingsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
-                                                <div className="flex items-center gap-1">
+                                                <div className="flex items-center justify-center gap-1">
                                                     <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
                                                     <button 
                                                         onClick={(e) => { 
@@ -627,9 +627,9 @@ export default function BookingsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
-                                                <div className="flex items-start gap-1.5">
-                                                    <CalendarDays className="w-3.5 h-3.5 text-text-muted mt-0.5" />
-                                                    <div className="flex flex-col">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <CalendarDays className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                                                    <div className="flex flex-col items-center">
                                                         <span className="text-[10px] font-black text-text uppercase leading-none">
                                                             {b.appointmentDate ? new Date(b.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'N/A'}
                                                         </span>
@@ -640,30 +640,30 @@ export default function BookingsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
-                                                <div className="flex items-center gap-1">
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
                                                     <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wider max-w-[130px] truncate">{b.service?.name}</span>
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-5.5 h-5.5 rounded-full bg-emerald-500/10 flex items-center justify-center text-[8px] font-black text-emerald-700 flex-shrink-0">
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <div className="w-5.5 h-5.5 rounded-full bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-[8px] font-black text-emerald-700 dark:text-emerald-400 flex-shrink-0">
                                                         {b.staff?.name?.split(' ').map(n => n[0]).join('').toUpperCase() || '?'}
                                                     </div>
                                                     <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wide truncate">{b.staff?.name || 'UNASSIGNED'}</span>
                                                 </div>
                                             </td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 text-center">
                                                 <span className="text-[9.5px] font-black text-text-secondary uppercase tracking-wide leading-none">{b.outlet?.name || 'MAIN OUTLET'}</span>
                                             </td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 text-center">
                                                 <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[8px] font-black rounded-md uppercase tracking-wider ${b.status === 'confirmed' ? 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/20' : b.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : b.status === 'completed' ? 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20' : 'bg-surface-alt text-text-muted border border-border/30'}`}>
                                                     <div className={`w-1 h-1 rounded-full ${b.status === 'confirmed' ? 'bg-indigo-500' : b.status === 'pending' ? 'bg-amber-500' : b.status === 'completed' ? 'bg-emerald-500' : 'bg-text-muted'}`} />
                                                     {b.status}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-2 text-right">
-                                                <div className="flex items-center justify-end gap-1.5" onClick={e => e.stopPropagation()}>
+                                            <td className="px-4 py-2 text-center">
+                                                <div className="flex items-center justify-center gap-1.5" onClick={e => e.stopPropagation()}>
                                                     <button 
                                                         onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                                         className="p-1.5 bg-surface border border-border/40 text-text-muted rounded-lg hover:text-text hover:border-primary/30 transition-all shadow-sm active:scale-95"

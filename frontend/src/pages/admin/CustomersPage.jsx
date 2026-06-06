@@ -440,16 +440,16 @@ export default function CustomersPage({ tab = 'directory' }) {
             {/* Add Customer Modal (Portal) */}
             {showAddModal && createPortal(
                 <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800 admin-panel" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                        <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
                             <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
                                 <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Add Customer
                             </h4>
                             <button type="button" onClick={() => setShowAddModal(false)} className="p-1 rounded-lg border border-slate-300 bg-slate-50 text-slate-600 hover:bg-rose-500 hover:text-white hover:border-rose-500 dark:border-2 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-rose-600 dark:bg-transparent dark:rounded-none transition-colors"><X className="w-4 h-4" /></button>
                         </div>
 
-                        <form onSubmit={handleAddCustomer} className="p-6">
-                            <div className="space-y-4">
+                        <form onSubmit={handleAddCustomer} className="flex-1 flex flex-col min-h-0">
+                            <div className="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
                                 <div className="space-y-1.5 text-left">
                                     <label className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">Customer Name</label>
                                     <input
@@ -509,7 +509,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-6">
+                            <div className="flex gap-4 p-6 bg-slate-50 dark:bg-[#1e293b] border-t border-slate-100 dark:border-slate-800 shrink-0">
                                 <button
                                     type="button"
                                     onClick={() => setShowAddModal(false)}
