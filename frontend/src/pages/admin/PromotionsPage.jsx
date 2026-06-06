@@ -44,7 +44,7 @@ function OutletMultiSelect({ outlets, value, onChange }) {
     return (
         <div className="relative" ref={ref}>
             <div 
-                className="w-full h-11 bg-surface-alt border border-border px-4 text-xs font-bold text-text uppercase tracking-widest outline-none focus:bg-surface focus:border-[#B4912B] rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
+                className="w-full h-11 bg-white border border-border px-4 text-xs font-bold text-text uppercase tracking-widest outline-none focus:bg-white focus:border-[#B4912B] rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className="truncate">
@@ -54,7 +54,7 @@ function OutletMultiSelect({ outlets, value, onChange }) {
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
+                <div className="absolute z-50 w-full mt-2 bg-white border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
                     <label className="flex items-center gap-3 cursor-pointer text-xs font-bold uppercase tracking-wider text-text overflow-hidden px-4 py-2.5 hover:bg-[#B4912B]/5 transition-colors">
                         <input type="checkbox" checked={value.length === 0} onChange={() => onChange([])} className="accent-[#B4912B] w-4 h-4 cursor-pointer shrink-0" />
                         <span className="truncate">All Outlets</span>
@@ -96,7 +96,7 @@ function CustomSelect({ options, value, onChange }) {
     return (
         <div className="relative" ref={ref}>
             <div 
-                className="w-full px-4 py-3 bg-surface border border-border text-xs font-bold uppercase tracking-widest text-text outline-none rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
+                className="w-full px-4 py-3 bg-white border border-border text-xs font-bold uppercase tracking-widest text-text outline-none rounded-xl transition-all flex justify-between items-center cursor-pointer hover:border-[#B4912B]/50"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 <span className="truncate">{selectedOption?.label}</span>
@@ -104,7 +104,7 @@ function CustomSelect({ options, value, onChange }) {
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 w-full mt-2 bg-surface border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
+                <div className="absolute z-50 w-full mt-2 bg-white border border-border rounded-xl shadow-xl py-2 max-h-[180px] overflow-y-auto no-scrollbar">
                     {options.map(o => (
                         <div 
                             key={o.value} 
@@ -487,12 +487,12 @@ export default function PromotionsPage() {
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShowModal(false)}>
                     <div className="bg-white rounded-2xl w-full max-w-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] relative overflow-hidden border border-border max-h-[85vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-surface">
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-border bg-slate-50/50">
                             <div>
                                 <h2 className="text-sm font-black uppercase tracking-[0.2em] text-text">{editing ? 'Edit Coupon' : 'Create New Offer'}</h2>
                                 <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Configure your discount rules</p>
                             </div>
-                            <button type="button" onClick={() => setShowModal(false)} className="p-2 hover:bg-white text-text-muted hover:text-rose-500 transition-all border border-transparent hover:border-border">
+                            <button type="button" onClick={() => setShowModal(false)} className="p-2 bg-white hover:bg-surface text-text-muted hover:text-rose-500 transition-all border border-border">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -576,7 +576,7 @@ export default function PromotionsPage() {
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999] flex items-center justify-center p-4 text-left" onClick={() => setShareModalOpen(false)}>
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative overflow-hidden border border-border max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
                         {/* Modal Header */}
-                        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border bg-surface/50">
+                        <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-border bg-slate-50/50">
                             <div>
                                 <h2 className="text-xs font-black uppercase tracking-[0.2em] text-text flex items-center gap-2">
                                     <Share2 className="w-4 h-4 text-emerald-500 animate-pulse" />
@@ -584,7 +584,7 @@ export default function PromotionsPage() {
                                 </h2>
                                 <p className="text-[9px] font-bold text-text-muted uppercase tracking-widest mt-1">Send "{sharingPromo.name}" on WhatsApp</p>
                             </div>
-                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-xl hover:bg-surface text-text-muted hover:text-rose-500 transition-all">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="p-2 rounded-xl bg-white hover:bg-surface text-text-muted hover:text-rose-500 transition-all border border-border">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -603,7 +603,7 @@ export default function PromotionsPage() {
                                         placeholder="Search customer name or phone..."
                                         value={customerSearch}
                                         onChange={(e) => setCustomerSearch(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-surface border border-border text-xs font-bold uppercase tracking-wider focus:border-primary outline-none text-text"
+                                        className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-white border border-border text-xs font-bold uppercase tracking-wider focus:border-primary outline-none text-text"
                                     />
                                 </div>
 
@@ -611,7 +611,7 @@ export default function PromotionsPage() {
                                 {customersLoading ? (
                                     <div className="text-center py-8 text-[10px] font-black text-text-muted uppercase tracking-widest animate-pulse">Loading Customers...</div>
                                 ) : (
-                                    <div className="border border-border max-h-[180px] overflow-y-auto divide-y divide-border bg-surface rounded-lg">
+                                    <div className="border border-border max-h-[180px] overflow-y-auto divide-y divide-border bg-white rounded-lg">
                                         {filteredCustomers.length === 0 ? (
                                             <div className="p-4 text-center text-[10px] font-bold text-text-muted uppercase tracking-widest">No customers found</div>
                                         ) : (
@@ -638,13 +638,13 @@ export default function PromotionsPage() {
                         </div>
 
                         {/* Modal Footer */}
-                        <div className="p-6 border-t border-border bg-surface/50 flex gap-3 shrink-0">
-                            <button type="button" onClick={() => setShareModalOpen(false)} className="flex-1 py-3 border border-border rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted hover:bg-surface transition-all">Cancel</button>
+                        <div className="p-6 border-t border-border bg-slate-50/50 flex gap-3 shrink-0">
+                            <button type="button" onClick={() => setShareModalOpen(false)} className="flex-1 py-3 border border-border rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] text-text-muted bg-white hover:bg-slate-50 transition-all">Cancel</button>
                             <button 
                                 type="button" 
                                 onClick={handleSendPromo}
                                 disabled={!selectedCustomerId || sendingWhatsApp}
-                                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-lg disabled:opacity-50 transition-all flex items-center justify-center gap-1.5"
+                                className="flex-1 py-3 !bg-[#B4912B] hover:!bg-[#9a7b24] !text-white rounded-xl font-bold text-[10px] uppercase tracking-[0.2em] shadow-[0_0_15px_rgba(180,145,43,0.3)] disabled:opacity-80 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5"
                             >
                                 {sendingWhatsApp ? 'Sending...' : 'Send WhatsApp'}
                             </button>

@@ -119,9 +119,6 @@ export default function WhatsAppCreditsPage() {
                     >
                         <History className="w-3.5 h-3.5" /> {showHistory ? 'Dashboard' : 'History'}
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[10px] font-bold text-white bg-[#D99A29] hover:bg-[#c88d25] uppercase tracking-widest shadow-sm">
-                        <Plus className="w-3.5 h-3.5" /> Add Coupon
-                    </button>
                 </div>
             </div>
 
@@ -131,10 +128,10 @@ export default function WhatsAppCreditsPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="bg-white rounded-xl border border-slate-100 overflow-hidden shadow-sm"
                 >
-                    <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-                                <History className="w-4 h-4 text-slate-400" />
+                            <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                                <History className="w-4 h-4 text-slate-400 dark:text-slate-500" />
                             </div>
                             <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest leading-none">Purchase History</h3>
                         </div>
@@ -150,17 +147,17 @@ export default function WhatsAppCreditsPage() {
                             history.map(log => (
                                 <div key={log._id} className="p-4 bg-white border border-slate-100 rounded-xl hover:shadow-md transition-all flex items-center justify-between group">
                                     <div className="flex items-center gap-4">
-                                        <div className="w-10 h-10 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                            <CreditCard className="w-4 h-4 text-emerald-500" />
+                                        <div className="w-10 h-10 rounded-full bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                            <CreditCard className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                                         </div>
                                         <div>
-                                            <h4 className="text-[11px] font-black text-slate-900 uppercase leading-none mb-1.5">+{log.credits.toLocaleString()} Credits</h4>
+                                            <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase leading-none mb-1.5">+{log.credits.toLocaleString()} Credits</h4>
                                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">{new Date(log.createdAt).toLocaleString()}</p>
                                         </div>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-sm font-black text-slate-900 leading-none mb-1.5">₹{log.amount.toLocaleString()}</p>
-                                        <p className="text-[9px] font-black text-emerald-500 uppercase tracking-[0.15em] leading-none">{log.status}</p>
+                                        <p className="text-sm font-black text-slate-900 dark:text-white leading-none mb-1.5">₹{log.amount.toLocaleString()}</p>
+                                        <p className="text-[9px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-[0.15em] leading-none">{log.status}</p>
                                     </div>
                                 </div>
                             ))
@@ -176,13 +173,13 @@ export default function WhatsAppCreditsPage() {
                             {/* Salon Balance */}
                             <div className="lg:col-span-4 bg-white border border-slate-100 rounded-2xl p-6 shadow-sm relative overflow-hidden min-h-[190px]">
                                 <div className="flex justify-between items-center mb-6 relative z-10">
-                                    <div className="flex items-center gap-3 text-[10px] font-black text-slate-800 uppercase tracking-widest">
-                                        <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                                            <MessageSquare className="w-4 h-4 text-emerald-600" />
+                                    <div className="flex items-center gap-3 text-[10px] font-black text-slate-800 dark:text-white uppercase tracking-widest">
+                                        <div className="w-9 h-9 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                            <MessageSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
                                         Salon Balance
                                     </div>
-                                    <span className="bg-emerald-50 text-emerald-600 text-[9px] font-black uppercase px-2.5 py-1.5 rounded-lg tracking-widest leading-none">Active</span>
+                                    <span className="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-[9px] font-black uppercase px-2.5 py-1.5 rounded-lg tracking-widest leading-none">Active</span>
                                 </div>
                                 <div className="relative z-10 mb-10">
                                     <div className="text-[32px] font-black text-slate-900 mb-1.5 leading-none tracking-tight">{salon?.whatsappSettings?.whatsappCredits?.toLocaleString() || '1,097'}</div>
@@ -215,10 +212,10 @@ export default function WhatsAppCreditsPage() {
                             {/* 4 Cards Grid */}
                             <div className="lg:col-span-8 grid grid-cols-2 gap-4">
                                 {[
-                                    { title: 'Active Matrix', value: '3', desc: 'Active offers', icon: Activity, color: 'text-indigo-500', bg: 'bg-indigo-50' },
-                                    { title: 'Avg Magnitude', value: '13 units', desc: 'Average discount magnitude', icon: Percent, color: 'text-amber-500', bg: 'bg-amber-50' },
-                                    { title: 'Expiring Soon', value: '3', desc: 'Offers expiring soon', icon: Calendar, color: 'text-orange-500', bg: 'bg-orange-50' },
-                                    { title: 'Total Volume', value: '3', desc: 'Total coupon usage', icon: Package, color: 'text-blue-500', bg: 'bg-blue-50' }
+                                    { title: 'Active Matrix', value: '3', desc: 'Active offers', icon: Activity, color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/10' },
+                                    { title: 'Avg Magnitude', value: '13 units', desc: 'Average discount magnitude', icon: Percent, color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/10' },
+                                    { title: 'Expiring Soon', value: '3', desc: 'Offers expiring soon', icon: Calendar, color: 'text-orange-500 dark:text-orange-400', bg: 'bg-orange-50 dark:bg-orange-500/10' },
+                                    { title: 'Total Volume', value: '3', desc: 'Total coupon usage', icon: Package, color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/10' }
                                 ].map((card, i) => (
                                     <div key={i} className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-5 flex gap-3 shadow-sm items-center">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${card.bg}`}>
@@ -255,8 +252,8 @@ export default function WhatsAppCreditsPage() {
                                     <div>
                                         <div className="text-[9px] font-bold text-slate-500 mb-1">Total Coupons Used</div>
                                         <div className="flex items-center gap-2">
-                                            <div className="text-[22px] font-black text-slate-900 leading-none">156</div>
-                                            <div className="bg-emerald-50 text-emerald-600 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5 tracking-widest"><TrendingUp className="w-2.5 h-2.5"/> 9.3%</div>
+                                            <div className="text-[22px] font-black text-slate-900 dark:text-white leading-none">156</div>
+                                            <div className="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-[8px] font-black px-1.5 py-0.5 rounded-md flex items-center gap-0.5 tracking-widest"><TrendingUp className="w-2.5 h-2.5"/> 9.3%</div>
                                         </div>
                                     </div>
                                 </div>
@@ -334,9 +331,9 @@ export default function WhatsAppCreditsPage() {
                                 <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-5">Recent Activity</h3>
                                 <div className="space-y-4 mb-5">
                                     {[
-                                        { title: 'Coupon SAVE20 used at Rehan Hair - Indore', time: '24 May 2026, 05:28 pm', icon: CheckCircle2, color: 'text-emerald-500 bg-emerald-50', badge: '20 credits', badgeColor: 'text-emerald-600 bg-emerald-50' },
-                                        { title: 'Coupon SAVE10 used at Rehan Hair - Indore', time: '24 May 2026, 04:12 pm', icon: CheckCircle2, color: 'text-blue-500 bg-blue-50', badge: '10 credits', badgeColor: 'text-blue-600 bg-blue-50' },
-                                        { title: 'New coupon ANNIVERSARY10 created', time: '23 May 2026, 11:09 am', icon: Package, color: 'text-purple-500 bg-purple-50', badge: 'Active', badgeColor: 'text-emerald-600 bg-emerald-50' }
+                                        { title: 'Coupon SAVE20 used at Rehan Hair - Indore', time: '24 May 2026, 05:28 pm', icon: CheckCircle2, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400', badge: '20 credits', badgeColor: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400' },
+                                        { title: 'Coupon SAVE10 used at Rehan Hair - Indore', time: '24 May 2026, 04:12 pm', icon: CheckCircle2, color: 'text-blue-500 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400', badge: '10 credits', badgeColor: 'text-blue-600 bg-blue-50 dark:bg-blue-500/10 dark:text-blue-400' },
+                                        { title: 'New coupon ANNIVERSARY10 created', time: '23 May 2026, 11:09 am', icon: Package, color: 'text-purple-500 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400', badge: 'Active', badgeColor: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400' }
                                     ].map((act, i) => (
                                         <div key={i} className="flex items-center justify-between pb-4 border-b border-slate-50 last:border-0 last:pb-0">
                                             <div className="flex gap-3">
@@ -362,9 +359,9 @@ export default function WhatsAppCreditsPage() {
                                 <h3 className="text-[10px] font-black text-slate-800 uppercase tracking-widest mb-5">Quick Insights</h3>
                                 <div className="space-y-5 mb-6">
                                     {[
-                                        { icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50', title: 'Peak usage day', val: 'Saturday', rval: '28%', rdesc: 'of total usage' },
-                                        { icon: Package, color: 'text-amber-500 bg-amber-50', title: 'Most used coupon', val: 'SAVE20', rval: '42', rdesc: 'times used' },
-                                        { icon: Percent, color: 'text-purple-500 bg-purple-50', title: 'Avg. discount given', val: '13 units', rval: 'Across all', rdesc: 'coupons' }
+                                        { icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 dark:text-emerald-400', title: 'Peak usage day', val: 'Saturday', rval: '28%', rdesc: 'of total usage' },
+                                        { icon: Package, color: 'text-amber-500 bg-amber-50 dark:bg-amber-500/10 dark:text-amber-400', title: 'Most used coupon', val: 'SAVE20', rval: '42', rdesc: 'times used' },
+                                        { icon: Percent, color: 'text-purple-500 bg-purple-50 dark:bg-purple-500/10 dark:text-purple-400', title: 'Avg. discount given', val: '13 units', rval: 'Across all', rdesc: 'coupons' }
                                     ].map((ins, i) => (
                                         <div key={i} className="flex items-center justify-between">
                                             <div className="flex gap-3 items-center">
@@ -406,7 +403,7 @@ export default function WhatsAppCreditsPage() {
                                         <button
                                             key={qty}
                                             onClick={() => setCreditsToBuy(qty)}
-                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${isSelected ? 'bg-[#0F172A] border-[#0F172A] text-white shadow-md' : 'bg-white border-slate-200 hover:border-slate-300'}`}
+                                            className={`p-4 rounded-xl border text-left transition-all cursor-pointer ${isSelected ? '!bg-[#B4912B] !border-[#B4912B] text-white shadow-md' : 'bg-white border-slate-200 hover:border-slate-300'}`}
                                         >
                                             <div className={`text-[8px] font-black uppercase tracking-[0.2em] mb-2 ${isSelected ? 'text-white-muted-force' : 'text-slate-500'}`}>Pack</div>
                                             <div className="flex items-center justify-between">
@@ -437,7 +434,7 @@ export default function WhatsAppCreditsPage() {
                             <button 
                                 onClick={handlePurchase}
                                 disabled={loading}
-                                className="w-full cursor-pointer bg-[#0F172A] hover:bg-[#1e293b] text-white rounded-xl py-4 flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-[0.15em] shadow-md transition-colors disabled:opacity-70"
+                                className="w-full cursor-pointer !bg-[#B4912B] hover:!bg-[#9a7b24] text-white rounded-xl py-4 flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-[0.15em] shadow-md transition-colors disabled:opacity-70"
                             >
                                 {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <>COMPLETE PURCHASE <ArrowRight className="w-3.5 h-3.5 text-white" /></>}
                             </button>
@@ -449,7 +446,7 @@ export default function WhatsAppCreditsPage() {
                         {/* Policies */}
                         <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm space-y-5">
                             <div className="flex gap-3 items-start">
-                                <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center shrink-0">
+                                <div className="w-9 h-9 rounded-full bg-blue-50 text-blue-500 dark:bg-blue-500/10 dark:text-blue-400 flex items-center justify-center shrink-0">
                                     <Zap className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -458,7 +455,7 @@ export default function WhatsAppCreditsPage() {
                                 </div>
                             </div>
                             <div className="flex gap-3 items-start">
-                                <div className="w-9 h-9 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center shrink-0">
+                                <div className="w-9 h-9 rounded-full bg-orange-50 text-orange-500 dark:bg-orange-500/10 dark:text-orange-400 flex items-center justify-center shrink-0">
                                     <AlertCircle className="w-4 h-4" />
                                 </div>
                                 <div>
@@ -474,7 +471,7 @@ export default function WhatsAppCreditsPage() {
                                 <h3 className="text-[13px] font-black text-slate-900 dark:text-emerald-400 mb-1 leading-none tracking-tight">Need help?</h3>
                                 <p className="text-[10px] text-slate-600 dark:text-emerald-300/80 font-medium leading-relaxed">Contact support for bulk plans and custom solutions.</p>
                             </div>
-                            <button className="px-4 cursor-pointer py-2.5 bg-white dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg text-[10px] font-black shadow-sm border border-emerald-200 dark:border-emerald-800/30 whitespace-nowrap hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors uppercase tracking-widest">
+                            <button className="px-4 cursor-pointer py-2.5 bg-white dark:bg-emerald-900/30 !text-emerald-600 dark:!text-emerald-400 rounded-lg text-[10px] font-black shadow-sm border border-emerald-200 dark:border-emerald-800/30 whitespace-nowrap hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors uppercase tracking-widest">
                                 Contact Support
                             </button>
                         </div>
