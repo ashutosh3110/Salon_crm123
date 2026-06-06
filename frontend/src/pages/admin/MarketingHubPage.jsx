@@ -5,7 +5,7 @@ import {
     Plus, Search, Filter, MoreVertical, CheckCircle, Clock,
     Eye, BarChart2, Smartphone, Facebook, Instagram,
     Zap, Calendar, Layout, Trash2, Edit3, ArrowRight, Bell,
-    QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, ChevronLeft, SmartphoneIcon, Target, Megaphone, RefreshCw
+    QrCode, Globe, Percent, XCircle, Save, Star, Download, CheckCircle2, Tag, Gift, ChevronRight, ChevronLeft, SmartphoneIcon, Target, Megaphone, RefreshCw, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -257,20 +257,20 @@ function MarketingHubContent() {
             {/* Tab Content: Campaign List */}
             <div className="space-y-4">
                 {/* Section Header Card */}
-                <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex flex-col md:flex-row md:items-center gap-5 relative overflow-hidden">
-                    <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7]">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm p-5 flex flex-col md:flex-row md:items-center gap-5 relative overflow-hidden">
+                    <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7] dark:bg-green-500/10">
                         {activeTab === 'whatsapp' ? (
-                            <svg className="w-7 h-7 text-[#16a34a]" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            <svg className="w-7 h-7 text-[#16a34a] dark:text-green-400" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.888-.788-1.487-1.761-1.66-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
                         ) : (
-                            <Bell className="w-7 h-7 text-[#16a34a]" strokeWidth={2} />
+                            <Bell className="w-7 h-7 text-[#16a34a] dark:text-green-400" strokeWidth={2} />
                         )}
                     </div>
                     <div className="flex flex-col items-start justify-center">
                         <div className="flex items-center gap-3">
-                            <h2 className="text-[17px] font-black text-slate-900 tracking-tight">{activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}</h2>
-                            <span className="bg-slate-800 text-white text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1 rounded-full">Marketing</span>
+                            <h2 className="text-[17px] font-black text-slate-900 dark:text-white tracking-tight">{activeTab === 'whatsapp' ? 'WhatsApp Campaigns' : 'App Notifications'}</h2>
+                            <span className="!bg-[#B4912B] text-white text-[9px] font-black uppercase tracking-[0.15em] px-3 py-1 rounded-full">Marketing</span>
                         </div>
-                        <p className="text-[11px] text-slate-500 font-bold uppercase tracking-[0.1em] mt-1.5">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.1em] mt-1.5">
                             {activeTab === 'whatsapp' ? 'Direct messages to customer WhatsApp' : 'Push notifications to customer mobile app'}
                         </p>
                     </div>
@@ -278,73 +278,73 @@ function MarketingHubContent() {
 
                 {/* 4 Metric Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7]">
-                            <Send className="w-5 h-5" color="#16a34a" strokeWidth={2.5} />
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#dcfce7] dark:bg-green-500/10">
+                            <Send className="w-5 h-5 text-[#16a34a] dark:text-green-400" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Campaigns</span>
-                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.length || 4}</h3>
-                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">All time campaigns</span>
+                            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Campaigns</span>
+                            <h3 className="text-[22px] font-black text-slate-900 dark:text-white leading-none mt-1">{filteredCampaigns.length || 4}</h3>
+                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-1 tracking-wide">All time campaigns</span>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#e0f2fe]">
-                            <Send className="w-5 h-5" color="#0ea5e9" strokeWidth={2.5} />
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#e0f2fe] dark:bg-blue-500/10">
+                            <Send className="w-5 h-5 text-[#0ea5e9] dark:text-blue-400" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Completed</span>
-                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'completed').length || 4}</h3>
-                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">
+                            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Completed</span>
+                            <h3 className="text-[22px] font-black text-slate-900 dark:text-white leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'completed').length || 4}</h3>
+                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-1 tracking-wide">
                                 {filteredCampaigns.length > 0 ? Math.round((filteredCampaigns.filter(c => c.status === 'completed').length / filteredCampaigns.length) * 100) : 100}% of total
                             </span>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#fef9c3]">
-                            <Clock className="w-5 h-5" color="#eab308" strokeWidth={2.5} />
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#fef9c3] dark:bg-amber-500/10">
+                            <Clock className="w-5 h-5 text-[#eab308] dark:text-amber-400" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Scheduled</span>
-                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'scheduled').length || 0}</h3>
-                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">Upcoming campaigns</span>
+                            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Scheduled</span>
+                            <h3 className="text-[22px] font-black text-slate-900 dark:text-white leading-none mt-1">{filteredCampaigns.filter(c => c.status === 'scheduled').length || 0}</h3>
+                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-1 tracking-wide">Upcoming campaigns</span>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-5 flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#f3e8ff]">
-                            <Mail className="w-5 h-5" color="#9333ea" strokeWidth={2.5} />
+                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-[#e2e8f0] dark:border-slate-800 shadow-sm p-5 flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 bg-[#f3e8ff] dark:bg-purple-500/10">
+                            <Mail className="w-5 h-5 text-[#9333ea] dark:text-purple-400" strokeWidth={2.5} />
                         </div>
                         <div className="flex flex-col text-left">
-                            <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">Total Messages Sent</span>
-                            <h3 className="text-[22px] font-black text-slate-900 leading-none mt-1">1,245</h3>
-                            <span className="text-[9.5px] text-slate-400 font-bold mt-1 tracking-wide">Across all campaigns</span>
+                            <span className="text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Messages Sent</span>
+                            <h3 className="text-[22px] font-black text-slate-900 dark:text-white leading-none mt-1">1,245</h3>
+                            <span className="text-[9.5px] text-slate-400 dark:text-slate-500 font-bold mt-1 tracking-wide">Across all campaigns</span>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mt-2">
-                    <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-[#f8fafc]/50">
-                        <h3 className="text-[11px] font-black text-slate-900 uppercase tracking-widest leading-none">Sent History</h3>
-                        <button onClick={loadCampaigns} className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-slate-200 text-[10px] font-black uppercase tracking-widest text-slate-900 hover:bg-slate-50 transition-all bg-white shadow-sm">
-                            <RefreshCw className="w-3.5 h-3.5" color="#0f172a" /> REFRESH
+                <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden mt-2">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-[#f8fafc]/50 dark:bg-slate-800/50">
+                        <h3 className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest leading-none">Sent History</h3>
+                        <button onClick={loadCampaigns} className="flex items-center gap-2 px-4 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-all bg-white dark:bg-slate-900 shadow-sm">
+                            <RefreshCw className="w-3.5 h-3.5" /> REFRESH
                         </button>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[700px]">
                             <thead>
-                                <tr className="border-b border-slate-100 bg-[#f8fafc]/30">
+                                <tr className="border-b border-slate-100 dark:border-slate-800 bg-[#f8fafc]/30 dark:bg-slate-800/30">
                                     <th className="px-6 py-4 text-left w-10">
-                                        <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300'}`}>
+                                        <button onClick={toggleSelectAll} className={`w-4 h-4 border-2 rounded transition-all ${selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300 dark:border-slate-600'}`}>
                                             {selectedCampaignIds.length === filteredCampaigns.length && filteredCampaigns.length > 0 && <CheckCircle size={10} className="text-white mx-auto" strokeWidth={3} />}
                                         </button>
                                     </th>
-                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Campaign Name</th>
-                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Status</th>
-                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em]">Date</th>
-                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.15em] w-24">Action</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em]">Campaign Name</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em]">Status</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em]">Date</th>
+                                    <th className="px-6 py-4 text-left text-[9px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.15em] w-24">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -355,46 +355,46 @@ function MarketingHubContent() {
                                 ) : (
                                     paginatedCampaigns.map((c, idx) => {
                                         const colors = [
-                                            { bg: 'bg-[#dcfce7]', text: 'text-[#16a34a]' },
-                                            { bg: 'bg-[#e0f2fe]', text: 'text-[#0ea5e9]' },
-                                            { bg: 'bg-[#f3e8ff]', text: 'text-[#9333ea]' },
-                                            { bg: 'bg-[#ffedd5]', text: 'text-[#f97316]' },
+                                            { bg: 'bg-[#dcfce7]', text: '!text-[#16a34a] dark:!text-green-400' },
+                                            { bg: 'bg-[#e0f2fe]', text: '!text-[#0ea5e9] dark:!text-blue-400' },
+                                            { bg: 'bg-[#f3e8ff]', text: '!text-[#9333ea] dark:!text-purple-400' },
+                                            { bg: 'bg-[#ffedd5]', text: '!text-[#f97316] dark:!text-orange-400' },
                                         ];
                                         const avatar = colors[idx % colors.length];
                                         const getInitials = (name) => name ? name.substring(0, 2).toUpperCase() : 'C';
 
                                         return (
-                                            <tr key={c._id} className={`border-b border-slate-100 hover:bg-slate-50/50 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-slate-50' : ''}`}>
+                                            <tr key={c._id} className={`border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors ${selectedCampaignIds.includes(c._id) ? 'bg-slate-50 dark:bg-slate-800/80' : ''}`}>
                                                 <td className="px-6 py-5">
-                                                    <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all mt-1 ${selectedCampaignIds.includes(c._id) ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300'}`}>
+                                                    <button onClick={() => toggleSelect(c._id)} className={`w-4 h-4 border-2 rounded transition-all mt-1 ${selectedCampaignIds.includes(c._id) ? 'bg-[#16a34a] border-[#16a34a]' : 'border-slate-300 dark:border-slate-600'}`}>
                                                         {selectedCampaignIds.includes(c._id) && <CheckCircle size={10} className="text-white mx-auto" strokeWidth={3} />}
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-5">
                                                     <div className="flex items-center gap-4">
-                                                        <div className={`w-9 h-9 rounded-full ${avatar.bg} flex items-center justify-center shrink-0`}>
+                                                        <div className={`w-9 h-9 rounded-full ${avatar.bg} dark:bg-opacity-20 flex items-center justify-center shrink-0`}>
                                                             <span className={`${avatar.text} text-[10px] font-black tracking-widest uppercase`}>{getInitials(c.name)}</span>
                                                         </div>
                                                         <div className="flex flex-col text-left">
-                                                            <div className="text-[11px] font-black text-slate-900 uppercase tracking-widest">{c.name}</div>
-                                                            <div className="text-[10px] text-slate-500 font-bold truncate max-w-[200px] mt-0.5 lowercase tracking-wider">{c.message || 'No description'}</div>
+                                                            <div className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-widest">{c.name}</div>
+                                                            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-bold truncate max-w-[200px] mt-0.5 lowercase tracking-wider">{c.message || 'No description'}</div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-5 text-left">
-                                                    <span className={`inline-flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${c.status === 'completed' ? 'bg-[#dcfce7] text-[#16a34a]' : 'bg-amber-100 text-amber-600'}`}>
+                                                    <span className={`inline-flex items-center gap-1.5 text-[8.5px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md ${c.status === 'completed' ? 'bg-[#dcfce7] dark:bg-green-500/10 !text-[#16a34a] dark:!text-green-400' : 'bg-amber-100 dark:bg-amber-500/10 !text-amber-600 dark:!text-amber-400'}`}>
                                                         {c.status === 'completed' ? <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} /> : <Clock className="w-3.5 h-3.5" strokeWidth={2.5} />}
                                                         {c.status}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-5 text-left">
-                                                    <div className="text-[11px] font-black text-slate-900 tracking-wider">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/')}</div>
-                                                    <div className="text-[9px] text-slate-500 font-bold mt-1 uppercase tracking-wider">{new Date(c.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                                                    <div className="text-[11px] font-black text-slate-900 dark:text-white tracking-wider">{new Date(c.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '/')}</div>
+                                                    <div className="text-[9px] text-slate-500 dark:text-slate-400 font-bold mt-1 uppercase tracking-wider">{new Date(c.createdAt).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true })}</div>
                                                 </td>
                                                 <td className="px-6 py-5 text-left w-24">
                                                     <div className="flex items-center justify-start ml-2">
-                                                        <button onClick={() => handleDelete(c._id)} className="w-8 h-8 rounded-[8px] border border-slate-200 flex items-center justify-center hover:border-rose-200 hover:bg-rose-50 transition-all shadow-sm">
-                                                            <Trash2 className="w-3.5 h-3.5" color="#64748b" />
+                                                        <button onClick={() => handleDelete(c._id)} className="w-8 h-8 rounded-[8px] border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:border-rose-200 dark:hover:border-rose-500/30 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all shadow-sm">
+                                                            <Trash2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -408,7 +408,7 @@ function MarketingHubContent() {
                     {/* Pagination Footer */}
                     {filteredCampaigns.length > 0 && (
                         <div className="px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <span className="text-[10px] font-bold text-slate-500 tracking-wide uppercase">
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-wide uppercase">
                                 Showing {((safeCurrentPage - 1) * itemsPerPage) + 1} - {Math.min(safeCurrentPage * itemsPerPage, filteredCampaigns.length)} of {filteredCampaigns.length} campaigns
                             </span>
                             <div className="flex items-center gap-2">
@@ -416,7 +416,7 @@ function MarketingHubContent() {
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                                     disabled={safeCurrentPage === 1}
-                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     PREVIOUS
                                 </button>
@@ -428,7 +428,7 @@ function MarketingHubContent() {
                                         className={`w-8 h-8 rounded-full text-[11px] font-black transition-all ${
                                             page === safeCurrentPage
                                                 ? 'bg-[#B4912B] text-white shadow-md'
-                                                : 'text-slate-500 hover:bg-slate-50'
+                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white'
                                         }`}
                                     >
                                         {page}
@@ -438,7 +438,7 @@ function MarketingHubContent() {
                                     type="button"
                                     onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                                     disabled={safeCurrentPage === totalPages || totalPages === 0}
-                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 border border-slate-200 hover:bg-slate-50 hover:text-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
                                     NEXT
                                 </button>
@@ -525,14 +525,14 @@ function MarketingHubContent() {
                                                                 key={t.id}
                                                                 type="button"
                                                                 onClick={() => setCampaignForm({ ...campaignForm, type: t.id })}
-                                                                className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 ${
+                                                                className={`p-3 rounded-xl border-2 transition-all text-left flex items-center gap-3 group ${
                                                                     campaignForm.type === t.id
-                                                                        ? 'border-primary bg-primary/5'
-                                                                        : 'border-slate-200 hover:border-slate-300 bg-white dark:border-slate-700 dark:hover:border-slate-600 dark:bg-slate-800/50'
+                                                                        ? '!border-[#B4912B] !bg-[#B4912B]/5'
+                                                                        : 'border-slate-200 hover:border-[#B4912B]/50 bg-white dark:border-slate-700 dark:hover:border-[#B4912B]/50 dark:bg-slate-800/50'
                                                                 }`}
                                                             >
-                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                                                    campaignForm.type === t.id ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-300'
+                                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                                                                    campaignForm.type === t.id ? '!bg-[#B4912B] !text-white' : 'bg-slate-100 text-slate-400 group-hover:text-[#B4912B] dark:bg-slate-800/80 dark:text-slate-400 dark:group-hover:text-[#B4912B]'
                                                                 }`}>
                                                                     <t.icon className="w-4 h-4" />
                                                                 </div>
@@ -552,7 +552,7 @@ function MarketingHubContent() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setIsContactListOpen(true)}
-                                                                className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-primary uppercase tracking-widest hover:border-primary/50 transition-all"
+                                                                className="px-4 py-2 !bg-[#B4912B] !text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:!bg-[#9a7b24] transition-all shadow-md"
                                                             >
                                                                 Select Customers
                                                             </button>
@@ -584,7 +584,7 @@ function MarketingHubContent() {
                                             type="button"
                                             onClick={handleSendCampaign}
                                             disabled={!campaignForm.name || !campaignForm.message || (campaignForm.type === 'selective' && campaignForm.selectedCustomers.length === 0) || isSending}
-                                            className="w-full py-4 bg-slate-900 text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl hover:bg-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
+                                            className="w-full py-4 !bg-[#B4912B] !text-white text-[10px] font-black uppercase tracking-[0.3em] rounded-xl hover:!bg-[#9a7b24] transition-all disabled:cursor-not-allowed active:scale-[0.98] shadow-lg"
                                         >
                                             {isSending ? 'Sending...' : `Send ${activeTab === 'whatsapp' ? 'WhatsApp' : 'Notification'} Now`}
                                         </button>
@@ -645,17 +645,22 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[300] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
+        <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4 pt-10 sm:pt-16 overflow-y-auto">
             <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-[2rem] w-full max-w-2xl max-h-[80vh] shadow-2xl relative overflow-hidden flex flex-col">
-                <div className="px-8 py-6 border-b border-border flex items-center justify-between">
-                    <h3 className="text-xl font-black text-text uppercase tracking-tight">Select Contacts</h3>
-                    <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="px-4 py-2 border border-border rounded-xl text-sm w-48" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white dark:bg-slate-800 rounded-[2rem] w-full max-w-2xl max-h-[80vh] shadow-2xl relative overflow-hidden flex flex-col">
+                <div className="px-8 py-6 border-b border-border dark:border-slate-700 flex items-center justify-between gap-4">
+                    <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Select Contacts</h3>
+                    <div className="flex items-center gap-3">
+                        <input type="text" placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)} className="px-4 py-2 border border-border dark:border-slate-700 dark:bg-slate-900 dark:text-white rounded-xl text-sm w-48" />
+                        <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors">
+                            <X className="w-5 h-5" strokeWidth={2.5} />
+                        </button>
+                    </div>
                 </div>
                 <div className="flex-1 p-6 overflow-y-auto no-scrollbar">
                     <table className="w-full">
                         <thead>
-                            <tr className="text-left text-[10px] font-black text-text-muted uppercase tracking-widest border-b border-border">
+                            <tr className="text-left text-[10px] font-black text-text-muted dark:text-slate-400 uppercase tracking-widest border-b border-border dark:border-slate-700">
                                 <th className="p-2 w-10">Select</th>
                                 <th className="p-2">Name</th>
                                 <th className="p-2">Phone</th>
@@ -663,19 +668,19 @@ function ContactListModal({ isOpen, onClose, selectionMode = false, selectedIds 
                         </thead>
                         <tbody>
                             {filtered.map(c => (
-                                <tr key={c._id} className="border-b border-border/50 hover:bg-surface/50 cursor-pointer" onClick={() => onToggleSelect(c._id)}>
+                                <tr key={c._id} className="border-b border-border/50 dark:border-slate-700/50 hover:bg-surface/50 dark:hover:bg-slate-700/50 cursor-pointer" onClick={() => onToggleSelect(c._id)}>
                                     <td className="p-2">
-                                        <div className={`w-4 h-4 border-2 rounded ${selectedIds.includes(c._id) ? 'bg-primary border-primary' : 'border-border'}`} />
+                                        <div className={`w-4 h-4 border-2 rounded transition-colors ${selectedIds.includes(c._id) ? '!bg-[#B4912B] !border-[#B4912B]' : 'border-border dark:border-slate-500'}`} />
                                     </td>
-                                    <td className="p-2 text-sm font-bold uppercase">{c.name}</td>
-                                    <td className="p-2 text-sm text-text-muted">{c.phone}</td>
+                                    <td className="p-2 text-sm font-bold text-slate-900 dark:text-white uppercase">{c.name}</td>
+                                    <td className="p-2 text-sm text-text-muted dark:text-slate-400">{c.phone}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                <div className="p-4 border-t border-border bg-surface text-center">
-                    <button onClick={onClose} className="px-8 py-3 bg-slate-900 text-white rounded-xl text-[10px] font-black uppercase tracking-widest">Done ({selectedIds.length})</button>
+                <div className="p-4 border-t border-border dark:border-slate-700 bg-surface dark:bg-slate-800 text-center">
+                    <button onClick={onClose} className="px-8 py-3 !bg-[#B4912B] !text-white hover:!bg-[#9a7b24] transition-colors rounded-xl text-[10px] font-black uppercase tracking-widest">Done ({selectedIds.length})</button>
                 </div>
             </motion.div>
         </div>
