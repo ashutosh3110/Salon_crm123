@@ -21,6 +21,7 @@ import {
     X,
     Cake,
     ChevronRight,
+    ChevronDown,
     ArrowUpRight,
     ArrowDownLeft,
     Eye,
@@ -49,6 +50,7 @@ export default function CustomerDetailPage() {
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState(null);
     const [saving, setSaving] = useState(false);
+    const [statusDropdownOpen, setStatusDropdownOpen] = useState(false);
 
     // Selected order for detailed view drawer
     const [selectedOrder, setSelectedOrder] = useState(null);
@@ -214,10 +216,10 @@ export default function CustomerDetailPage() {
 
     const regDate = customer.createdAt
         ? new Date(customer.createdAt).toLocaleDateString('en-IN', {
-              day: '2-digit',
-              month: 'short',
-              year: 'numeric'
-          })
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric'
+        })
         : 'Unknown';
 
     return (
@@ -237,7 +239,7 @@ export default function CustomerDetailPage() {
                         <p className="text-[9px] font-black text-text-muted mt-2 uppercase tracking-[0.3em] opacity-60 leading-none">CRM Directory • File Tracker</p>
                     </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                     {isEditing ? (
                         <button
@@ -251,7 +253,7 @@ export default function CustomerDetailPage() {
                             onClick={() => setIsEditing(true)}
                             className="bg-primary text-primary-foreground hover:bg-primary/95 px-6 py-3 text-[10px] font-black uppercase tracking-widest flex items-center gap-2 transition-all shadow-md active:scale-95"
                         >
-                            <Edit className="w-3.5 h-3.5" /> Edit Profile
+                            <Edit className="w-3.5 h-3.5 !text-white" /> Edit Profile
                         </button>
                     )}
                 </div>
@@ -262,7 +264,7 @@ export default function CustomerDetailPage() {
                 <div className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 flex-1">
                         <div className="relative shrink-0">
-                            <div className="w-20 h-20 bg-text text-white flex items-center justify-center text-3xl font-black shadow-lg overflow-hidden border border-white">
+                            <div className="w-20 h-20 bg-slate-900 dark:bg-slate-800 text-white-force flex items-center justify-center text-3xl font-black shadow-lg overflow-hidden border border-white">
                                 {customer.avatar ? (
                                     <img
                                         src={getImageUrl(customer.avatar)}
@@ -294,11 +296,10 @@ export default function CustomerDetailPage() {
                                     {customer.isVIP && (
                                         <span className="px-2 py-0.5 bg-amber-500 text-white">VIP</span>
                                     )}
-                                    <span className={`px-2 py-0.5 border ${
-                                        customer.status === 'active' 
-                                            ? 'bg-green-500/10 text-green-600 border-green-500/20' 
+                                    <span className={`px-2 py-0.5 border ${customer.status === 'active'
+                                            ? 'bg-green-500/10 text-green-600 border-green-500/20'
                                             : 'bg-rose-500/10 text-rose-600 border-rose-500/20'
-                                    }`}>
+                                        }`}>
                                         {customer.status || 'Active'}
                                     </span>
                                     {customer.category && (
@@ -348,7 +349,7 @@ export default function CustomerDetailPage() {
 
             {/* Content Layout - Details and History Tabs */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                
+
                 {/* Left Side: Client Identity Details Card */}
                 <div className="bg-surface border border-border lg:col-span-1 p-6 space-y-6">
                     <div className="flex items-center justify-between border-b border-border pb-3">
@@ -423,25 +424,61 @@ export default function CustomerDetailPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                <label className="flex items-center gap-2 border border-border bg-surface-alt/10 p-2.5 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={editForm.isVIP}
-                                        onChange={(e) => setEditForm({ ...editForm, isVIP: e.target.checked })}
-                                        className="w-4 h-4 accent-primary cursor-pointer"
-                                    />
-                                    <span className="text-[9px] font-black uppercase tracking-wider">VIP Member</span>
-                                </label>
-                                
-                                <select
-                                    value={editForm.status}
-                                    onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                                    className="border border-border bg-surface-alt/30 p-2.5 text-[9px] font-black uppercase outline-none"
+                                <div 
+                                    role="checkbox"
+                                    aria-checked={editForm.isVIP}
+                                    onClick={() => setEditForm({ ...editForm, isVIP: !editForm.isVIP })}
+                                    className="flex items-center gap-3 border border-border bg-surface-alt/10 p-2.5 cursor-pointer select-none w-full"
                                 >
-                                    <option value="active">Active</option>
-                                    <option value="inactive">Inactive</option>
-                                    <option value="suspended">Suspended</option>
-                                </select>
+                                    <div className={`w-4 h-4 border flex items-center justify-center shrink-0 transition-all ${
+                                        editForm.isVIP 
+                                            ? 'bg-primary border-primary text-white-force' 
+                                            : 'border-border bg-transparent'
+                                    }`}>
+                                        {editForm.isVIP && (
+                                            <svg className="w-2.5 h-2.5 fill-none stroke-white-force stroke-[3px]" viewBox="0 0 24 24">
+                                                <polyline points="20 6 9 17 4 12" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                    <span className="text-[9px] font-black uppercase tracking-wider">VIP Member</span>
+                                </div>
+
+                                <div className="relative">
+                                    <button
+                                        type="button"
+                                        onClick={() => setStatusDropdownOpen(!statusDropdownOpen)}
+                                        className="w-full flex items-center justify-between border border-border bg-surface-alt/30 p-2.5 text-[9px] font-black uppercase outline-none cursor-pointer text-text hover:border-primary transition-all rounded-none"
+                                    >
+                                        <span>{editForm.status}</span>
+                                        <ChevronDown className="w-3.5 h-3.5 text-text-muted" />
+                                    </button>
+                                    {statusDropdownOpen && (
+                                        <>
+                                            <div 
+                                                className="fixed inset-0 z-40" 
+                                                onClick={() => setStatusDropdownOpen(false)} 
+                                            />
+                                            <div className="absolute left-0 right-0 mt-1 bg-surface border border-border shadow-lg z-50 py-1 divide-y divide-border/40">
+                                                {['active', 'inactive', 'suspended'].map((statusOption) => (
+                                                    <div
+                                                        key={statusOption}
+                                                        role="button"
+                                                        onClick={() => {
+                                                            setEditForm({ ...editForm, status: statusOption });
+                                                            setStatusDropdownOpen(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2 text-[9px] font-black uppercase cursor-pointer hover:bg-primary/10 hover:text-primary transition-all text-text ${
+                                                            editForm.status === statusOption ? 'bg-surface-alt text-primary' : ''
+                                                        }`}
+                                                    >
+                                                        {statusOption}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
 
                             <button
@@ -449,17 +486,17 @@ export default function CustomerDetailPage() {
                                 disabled={saving}
                                 className="w-full bg-primary text-primary-foreground py-3 text-[10px] font-black uppercase tracking-widest hover:bg-primary/90 flex items-center justify-center gap-2 shadow-md active:scale-95 disabled:opacity-50"
                             >
-                                <Save className="w-3.5 h-3.5" /> {saving ? 'Saving...' : 'Save Registry'}
+                                <Save className="w-3.5 h-3.5 !text-white" /> {saving ? 'Saving...' : 'Save Registry'}
                             </button>
                         </form>
                     ) : (
                         <div className="space-y-4">
-                            <DetailRow label="Phone Number" value={customer.phone} icon={Phone} />
-                            <DetailRow label="Email Address" value={customer.email || 'None'} icon={Mail} />
-                            <DetailRow label="Birth Date" value={customer.dob || 'None'} icon={Cake} />
-                            <DetailRow label="Anniversary" value={customer.anniversary || 'None'} icon={Calendar} />
-                            <DetailRow label="Preferred Service" value={customer.preferredService || 'General'} icon={Tag} />
-                            <DetailRow label="Residential Address" value={customer.address || 'No Address Registered'} icon={MapPin} isFullWidth />
+                            <DetailRow label="Phone Number" value={customer.phone} icon={Phone} iconColor="!text-blue-500" />
+                            <DetailRow label="Email Address" value={customer.email || 'None'} icon={Mail} iconColor="!text-emerald-500" />
+                            <DetailRow label="Birth Date" value={customer.dob || 'None'} icon={Cake} iconColor="!text-pink-500" />
+                            <DetailRow label="Anniversary" value={customer.anniversary || 'None'} icon={Calendar} iconColor="!text-purple-500" />
+                            <DetailRow label="Preferred Service" value={customer.preferredService || 'General'} icon={Tag} iconColor="!text-amber-500" />
+                            <DetailRow label="Residential Address" value={customer.address || 'No Address Registered'} icon={MapPin} iconColor="!text-rose-500" isFullWidth />
                             {customer.remarks && (
                                 <div className="space-y-1 bg-surface-alt/25 p-3 border border-border/50 text-left">
                                     <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block">Staff Remarks & Notes</span>
@@ -472,23 +509,21 @@ export default function CustomerDetailPage() {
 
                 {/* Right Side: Tab based Booking / Order Histories */}
                 <div className="bg-surface border border-border lg:col-span-2 overflow-hidden shadow-sm flex flex-col min-h-[500px]">
-                    
+
                     {/* Tab Navigation Menu */}
                     <div className="flex border-b border-border bg-surface-alt/30 shrink-0">
                         <button
                             onClick={() => setActiveSubTab('bookings')}
-                            className={`flex-1 sm:flex-initial px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all relative ${
-                                activeSubTab === 'bookings' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'
-                            }`}
+                            className={`flex-1 sm:flex-initial px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all relative ${activeSubTab === 'bookings' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'
+                                }`}
                         >
                             Booking History
                             {activeSubTab === 'bookings' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
                         </button>
                         <button
                             onClick={() => setActiveSubTab('orders')}
-                            className={`flex-1 sm:flex-initial px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all relative ${
-                                activeSubTab === 'orders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'
-                            }`}
+                            className={`flex-1 sm:flex-initial px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] border-r border-border transition-all relative ${activeSubTab === 'orders' ? 'bg-surface text-primary' : 'text-text-muted hover:text-text'
+                                }`}
                         >
                             Order History
                             {activeSubTab === 'orders' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />}
@@ -539,20 +574,18 @@ export default function CustomerDetailPage() {
                                                                 ₹{(b.totalPrice ?? b.amount ?? 0).toLocaleString()}
                                                             </td>
                                                             <td className="p-3.5">
-                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${
-                                                                    b.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                                                    b.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                                                    b.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
-                                                                    'bg-slate-100 text-slate-500 border-slate-200'
-                                                                }`}>
+                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${b.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                                                                        b.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                                            b.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                                                                'bg-slate-100 text-slate-500 border-slate-200'
+                                                                    }`}>
                                                                     {b.status}
                                                                 </span>
                                                             </td>
                                                             <td className="p-3.5">
-                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${
-                                                                    b.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                                                    'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                                }`}>
+                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${b.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                                        'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                                                    }`}>
                                                                     {b.paymentStatus || 'pending'}
                                                                 </span>
                                                             </td>
@@ -642,20 +675,18 @@ export default function CustomerDetailPage() {
                                                                 ₹{(o.totalAmount ?? 0).toLocaleString()}
                                                             </td>
                                                             <td className="p-3.5">
-                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${
-                                                                    o.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
-                                                                    'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                                }`}>
+                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${o.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                                                                        'bg-amber-500/10 text-amber-600 border-amber-500/20'
+                                                                    }`}>
                                                                     {o.paymentStatus || 'pending'}
                                                                 </span>
                                                             </td>
                                                             <td className="p-3.5">
-                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${
-                                                                    o.status === 'delivered' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                                                    o.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
-                                                                    o.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
-                                                                    'bg-slate-100 text-slate-500 border-slate-200'
-                                                                }`}>
+                                                                <span className={`px-2 py-0.5 text-[9px] font-black uppercase border rounded ${o.status === 'delivered' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                                                                        o.status === 'pending' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                                                                            o.status === 'cancelled' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
+                                                                                'bg-slate-100 text-slate-500 border-slate-200'
+                                                                    }`}>
                                                                     {o.status}
                                                                 </span>
                                                             </td>
@@ -731,10 +762,10 @@ function ProfileMetric({ label, value, icon: Icon, color }) {
     );
 }
 
-function DetailRow({ label, value, icon: Icon }) {
+function DetailRow({ label, value, icon: Icon, iconColor }) {
     return (
         <div className="flex items-start gap-3 border border-border bg-surface-alt/10 p-3.5 rounded-xl text-left">
-            <Icon className="w-4 h-4 text-text-muted mt-0.5 shrink-0" />
+            <Icon className={`w-4 h-4 mt-0.5 shrink-0 ${iconColor || '!text-text-muted'}`} />
             <div className="space-y-1">
                 <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block leading-none">{label}</span>
                 <span className="text-xs font-bold text-text uppercase tracking-tight leading-none">{value || '-'}</span>
@@ -743,12 +774,10 @@ function DetailRow({ label, value, icon: Icon }) {
     );
 }
 
-function EmptyState({ title, description, icon: Icon }) {
+function EmptyState({ title, description }) {
     return (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-            <div className="p-4 border border-border/50 bg-surface-alt/10 text-text-muted">
-                <Icon className="w-8 h-8 opacity-40" />
-            </div>
+        <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
+            <img src="/vectorimages.png" alt="No Data Available" className="w-44 h-auto object-contain opacity-90 select-none pointer-events-none" />
             <div className="space-y-1">
                 <h4 className="text-xs font-black uppercase tracking-widest text-text">{title}</h4>
                 <p className="text-[11px] text-text-muted max-w-[300px] leading-relaxed">{description}</p>

@@ -15,7 +15,8 @@ import {
     ShieldAlert,
     CheckCircle2,
     BookOpen,
-    Eye
+    Eye,
+    Stethoscope
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -39,16 +40,16 @@ export default function ConsultationsPage() {
     const [filterOutlet, setFilterOutlet] = useState('');
     const [filterStatus, setFilterStatus] = useState('');
     const [filterCustomer, setFilterCustomer] = useState('');
-    
+
     // Add / Edit Modal state
     const [showFormModal, setShowFormModal] = useState(false);
     const [selectedConsultation, setSelectedConsultation] = useState(null);
     const [formLoading, setFormLoading] = useState(false);
-    
+
     // View Modal state
     const [showViewModal, setShowViewModal] = useState(false);
     const [viewConsultation, setViewConsultation] = useState(null);
-    
+
     // Selected outlet customer fetching
     const [outletCustomers, setOutletCustomers] = useState([]);
     const [loadingCustomers, setLoadingCustomers] = useState(false);
@@ -213,23 +214,31 @@ export default function ConsultationsPage() {
     return (
         <div className="space-y-6 animate-reveal text-left max-w-6xl mx-auto">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6 pb-2">
-                <div>
-                    <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Consultations</h1>
-                    <p className="text-[10px] font-black text-text-muted mt-3 uppercase tracking-[0.3em] opacity-60 leading-none">CRM Directory • Medical & Ritual Consultation Logs</p>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 pb-2">
+                <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[#FEF5ED] dark:bg-[#B4912B]/10 border border-[#FFE6D5] dark:border-[#B4912B]/20 rounded-2xl flex items-center justify-center text-[#B4912B]">
+                        <Stethoscope className="w-8 h-8" strokeWidth={1.5} />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl sm:text-4xl font-black text-text uppercase tracking-tighter leading-none">Consultations</h1>
+                        <p className="text-[10px] font-black mt-3 uppercase tracking-[0.3em] leading-none">
+                            <span className="text-text-muted dark:text-slate-400 opacity-60">CRM Directory</span> <span className="mx-1.5 text-[#B4912B] font-bold opacity-80">&gt;</span> <span className="text-[#B4912B]">Medical & Ritual Consultation Logs</span>
+                        </p>
+                    </div>
                 </div>
 
                 <button
                     onClick={handleOpenAddModal}
-                    className="bg-primary text-primary-foreground px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:brightness-110 hover:shadow-xl hover:shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 self-start lg:self-auto"
+                    style={{ backgroundColor: '#B4912B' }}
+                    className="text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-[#B4912B]/20 hover:brightness-110 hover:shadow-xl hover:shadow-[#B4912B]/30 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3 self-start lg:self-auto"
                 >
                     <Plus className="w-4 h-4" /> Add Consultation
                 </button>
             </div>
 
             {/* Filters Section */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-6 border border-border shadow-sm rounded-2xl">
-                <div className="space-y-1 text-left">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-surface p-6 border border-border shadow-sm rounded-2xl items-end">
+                <div className="space-y-1.5 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Outlet</label>
                     <CustomDropdown
                         value={filterOutlet}
@@ -238,11 +247,12 @@ export default function ConsultationsPage() {
                             { value: '', label: 'ALL OUTLETS' },
                             ...outlets.map(o => ({ value: o._id || o.id, label: o.name.toUpperCase() }))
                         ]}
-                        className="w-full"
+                        icon={Store}
+                        className="w-full h-11"
                     />
                 </div>
 
-                <div className="space-y-1 text-left">
+                <div className="space-y-1.5 text-left">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Filter by Status</label>
                     <CustomDropdown
                         value={filterStatus}
@@ -253,21 +263,22 @@ export default function ConsultationsPage() {
                             { value: 'in_progress', label: 'IN PROGRESS' },
                             { value: 'completed', label: 'COMPLETED' }
                         ]}
-                        className="w-full"
+                        icon={CheckCircle2}
+                        className="w-full h-11"
                     />
                 </div>
 
                 {/* Free Text Search for Customer */}
-                <div className="space-y-1 text-left md:col-span-2">
+                <div className="space-y-1.5 text-left md:col-span-2">
                     <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block ml-1">Search Customer (Database ID)</label>
                     <div className="relative">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
                         <input
                             type="text"
                             placeholder="Enter Customer ID to filter..."
                             value={filterCustomer}
                             onChange={(e) => setFilterCustomer(e.target.value.trim())}
-                            className="w-full pl-11 pr-4 py-3 bg-surface-alt border border-border text-xs font-bold outline-none rounded-2xl focus:border-primary transition-all shadow-sm"
+                            className="w-full h-11 pl-11 pr-4 bg-white border border-border text-[11px] font-black uppercase tracking-[0.12em] outline-none rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all shadow-sm placeholder:text-text-muted/60"
                         />
                     </div>
                 </div>
@@ -301,7 +312,7 @@ export default function ConsultationsPage() {
                                         <th className="p-4 text-[9px] font-black uppercase text-text-muted tracking-widest">Customer details</th>
                                         <th className="p-4 text-[9px] font-black uppercase text-text-muted tracking-widest">Consultation details</th>
                                         <th className="p-4 text-[9px] font-black uppercase text-text-muted tracking-widest">Status</th>
-                                        <th className="p-4 text-[9px] font-black uppercase text-text-muted tracking-widest text-right">Actions</th>
+                                        <th className="p-4 text-[9px] font-black uppercase text-text-muted tracking-widest text-center" style={{ textAlign: 'center' }}>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border text-xs bg-surface">
@@ -332,38 +343,46 @@ export default function ConsultationsPage() {
                                                 <p className="text-[10px] text-text-muted mt-1 truncate">{c.notes}</p>
                                             </td>
                                             <td className="p-4">
-                                                <span className={`px-2.5 py-1 text-[9px] font-black uppercase border rounded-xl ${
-                                                    c.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                                    c.status === 'in_progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
-                                                    'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                                }`}>
+                                                <span
+                                                    className={`px-2.5 py-1 text-[9px] font-black uppercase border rounded-xl ${c.status === 'completed' ? 'bg-green-500/10 border-green-500/20' :
+                                                            c.status === 'in_progress' ? 'bg-indigo-500/10 border-indigo-500/20' :
+                                                                'bg-amber-500/10 border-amber-500/20'
+                                                        }`}
+                                                    style={{
+                                                        color: c.status === 'completed' ? '#16a34a' :
+                                                            c.status === 'in_progress' ? '#4f46e5' :
+                                                                '#d97706'
+                                                    }}
+                                                >
                                                     {c.status === 'in_progress' ? 'In Progress' : c.status}
                                                 </span>
                                             </td>
-                                            <td className="p-4 text-right flex items-center justify-end gap-2 mt-1">
-                                                <button
-                                                    onClick={() => handleOpenViewModal(c)}
-                                                    className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
-                                                    title="View Details"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenEditModal(c)}
-                                                    className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
-                                                    title="Edit Log"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                {(user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'manager') && (
+                                            <td className="p-4" style={{ textAlign: 'center' }}>
+                                                <div className="flex items-center justify-center gap-2">
                                                     <button
-                                                        onClick={() => handleDeleteConsultation(c._id)}
-                                                        className="p-2.5 rounded-xl text-text-muted hover:text-rose-500 border border-border hover:bg-surface-alt transition-all shadow-sm"
-                                                        title="Delete Log"
+                                                        onClick={() => handleOpenViewModal(c)}
+                                                        className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
+                                                        title="View Details"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        <Eye className="w-4 h-4" />
                                                     </button>
-                                                )}
+                                                    <button
+                                                        onClick={() => handleOpenEditModal(c)}
+                                                        className="p-2.5 rounded-xl text-text-muted hover:text-primary border border-border hover:bg-surface-alt transition-all shadow-sm"
+                                                        title="Edit Log"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                    {(user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'manager') && (
+                                                        <button
+                                                            onClick={() => handleDeleteConsultation(c._id)}
+                                                            className="p-2.5 rounded-xl text-text-muted hover:text-rose-500 border border-border hover:bg-surface-alt transition-all shadow-sm"
+                                                            title="Delete Log"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -426,18 +445,17 @@ export default function ConsultationsPage() {
                                     {/* Step 1: Select Outlet */}
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">1. Select Target Outlet *</label>
-                                        <select
-                                            required
-                                            disabled={!!selectedConsultation} // Freeze outlet selection on update
+                                        <CustomDropdown
                                             value={formData.outletId}
-                                            onChange={(e) => setFormData({ ...formData, outletId: e.target.value, customerId: '' })}
-                                            className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm disabled:opacity-50"
-                                        >
-                                            <option value="">-- Choose Outlet --</option>
-                                            {outlets.map(o => (
-                                                <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
-                                            ))}
-                                        </select>
+                                            onChange={(val) => setFormData({ ...formData, outletId: val, customerId: '' })}
+                                            options={[
+                                                { value: '', label: '-- CHOOSE OUTLET --' },
+                                                ...outlets.map(o => ({ value: o._id || o.id, label: o.name.toUpperCase() }))
+                                            ]}
+                                            disabled={!!selectedConsultation}
+                                            placeholder="-- CHOOSE OUTLET --"
+                                            className="w-full h-11 text-xs font-black uppercase"
+                                        />
                                     </div>
 
                                     {/* Step 2: Auto-fetched Outlet Customers */}
@@ -451,21 +469,23 @@ export default function ConsultationsPage() {
                                                 type="text"
                                                 readOnly
                                                 value={selectedConsultation.customerId?.name || 'Standard Client'}
-                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none uppercase cursor-not-allowed opacity-70"
+                                                className="w-full bg-surface-alt border border-[#e5e7eb] px-3 py-2 rounded-xl text-xs font-black outline-none uppercase cursor-not-allowed opacity-70"
                                             />
                                         ) : (
-                                            <select
-                                                required
-                                                disabled={!formData.outletId}
+                                            <CustomDropdown
                                                 value={formData.customerId}
-                                                onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
-                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                                            >
-                                                <option value="">-- Choose Customer --</option>
-                                                {outletCustomers.map(c => (
-                                                    <option key={c._id} value={c._id}>{c.name} ({maskPhone(c.phone, user?.role)})</option>
-                                                ))}
-                                            </select>
+                                                onChange={(val) => setFormData({ ...formData, customerId: val })}
+                                                options={[
+                                                    { value: '', label: '-- CHOOSE CUSTOMER --' },
+                                                    ...outletCustomers.map(c => ({
+                                                        value: c._id,
+                                                        label: `${c.name.toUpperCase()} (${maskPhone(c.phone, user?.role)})`
+                                                    }))
+                                                ]}
+                                                disabled={!formData.outletId}
+                                                placeholder="-- CHOOSE CUSTOMER --"
+                                                className="w-full h-11 text-xs font-black uppercase"
+                                            />
                                         )}
                                     </div>
 
@@ -509,20 +529,21 @@ export default function ConsultationsPage() {
                                     </div>
 
                                     {/* Status & Follow-up Dates */}
-                                        <div className="space-y-1.5">
-                                            <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Status</label>
-                                            <select
-                                                value={formData.status}
-                                                onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm"
-                                            >
-                                                <option value="pending">Pending</option>
-                                                <option value="in_progress">In Progress</option>
-                                                <option value="completed">Completed</option>
-                                            </select>
-                                        </div>
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Status</label>
+                                        <CustomDropdown
+                                            value={formData.status}
+                                            onChange={(val) => setFormData({ ...formData, status: val })}
+                                            options={[
+                                                { value: 'pending', label: 'PENDING' },
+                                                { value: 'in_progress', label: 'IN PROGRESS' },
+                                                { value: 'completed', label: 'COMPLETED' }
+                                            ]}
+                                            className="w-full h-11 text-xs font-black uppercase"
+                                        />
+                                    </div>
 
-                                    
+
 
                                     {/* Private Admin Notes */}
                                     <div className="space-y-1.5">
@@ -585,7 +606,7 @@ export default function ConsultationsPage() {
 
                             {/* Modal Body */}
                             <div className="p-6 space-y-6 text-left">
-                                
+
                                 {/* Grid metadata */}
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                     <div className="p-4 bg-surface-alt border border-border rounded-2xl">
@@ -606,11 +627,17 @@ export default function ConsultationsPage() {
                                     <div className="p-4 bg-surface-alt border border-border rounded-2xl">
                                         <span className="text-[8px] font-black text-text-muted uppercase tracking-widest block mb-1">Status Registry</span>
                                         <div>
-                                            <span className={`inline-block px-3 py-1 text-[9px] font-black uppercase border mt-0.5 rounded-xl ${
-                                                viewConsultation.status === 'completed' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                                                viewConsultation.status === 'in_progress' ? 'bg-indigo-500/10 text-indigo-600 border-indigo-500/20' :
-                                                'bg-amber-500/10 text-amber-600 border-amber-500/20'
-                                            }`}>
+                                            <span
+                                                className={`inline-block px-3 py-1 text-[9px] font-black uppercase border mt-0.5 rounded-xl ${viewConsultation.status === 'completed' ? 'bg-green-500/10 border-green-500/20' :
+                                                        viewConsultation.status === 'in_progress' ? 'bg-indigo-500/10 border-indigo-500/20' :
+                                                            'bg-amber-500/10 border-amber-500/20'
+                                                    }`}
+                                                style={{
+                                                    color: viewConsultation.status === 'completed' ? '#16a34a' :
+                                                        viewConsultation.status === 'in_progress' ? '#4f46e5' :
+                                                            '#d97706'
+                                                }}
+                                            >
                                                 {viewConsultation.status === 'in_progress' ? 'In Progress' : viewConsultation.status}
                                             </span>
                                         </div>
