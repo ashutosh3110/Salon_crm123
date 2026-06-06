@@ -249,7 +249,19 @@ export default function AttendanceTracker() {
     };
 
     return (
-        <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
+        <>
+            <style>{`
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-indigo-500 { color: #6366f1 !important; stroke: #6366f1 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-emerald-500 { color: #10b981 !important; stroke: #10b981 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-emerald-400 { color: #34d399 !important; stroke: #34d399 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-blue-500 { color: #3b82f6 !important; stroke: #3b82f6 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-purple-500 { color: #a855f7 !important; stroke: #a855f7 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-rose-500 { color: #f43f5e !important; stroke: #f43f5e !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-violet-500 { color: #8b5cf6 !important; stroke: #8b5cf6 !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-primary { color: #B4912B !important; stroke: #B4912B !important; }
+                .dark .admin-panel.admin-panel.admin-panel * svg.text-amber-500 { color: #f59e0b !important; stroke: #f59e0b !important; }
+            `}</style>
+            <div className="space-y-5 text-left bg-slate-50 dark:bg-[#0f172a] rounded-2xl p-6 border border-slate-200/60 dark:border-slate-800/80 transition-colors">
 
             {/* Top Toolbar */}
             <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 rounded-2xl border border-slate-200/60 dark:border-slate-700/80 shadow-sm flex flex-col gap-3 transition-colors">
@@ -338,11 +350,10 @@ export default function AttendanceTracker() {
                                         key={o}
                                         type="button"
                                         onClick={() => { setFilterOutlet(o); setOutletDropdownOpen(false); }}
-                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${
-                                            filterOutlet === o
+                                        className={`w-full text-left px-3.5 py-2.5 text-xs font-bold transition-colors ${filterOutlet === o
                                                 ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                                                 : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                        }`}
+                                            }`}
                                     >
                                         {o === 'All' ? 'All Outlets' : o}
                                     </button>
@@ -356,14 +367,17 @@ export default function AttendanceTracker() {
             {/* Quick Status Pill Bar (Only in Daily view) */}
             {viewMode === 'daily' && (
                 <div className="flex items-center gap-1.5 flex-wrap">
+                    <style>{`
+                        .admin-panel button.quick-filter-btn { border-radius: 6px !important; }
+                    `}</style>
                     <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1 select-none">Quick Filters:</span>
                     {['All', 'pending', 'present', 'absent', 'leave'].map(s => (
                         <button
                             key={s}
                             onClick={() => setActiveStatusFilter(s)}
-                            className={`px-3 py-1 rounded-full text-xs font-bold border transition-all ${activeStatusFilter === s
-                                ? 'bg-primary/10 border-primary/20 text-primary dark:text-slate-200'
-                                : 'bg-white dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-650 hover:bg-slate-50 dark:hover:bg-slate-750'
+                            className={`quick-filter-btn px-3 py-1 text-xs font-bold border transition-all ${activeStatusFilter === s
+                                ? '!bg-[#B4912B] !text-white !border-[#B4912B] shadow-sm'
+                                : 'bg-white dark:bg-slate-800 border-slate-200/60 dark:border-slate-700/60 text-slate-600 dark:text-slate-300 hover:bg-[#B4912B] hover:text-white hover:border-[#B4912B] dark:hover:!bg-[#B4912B] dark:hover:!text-white dark:hover:!border-[#B4912B]'
                                 }`}
                         >
                             {s === 'All' ? 'Show All' : STATUS_META[s]?.label}
@@ -387,13 +401,13 @@ export default function AttendanceTracker() {
 
                 {viewMode === 'daily' ? (
                     <div className="overflow-x-auto no-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[640px]">
+                        <table className="w-full border-collapse min-w-[640px]">
                             <thead>
-                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Role / Contact</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Mark Daily Attendance</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Remarks</th>
+                                <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700">
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-left">Staff Member</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center" style={{ textAlign: 'center' }}>Role / Contact</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center" style={{ textAlign: 'center' }}>Mark Daily Attendance</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest !text-center" style={{ textAlign: 'center' }}>Remarks</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
@@ -410,13 +424,38 @@ export default function AttendanceTracker() {
                                             <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
 
                                                 {/* Staff details with profile pic */}
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-left">
+                                                    <style>{`
+                                                        html:not(.dark) .admin-panel td .avatar-color-0 { background-color: #DBEAFE !important; color: #1D4ED8 !important; border-color: #BFDBFE !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-1 { background-color: #D1FAE5 !important; color: #047857 !important; border-color: #A7F3D0 !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-2 { background-color: #EDE9FE !important; color: #6D28D9 !important; border-color: #DDD6FE !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-3 { background-color: #FEF3C7 !important; color: #B45309 !important; border-color: #FDE68A !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-4 { background-color: #FFE4E6 !important; color: #BE123C !important; border-color: #FECDD3 !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-5 { background-color: #CFFAFE !important; color: #0E7490 !important; border-color: #A5F3FC !important; }
+                                                        html:not(.dark) .admin-panel td .avatar-color-6 { background-color: #FAE8FF !important; color: #A21CAF !important; border-color: #F5D0FE !important; }
+                                                    `}</style>
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
+                                                        <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-extrabold text-xs shrink-0 overflow-hidden shadow-inner ${record.image ? 'bg-slate-100 dark:bg-slate-700 border-slate-200/50' : (() => {
+                                                            let hash = 0;
+                                                            for (let i = 0; i < record.staff.length; i++) hash = record.staff.charCodeAt(i) + ((hash << 5) - hash);
+                                                            const colorIndex = Math.abs(hash) % 7;
+                                                            
+                                                            // Provide dark mode classes via Tailwind, light mode forced via the scoped style above
+                                                            const darkClasses = [
+                                                                'dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800/50',
+                                                                'dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800/50',
+                                                                'dark:bg-violet-900/30 dark:text-violet-300 dark:border-violet-800/50',
+                                                                'dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800/50',
+                                                                'dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-800/50',
+                                                                'dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-800/50',
+                                                                'dark:bg-fuchsia-900/30 dark:text-fuchsia-300 dark:border-fuchsia-800/50'
+                                                            ];
+                                                            return `avatar-color-${colorIndex} ${darkClasses[colorIndex]}`;
+                                                        })()}`}>
                                                             {record.image ? (
                                                                 <img src={record.image} alt={record.staff} className="w-full h-full object-cover" />
                                                             ) : (
-                                                                record.staff.split(' ').map(n => n[0]).join('').toUpperCase()
+                                                                record.staff.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2)
                                                             )}
                                                         </div>
                                                         <div className="text-left leading-tight">
@@ -430,14 +469,14 @@ export default function AttendanceTracker() {
                                                 </td>
 
                                                 {/* Role & Mobile */}
-                                                <td className="px-6 py-4">
-                                                    <p className="text-[10px] font-bold text-slate-650 dark:text-slate-350 uppercase tracking-wider leading-none">{record.role}</p>
-                                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider mt-1 italic leading-none">{record.mobile}</p>
+                                                <td className="px-6 py-4 !text-center" style={{ textAlign: 'center' }}>
+                                                    <p className="text-[10px] font-bold text-slate-650 dark:text-slate-350 uppercase tracking-wider leading-none text-center inline-block">{record.role}</p>
+                                                    <p className="text-[9px] text-slate-400 dark:text-slate-500 font-bold tracking-wider mt-1 italic leading-none text-center inline-block w-full">{record.mobile}</p>
                                                 </td>
 
                                                 {/* Inline Status Selection Button Group */}
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-center gap-2">
+                                                <td className="px-6 py-4 !text-center" style={{ textAlign: 'center' }}>
+                                                    <div className="flex items-center justify-center gap-2 w-full mx-auto">
                                                         {/* Present Button */}
                                                         <button
                                                             onClick={() => handleMarkStatus(record, 'present')}
@@ -480,17 +519,19 @@ export default function AttendanceTracker() {
                                                 </td>
 
                                                 {/* Note / Remark Button */}
-                                                <td className="px-6 py-4 text-right">
-                                                    <button
-                                                        onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
-                                                        className={`p-2 rounded-xl border transition-all inline-flex items-center justify-center ${record.remark
-                                                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'
-                                                            : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-650'
-                                                            }`}
-                                                        title={record.remark || 'Add daily remark'}
-                                                    >
-                                                        <MessageSquare className={`w-4 h-4 ${record.remark ? '' : 'text-blue-500'}`} />
-                                                    </button>
+                                                <td className="px-6 py-4 text-center">
+                                                    <div className="flex justify-center">
+                                                        <button
+                                                            onClick={() => { setRemarkModal(record); setRemark(record.remark); }}
+                                                            className={`p-2 rounded-xl border transition-all inline-flex items-center justify-center ${record.remark
+                                                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400'
+                                                                : 'bg-transparent border-slate-200 dark:border-slate-700 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-750 hover:text-slate-650'
+                                                                }`}
+                                                            title={record.remark || 'Add daily remark'}
+                                                        >
+                                                            <MessageSquare className="w-4 h-4 text-blue-500" />
+                                                        </button>
+                                                    </div>
                                                 </td>
 
                                             </tr>
@@ -502,15 +543,15 @@ export default function AttendanceTracker() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto no-scrollbar">
-                        <table className="w-full text-left border-collapse min-w-[600px]">
+                        <table className="w-full border-collapse min-w-[600px]">
                             <thead>
                                 <tr className="bg-slate-50/50 dark:bg-slate-800/60 border-b border-slate-150 dark:border-slate-700 text-left">
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Staff Member</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-left">Staff Member</th>
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Present</th>
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Absent</th>
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Leaves</th>
                                     <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Half Days</th>
-                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-right">Total Logs</th>
+                                    <th className="px-6 py-4 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">Total Logs</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-750/50">
@@ -525,7 +566,7 @@ export default function AttendanceTracker() {
                                         const s = summaryData[record.id] || { present: 0, absent: 0, leave: 0, halfDay: 0, total: 0 };
                                         return (
                                             <tr key={record.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-750/30 transition-colors">
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-4 text-left">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 border border-slate-200/50 dark:border-slate-650/40 flex items-center justify-center text-slate-500 dark:text-slate-400 font-extrabold text-xs shrink-0 overflow-hidden shadow-inner">
                                                             {record.staff.split(' ').map(n => n[0]).join('').toUpperCase()}
@@ -540,7 +581,7 @@ export default function AttendanceTracker() {
                                                 <td className="px-6 py-4 text-center text-xs font-extrabold text-rose-600 dark:text-rose-450">{s.absent} days</td>
                                                 <td className="px-6 py-4 text-center text-xs font-extrabold text-violet-650 dark:text-violet-400">{s.leave} days</td>
                                                 <td className="px-6 py-4 text-center text-xs font-extrabold text-blue-600 dark:text-blue-450">{s.halfDay} days</td>
-                                                <td className="px-6 py-4 text-right text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{s.total} LOGS</td>
+                                                <td className="px-6 py-4 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">{s.total} LOGS</td>
                                             </tr>
                                         );
                                     })
@@ -584,8 +625,8 @@ export default function AttendanceTracker() {
                                         onChange={e => setRemark(e.target.value)}
                                     />
                                     <div className="flex gap-2 w-full">
-                                        <button type="button" onClick={() => setRemarkModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-650 text-slate-700 dark:text-slate-250 border border-transparent rounded-xl font-bold text-xs transition-all">Cancel</button>
-                                        <button type="submit" className="flex-[1.5] py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs transition-all shadow-md">Save Note</button>
+                                        <button type="button" onClick={() => setRemarkModal(null)} className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:!text-slate-300 border border-transparent rounded-xl font-bold text-xs transition-all">Cancel</button>
+                                        <button type="submit" className="flex-[1.5] py-2.5 bg-primary hover:bg-primary-dark text-white dark:!bg-[#B4912B] dark:hover:!bg-[#8B6F23] dark:!text-white rounded-xl font-bold text-xs transition-all shadow-md">Save Note</button>
                                     </div>
                                 </form>
                             </motion.div>
@@ -607,5 +648,6 @@ export default function AttendanceTracker() {
                 )}
             </AnimatePresence>
         </div>
+        </>
     );
 }
