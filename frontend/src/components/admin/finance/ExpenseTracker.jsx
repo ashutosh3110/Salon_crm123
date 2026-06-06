@@ -66,7 +66,7 @@ export default function ExpenseTracker({ outletId }) {
                     <button
                         type="button"
                         onClick={() => setView('form')}
-                        className={`flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold rounded-lg transition-colors shadow-sm ${view === 'form' ? 'bg-[#9a7b24]' : 'bg-[#B4912B] hover:bg-[#9a7b24]'}`}
+                        className={`flex items-center gap-2 px-5 py-2.5 text-white text-xs font-bold rounded-lg transition-colors shadow-sm bg-primary ${view === 'form' ? 'bg-[#9a7b24]' : 'bg-[#B4912B] hover:bg-[#9a7b24]'}`}
                     >
                         <Plus className="w-4 h-4" />
                         Record New Expense
@@ -218,7 +218,7 @@ function ExpenseList({ onAdd, outletId }) {
                             <button
                                 type="button"
                                 onClick={onAdd}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm"
+                                className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm bg-primary"
                             >
                                 <Plus className="w-4 h-4" />
                                 Record New Expense

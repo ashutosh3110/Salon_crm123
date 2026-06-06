@@ -42,7 +42,7 @@ function formatInrShort(n) {
     return `₹${Math.round(v).toLocaleString('en-IN')}`;
 }
 
-function CustomDropdown({ value, onChange, options, placeholder, className = '' }) {
+function CustomDropdown({ value, onChange, options, placeholder, icon: Icon, className = '' }) {
     const [isOpen, setIsOpen] = useState(false);
     const ref = useRef(null);
     useEffect(() => {
@@ -52,15 +52,19 @@ function CustomDropdown({ value, onChange, options, placeholder, className = '' 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
     return (
         <div className="relative w-full sm:w-auto" ref={ref}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={`flex items-center justify-between w-full sm:min-w-[180px] gap-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all shadow-sm active:scale-[0.98] ${className}`}
             >
-                <span className="truncate">
-                    {options.find(o => o.value === value)?.label || placeholder}
-                </span>
+                <div className="flex items-center gap-2 truncate">
+                    {Icon && <Icon className="w-3.5 h-3.5 text-slate-400 shrink-0" />}
+                    <span className="truncate">
+                        {options.find(o => o.value === value)?.label || placeholder}
+                    </span>
+                </div>
                 <ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
             </button>
             <AnimatePresence>
@@ -238,16 +242,13 @@ export default function FinancePage({ tab = 'dashboard' }) {
                     </div>
                     {outlets.length > 0 && (
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 text-left font-black w-full lg:w-auto mt-4 lg:mt-0">
-                            <div className="relative">
-                                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10 pointer-events-none" />
-                                <CustomDropdown
-                                    value={selectedOutletId}
-                                    onChange={setSelectedOutletId}
-                                    options={outlets.map(o => ({ value: o._id, label: o.name }))}
-                                    placeholder="All Outlets"
-                                    className="pl-10"
-                                />
-                            </div>
+                            <CustomDropdown
+                                value={selectedOutletId}
+                                onChange={setSelectedOutletId}
+                                options={outlets.map(o => ({ value: o._id, label: o.name }))}
+                                placeholder="All Outlets"
+                                icon={MapPin}
+                            />
                         </div>
                     )}
                 </div>
