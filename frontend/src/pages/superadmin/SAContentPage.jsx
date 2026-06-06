@@ -662,7 +662,7 @@ export default function SAContentPage() {
             {/* Page Header */}
             <div className="bg-white border-b border-border px-6 py-4 flex items-center justify-between">
                 <div>
-                    <h1 className="text-4xl font-black text-transparent bg-gradient-to-r from-[#B4912B] to-[#8B6F23] bg-clip-text tracking-tight uppercase mt-1">Content Manager</h1>
+                    <h1 className="text-xl font-black text-text">Content Manager</h1>
                     <p className="text-xs text-text-muted mt-0.5">Edit all landing page text, images, testimonials & legal content</p>
                 </div>
                 <div className="flex items-center gap-3">

@@ -89,14 +89,9 @@ export function calculateTotals({
 
         let ownDiscount = 0;
         if (item.originalBooking) {
-            totalGrossAmount += (Number(item.originalBooking.subtotal) || itemPrice) * qty;
-            const discType = item.membershipDiscountType || 'fixed';
-            const discVal = Number(item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : item.originalBooking.membershipDiscount) || 0;
-            if (discType === 'percentage') {
-                ownDiscount = (gross * discVal) / 100;
-            } else {
-                ownDiscount = discVal;
-            }
+            // Price is already final and discounted from the app, do not discount again.
+            ownDiscount = 0;
+            totalGrossAmount += gross;
         } else {
             totalGrossAmount += gross;
             if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {

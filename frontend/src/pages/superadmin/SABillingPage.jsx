@@ -601,7 +601,7 @@ export default function SABillingPage() {
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
                                 <Search className="w-4.5 h-4.5" />
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
@@ -727,7 +727,7 @@ export default function SABillingPage() {
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
                                 <Search className="w-4.5 h-4.5" />
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}

@@ -222,8 +222,8 @@ export default function AppBookingDetailsPage() {
 
                         <div className="pt-4 border-t border-dashed border-black/5 dark:border-white/5 space-y-2">
                              <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
-                                 <span>{isInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
-                                 <span>₹{isInclusive ? taxableVal.toFixed(2) : itemsTotal.toLocaleString()}</span>
+                                 <span>{isInclusive ? 'Subtotal (Incl. GST)' : 'Subtotal'}</span>
+                                 <span>₹{itemsTotal.toLocaleString()}</span>
                              </div>
                              {membershipDiscount > 0 && (
                                  <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#C8956C]">

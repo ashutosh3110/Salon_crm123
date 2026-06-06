@@ -100,7 +100,7 @@ export default function SASubscriptionsPage() {
         <div className="space-y-8 pb-10">
             {/* Header */}
             <div>
-                <h1 className="text-4xl font-black text-transparent bg-gradient-to-r from-[#B4912B] to-[#8B6F23] bg-clip-text tracking-tight uppercase mt-1">Subscriptions</h1>
+                <h1 className="text-3xl font-bold text-text tracking-tight">Subscriptions</h1>
                 <p className="text-sm text-text-secondary mt-1.5 font-medium max-w-2xl">
                     Configure your platform's pricing strategy and monitor revenue streams across different tenant tiers.
                 </p>

@@ -241,6 +241,16 @@
     box-sizing: border-box;
   }
 
+  input, textarea, select {
+    outline: none !important;
+    box-shadow: none;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
   /* App-like feel: Restrict text selection on mobile */
   body {
     -webkit-touch-callout: none;
@@ -2286,6 +2296,21 @@ html:not(.dark) [class*="bg-orange-50"][class*="text-orange-"] {
 .dark button.member-action-btn.member-delete-btn:hover svg {
   color: #ffffff !important;
   stroke: #ffffff !important;
+}
+
+/* Ensure golden buttons keep their #B4912B background and white text in dark mode */
+.dark .admin-panel button.bg-\[\#B4912B\],
+.dark button.bg-\[\#B4912B\],
+.dark .bg-\[\#B4912B\] {
+  background-color: #B4912B !important;
+  background: #B4912B !important;
+  color: #ffffff !important;
+}
+
+.dark .admin-panel button.bg-\[\#B4912B\] *,
+.dark button.bg-\[\#B4912B\] *,
+.dark .bg-\[\#B4912B\] * {
+  color: #ffffff !important;
 }
 
 /* Specific overrides to preserve active gold text and inactive slate text inside light mode admin panels */
