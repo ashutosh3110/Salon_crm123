@@ -326,6 +326,18 @@ export default function ShopOrdersPage() {
                     border-color: #B4912B !important;
                     color: #ffffff !important;
                 }
+
+                html:not(.dark) .admin-panel .status-filters-container,
+                .dark .admin-panel .status-filters-container,
+                .admin-panel .status-filters-container,
+                .status-filters-container {
+                    background-color: transparent !important;
+                    background: transparent !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    padding: 0.25rem 0 !important;
+                    margin-bottom: 0 !important;
+                }
             `}</style>
 
             {/* Header */}
@@ -374,7 +386,7 @@ export default function ShopOrdersPage() {
                 </div>
 
                 {/* Row 2: Status Filters */}
-                <div className="flex items-center gap-2 overflow-x-auto w-full scrollbar-hide py-1">
+                <div className="flex items-center gap-2 overflow-x-auto w-full scrollbar-hide py-1 status-filters-container">
                     {['all', 'pending', 'accepted', 'dispatched', 'out_for_delivery', 'delivered', 'rejected', 'cancelled'].map(s => (
                         <button
                             key={s}

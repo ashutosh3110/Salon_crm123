@@ -151,10 +151,10 @@ export default function ProductCategoryManager() {
                         <table className="w-full text-left border-collapse min-w-[800px]">
                             <thead>
                                 <tr className="bg-surface-alt/50 border-b border-border">
-                                    <th className="pl-12 pr-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[35%]">Metadata Vector</th>
-                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[25%] text-left">Active Load</th>
-                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] text-left">Status Protocol</th>
-                                    <th className="pr-8 pl-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] text-left">Operations</th>
+                                    <th className="pl-12 pr-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[40%]">Metadata Vector</th>
+                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] !text-center">Active Load</th>
+                                    <th className="px-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] !text-center">Status Protocol</th>
+                                    <th className="pr-12 pl-4 py-5 text-[10px] font-black text-text-muted uppercase tracking-widest w-[20%] !text-right">Operations</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -186,20 +186,14 @@ export default function ProductCategoryManager() {
                                             </div>
                                         </td>
                                         <td className="px-4 py-6">
-                                            <div className="flex flex-col items-start gap-1.5 w-24">
-                                                <span className="text-[11px] font-black text-text uppercase font-mono tracking-tight leading-none text-left">
+                                            <div className="flex flex-col items-center justify-center w-full">
+                                                <span className="text-[11px] font-black text-text uppercase font-mono tracking-tight leading-none text-center">
                                                     {getProductCount(cat.name)} UNITS
                                                 </span>
-                                                <div className="w-full h-1.5 bg-surface-alt rounded-full overflow-hidden border border-border/50">
-                                                    <div
-                                                        className="h-full bg-primary rounded-xl transition-all duration-1000"
-                                                        style={{ width: `${Math.min(100, (getProductCount(cat.name) / 20) * 100)}%` }}
-                                                    />
-                                                </div>
                                             </div>
                                         </td>
                                         <td className="px-4 py-6">
-                                            <div className="flex justify-start">
+                                            <div className="flex justify-center">
                                                 <button
                                                     onClick={() => toggleStatus(cat)}
                                                     className={`flex items-center justify-start gap-2 px-4 py-2 w-max text-[9px] font-black uppercase tracking-widest border allow-curve rounded-xl transition-all ${cat.status === 'active'
@@ -212,14 +206,14 @@ export default function ProductCategoryManager() {
                                                 </button>
                                             </div>
                                         </td>
-                                        <td className="pr-8 pl-4 py-6">
+                                        <td className="pr-12 pl-4 py-6">
                                             <style>{`
                                                 html body .admin-panel button.edit-metadata-btn svg { stroke: #64748b !important; }
                                                 html body .admin-panel button.edit-metadata-btn:hover svg { stroke: #ffffff !important; }
                                                 html body .admin-panel button.purge-metadata-btn svg { stroke: #f43f5e !important; }
                                                 html body .admin-panel button.purge-metadata-btn:hover svg { stroke: #ffffff !important; }
                                             `}</style>
-                                            <div className="flex items-center justify-start gap-2">
+                                            <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleEdit(cat)}
                                                     className="group/btn p-2.5 allow-curve rounded-xl border border-border bg-surface !text-slate-500 hover:!bg-slate-800 hover:!text-white hover:!border-slate-800 transition-all active:scale-95 shadow-sm shrink-0 edit-metadata-btn"
@@ -439,26 +433,27 @@ export default function ProductCategoryManager() {
                                         html.dark body div.fixed.inset-0 div.category-modal-container .abort-btn:hover {
                                             background-color: #334155 !important;
                                         }
-                                        html body div.fixed.inset-0 div.category-modal-container .init-btn {
-                                            background-color: #0f172a !important;
+                                        html body div.category-modal-container button.init-btn {
+                                            background: linear-gradient(to right, #B4912B, #D4AF37) !important;
                                             color: #ffffff !important;
                                             font-weight: 800 !important;
                                         }
-                                        html.dark body div.fixed.inset-0 div.category-modal-container .init-btn {
-                                            background-color: #ffffff !important;
-                                            color: #0f172a !important;
+                                        html body div.category-modal-container button.init-btn:hover {
+                                            background: linear-gradient(to right, #8B6F23, #B4912B) !important;
+                                            color: #ffffff !important;
                                         }
-                                        html body div.fixed.inset-0 div.category-modal-container .init-btn:disabled {
-                                            background-color: #e2e8f0 !important;
-                                            color: #94a3b8 !important;
-                                            opacity: 1 !important;
+                                        html body div.category-modal-container button.init-btn:disabled {
+                                            background: linear-gradient(to right, rgba(180, 145, 43, 0.5), rgba(212, 175, 55, 0.5)) !important;
+                                            color: #ffffff !important;
                                             cursor: not-allowed !important;
                                         }
-                                        html.dark body div.fixed.inset-0 div.category-modal-container .init-btn:disabled {
-                                            background-color: #1e293b !important;
-                                            color: #475569 !important;
-                                            opacity: 1 !important;
-                                            cursor: not-allowed !important;
+                                        html body div.category-modal-container h3.modal-title svg {
+                                            color: #B4912B !important;
+                                            stroke: #B4912B !important;
+                                        }
+                                        html.dark body div.category-modal-container h3.modal-title svg {
+                                            color: #C8956C !important;
+                                            stroke: #C8956C !important;
                                         }
                                     `}</style>
 
@@ -557,7 +552,7 @@ export default function ProductCategoryManager() {
                                             type="button"
                                             onClick={handleSave}
                                             disabled={!formData.name?.trim()}
-                                            className="flex-[1.5] py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed init-btn"
+                                            className="flex-[1.5] py-3 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all shadow-xl active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed init-btn text-white-force"
                                         >
                                             {editingId ? 'Update' : 'Initialize'}
                                         </button>

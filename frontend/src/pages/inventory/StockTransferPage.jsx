@@ -246,7 +246,7 @@ export default function StockTransferPage() {
                 </div>
                 <button
                     onClick={() => { setIsModalOpen(true); setResult(null); }}
-                    className="st-premium-btn flex items-center gap-2 px-5 py-2.5 text-white rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-[#B4912B]/20 hover:scale-[1.02] active:scale-95 hover:brightness-110 transition-all shrink-0"
+                    className="st-premium-btn flex items-center gap-2 px-5 py-2.5 text-white-force rounded-xl text-xs font-bold uppercase tracking-wider shadow-md shadow-[#B4912B]/20 hover:scale-[1.02] active:scale-95 hover:brightness-110 transition-all shrink-0"
                     style={{ background: 'linear-gradient(135deg, #B4912B 0%, #927420 100%)' }}
                 >
                     <Plus className="w-4 h-4" /> New Transfer
@@ -303,58 +303,83 @@ export default function StockTransferPage() {
                     </div>
                 </div>
 
-                <div className="divide-y divide-slate-100 dark:divide-slate-800/60 text-left">
-                    {filteredTransfers.length === 0 ? (
-                        <div className="py-12 text-center text-xs font-semibold text-slate-400">No transfers found</div>
-                    ) : filteredTransfers.map(tr => (
-                        <div key={tr.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-slate-50/30 dark:hover:bg-slate-800/10 transition-colors group">
-                            {/* Left: Product info */}
-                            <div className="flex items-center gap-4 flex-1">
-                                <div className="w-12 h-12 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 flex items-center justify-center shrink-0 group-hover:border-[#B4912B]/20 transition-all">
-                                    <Package className="w-5 h-5 text-slate-500 group-hover:text-[#B4912B] transition-colors" />
-                                </div>
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
-                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">#{tr.id.substring(tr.id.length - 8).toUpperCase()}</p>
-                                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide border ${tr.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
-                                            {tr.status}
-                                        </span>
-                                    </div>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-[#B4912B] transition-colors">{tr.productName}</p>
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{tr.reason || 'Stock Balancing'}</p>
-                                </div>
-                            </div>
+                <div className="overflow-x-auto w-full">
+                    <table className="w-full text-left border-collapse min-w-[900px]">
+                        <thead>
+                            <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800">
+                                <th className="pl-12 pr-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[35%]">Product & Transfer Vector</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[15%] text-left">From</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[15%] text-left">To</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[15%] !text-center">Quantity</th>
+                                <th className="px-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[15%] !text-center">Date & Time</th>
+                                <th className="pr-12 pl-4 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest w-[5%] !text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                            {filteredTransfers.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-12 py-16 text-center text-xs font-semibold text-slate-400">
+                                        No transfers found
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredTransfers.map(tr => (
+                                    <tr key={tr.id} className="hover:bg-slate-50/30 dark:hover:bg-slate-800/10 transition-colors group">
+                                        {/* Product & Transfer Vector */}
+                                        <td className="pl-12 pr-4 py-5">
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 flex items-center justify-center shrink-0 group-hover:border-[#B4912B]/20 transition-all">
+                                                    <Package className="w-5 h-5 text-slate-500 group-hover:text-[#B4912B] transition-colors" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
+                                                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-wider">#{tr.id.substring(tr.id.length - 8).toUpperCase()}</p>
+                                                        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wide border ${tr.status === 'Completed' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' : 'bg-amber-500/10 text-amber-600 border-amber-500/20'}`}>
+                                                            {tr.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate group-hover:text-[#B4912B] transition-colors leading-tight mb-0.5">{tr.productName}</p>
+                                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold truncate">{tr.reason || 'Stock Balancing'}</p>
+                                                </div>
+                                            </div>
+                                        </td>
 
-                            {/* Center: Route */}
-                            <div className="flex items-center gap-4 flex-1 justify-center">
-                                <div className="text-right">
-                                    <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">FROM</p>
-                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{outletShort(tr.from)}</p>
-                                </div>
-                                <div className="flex flex-col items-center gap-1">
-                                    <div className="w-7 h-7 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 flex items-center justify-center text-[#B4912B] group-hover:bg-[#B4912B] group-hover:text-white transition-all shadow-sm">
-                                        <ChevronRight className="w-3.5 h-3.5" />
-                                    </div>
-                                    <span className="text-[9px] font-bold text-[#B4912B] bg-[#B4912B]/10 px-1.5 py-0.5 rounded-full">{tr.qty} units</span>
-                                </div>
-                                <div>
-                                    <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">TO</p>
-                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{outletShort(tr.to)}</p>
-                                </div>
-                            </div>
+                                        {/* From */}
+                                        <td className="px-4 py-5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                                            {outletName(tr.from)}
+                                        </td>
 
-                            {/* Right: Date + action */}
-                            <div className="flex items-center justify-between md:justify-end gap-4 md:w-40">
-                                <div className="text-right">
-                                    <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{tr.date.split(',')[0]}</p>
-                                    <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{tr.date.split(',')[1] || ''}</p>
-                                </div>
-                                <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all">
-                                    <MoreHorizontal className="w-4 h-4" />
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                                        {/* To */}
+                                        <td className="px-4 py-5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                                            {outletName(tr.to)}
+                                        </td>
+
+                                        {/* Quantity */}
+                                        <td className="px-4 py-5 text-center">
+                                            <span className="text-xs font-black text-[#B4912B] bg-[#B4912B]/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                                {tr.qty} units
+                                            </span>
+                                        </td>
+
+                                        {/* Date & Time */}
+                                        <td className="px-4 py-5 text-center">
+                                            <p className="text-xs font-bold text-slate-700 dark:text-slate-200">{tr.date.split(',')[0]}</p>
+                                            <p className="text-[10px] text-slate-400 dark:text-slate-500 font-semibold">{tr.date.split(',')[1] || ''}</p>
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td className="pr-12 pl-4 py-5">
+                                            <div className="flex items-center justify-end">
+                                                <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-all shrink-0">
+                                                    <MoreHorizontal className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -568,7 +593,7 @@ export default function StockTransferPage() {
 
                                     {/* Submit Button */}
                                     <button type="submit" disabled={submitting}
-                                        className="st-premium-btn w-full py-3.5 text-white rounded-xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg shadow-[#B4912B]/20 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
+                                        className="st-premium-btn w-full py-3.5 text-white-force rounded-xl font-bold text-xs uppercase tracking-[0.2em] shadow-lg shadow-[#B4912B]/20 hover:brightness-110 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all disabled:opacity-60 disabled:pointer-events-none flex items-center justify-center gap-2"
                                         style={{ background: 'linear-gradient(135deg, #B4912B 0%, #927420 100%)' }}>
                                         <ArrowLeftRight className="w-4 h-4" />
                                         {submitting ? 'Processing Transfer...' : 'Initiate Transfer'}
