@@ -32,13 +32,13 @@ import { useBusiness } from '../../contexts/BusinessContext';
 import CustomDropdown from '../../components/common/CustomDropdown';
 
 const STATUS_FLOW = {
-    pending: { label: 'Pending', color: 'text-amber-500', bg: 'bg-amber-50', icon: Clock },
-    accepted: { label: 'Accepted', color: 'text-blue-500', bg: 'bg-blue-50', icon: CheckCircle2 },
-    rejected: { label: 'Rejected', color: 'text-rose-500', bg: 'bg-rose-50', icon: XCircle },
-    dispatched: { label: 'Dispatched', color: 'text-indigo-500', bg: 'bg-indigo-50', icon: Truck },
-    out_for_delivery: { label: 'Out for Delivery', color: 'text-purple-500', bg: 'bg-purple-50', icon: Truck },
-    delivered: { label: 'Delivered', color: 'text-emerald-500', bg: 'bg-emerald-50', icon: CheckCircle2 },
-    cancelled: { label: 'Cancelled', color: 'text-slate-500', bg: 'bg-slate-50', icon: XCircle },
+    pending: { label: 'Pending', color: 'text-amber-500 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-500/15', icon: Clock },
+    accepted: { label: 'Accepted', color: 'text-blue-500 dark:text-blue-400', bg: 'bg-blue-50 dark:bg-blue-500/15', icon: CheckCircle2 },
+    rejected: { label: 'Rejected', color: 'text-rose-500 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/15', icon: XCircle },
+    dispatched: { label: 'Dispatched', color: 'text-indigo-500 dark:text-indigo-400', bg: 'bg-indigo-50 dark:bg-indigo-500/15', icon: Truck },
+    out_for_delivery: { label: 'Out for Delivery', color: 'text-purple-500 dark:text-purple-400', bg: 'bg-purple-50 dark:bg-purple-500/15', icon: Truck },
+    delivered: { label: 'Delivered', color: 'text-emerald-500 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/15', icon: CheckCircle2 },
+    cancelled: { label: 'Cancelled', color: 'text-slate-500 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-slate-500/15', icon: XCircle },
 };
 
 export default function ShopOrdersPage() {
@@ -440,8 +440,8 @@ export default function ShopOrdersPage() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-purple-100 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                                                        <User className="w-4 h-4 text-purple-600" />
+                                                    <div className="w-10 h-10 bg-purple-100 dark:bg-purple-500/15 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                                                        <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="text-[11px] font-black text-slate-800 uppercase tracking-tight">{order.customerId?.name || 'Unknown'}</span>
@@ -451,7 +451,7 @@ export default function ShopOrdersPage() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-2">
-                                                    <div className={`p-2 allow-curve rounded-xl shadow-sm ${order.deliveryPreference === 'home' ? 'bg-blue-100 text-blue-600' : 'bg-emerald-100 text-emerald-600'}`}>
+                                                    <div className={`p-2 allow-curve rounded-xl shadow-sm ${order.deliveryPreference === 'home' ? 'bg-blue-100 text-blue-600 dark:bg-blue-500/15 dark:text-blue-400' : 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/15 dark:text-emerald-400'}`}>
                                                         {order.deliveryPreference === 'home' ? <Truck className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
                                                     </div>
                                                     <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
@@ -461,8 +461,8 @@ export default function ShopOrdersPage() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 bg-orange-100 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
-                                                        <Package className="w-4 h-4 text-orange-600" />
+                                                    <div className="w-10 h-10 bg-orange-100 dark:bg-orange-500/15 allow-curve rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+                                                        <Package className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                                                     </div>
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] font-black text-slate-800 uppercase tracking-widest">
@@ -484,7 +484,7 @@ export default function ShopOrdersPage() {
                                             <td className="pr-12 pl-6 py-5 text-center">
                                                 <button
                                                     onClick={() => navigate(`/admin/shop-orders/${order._id}`)}
-                                                    className="p-2.5 bg-white border border-slate-200 allow-curve rounded-xl transition-all active:scale-95 shadow-sm text-slate-500 hover:text-slate-800 hover:border-slate-300"
+                                                    className="p-2.5 bg-white border border-slate-200 allow-curve rounded-xl transition-all active:scale-95 shadow-sm text-slate-500 hover:text-slate-800 hover:border-slate-300 eye-details-btn"
                                                 >
                                                     <Eye className="w-4 h-4" />
                                                 </button>

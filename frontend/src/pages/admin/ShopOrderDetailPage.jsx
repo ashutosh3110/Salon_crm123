@@ -269,7 +269,7 @@ export default function ShopOrderDetailPage() {
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         onClick={downloadManifest}
-                        className="px-5 py-3 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/95 hover:to-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20 flex items-center gap-2"
+                        className="px-5 py-3 bg-[#B4912B] hover:bg-[#9c7d24] bg-primary text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg shadow-[#B4912B]/20 flex items-center gap-2"
                     >
                         <Download className="w-4 h-4 animate-bounce" /> Download Manifest
                     </button>
@@ -520,7 +520,7 @@ export default function ShopOrderDetailPage() {
                         </div>
                         {order.deliveryPreference === 'home' ? (
                             <div className="space-y-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100 rounded-lg">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest bg-blue-50 text-blue-600 border border-blue-100 dark:bg-blue-500/15 dark:text-blue-400 dark:border-blue-500/20 rounded-lg">
                                     <Truck className="w-3 h-3" /> Home Delivery
                                 </span>
                                 <div className="p-3 bg-surface-alt/50 border border-border rounded-xl">
@@ -532,7 +532,7 @@ export default function ShopOrderDetailPage() {
                             </div>
                         ) : (
                             <div className="space-y-2">
-                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 rounded-lg">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600 border border-emerald-100 dark:bg-emerald-500/15 dark:text-emerald-400 dark:border-emerald-500/20 rounded-lg">
                                     <Store className="w-3 h-3" /> In-Salon Pickup
                                 </span>
                                 <p className="text-[10px] font-bold text-text-muted uppercase italic">

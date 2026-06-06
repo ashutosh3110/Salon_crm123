@@ -508,7 +508,7 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                     </div>
 
                     <div className="flex flex-col md:flex-row gap-6">
-                        <div className="w-full md:w-1/3 space-y-3">
+                        <div className="w-full md:w-1/3 flex flex-col gap-3">
                             <label className={`flex items-center gap-3 p-4 border transition-all cursor-pointer rounded-xl ${formData.availability === 'all'
                                     ? 'bg-[#B4912B]/10 border-[#B4912B] text-[#B4912B] font-black shadow-sm shadow-[#B4912B]/5'
                                     : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-500'
