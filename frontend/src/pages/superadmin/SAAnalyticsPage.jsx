@@ -254,8 +254,8 @@ export default function SAAnalyticsPage() {
                         exportToExcel(growth.mrrTrend, 'Wapixo_Analytics_Revenue', 'Revenue');
                         showToast('Report exported successfully!');
                     }}
-                        className="flex items-center gap-2 px-6 py-2.5 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white !border-none text-sm !font-black uppercase tracking-wider hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all shadow-lg shadow-[#B4912B]/30 active:scale-95">
-                        <Download className="w-4 h-4 !text-white" /> Export Data
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
+                        <Download className="w-4 h-4 text-white" /> Export Data
                     </button>
                 </div>
             </div>

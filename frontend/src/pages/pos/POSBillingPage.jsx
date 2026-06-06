@@ -246,6 +246,12 @@ const autoSendWhatsAppInvoice = async (dbInvoice, salon) => {
         return;
     }
 
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length < 10) {
+        console.log('[Auto-WhatsApp] Invalid phone number (less than 10 digits). Skipping...');
+        return;
+    }
+
     console.log(`[Frontend-POSBillingPage] autoSendWhatsAppInvoice initiated for Invoice: ${dbInvoice.invoiceNumber}, Phone: ${phone}`);
     const toastId = toast.loading('Sending invoice on WhatsApp...');
     try {
@@ -1947,6 +1953,144 @@ export default function POSBillingPage() {
                                                             />
                                                         </div>
                                                     )}
+
+                                                    {/* CGST / SGST Breakdown for the item */}
+                                                    {(() => {
+                                                        const qty = Number(item.quantity) || 1;
+                                                        const itemPrice = Number(item.price) || 0;
+                                                        const gross = itemPrice * qty;
+
+                                                        // Membership discount
+                                                        let ownDiscount = 0;
+                                                        if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
+                                                            const discType = item.membershipDiscountType;
+                                                            const discVal = Number(item.membershipDiscountValue) || 0;
+                                                            if (discType === 'percentage') {
+                                                                ownDiscount = (gross * discVal) / 100;
+                                                            } else {
+                                                                ownDiscount = discVal;
+                                                            }
+                                                        } else if (activeMembership && activeMembership.planId) {
+                                                            const plan = activeMembership.planId;
+                                                            if (item.type === 'service') {
+                                                                if (plan.serviceDiscountType === 'percentage') {
+                                                                    ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                                                                } else {
+                                                                    ownDiscount = (Number(plan.serviceDiscountValue) || 0);
+                                                                }
+                                                            } else if (item.type === 'product') {
+                                                                if (plan.productDiscountType === 'percentage') {
+                                                                    ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
+                                                                } else {
+                                                                    ownDiscount = (Number(plan.productDiscountValue) || 0);
+                                                                }
+                                                            }
+                                                        }
+                                                        ownDiscount = Math.min(ownDiscount, gross);
+                                                        const remaining = gross - ownDiscount;
+
+                                                        // General discount calculation
+                                                        let totalSubtotal = cart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+                                                        let generalDiscount = 0;
+                                                        if (manualDiscount) {
+                                                            if (manualDiscount.type === 'percentage') {
+                                                                generalDiscount += (totalSubtotal * (Number(manualDiscount.value) || 0)) / 100;
+                                                            } else {
+                                                                generalDiscount += Number(manualDiscount.value) || 0;
+                                                            }
+                                                        }
+                                                        if (appliedPromotion) {
+                                                            let eligibleSubtotal = totalSubtotal;
+                                                            const appOn = String(appliedPromotion.applicableOn || 'BOTH').toUpperCase();
+                                                            if (appOn === 'SERVICE') {
+                                                                eligibleSubtotal = cart.filter(it => it.type === 'service').reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+                                                            } else if (appOn === 'PRODUCT') {
+                                                                eligibleSubtotal = cart.filter(it => it.type === 'product').reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+                                                            }
+                                                            const promoType = String(appliedPromotion.discountType || appliedPromotion.type || '').toLowerCase();
+                                                            const promoVal = Number(appliedPromotion.discountValue !== undefined ? appliedPromotion.discountValue : appliedPromotion.value) || 0;
+                                                            if (promoType === 'percentage') {
+                                                                generalDiscount += (eligibleSubtotal * promoVal) / 100;
+                                                            } else {
+                                                                generalDiscount += Math.min(promoVal, eligibleSubtotal);
+                                                            }
+                                                        }
+                                                        if (appliedVoucher) {
+                                                            if (appliedVoucher.type === 'percentage') {
+                                                                generalDiscount += (totalSubtotal * (Number(appliedVoucher.value) || 0)) / 100;
+                                                            } else {
+                                                                generalDiscount += Number(appliedVoucher.value) || 0;
+                                                            }
+                                                        }
+
+                                                        // Total remaining of all items
+                                                        let totalRemaining = cart.reduce((sum, it) => {
+                                                            const itQty = Number(it.quantity) || 1;
+                                                            const itPrice = Number(it.price) || 0;
+                                                            const itGross = itPrice * itQty;
+                                                            let itOwnDiscount = 0;
+                                                            if (it.membershipDiscountType !== undefined && it.membershipDiscountValue !== undefined) {
+                                                                if (it.membershipDiscountType === 'percentage') {
+                                                                    itOwnDiscount = (itGross * Number(it.membershipDiscountValue)) / 100;
+                                                                } else {
+                                                                    itOwnDiscount = Number(it.membershipDiscountValue);
+                                                                }
+                                                            } else if (activeMembership && activeMembership.planId) {
+                                                                const plan = activeMembership.planId;
+                                                                if (it.type === 'service') {
+                                                                    if (plan.serviceDiscountType === 'percentage') {
+                                                                        itOwnDiscount = (itGross * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                                                                    } else {
+                                                                        itOwnDiscount = (Number(plan.serviceDiscountValue) || 0);
+                                                                    }
+                                                                } else if (it.type === 'product') {
+                                                                    if (plan.productDiscountType === 'percentage') {
+                                                                        itOwnDiscount = (itGross * (Number(plan.productDiscountValue) || 0)) / 100;
+                                                                    } else {
+                                                                        itOwnDiscount = (Number(plan.productDiscountValue) || 0);
+                                                                    }
+                                                                }
+                                                            }
+                                                            return sum + Math.max(0, itGross - itOwnDiscount);
+                                                        }, 0);
+
+                                                        const generalDiscountRatio = 0;
+                                                        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
+                                                        const discountedAmount = Math.max(0, remaining - itemGeneralDiscount);
+
+                                                        // GST calculation
+                                                        const rateSetting = item.type === 'service' ? (Number(platformSettings?.serviceGst ?? fiscal?.serviceGst ?? 5)) : (Number(platformSettings?.productGst ?? fiscal?.productGst ?? 10));
+                                                        const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
+                                                        const isItemInclusive = item.isInclusiveTax !== undefined
+                                                            ? (String(item.isInclusiveTax) === 'true')
+                                                            : !!fiscal?.inclusiveTax;
+
+                                                        let gstAmount = 0;
+                                                        if (isItemInclusive) {
+                                                            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
+                                                            gstAmount = discountedAmount - taxableAmount;
+                                                        } else {
+                                                            gstAmount = (discountedAmount * itemTaxPercent) / 100;
+                                                        }
+
+                                                        const cgstVal = gstAmount / 2;
+                                                        const sgstVal = gstAmount / 2;
+                                                        const cgstPercent = itemTaxPercent / 2;
+                                                        const sgstPercent = itemTaxPercent / 2;
+
+                                                        return (
+                                                            <div className="flex items-center gap-1.5 mt-1.5 text-[9px] font-bold text-slate-500 w-full">
+                                                                <div className="flex-1 flex items-center justify-between bg-slate-100/60 dark:bg-slate-800/40 px-1.5 py-0.5 rounded">
+                                                                    <span>CGST ({cgstPercent.toFixed(1)}%):</span>
+                                                                    <span className="font-mono text-slate-700">&#8377;{cgstVal.toFixed(2)}</span>
+                                                                </div>
+                                                                <div className="flex-1 flex items-center justify-between bg-slate-100/60 dark:bg-slate-800/40 px-1.5 py-0.5 rounded">
+                                                                    <span>SGST ({sgstPercent.toFixed(1)}%):</span>
+                                                                    <span className="font-mono text-slate-700">&#8377;{sgstVal.toFixed(2)}</span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })()}
                                                 </div>
                                             </div>
                                             <div className="flex items-center border border-border rounded-lg overflow-hidden h-7">
@@ -2071,7 +2215,7 @@ export default function POSBillingPage() {
                             <div className="pos-billing-cart-total-box border border-border rounded-xl bg-surface-alt p-3 shadow-lg">
                                 <div className="flex justify-between text-[11px] font-bold mb-1 opacity-90 text-text">
                                     <span>Subtotal</span>
-                                    <span>₹{totals.subtotal.toFixed(2)}</span>
+                                    <span>₹{totals.total.toFixed(2)}</span>
                                 </div>
 
                                 {totals.cgst > 0 && (
@@ -2460,6 +2604,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [newClientForm, setNewClientForm] = useState({ name: '', phone: '', dob: '', anniversary: '', appliedReferralCode: '' });
     const [showClientDropdown, setShowClientDropdown] = useState(false);
     const [openStaffIdx, setOpenStaffIdx] = useState(null);
+    const [qFocusedStaffIndex, setQFocusedStaffIndex] = useState(-1);
     const [staffSearch, setStaffSearch] = useState('');
     const [showDueWarning, setShowDueWarning] = useState(false);
     const [clientPrevDue, setClientPrevDue] = useState(0);
@@ -2487,6 +2632,19 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     useEffect(() => {
         setQFocusedItemIndex(-1);
     }, [qSelectedCategory, qActiveTab]);
+
+    useEffect(() => {
+        setQFocusedStaffIndex(-1);
+    }, [openStaffIdx]);
+
+    useEffect(() => {
+        if (qFocusedStaffIndex >= 0) {
+            const activeEl = document.getElementById(`q-staff-item-${qFocusedStaffIndex}`);
+            if (activeEl) {
+                activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+        }
+    }, [qFocusedStaffIndex]);
 
     useEffect(() => {
         if (qFocusedClientIndex >= 0) {
@@ -2763,6 +2921,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const prevDue = Number(c.dueAmount || 0);
         setQSearchClient('');
         setShowClientDropdown(false);
+        setQCollectedPrevDue(0);
         if (prevDue > 0) {
             setPendingClientSelect(c);
             setClientPrevDue(prevDue);
@@ -2900,7 +3059,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
         const handleKeyDown = (e) => {
             // Close modal on Escape
             if (e.key === 'Escape') {
-                if (showClientDropdown) {
+                if (openStaffIdx !== null) {
+                    setOpenStaffIdx(null);
+                } else if (showClientDropdown) {
                     setShowClientDropdown(false);
                 } else if (showNewClient) {
                     setShowNewClient(false);
@@ -2908,6 +3069,32 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     setQSelectedCategory(null);
                 } else {
                     onClose();
+                }
+                return;
+            }
+
+            // Staff Dropdown Navigation
+            if (openStaffIdx !== null && qFilteredStaff.length > 0) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setQFocusedStaffIndex(prev => {
+                        const next = prev + 1;
+                        return next < qFilteredStaff.length ? next : prev;
+                    });
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setQFocusedStaffIndex(prev => {
+                        const next = prev - 1;
+                        return next >= 0 ? next : prev;
+                    });
+                }
+                if (e.key === 'Enter') {
+                    if (qFocusedStaffIndex >= 0) {
+                        e.preventDefault();
+                        toggleStaffInItem(openStaffIdx, qFilteredStaff[qFocusedStaffIndex]._id);
+                        setOpenStaffIdx(null);
+                    }
                 }
                 return;
             }
@@ -2985,7 +3172,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient]);
+    }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient, openStaffIdx, qFilteredStaff, qFocusedStaffIndex]);
 
     return (
         <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
@@ -3029,7 +3216,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-right { background-color: #f8fafc !important; border-left: 1px solid #e2e8f0 !important; }
                     .qi-cart-item { background-color: #ffffff !important; color: #1e293b !important; }
                     .qi-cart-item * { color: inherit; }
-                    .qi-bottom-card { background-color: #0A0F1E !important; border-color: rgba(255,255,255,0.08) !important; border-radius: 0.75rem !important; }
+                    .qi-bottom-card { background-color: #ffffff !important; border: 1px solid #e2e8f0 !important; border-radius: 0.75rem !important; }
+                    .qi-cgst-sgst { color: #16a34a !important; }
+                    .qi-discount-val { color: #dc2626 !important; }
+                    .qi-total-pay-val { color: #b45309 !important; }
                     .qi-discount-bg { background-color: #fff1f2 !important; border-color: #fecdd3 !important; }
                     .qi-discount-text { color: #e11d48 !important; }
                     .qi-input-bg { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
@@ -3052,6 +3242,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     html.dark .qi-right { background-color: #0A0F1E !important; border-left: 1px solid rgba(255,255,255,0.05) !important; }
                     html.dark .qi-cart-item { background-color: #1e293b !important; color: #f1f5f9 !important; }
                     html.dark .qi-bottom-card { background-color: #111827 !important; border-color: rgba(255,255,255,0.05) !important; }
+                    html.dark .qi-cgst-sgst { color: #34d399 !important; }
+                    html.dark .qi-discount-val { color: #fda4af !important; }
+                    html.dark .qi-total-pay-val { color: #eab308 !important; }
                     html.dark .qi-discount-bg { background-color: rgba(225,29,72,0.1) !important; border-color: rgba(225,29,72,0.3) !important; }
                     html.dark .qi-discount-text { color: #f1f5f9 !important; }
                     html.dark .qi-input-bg { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; }
@@ -3166,9 +3359,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     onClick={() => handleSelectClient(c)}
                                                                     className={`w-full px-4 py-3 text-left border-b border-slate-100 last:border-0 flex items-center gap-3 transition-colors ${idx === qFocusedClientIndex ? 'bg-amber-50' : 'hover:bg-slate-50'}`}
                                                                 >
-                                                                    <div 
+                                                                    <div
                                                                         className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${Number(c.dueAmount || 0) > 0 ? 'bg-amber-100' : 'bg-amber-50'}`}
-                                                                        style={{ 
+                                                                        style={{
                                                                             color: Number(c.dueAmount || 0) > 0 ? '#b45309' : '#d97706',
                                                                             WebkitTextFillColor: Number(c.dueAmount || 0) > 0 ? '#b45309' : '#d97706'
                                                                         }}
@@ -3448,21 +3641,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         {/* BILLING STRIP */}
                         <div className="qi-strip flex-shrink-0 border-t" style={{ borderTopColor: '#e2e8f0' }}>
                             <div className="w-full px-4 py-2.5 flex items-center gap-0 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
-
                                 <div className="flex flex-col shrink-0 pr-4">
                                     <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
-                                    <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.subtotal.toFixed(2)}</span>
+                                    <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.total.toFixed(2)}</span>
                                 </div>
+
+
 
                                 {totals.cgst > 0 && (
                                     <div className="flex flex-col shrink-0 px-4">
                                         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
-                                            CGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
-                                            {totals.cgst > totals.cgstExcl ? (
-                                                <span className="text-emerald-600 dark:text-emerald-400/80 ml-1 font-bold text-[8px]">(INCL)</span>
-                                            ) : (
-                                                <span className="text-blue-600 dark:text-blue-400/80 ml-1 font-bold text-[8px]">(EXCL)</span>
-                                            )}
+                                            Toatl CGST
+
                                         </span>
                                         <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
                                     </div>
@@ -3471,12 +3661,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 {totals.sgst > 0 && (
                                     <div className="flex flex-col shrink-0 px-4">
                                         <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
-                                            SGST {totals.serviceGstRate > 0 ? `(${totals.serviceGstRate / 2}%)` : ''}
-                                            {totals.sgst > totals.sgstExcl ? (
-                                                <span className="text-emerald-600 dark:text-emerald-400/80 ml-1 font-bold text-[8px]">(INCL)</span>
-                                            ) : (
-                                                <span className="text-blue-600 dark:text-blue-400/80 ml-1 font-bold text-[8px]">(EXCL)</span>
-                                            )}
+                                            Total SGST
                                         </span>
                                         <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
                                     </div>
@@ -3714,6 +3899,121 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         </div>
                                     </div>
 
+                                    {/* CGST / SGST Breakdown for the item */}
+                                    {(() => {
+                                        const qty = Number(item.quantity) || 1;
+                                        const itemPrice = Number(item.price) || 0;
+                                        const gross = itemPrice * qty;
+
+                                        // Membership discount
+                                        let ownDiscount = 0;
+                                        if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
+                                            const discType = item.membershipDiscountType;
+                                            const discVal = Number(item.membershipDiscountValue) || 0;
+                                            if (discType === 'percentage') {
+                                                ownDiscount = (gross * discVal) / 100;
+                                            } else {
+                                                ownDiscount = discVal;
+                                            }
+                                        } else if (qActiveMembership && qActiveMembership.planId) {
+                                            const plan = qActiveMembership.planId;
+                                            if (item.type === 'service') {
+                                                if (plan.serviceDiscountType === 'percentage') {
+                                                    ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                                                } else {
+                                                    ownDiscount = (Number(plan.serviceDiscountValue) || 0);
+                                                }
+                                            } else if (item.type === 'product') {
+                                                if (plan.productDiscountType === 'percentage') {
+                                                    ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
+                                                } else {
+                                                    ownDiscount = (Number(plan.productDiscountValue) || 0);
+                                                }
+                                            }
+                                        }
+                                        ownDiscount = Math.min(ownDiscount, gross);
+                                        const remaining = gross - ownDiscount;
+
+                                        // General discount calculation
+                                        let totalSubtotal = qCart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+                                        let generalDiscount = 0;
+                                        if (qManualDiscount) {
+                                            if (qManualDiscount.type === 'percentage') {
+                                                generalDiscount += (totalSubtotal * (Number(qManualDiscount.value) || 0)) / 100;
+                                            } else {
+                                                generalDiscount += Number(qManualDiscount.value) || 0;
+                                            }
+                                        }
+
+                                        // Total remaining of all items
+                                        let totalRemaining = qCart.reduce((sum, it) => {
+                                            const itQty = Number(it.quantity) || 1;
+                                            const itPrice = Number(it.price) || 0;
+                                            const itGross = itPrice * itQty;
+                                            let itOwnDiscount = 0;
+                                            if (it.membershipDiscountType !== undefined && it.membershipDiscountValue !== undefined) {
+                                                if (it.membershipDiscountType === 'percentage') {
+                                                    itOwnDiscount = (itGross * Number(it.membershipDiscountValue)) / 100;
+                                                } else {
+                                                    itOwnDiscount = Number(it.membershipDiscountValue);
+                                                }
+                                            } else if (qActiveMembership && qActiveMembership.planId) {
+                                                const plan = qActiveMembership.planId;
+                                                if (it.type === 'service') {
+                                                    if (plan.serviceDiscountType === 'percentage') {
+                                                        itOwnDiscount = (itGross * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                                                    } else {
+                                                        itOwnDiscount = (Number(plan.serviceDiscountValue) || 0);
+                                                    }
+                                                } else if (it.type === 'product') {
+                                                    if (plan.productDiscountType === 'percentage') {
+                                                        itOwnDiscount = (itGross * (Number(plan.productDiscountValue) || 0)) / 100;
+                                                    } else {
+                                                        itOwnDiscount = (Number(plan.productDiscountValue) || 0);
+                                                    }
+                                                }
+                                            }
+                                            return sum + Math.max(0, itGross - itOwnDiscount);
+                                        }, 0);
+
+                                        const generalDiscountRatio = 0;
+                                        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
+                                        const discountedAmount = Math.max(0, remaining - itemGeneralDiscount);
+
+                                        // GST calculation
+                                        const rateSetting = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
+                                        const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
+                                        const isItemInclusive = item.isInclusiveTax !== undefined
+                                            ? (String(item.isInclusiveTax) === 'true')
+                                            : !!fiscal?.inclusiveTax;
+
+                                        let gstAmount = 0;
+                                        if (isItemInclusive) {
+                                            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
+                                            gstAmount = discountedAmount - taxableAmount;
+                                        } else {
+                                            gstAmount = (discountedAmount * itemTaxPercent) / 100;
+                                        }
+
+                                        const cgstVal = gstAmount / 2;
+                                        const sgstVal = gstAmount / 2;
+                                        const cgstPercent = itemTaxPercent / 2;
+                                        const sgstPercent = itemTaxPercent / 2;
+
+                                        return (
+                                            <div className="flex items-center gap-2 border-t border-dashed border-slate-100 pt-2 text-[10px] font-bold text-slate-500">
+                                                <div className="flex-1 flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md">
+                                                    <span>CGST ({cgstPercent.toFixed(1)}%):</span>
+                                                    <span className="font-mono text-slate-800">&#8377;{cgstVal.toFixed(2)}</span>
+                                                </div>
+                                                <div className="flex-1 flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md">
+                                                    <span>SGST ({sgstPercent.toFixed(1)}%):</span>
+                                                    <span className="font-mono text-slate-800">&#8377;{sgstVal.toFixed(2)}</span>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
+
                                     {/* Stylist Assignment */}
                                     {item.type === 'service' && (
                                         <div className="relative border-t border-slate-100 pt-2.5 mt-2" id={`staff-dropdown-container-${idx}`}>
@@ -3746,12 +4046,14 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
                                                         className="absolute top-full left-0 right-0 z-[100] mt-1 shadow-xl rounded-xl overflow-hidden bg-white border border-slate-200">
                                                         <div className="max-h-[140px] overflow-y-auto custom-scrollbar">
-                                                            {qFilteredStaff.map(s => {
+                                                            {qFilteredStaff.map((s, sIdx) => {
                                                                 const isSelected = (item.staffIds || []).includes(String(s._id));
+                                                                const isFocused = qFocusedStaffIndex === sIdx;
                                                                 return (
                                                                     <button key={s._id}
+                                                                        id={`q-staff-item-${sIdx}`}
                                                                         onClick={e => { e.stopPropagation(); toggleStaffInItem(idx, s._id); setOpenStaffIdx(null); }}
-                                                                        className={`w-full px-3 py-2 text-left flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors hover:bg-slate-50 ${isSelected ? 'bg-amber-50/50' : ''}`}
+                                                                        className={`w-full px-3 py-2 text-left flex items-center justify-between border-b border-slate-100 last:border-0 transition-colors ${isFocused ? 'bg-slate-100 dark:bg-slate-800' : 'hover:bg-slate-50'} ${isSelected ? 'bg-amber-50/50' : ''}`}
                                                                     >
                                                                         <span className={`text-xs font-bold uppercase ${isSelected ? 'text-[#C69A20]' : 'text-slate-800'}`}>{s.name}</span>
                                                                         {isSelected && <Check className="w-3.5 h-3.5 text-[#C69A20]" />}
@@ -3769,29 +4071,39 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Add Note */}
-                        <div className="px-3 pb-2 shrink-0">
-                            <div className="flex items-center gap-2 rounded-xl p-3 border border-slate-200 bg-white shadow-sm transition-colors focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
-                                <FileText className="w-4 h-4 flex-shrink-0 text-slate-400" />
-                                <input
-                                    type="text"
-                                    placeholder="+ Add Note (Optional)"
-                                    className="w-full border-0 outline-none text-xs font-bold bg-transparent text-slate-700 placeholder:text-slate-400"
-                                />
-                            </div>
-                        </div>
+             
 
                         {/* NET BILL + FINALIZE CARD */}
                         <div className="px-3 pb-3 shrink-0">
                             <div className="qi-bottom-card rounded-xl p-4 shadow-lg border border-transparent">
+
+                                 {/* Client Due & Payment Details */}
+                                 {qClient && (
+                                     <div className="flex flex-col gap-1.5 border-b border-slate-200 dark:border-white/10 pb-2.5 mb-2.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                                         <div className="flex justify-between">
+                                             <span>Previous Outstanding:</span>
+                                             <span className="font-mono text-slate-800 dark:text-white">&#8377;{Number(qClient.dueAmount || 0).toFixed(2)}</span>
+                                         </div>
+                                         <div className="flex justify-between">
+                                             <span>Current Paid Amount:</span>
+                                             <span className="font-mono text-slate-800 dark:text-white">&#8377;{(Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0)).toFixed(2)}</span>
+                                         </div>
+                                         <div className="flex justify-between text-rose-600 dark:text-rose-400">
+                                             <span>Remaining Outstanding:</span>
+                                             <span className="font-mono font-black">&#8377;{Math.max(0, totals.total - (Number(qPayments.cash || 0) + Number(qPayments.online || 0) + Number(qRedeemWallet || 0))).toFixed(2)}</span>
+                                         </div>
+                                     </div>
+                                 )}
+
                                 {/* Amounts */}
-                                <div className="flex items-start justify-between mb-4 text-white">
+                                <div className="flex items-start justify-between mb-4 text-slate-800 dark:text-white">
                                     <div>
                                         <span className="text-[10px] font-bold uppercase tracking-widest block opacity-70">Net Bill</span>
-                                        <span className="text-xl font-black font-mono block mt-0.5 text-white">&#8377;{totals.total.toFixed(2)}</span>
+                                        <span className="text-xl font-black font-mono block mt-0.5 text-slate-900 dark:text-white">&#8377;{totals.total.toFixed(2)}</span>
                                     </div>
                                     <div className="text-right">
                                         <span className="text-[10px] font-bold uppercase tracking-widest block opacity-70">Total to Pay</span>
-                                        <span className="text-2xl font-black font-mono block mt-0.5 text-yellow-500">&#8377;{totals.totalWithPrevDue.toFixed(2)}</span>
+                                        <span className="text-2xl font-black font-mono block mt-0.5 qi-total-pay-val">&#8377;{totals.totalWithPrevDue.toFixed(2)}</span>
                                     </div>
                                 </div>
 
@@ -3886,8 +4198,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     <input type="number"
                                         className="w-full px-3 py-2 text-sm font-bold rounded-lg outline-none"
                                         style={{ background: '#fff', border: '1px solid #bbf7d0', color: '#1e293b' }}
-                                        value={qCollectedPrevDue || ''}
-                                        onChange={e => setQCollectedPrevDue(Math.min(Math.ceil(clientPrevDue), Number(e.target.value)))}
+                                        value={qCollectedPrevDue}
+                                        onChange={e => setQCollectedPrevDue(Math.max(0, Math.min(Math.ceil(clientPrevDue), Number(e.target.value) || 0)))}
                                         max={Math.ceil(clientPrevDue)} />
                                 </div>
                             </div>

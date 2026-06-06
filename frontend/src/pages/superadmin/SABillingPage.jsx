@@ -425,8 +425,8 @@ export default function SABillingPage() {
                         exportToExcel(MOCK_PAYMENTS, 'Wapixo_Billing_Transactions', 'Payments');
                         showToast('Report exported as Excel!', 'info');
                     }}
-                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-border text-slate-900 dark:text-slate-100 text-sm !font-bold hover:border-[#B4912B]/30 hover:text-primary transition-all shadow-sm">
-                        <Download className="w-4 h-4" /> Export
+                        className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-[#8B6F23] text-primary-foreground text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/25 active:scale-[0.98]">
+                        <Download className="w-4 h-4 text-white" /> Export
                     </button>
 
                 </div>
@@ -601,7 +601,7 @@ export default function SABillingPage() {
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
                                 <Search className="w-4.5 h-4.5" />
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}
@@ -727,7 +727,7 @@ export default function SABillingPage() {
                     {/* Search + status */}
                     <div className="flex flex-col sm:flex-row gap-3">
                         <div className="flex-1 flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-white border border-border text-text-secondary shrink-0 shadow-sm">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-50 border border-border text-text-secondary shrink-0 shadow-sm">
                                 <Search className="w-4.5 h-4.5" />
                             </div>
                             <input value={search} onChange={e => setSearch(e.target.value)}

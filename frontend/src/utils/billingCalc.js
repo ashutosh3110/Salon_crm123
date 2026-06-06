@@ -77,58 +77,71 @@ export function calculateTotals({
         }
     }
 
-    // 2. Calculate Membership Discount
+    // 2. Calculate Membership/Item-level Discount for each item, and get remaining values
     let totalMembershipDiscount = 0;
     let totalGrossAmount = 0;
 
-    items.forEach(item => {
-        if (item.isPackageRedemption) return;
+    const itemData = items.map(item => {
+        if (item.isPackageRedemption) return { item, qty: 0, gross: 0, ownDiscount: 0, remaining: 0 };
         const qty = Number(item.quantity) || 1;
         const itemPrice = Number(item.price) || 0;
+        const gross = itemPrice * qty;
 
+        let ownDiscount = 0;
         if (item.originalBooking) {
             totalGrossAmount += (Number(item.originalBooking.subtotal) || itemPrice) * qty;
             const discType = item.membershipDiscountType || 'fixed';
             const discVal = Number(item.membershipDiscountValue !== undefined ? item.membershipDiscountValue : item.originalBooking.membershipDiscount) || 0;
             if (discType === 'percentage') {
-                totalMembershipDiscount += ((itemPrice * qty) * discVal) / 100;
+                ownDiscount = (gross * discVal) / 100;
             } else {
-                totalMembershipDiscount += discVal;
+                ownDiscount = discVal;
             }
         } else {
-            totalGrossAmount += itemPrice * qty;
+            totalGrossAmount += gross;
             if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
                 const discType = item.membershipDiscountType;
                 const discVal = Number(item.membershipDiscountValue) || 0;
                 if (discType === 'percentage') {
-                    totalMembershipDiscount += ((itemPrice * qty) * discVal) / 100;
+                    ownDiscount = (gross * discVal) / 100;
                 } else {
-                    totalMembershipDiscount += discVal;
+                    ownDiscount = discVal;
                 }
             } else if (activeMembership && activeMembership.planId) {
                 const plan = activeMembership.planId;
                 if (item.type === 'service') {
                     if (plan.serviceDiscountType === 'percentage') {
-                        totalMembershipDiscount += ((itemPrice * qty) * (Number(plan.serviceDiscountValue) || 0)) / 100;
+                        ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
                     } else {
-                        totalMembershipDiscount += (Number(plan.serviceDiscountValue) || 0);
+                        ownDiscount = (Number(plan.serviceDiscountValue) || 0);
                     }
                 } else if (item.type === 'product') {
                     if (plan.productDiscountType === 'percentage') {
-                        totalMembershipDiscount += ((itemPrice * qty) * (Number(plan.productDiscountValue) || 0)) / 100;
+                        ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
                     } else {
-                        totalMembershipDiscount += (Number(plan.productDiscountValue) || 0);
+                        ownDiscount = (Number(plan.productDiscountValue) || 0);
                     }
                 }
             }
         }
+
+        ownDiscount = Math.min(ownDiscount, gross);
+        totalMembershipDiscount += ownDiscount;
+
+        return {
+            item,
+            qty,
+            gross,
+            ownDiscount,
+            remaining: gross - ownDiscount
+        };
     });
 
-    const totalDeductions = generalDiscount + totalMembershipDiscount;
-    const discountRatio = subtotal > 0 ? totalDeductions / subtotal : 0;
+    const totalRemaining = itemData.reduce((sum, d) => sum + d.remaining, 0);
+    const generalDiscountRatio = 0;
 
-    const serviceDiscount = serviceSubtotal * discountRatio;
-    const productDiscount = productSubtotal * discountRatio;
+    let serviceDiscount = 0;
+    let productDiscount = 0;
 
     let totalBaseAmount = 0; // Taxable Amount (Base Price)
     let totalGstAmount = 0;
@@ -138,16 +151,24 @@ export function calculateTotals({
     let productTaxExcl = 0;
     let totalExclusiveTax = 0;
 
-    items.forEach(item => {
-        if (item.isPackageRedemption) return;
-        const qty = Number(item.quantity) || 1;
-        const itemGross = (Number(item.price) || 0) * qty;
-        const itemDiscount = itemGross * discountRatio;
-        const discountedAmount = Math.max(0, itemGross - itemDiscount);
+    itemData.forEach(d => {
+        if (d.gross === 0) return;
+        const { item, gross, ownDiscount, remaining } = d;
+
+        // Allocate general discount proportionally to the remaining amount of the item
+        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
+        const totalItemDiscount = ownDiscount + itemGeneralDiscount;
+        const discountedAmount = Math.max(0, gross - totalItemDiscount);
+
+        if (item.type === 'service') {
+            serviceDiscount += totalItemDiscount;
+        } else {
+            productDiscount += totalItemDiscount;
+        }
 
         const rateSetting = item.type === 'service' ? serviceGstRate : productGstRate;
         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
-        
+
         const isItemInclusive = item.isInclusiveTax !== undefined 
             ? (String(item.isInclusiveTax) === 'true')
             : inclusiveTaxFallback;
@@ -155,7 +176,7 @@ export function calculateTotals({
         if (isItemInclusive) {
             const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
             const gstAmount = discountedAmount - taxableAmount;
-            
+
             totalGstAmount += gstAmount;
             totalBaseAmount += taxableAmount;
             if (item.type === 'service') {
@@ -166,11 +187,11 @@ export function calculateTotals({
         } else {
             const taxableAmount = discountedAmount;
             const gstAmount = (taxableAmount * itemTaxPercent) / 100;
-            
+
             totalGstAmount += gstAmount;
             totalBaseAmount += taxableAmount;
             totalExclusiveTax += gstAmount;
-            
+
             if (item.type === 'service') {
                 serviceTax += gstAmount;
                 serviceTaxExcl += gstAmount;
@@ -192,7 +213,7 @@ export function calculateTotals({
     const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
     const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
     const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
-
+    const totalDeductions = generalDiscount + totalMembershipDiscount;
     const currentBillTotal = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
     const grandTotal = includePreviousDue ? currentBillTotal + previousDue : currentBillTotal;
 
