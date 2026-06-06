@@ -1208,8 +1208,8 @@ export default function AppBookingPage() {
                     </div>
                     <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 italic">
                         <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest opacity-40">
-                            <span>{billingBreakdown.isAnyInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
-                            <span>₹{billingBreakdown.isAnyInclusive ? billingBreakdown.taxable.toFixed(2) : totalPrice.toLocaleString()}</span>
+                            <span>{billingBreakdown.isAnyInclusive ? 'Subtotal (Incl. GST)' : 'Subtotal'}</span>
+                            <span>₹{totalPrice.toLocaleString()}</span>
                         </div>
                         {membershipDiscount > 0 && (
                             <div className="flex justify-between text-[11px] font-bold uppercase tracking-widest text-[#C8956C]">
@@ -2020,8 +2020,8 @@ export default function AppBookingPage() {
                             {/* Billing totals */}
                             <div className="space-y-2 pt-4 border-t border-dashed border-black/10 dark:border-white/10 uppercase font-black tracking-tight">
                                 <div className="flex justify-between items-center opacity-40 text-xs">
-                                    <span style={{ color: colors.text }}>{billingBreakdown.isAnyInclusive ? 'Base Price (Excl. GST)' : 'Subtotal'}</span>
-                                    <span style={{ color: colors.text }}>₹{billingBreakdown.isAnyInclusive ? billingBreakdown.taxable.toFixed(2) : totalPrice.toLocaleString()}</span>
+                                    <span style={{ color: colors.text }}>{billingBreakdown.isAnyInclusive ? 'Subtotal (Incl. GST)' : 'Subtotal'}</span>
+                                    <span style={{ color: colors.text }}>₹{totalPrice.toLocaleString()}</span>
                                 </div>
                                 {membershipDiscount > 0 && (
                                     <div className="flex justify-between items-center text-xs">
