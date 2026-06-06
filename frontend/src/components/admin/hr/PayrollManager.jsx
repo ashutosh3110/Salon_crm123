@@ -775,11 +775,11 @@ export default function PayrollManager() {
                 </div>
             </div>
 
-            <div className="p-4 border border-blue-100 bg-blue-50/50 rounded-2xl flex items-center gap-4 transition-colors mb-4">
+            <div className="p-4 border border-blue-100 dark:border-slate-700/60 bg-blue-50/50 dark:bg-slate-800/60 rounded-2xl flex items-center gap-4 transition-colors mb-4">
                 <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center shrink-0">
                     <span className="text-white text-lg font-black italic">i</span>
                 </div>
-                <p className="text-xs text-slate-500 font-semibold leading-tight">
+                <p className="text-xs text-slate-500 dark:text-slate-300 font-semibold leading-tight">
                     Payroll summary automatically reflects the active month and outlet filter selection.<br />
                     Data is updated in real-time.
                 </p>

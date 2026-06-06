@@ -49,11 +49,11 @@ export default function CustomDropdown({
                 disabled={disabled}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 className={`custom-dropdown-trigger w-full flex items-center justify-between gap-2 px-3 border transition-all duration-200 text-left allow-curve rounded-xl
-                    ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100/50' : triggerClassName.includes('bg-') ? '' : 'bg-white'}
+                    ${disabled ? 'opacity-50 cursor-not-allowed bg-slate-100/50 dark:bg-slate-800/50' : triggerClassName.includes('bg-') ? '' : 'bg-white dark:bg-slate-800'}
                     ${className.includes('h-12') ? 'h-12' : className.includes('h-11') ? 'h-11' : 'py-2'}
                     ${isOpen && !triggerClassName.includes('border-')
-                        ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)]'
-                        : !triggerClassName.includes('border-') ? 'border-border hover:border-primary/40 shadow-sm hover:shadow-md' : ''
+                        ? 'border-primary shadow-[0_0_0_3px_rgba(var(--color-primary-rgb,99,102,241),0.12)] dark:border-primary/50'
+                        : !triggerClassName.includes('border-') ? 'border-border dark:border-slate-700 hover:border-primary/40 shadow-sm hover:shadow-md' : ''
                     }
                     ${triggerClassName}
                 `}
@@ -72,11 +72,7 @@ export default function CustomDropdown({
             {/* Dropdown Panel */}
             {isOpen && (
                 <div
-                    className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white overflow-hidden rounded-xl"
-                    style={{
-                        border: '1px solid #e5e7eb',
-                        boxShadow: '0 8px 30px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
-                    }}
+                    className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white dark:bg-slate-800 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl"
                 >
                     <div className="py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent hover:scrollbar-thumb-slate-300">
                         {normalizedOptions.map((opt, idx) => {

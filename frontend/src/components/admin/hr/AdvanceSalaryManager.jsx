@@ -14,6 +14,8 @@ const STATUS_META = {
     pending: { label: 'Pending', cls: 'bg-amber-500/10 !text-amber-700 border-amber-500/20 dark:!text-amber-450 dark:border-amber-500/30' },
 };
 
+import CustomDropdown from '../../common/CustomDropdown';
+
 export default function AdvanceSalaryManager() {
     const { salon, activeSalonId, staff, fetchStaff } = useBusiness();
 
@@ -389,7 +391,7 @@ export default function AdvanceSalaryManager() {
 
                     <button
                         onClick={() => setIsModalOpen(true)}
-                        className="ml-auto px-3 sm:px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
+                        className="ml-auto px-3 sm:px-4 py-2 bg-primary dark:!bg-[#B4912B] hover:bg-primary-dark dark:hover:!bg-[#9a7b24] text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg hover:shadow-primary/10 active:scale-95 transition-all flex items-center gap-1.5 whitespace-nowrap shrink-0"
                     >
                         <Plus className="w-4 h-4" />
                         Record Advance Salary
@@ -437,7 +439,7 @@ export default function AdvanceSalaryManager() {
                             {filteredLedger.length === 0 && !loading && (
                                 <tr>
                                     <td colSpan="6" className="px-6 py-16 text-center">
-                                        <FileText className="w-12 h-12 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                                        <img src="/vectorimages.png" alt="No data" className="w-48 h-auto mx-auto mb-4 drop-shadow-sm dark:opacity-80" />
                                         <p className="text-xs font-bold text-slate-400 dark:text-slate-550 uppercase tracking-wider">No salary advance logs found.</p>
                                     </td>
                                 </tr>
@@ -571,19 +573,15 @@ export default function AdvanceSalaryManager() {
                                         {/* Staff Selection Dropdown (Only editable on create) */}
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Staff Member *</label>
-                                            <select 
+                                            <CustomDropdown 
                                                 value={form.staffId} 
-                                                onChange={e => setForm({ ...form, staffId: e.target.value })}
+                                                onChange={val => setForm({ ...form, staffId: val })}
                                                 disabled={!!editingAdvance}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                                            >
-                                                <option value="">Select Staff...</option>
-                                                {activeStaffList.map(s => (
-                                                    <option key={s._id} value={s._id}>
-                                                        {s.name} ({s.role})
-                                                    </option>
-                                                ))}
-                                            </select>
+                                                options={activeStaffList.map(s => ({ label: `${s.name} (${s.role})`, value: s._id }))}
+                                                placeholder="Select Staff..."
+                                                className="w-full"
+                                                triggerClassName="bg-slate-50 dark:bg-slate-750 border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200"
+                                            />
                                         </div>
 
                                         <div className="grid grid-cols-2 gap-4">
@@ -614,15 +612,17 @@ export default function AdvanceSalaryManager() {
                                         {/* Status selection */}
                                         <div className="space-y-1">
                                             <label className="text-[10px] font-black text-slate-500 dark:text-slate-450 ml-1 uppercase">Advance Status</label>
-                                            <select 
+                                            <CustomDropdown 
                                                 value={form.status} 
-                                                onChange={e => setForm({ ...form, status: e.target.value })}
-                                                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-750 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-primary/10 focus:border-primary outline-none cursor-pointer"
-                                            >
-                                                <option value="paid">Paid (Disbursed to Employee)</option>
-                                                <option value="approved">Approved (Awaiting Payout)</option>
-                                                <option value="pending">Pending Review</option>
-                                            </select>
+                                                onChange={val => setForm({ ...form, status: val })}
+                                                options={[
+                                                    { label: 'Paid (Disbursed to Employee)', value: 'paid' },
+                                                    { label: 'Approved (Awaiting Payout)', value: 'approved' },
+                                                    { label: 'Pending Review', value: 'pending' }
+                                                ]}
+                                                className="w-full"
+                                                triggerClassName="bg-slate-50 dark:bg-slate-750 border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200"
+                                            />
                                         </div>
 
                                         {/* Reason */}
@@ -650,7 +650,7 @@ export default function AdvanceSalaryManager() {
                                         <button 
                                             type="submit" 
                                             disabled={isSaving}
-                                            className="px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5"
+                                            className="px-5 py-2.5 bg-primary dark:!bg-[#B4912B] hover:bg-primary-dark dark:hover:!bg-[#9a7b24] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50 transition-all flex items-center gap-1.5"
                                         >
                                             {isSaving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                                             Save Entry
