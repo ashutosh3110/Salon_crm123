@@ -556,14 +556,14 @@ export default function MembersListTab() {
                                         const isPro = tier.includes('pro');
 
                                         let TierIcon = Shield;
-                                        let tierColor = 'text-blue-500';
+                                        let tierColor = '!text-blue-600 !stroke-blue-600 dark:!text-blue-500 dark:!stroke-blue-500';
 
-                                        if (isPremium) { TierIcon = Diamond; tierColor = 'text-purple-500'; }
-                                        else if (isPro) { TierIcon = Crown; tierColor = 'text-[#B4912B]'; }
+                                        if (isPremium) { TierIcon = Diamond; tierColor = '!text-purple-600 !stroke-purple-600 dark:!text-purple-500 dark:!stroke-purple-500'; }
+                                        else if (isPro) { TierIcon = Crown; tierColor = '!text-amber-600 !stroke-amber-600 dark:!text-amber-500 dark:!stroke-amber-500'; }
 
-                                        let AvatarColor = 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
-                                        if (idx % 3 === 1) AvatarColor = 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400';
-                                        if (idx % 3 === 2) AvatarColor = 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+                                        let AvatarColor = 'bg-purple-100 dark:bg-purple-900/30 !text-purple-700 dark:!text-purple-400';
+                                        if (idx % 3 === 1) AvatarColor = 'bg-orange-100 dark:bg-orange-900/30 !text-orange-700 dark:!text-orange-400';
+                                        if (idx % 3 === 2) AvatarColor = 'bg-blue-100 dark:bg-blue-900/30 !text-blue-700 dark:!text-blue-400';
 
                                         return (
                                             <tr key={member.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
