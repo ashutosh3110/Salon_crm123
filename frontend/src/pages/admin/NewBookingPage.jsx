@@ -28,6 +28,7 @@ import { maskPhone } from '../../utils/phoneUtils';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, default as api } from '../../services/api';
+import { createPortal } from 'react-dom';
 
 export default function NewBookingPage() {
     const navigate = useNavigate();
@@ -86,6 +87,21 @@ export default function NewBookingPage() {
         setIsPromoApplied(false);
         setCouponCode('');
     }, [selection.customerId]);
+
+    // Disable body scroll when modal is open
+    useEffect(() => {
+        if (showCustomerModal) {
+            document.documentElement.style.setProperty('overflow', 'hidden', 'important');
+            document.body.style.setProperty('overflow', 'hidden', 'important');
+        } else {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+        }
+        return () => {
+            document.documentElement.style.removeProperty('overflow');
+            document.body.style.removeProperty('overflow');
+        };
+    }, [showCustomerModal]);
 
     const applyPromo = async () => {
         const code = String(couponCode || '').trim().toUpperCase();
@@ -387,16 +403,15 @@ export default function NewBookingPage() {
         { id: 5, title: 'Confirm Details', icon: Users },
         { id: 6, title: 'Complete Booking', icon: CheckCircle2 },
     ];
-
     return (
         <div className="min-h-screen bg-background pb-20 font-black text-left">
             {/* Header and Stepper */}
-            <div className="bg-white p-6 lg:px-10 lg:py-8 sticky top-0 z-[50] shadow-sm space-y-10">
+            <div className="bg-surface dark:bg-slate-900/50 backdrop-blur-md p-6 lg:px-10 lg:py-8 sticky top-0 z-[50] shadow-sm space-y-10 border-b border-border/30">
                 <div>
-                    <h1 className="text-xl font-bold text-slate-900 uppercase tracking-tight">
+                    <h1 className="text-xl font-bold text-text uppercase tracking-tight">
                         New Booking
                     </h1>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Administrative Access</p>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">Administrative Access</p>
                 </div>
 
                 <div className="flex items-start justify-center max-w-5xl mx-auto w-full">
@@ -404,19 +419,19 @@ export default function NewBookingPage() {
                         <div key={s.id} className="flex flex-col items-center relative flex-1">
                             <div className="flex items-center w-full">
                                 {/* Left Line */}
-                                <div className={`h-[2px] flex-1 ${i === 0 ? 'bg-transparent' : step >= s.id ? 'bg-[#D4A373]' : 'bg-slate-200'}`} />
+                                <div className={`h-[2px] flex-1 ${i === 0 ? 'bg-transparent' : step >= s.id ? 'bg-[#D4A373]' : 'bg-slate-200 dark:bg-slate-800'}`} />
                                 
                                 {/* Circle */}
-                                <div className={`w-8 h-8 flex items-center justify-center rounded-full text-[11px] font-bold transition-all z-10 shrink-0 ${step === s.id ? 'bg-[#D4A373] text-white shadow-md' : step > s.id ? 'bg-[#D4A373] text-white' : 'bg-slate-100 text-slate-400'}`}>
+                                <div className={`w-8 h-8 flex items-center justify-center rounded-full text-[11px] font-bold transition-all z-10 shrink-0 ${step === s.id ? 'bg-[#D4A373] text-white shadow-md' : step > s.id ? 'bg-[#D4A373] text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
                                     {step > s.id ? <CheckCircle2 className="w-4 h-4" /> : s.id}
                                 </div>
                                 
                                 {/* Right Line */}
-                                <div className={`h-[2px] flex-1 ${i === steps.length - 1 ? 'bg-transparent' : step > s.id ? 'bg-[#D4A373]' : 'bg-slate-200'}`} />
+                                <div className={`h-[2px] flex-1 ${i === steps.length - 1 ? 'bg-transparent' : step > s.id ? 'bg-[#D4A373]' : 'bg-slate-200 dark:bg-slate-800'}`} />
                             </div>
                             
                             {/* Label */}
-                            <span className={`text-[9px] font-bold uppercase mt-3 text-center max-w-[80px] leading-tight ${step >= s.id ? 'text-slate-900' : 'text-slate-400'}`}>
+                            <span className={`text-[9px] font-bold uppercase mt-3 text-center max-w-[80px] leading-tight ${step >= s.id ? 'text-text' : 'text-text-muted'}`}>
                                 {s.title}
                             </span>
                         </div>
@@ -431,18 +446,18 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="flex flex-col md:flex-row justify-between items-end md:items-center gap-6 pb-4">
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-amber-50 rounded-full flex items-center justify-center shrink-0">
+                                <div className="w-12 h-12 bg-amber-50 dark:bg-amber-950/20 rounded-full flex items-center justify-center shrink-0">
                                     <Store className="w-5 h-5 text-[#D4A373]" />
                                 </div>
                                 <div className="text-left">
-                                    <h2 className="text-xl font-bold text-slate-900 uppercase tracking-tight">Step 01: Select Outlet</h2>
-                                    <p className="text-[11px] text-slate-500 italic mt-1">Choose the branch (outlet) where the booking will be created.</p>
+                                    <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 01: Select Outlet</h2>
+                                    <p className="text-[11px] text-text-muted italic mt-1">Choose the branch (outlet) where the booking will be created.</p>
                                 </div>
                             </div>
                             <div className="relative w-full md:w-80">
-                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                 <input 
-                                    className="w-full bg-white border border-slate-200 p-3 pl-10 text-[11px] outline-none rounded-2xl shadow-sm focus:border-slate-300 transition-all placeholder:text-slate-400"
+                                    className="w-full bg-surface dark:bg-slate-900/50 border border-border/60 py-3 pr-3 !pl-10 text-[11px] outline-none rounded-2xl shadow-sm focus:border-[#D4A373] dark:focus:border-[#D4A373] transition-all placeholder:text-text-muted/65 text-text"
                                     placeholder="Search outlets..."
                                     value={searchTerms.outlet}
                                     onChange={(e) => setSearchTerms({...searchTerms, outlet: e.target.value})}
@@ -458,7 +473,7 @@ export default function NewBookingPage() {
                                         setSelection({...selection, outletId: o._id});
                                         nextStep();
                                     }}
-                                    className={`group relative bg-white border transition-all cursor-pointer overflow-hidden rounded-2xl shadow-sm flex flex-col ${selection.outletId === o._id ? 'border-[#D4A373] shadow-md ring-1 ring-[#D4A373]' : 'border-slate-200 hover:border-slate-300 hover:shadow-md'}`}
+                                    className={`group relative bg-surface border transition-all cursor-pointer overflow-hidden rounded-2xl shadow-sm flex flex-col ${selection.outletId === o._id ? 'border-[#D4A373] shadow-md ring-1 ring-[#D4A373]' : 'border-border/60 hover:border-[#D4A373]/60 hover:shadow-md'}`}
                                 >
                                     <div className="h-48 relative overflow-hidden bg-slate-900">
                                         <img src={getImageUrl(o.images?.[0]) || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974'} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-90" />
@@ -468,17 +483,17 @@ export default function NewBookingPage() {
                                     </div>
                                     <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
                                         <div className="flex items-start gap-3">
-                                            <MapPin className="w-4 h-4 text-slate-700 shrink-0 mt-0.5" />
+                                            <MapPin className="w-4 h-4 text-text-secondary shrink-0 mt-0.5" />
                                             <div>
-                                                <h3 className="text-[13px] font-bold text-slate-900 uppercase">{o.name}</h3>
-                                                <p className="text-[10px] font-semibold text-slate-500 uppercase mt-1">
+                                                <h3 className="text-[13px] font-bold text-text uppercase">{o.name}</h3>
+                                                <p className="text-[10px] font-semibold text-text-muted uppercase mt-1">
                                                     {o.address?.city ? `${o.address.city} DIVISION, ` : ''}{o.address?.state || 'UTTAR PRADESH'}
                                                 </p>
                                             </div>
                                         </div>
                                         
                                         <div>
-                                            <div className="h-[1px] w-full bg-slate-100 mb-4" />
+                                            <div className="h-[1px] w-full bg-border/40 mb-4" />
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[10px] font-bold text-[#D4A373] uppercase tracking-wider">View Branch Details</span>
                                                 <ArrowRight className="w-4 h-4 text-[#D4A373] group-hover:translate-x-1 transition-transform" />
@@ -490,17 +505,17 @@ export default function NewBookingPage() {
                         </div>
 
                         {/* Banner */}
-                        <div className="mt-8 p-6 bg-amber-50/50 border border-amber-100 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div className="mt-8 p-6 bg-amber-500/5 dark:bg-[#D4A373]/5 border border-amber-500/10 dark:border-[#D4A373]/10 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-6">
                             <div className="flex items-center gap-5">
-                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 border border-amber-100">
+                                <div className="w-12 h-12 bg-surface border border-border/40 rounded-full flex items-center justify-center shrink-0 shadow-sm">
                                     <Store className="w-5 h-5 text-[#D4A373]" />
                                 </div>
                                 <div className="text-left">
-                                    <h4 className="text-sm font-bold text-slate-900">Can't find the outlet?</h4>
-                                    <p className="text-[11px] text-slate-600 mt-0.5 font-medium">Make sure the outlet is active and available for bookings.</p>
+                                    <h4 className="text-sm font-bold text-text">Can't find the outlet?</h4>
+                                    <p className="text-[11px] text-text-muted mt-0.5 font-medium">Make sure the outlet is active and available for bookings.</p>
                                 </div>
                             </div>
-                            <button onClick={() => navigate('/admin/outlets')} className="px-6 py-2.5 bg-white border border-[#D4A373] text-[#D4A373] text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#D4A373] hover:text-white transition-all flex items-center gap-2 shrink-0">
+                            <button onClick={() => navigate('/admin/outlets')} className="px-6 py-2.5 bg-surface dark:bg-slate-900 border border-[#D4A373] text-[#D4A373] text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-[#D4A373] dark:hover:bg-[#D4A373] hover:text-white dark:hover:text-black transition-all flex items-center gap-2 shrink-0">
                                 Manage Outlets <ArrowRight className="w-3.5 h-3.5" />
                             </button>
                         </div>
@@ -515,13 +530,13 @@ export default function NewBookingPage() {
                                 <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
                                     <ChevronLeft className="w-3 h-3" /> Back to Outlet
                                 </button>
-                                <h2 className="text-3xl font-black text-text uppercase italic tracking-tight font-mono">Step 02 : Select Service</h2>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">Available services at {selectedOutlet?.name}</p>
+                                <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 02: Select Service</h2>
+                                <p className="text-[11px] text-text-muted italic mt-1">Available services at {selectedOutlet?.name}</p>
                             </div>
                             <div className="relative w-full md:w-80">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                 <input 
-                                    className="w-full bg-surface-alt border border-border p-4 pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
+                                    className="w-full bg-surface-alt border border-border py-4 pr-4 !pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
                                     placeholder="Search Services..."
                                     value={searchTerms.service}
                                     onChange={(e) => setSearchTerms({...searchTerms, service: e.target.value})}
@@ -585,13 +600,13 @@ export default function NewBookingPage() {
                                 <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
                                     <ChevronLeft className="w-3 h-3" /> Back to Service
                                 </button>
-                                <h2 className="text-3xl font-black text-text uppercase italic tracking-tight font-mono">Step 03 : Select Staff</h2>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">Specialists for {selectedService?.name}</p>
+                                <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 03: Select Staff</h2>
+                                <p className="text-[11px] text-text-muted italic mt-1">Specialists for {selectedService?.name}</p>
                             </div>
                             <div className="relative w-full md:w-80">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                 <input 
-                                    className="w-full bg-surface-alt border border-border p-4 pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
+                                    className="w-full bg-surface-alt border border-border py-4 pr-4 !pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
                                     placeholder="Search Staff..."
                                     value={searchTerms.staff}
                                     onChange={(e) => setSearchTerms({...searchTerms, staff: e.target.value})}
@@ -612,9 +627,9 @@ export default function NewBookingPage() {
                                                     : [...selection.staffId, s._id];
                                                 setSelection({...selection, staffId: newStaffIds});
                                             }}
-                                            className={`group p-8 bg-surface border cursor-pointer transition-all text-center relative rounded-2xl shadow-sm ${isSelected ? 'border-primary shadow-lg ring-2 ring-primary/20 scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100 hover:shadow-md'}`}
+                                            className={`group p-8 bg-surface border cursor-pointer transition-all text-center relative rounded-2xl shadow-sm ${isSelected ? 'border-[#D4A373] shadow-lg ring-2 ring-[#D4A373]/20 scale-105 z-10' : 'border-border hover:border-text opacity-70 hover:opacity-100 hover:shadow-md'}`}
                                         >
-                                            <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-surface shadow-sm mb-6 overflow-hidden rounded-xl flex items-center justify-center transition-all group-hover:border-primary">
+                                            <div className="w-24 h-24 mx-auto bg-surface-alt border-4 border-surface shadow-sm mb-6 overflow-hidden rounded-xl flex items-center justify-center transition-all group-hover:border-[#D4A373]">
                                                 {s.avatar ? (
                                                     <img src={getImageUrl(s.avatar)} className="w-full h-full object-cover" />
                                                 ) : (
@@ -622,16 +637,16 @@ export default function NewBookingPage() {
                                                 )}
                                             </div>
                                             <h3 className="text-lg font-black text-text uppercase italic tracking-tight leading-none mb-2">{s.name}</h3>
-                                            <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] italic">{s.specialization || 'Specialist'}</p>
+                                            <p className="text-[9px] font-black text-[#D4A373] uppercase tracking-[0.2em] italic">{s.specialization || 'Specialist'}</p>
                                             
-                                            <div className="mt-8 pt-4 border-t border-border flex items-center justify-center gap-4 text-text-muted opacity-60">
+                                            <div className="mt-8 pt-4 border-t border-border flex items-center justify-center gap-4 text-text-muted dark:!text-[#D4A373] opacity-60 dark:!opacity-100">
                                                 <div className="flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
                                                     <p className="text-[9px] font-black uppercase">Available</p>
                                                 </div>
                                             </div>
                                             {isSelected && (
-                                                <div className="absolute top-4 right-4 bg-primary text-white p-1.5 rounded-xl shadow-sm">
+                                                <div className="absolute top-4 right-4 bg-[#D4A373] text-white p-1.5 rounded-xl shadow-sm">
                                                     <CheckCircle2 className="w-4 h-4" />
                                                 </div>
                                             )}
@@ -672,16 +687,16 @@ export default function NewBookingPage() {
                                 <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
                                     <ChevronLeft className="w-3 h-3" /> Back to Staff
                                 </button>
-                                <h2 className="text-3xl font-black text-text uppercase italic tracking-tight font-mono">Step 04 : Select Schedule</h2>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">Pick date and time</p>
+                                <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 04: Select Schedule</h2>
+                                <p className="text-[11px] text-text-muted italic mt-1">Pick date and time</p>
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                             <div className="space-y-6">
-                                <label className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
+                                <div className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
                                     <Calendar className="w-4 h-4 text-primary" /> Select Date
-                                </label>
+                                </div>
                                 <div className="grid grid-cols-7 gap-2 bg-surface p-6 border border-border rounded-2xl shadow-sm">
                                     {[...Array(14)].map((_, i) => {
                                         const d = new Date();
@@ -691,11 +706,11 @@ export default function NewBookingPage() {
                                             <button
                                                 key={i}
                                                 onClick={() => setSelection({...selection, date: d.toISOString().split('T')[0]})}
-                                                className={`flex flex-col items-center justify-center p-3 border transition-all rounded-2xl ${isSelected ? 'bg-primary border-primary text-white scale-110 shadow-lg ring-2 ring-primary/20' : 'bg-surface border-border hover:border-text text-text hover:shadow-md'}`}
+                                                className={`flex flex-col items-center justify-center p-3 border transition-all rounded-2xl ${isSelected ? 'bg-primary border-primary dark:!bg-[#D4A373] dark:!border-[#D4A373] scale-110 shadow-lg ring-2 ring-primary/20' : 'bg-surface border-border hover:border-text text-text hover:shadow-md'}`}
                                             >
-                                                <span className="text-[8px] font-black opacity-60 uppercase">{d.toLocaleDateString([], { weekday: 'short' })}</span>
-                                                <span className="text-lg font-black font-mono">{d.getDate()}</span>
-                                                <span className="text-[8px] font-black uppercase opacity-60">{d.toLocaleDateString([], { month: 'short' })}</span>
+                                                <span className={`text-[8px] font-black uppercase ${isSelected ? 'text-white dark:!text-black opacity-80' : 'opacity-60 text-text'}`}>{d.toLocaleDateString([], { weekday: 'short' })}</span>
+                                                <span className={`text-lg font-black font-mono ${isSelected ? 'text-white dark:!text-black' : 'text-text'}`}>{d.getDate()}</span>
+                                                <span className={`text-[8px] font-black uppercase ${isSelected ? 'text-white dark:!text-black opacity-80' : 'opacity-60 text-text'}`}>{d.toLocaleDateString([], { month: 'short' })}</span>
                                             </button>
                                         );
                                     })}
@@ -703,9 +718,9 @@ export default function NewBookingPage() {
                             </div>
 
                             <div className="space-y-6">
-                                <label className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
+                                <div className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
                                     <Clock className="w-4 h-4 text-primary" /> Select Time
-                                </label>
+                                </div>
                                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 bg-surface p-6 border border-border rounded-2xl shadow-sm overflow-y-auto max-h-[350px]">
                                     {(() => {
                                         if (!selection.date) return <p className="col-span-full text-[10px] text-text-muted uppercase text-center py-10 font-black italic">Select a date first</p>;
@@ -715,7 +730,7 @@ export default function NewBookingPage() {
                                         // If "Any Staff", show default slots (could be improved later to aggregate all staff)
                                         if (selection.staffId === 'any') {
                                             return ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'].map(t => (
-                                                <button key={t} onClick={() => setSelection({...selection, time: t})} className={`p-4 text-xs font-black font-mono border transition-all rounded-xl ${selection.time === t ? 'bg-primary border-primary text-white shadow-md ring-2 ring-primary/20' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text hover:shadow-sm'}`}>{t}</button>
+                                                <button key={t} onClick={() => setSelection({...selection, time: t})} className={`p-4 text-xs font-black font-mono border transition-all rounded-xl ${selection.time === t ? 'bg-primary border-primary dark:!bg-[#D4A373] dark:!border-[#D4A373] text-white dark:!text-black shadow-md ring-2 ring-primary/20' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text hover:shadow-sm'}`}>{t}</button>
                                             ));
                                         }
 
@@ -725,7 +740,7 @@ export default function NewBookingPage() {
                                             <button
                                                 key={t}
                                                 onClick={() => setSelection({...selection, time: t})}
-                                                className={`p-4 text-xs font-black font-mono border transition-all rounded-xl ${selection.time === t ? 'bg-primary border-primary text-white shadow-md ring-2 ring-primary/20' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text hover:shadow-sm'}`}
+                                                className={`p-4 text-xs font-black font-mono border transition-all rounded-xl ${selection.time === t ? 'bg-primary border-primary dark:!bg-[#D4A373] dark:!border-[#D4A373] text-white dark:!text-black shadow-md ring-2 ring-primary/20' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text hover:shadow-sm'}`}
                                             >
                                                 {t}
                                             </button>
@@ -755,13 +770,13 @@ export default function NewBookingPage() {
                                 <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
                                     <ChevronLeft className="w-3 h-3" /> Back to Schedule
                                 </button>
-                                <h2 className="text-3xl font-black text-text uppercase italic tracking-tight font-mono">Step 05 : Select Customer</h2>
-                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em] mt-2">Choose buyer for this appointment</p>
+                                <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 05: Select Customer</h2>
+                                <p className="text-[11px] text-text-muted italic mt-1">Choose buyer for this appointment</p>
                             </div>
                             <div className="relative w-full md:w-80">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                                 <input 
-                                    className="w-full bg-surface-alt border border-border p-4 pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
+                                    className="w-full bg-surface-alt border border-border py-4 pr-4 !pl-12 text-[10px] font-black uppercase outline-none rounded-2xl shadow-sm focus:border-primary transition-all"
                                     placeholder="Search Phone or Name..."
                                     value={searchTerms.customer}
                                     onChange={(e) => setSearchTerms({...searchTerms, customer: e.target.value})}
@@ -777,19 +792,19 @@ export default function NewBookingPage() {
                                         setSelection({...selection, customerId: c._id});
                                         nextStep();
                                     }}
-                                    className={`p-6 bg-surface border cursor-pointer transition-all flex items-center gap-4 group rounded-2xl shadow-sm ${selection.customerId === c._id ? 'border-primary bg-primary/5 shadow-md ring-2 ring-primary/20' : 'border-border hover:border-text hover:shadow-md'}`}
+                                    className={`p-6 bg-surface border cursor-pointer transition-all flex items-center gap-4 group rounded-2xl shadow-sm ${selection.customerId === c._id ? 'border-[#D4A373] bg-[#D4A373]/5 shadow-md ring-2 ring-[#D4A373]/20' : 'border-border hover:border-text hover:shadow-md'}`}
                                 >
-                                    <div className={`w-12 h-12 flex items-center justify-center text-xl font-black italic border transition-all shrink-0 rounded-2xl ${selection.customerId === c._id ? 'bg-primary text-white border-primary shadow-inner' : 'bg-surface-alt text-text-muted border-border'}`}>
+                                    <div className={`w-12 h-12 flex items-center justify-center text-xl font-black italic border transition-all shrink-0 rounded-2xl ${selection.customerId === c._id ? 'bg-[#D4A373] text-white border-[#D4A373] shadow-inner' : 'bg-surface-alt text-text-muted border-border'}`}>
                                         {c.name?.[0] || '?'}
                                     </div>
                                     <div className="flex-1 text-left min-w-0">
                                         <h3 className="text-[11px] font-black uppercase italic truncate">{c.name || 'New Customer'}</h3>
                                         <div className="flex items-center gap-2 mt-1 opacity-60">
-                                            <Smartphone className="w-3 h-3 text-primary" />
+                                            <Smartphone className="w-3 h-3 text-[#D4A373]" />
                                             <p className="text-[9px] font-black font-mono tracking-tighter">{maskPhone(c.phone, user?.role)}</p>
                                         </div>
                                     </div>
-                                    {selection.customerId === c._id && <CheckCircle2 className="w-4 h-4 text-primary" />}
+                                    {selection.customerId === c._id && <CheckCircle2 className="w-4 h-4 text-[#D4A373]" />}
                                 </div>
                             ))}
                         </div>
@@ -824,7 +839,7 @@ export default function NewBookingPage() {
                             </div>
                             <button 
                                 onClick={() => setShowCustomerModal(true)}
-                                className="flex items-center gap-3 px-10 py-4 bg-surface text-primary border border-primary text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-primary hover:text-white transition-all shadow-md italic"
+                                className="flex items-center gap-3 px-10 py-4 bg-surface text-primary border border-primary text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-primary hover:text-white transition-all shadow-md italic dark:!bg-[#B8860B] dark:!border-[#B8860B] dark:!text-white dark:hover:!bg-[#997009]"
                             >
                                 <Plus className="w-4 h-4" /> Add New Customer
                             </button>
@@ -836,7 +851,7 @@ export default function NewBookingPage() {
                 {step === 6 && (
                     <div className="max-w-4xl mx-auto space-y-10 animate-reveal">
                         <div className="text-center space-y-4">
-                            <div className="w-20 h-20 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
+                            <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900/50 rounded-xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
                                 <Shield className="w-10 h-10" />
                             </div>
                             <h2 className="text-4xl font-black text-text uppercase italic tracking-tighter font-mono">Confirm Booking</h2>
@@ -878,14 +893,13 @@ export default function NewBookingPage() {
                                     <div className="flex items-center gap-2">
                                         <h4 className="text-xl font-black text-text uppercase italic tracking-tight">{selectedCustomer?.name}</h4>
                                         {activeMembership && (
-                                            <span className="text-[8px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-amber-200">
+                                            <span className="text-[8px] bg-amber-100 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded font-black uppercase tracking-widest border border-amber-200 dark:border-amber-900/30">
                                                 {activeMembership.planId?.name} Member
                                             </span>
                                         )}
                                     </div>
                                     <p className="text-[10px] font-black text-text-muted font-mono tracking-tighter mt-1 opacity-60 italic">{maskPhone(selectedCustomer?.phone, user?.role)}</p>
                                 </div>
-                                <div className="pt-6 border-t border-border space-y-3">
                                 <div className="pt-6 border-t border-border space-y-4">
                                     {/* Coupon application block */}
                                     <div className="flex items-center gap-2">
@@ -912,7 +926,7 @@ export default function NewBookingPage() {
                                         ) : (
                                             <button
                                                 onClick={applyPromo}
-                                                className="px-6 py-3 bg-[#B8860B] hover:bg-[#997009] text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm"
+                                                className="px-6 py-3 bg-[#B8860B] hover:bg-[#997009] dark:!bg-[#B8860B] dark:hover:!bg-[#997009] !text-white dark:!text-white text-[9px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm"
                                             >
                                                 Apply
                                             </button>
@@ -964,7 +978,6 @@ export default function NewBookingPage() {
                                         </div>
                                     </div>
                                 </div>
-                                </div>
                             </div>
                         </div>
 
@@ -987,31 +1000,33 @@ export default function NewBookingPage() {
                 )}
 
                 {/* Customer Registration Modal */}
-                {showCustomerModal && (
+                {showCustomerModal && createPortal(
                     <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowCustomerModal(false)}>
-                        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl relative overflow-y-auto max-h-[90vh] hide-scrollbar animate-in slide-in-from-top-4 duration-300 border border-slate-200/50" onClick={(e) => e.stopPropagation()}>
-                            <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
-                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
-                                    <UserPlus className="w-4 h-4 text-slate-800" /> Add Customer
+                        <div className="bg-surface dark:bg-slate-900 rounded-2xl w-full max-w-md shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-border/40 !text-slate-900 dark:!text-white" onClick={(e) => e.stopPropagation()}>
+                            <div className="p-5 bg-surface dark:bg-slate-900 border-b border-border/40 flex justify-between items-center shrink-0">
+                                <h4 className="text-[11px] font-black !text-slate-900 dark:!text-white uppercase flex items-center gap-2 tracking-widest">
+                                    <UserPlus className="w-4 h-4 !text-slate-800 dark:!text-slate-200 [&_*]:!stroke-slate-800 dark:[&_*]:!stroke-slate-200" /> Add Customer
                                 </h4>
-                                <button type="button" onClick={() => setShowCustomerModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors"><X className="w-5 h-5" /></button>
+                                <button type="button" onClick={() => setShowCustomerModal(false)} className="!text-slate-400 dark:!text-text-muted hover:!text-rose-500 transition-colors group/modal-close">
+                                    <X className="w-5 h-5 [&_*]:!stroke-slate-400 dark:[&_*]:!stroke-slate-500 group-hover/modal-close:[&_*]:!stroke-rose-500" />
+                                </button>
                             </div>
 
-                            <form onSubmit={handleAddCustomer}>
-                                <div className="p-6 space-y-4">
+                            <form onSubmit={handleAddCustomer} className="flex-1 flex flex-col min-h-0">
+                                <div className="p-6 space-y-4 overflow-y-auto hide-scrollbar flex-1">
                                     <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Customer Name</label>
+                                        <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Customer Name</label>
                                         <input
                                             type="text"
                                             required
                                             placeholder="e.g. John Doe"
                                             value={clientForm.name}
                                             onChange={(e) => setClientForm({...clientForm, name: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#B8860B] transition-colors uppercase"
                                         />
                                     </div>
                                     <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                        <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Phone Number</label>
                                         <input
                                             type="tel"
                                             required
@@ -1021,71 +1036,72 @@ export default function NewBookingPage() {
                                                 const val = e.target.value.replace(/\D/g, '');
                                                 if (val.length <= 10) setClientForm({...clientForm, phone: val});
                                             }}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#B8860B] transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Email (Optional)</label>
+                                        <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Email (Optional)</label>
                                         <input
                                             type="email"
                                             placeholder="e.g. email@example.com"
                                             value={clientForm.email}
                                             onChange={(e) => setClientForm({...clientForm, email: e.target.value})}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors"
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#B8860B] transition-colors"
                                         />
                                     </div>
                                     <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Referral Code (Optional)</label>
+                                        <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Referral Code (Optional)</label>
                                         <input
                                             type="text"
                                             placeholder="e.g. WAP-XXXXXX"
                                             value={clientForm.appliedReferralCode || ''}
                                             onChange={(e) => setClientForm({...clientForm, appliedReferralCode: e.target.value.toUpperCase().trim()})}
-                                            className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl placeholder:text-slate-400 focus:border-slate-400 transition-colors uppercase"
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-[#B8860B] transition-colors uppercase"
                                         />
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-1.5 text-left">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Birth Date</label>
+                                            <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Birth Date</label>
                                             <input
                                                 type="date"
                                                 max={new Date().toISOString().split('T')[0]}
                                                 value={clientForm.dob}
                                                 onChange={(e) => setClientForm({...clientForm, dob: e.target.value})}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
+                                                className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl focus:border-[#B8860B] transition-colors"
                                             />
                                         </div>
                                         <div className="space-y-1.5 text-left">
-                                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Anniversary</label>
+                                            <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Anniversary</label>
                                             <input
                                                 type="date"
                                                 max={new Date().toISOString().split('T')[0]}
                                                 value={clientForm.anniversary}
                                                 onChange={(e) => setClientForm({...clientForm, anniversary: e.target.value})}
-                                                className="w-full bg-slate-50 border border-slate-200 p-3 text-xs font-black text-slate-900 outline-none rounded-xl focus:border-slate-400 transition-colors"
+                                                className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl focus:border-[#B8860B] transition-colors"
                                             />
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                <div className="p-6 bg-surface-alt border-t border-border/40 flex gap-3 shrink-0">
                                     <button 
                                         type="button" 
                                         onClick={() => setShowCustomerModal(false)} 
-                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                        className="flex-1 py-3 text-[11px] font-black !text-slate-700 dark:!text-slate-300 uppercase tracking-widest border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit" 
-                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10"
+                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-[#B8860B] hover:bg-[#997009] rounded-xl transition-all shadow-lg shadow-[#B8860B]/10"
                                     >
                                         Save & Continue
                                     </button>
                                 </div>
                             </form>
                         </div>
-                    </div>
+                    </div>,
+                    document.body
                 )}
             </div>
         </div>
