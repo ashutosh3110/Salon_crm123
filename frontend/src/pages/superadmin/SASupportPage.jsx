@@ -2,10 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import {
     Bug, LogOut, Search, RefreshCw,
     CheckCircle, XCircle, Clock,
-    Eye, Download, X, ChevronDown, ChevronUp,
-    Shield, Users, Filter, Edit3, Trash2,
+    Eye, Download, X,
+    Shield, Users,
     AlertTriangle, Info, MessageSquare, ArrowRight, ArrowUpCircle,
-    Plus, Save, FileEdit, HelpCircle
+    Plus, Trash2, Save, FileEdit, HelpCircle
 } from 'lucide-react';
 import { exportToExcel } from '../../utils/exportUtils';
 import api from '../../services/api';
@@ -13,20 +13,14 @@ import api from '../../services/api';
 /* ─── Constants ────────────────────────────────────────────────────── */
 
 const STATUS_STYLES = {
-    'pending': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Pending', accent: 'bg-amber-500' },
-    'open': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Open', accent: 'bg-amber-500' },
-    'in-progress': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'In Progress', accent: 'bg-sky-500' },
-    'resolved': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Resolved', accent: 'bg-emerald-500' },
-    'closed': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Closed', accent: 'bg-slate-500' },
-    'escalated': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'Escalated', accent: 'bg-rose-500' },
+    'pending': { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', label: 'Pending' },
+    'in-progress': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200', label: 'In Progress' },
+    'resolved': { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', label: 'Resolved' },
+    'closed': { bg: 'bg-slate-50', text: 'text-slate-500', border: 'border-slate-200', label: 'Closed' },
+    'escalated': { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', label: 'Escalated' },
 };
 
-const PRIORITY_STYLES = {
-    'low': { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100' },
-    'medium': { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-100' },
-    'high': { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-100' },
-    'urgent': { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-100' }
-};
+/* ─── Mock data ─────────────────────────────────────────────────────── */
 
 export default function SASupportPage() {
     const [toast, setToast] = useState(null);
@@ -39,14 +33,6 @@ export default function SASupportPage() {
     const [faqs, setFaqs] = useState([]);
     const [loadingFaqs, setLoadingFaqs] = useState(false);
     const [savingFaqs, setSavingFaqs] = useState(false);
-
-    // Filter and Search States
-    const [searchQuery, setSearchQuery] = useState('');
-    const [statusFilter, setStatusFilter] = useState('all');
-
-    // FAQ Accordion & Edit States
-    const [expandedFaqIndex, setExpandedFaqIndex] = useState(null);
-    const [editingFaqIndex, setEditingFaqIndex] = useState(null);
 
     // Create Ticket State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -74,6 +60,7 @@ export default function SASupportPage() {
         try {
             const res = await api.get('/salons');
             if (res.data.success) {
+                // The API returns a paginated object { results: [], totalResults: ... }
                 const data = res.data.data;
                 setSalons(Array.isArray(data?.results) ? data.results : []);
             }
@@ -97,7 +84,7 @@ export default function SASupportPage() {
         }
     };
 
-    const handleSaveFaq = async (faq, index) => {
+    const handleSaveFaq = async (faq) => {
         try {
             setSavingFaqs(true);
             let res;
@@ -108,7 +95,6 @@ export default function SASupportPage() {
             }
             if (res.data.success) {
                 showToast('FAQ saved successfully!');
-                setEditingFaqIndex(null);
                 fetchFAQs();
             }
         } catch (error) {
@@ -121,14 +107,11 @@ export default function SASupportPage() {
 
     const addFaq = () => {
         setFaqs([{ question: 'New Question?', answer: 'Answer goes here...', category: 'General', isNew: true }, ...faqs]);
-        setExpandedFaqIndex(0);
-        setEditingFaqIndex(0);
     };
 
     const removeFaq = async (faq, index) => {
         if (!faq._id) {
             setFaqs(faqs.filter((_, i) => i !== index));
-            setEditingFaqIndex(null);
             return;
         }
         if (!confirm('Delete this FAQ permanently?')) return;
@@ -138,7 +121,6 @@ export default function SASupportPage() {
             if (res.data.success) {
                 showToast('FAQ deleted');
                 fetchFAQs();
-                setEditingFaqIndex(null);
             }
         } catch (err) {
             showToast('Delete failed', 'error');
@@ -220,251 +202,151 @@ export default function SASupportPage() {
         setTimeout(() => setToast(null), 3500);
     };
 
-    // Calculate Statistics
-    const stats = useMemo(() => {
-        const total = tickets.length;
-        const pending = tickets.filter(t => t.status === 'pending' || t.status === 'open').length;
-        const inProgress = tickets.filter(t => t.status === 'in-progress').length;
-        const resolvedClosed = tickets.filter(t => t.status === 'resolved' || t.status === 'closed').length;
-        const resolvedPercentage = total > 0 ? Math.round((resolvedClosed / total) * 100) : 0;
-        return { total, pending, inProgress, resolvedPercentage };
-    }, [tickets]);
 
-    // Filter tickets based on filters and search query
-    const filteredTickets = useMemo(() => {
-        return tickets.filter(t => {
-            // Status Filter
-            if (statusFilter !== 'all') {
-                if (statusFilter === 'pending') {
-                    if (t.status !== 'pending' && t.status !== 'open') return false;
-                } else if (statusFilter === 'resolved') {
-                    if (t.status !== 'resolved' && t.status !== 'closed') return false;
-                } else {
-                    if (t.status !== statusFilter) return false;
-                }
-            }
-            // Search Query
-            if (searchQuery.trim() !== '') {
-                const query = searchQuery.toLowerCase();
-                return (
-                    t.subject?.toLowerCase().includes(query) ||
-                    t.description?.toLowerCase().includes(query) ||
-                    t._id?.toLowerCase().includes(query) ||
-                    t.tenantId?.name?.toLowerCase().includes(query) ||
-                    t.userId?.name?.toLowerCase().includes(query)
-                );
-            }
-            return true;
-        });
-    }, [tickets, statusFilter, searchQuery]);
+    const handleForceLogout = async () => {
+        if (!confirm('Force logout ALL active users from all salons? This will clear every session.')) return;
+        setClearing(true);
+        await new Promise(r => setTimeout(r, 1500));
+        setClearing(false);
+        showToast('All sessions cleared — users will need to re-login.', 'error');
+    };
 
     return (
-        <div className="space-y-6 pb-8 min-h-screen bg-gradient-to-br from-slate-50 via-white to-amber-50/30 p-6">
-            
-            {/* Toast popup */}
+        <div className="space-y-5 pb-8 sa-panel">
             {toast && (
-                <div className="fixed top-5 right-5 z-[200] flex items-center gap-2.5 px-4 py-3 rounded-2xl backdrop-blur-xl bg-white/90 border border-white shadow-2xl text-sm font-semibold animate-in slide-in-from-right-4 duration-300">
-                    {toast.type === 'error'
-                        ? <XCircle className="w-5 h-5 shrink-0 text-red-600" />
-                        : <CheckCircle className="w-5 h-5 shrink-0 text-emerald-600" />}
-                    <span className={toast.type === 'error' ? 'text-red-600' : 'text-emerald-600'}>
-                        {toast.msg}
-                    </span>
+                <div className={`fixed top-20 right-8 z-[200] flex items-center gap-2.5 px-6 py-3 rounded-xl shadow-2xl text-white text-xs font-bold uppercase tracking-widest animate-in slide-in-from-right-4 duration-300 ${toast.type === 'error' ? 'bg-red-500' : toast.type === 'info' ? 'bg-blue-500' : 'bg-emerald-500'
+                    }`}>
+                    <CheckCircle className="w-4 h-4 shrink-0" /> {toast.msg}
                 </div>
             )}
 
-            {/* Header Redesign */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-100 pb-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight mt-1">
-                        Support Center
-                    </h1>
-                    <p className="text-slate-500 mt-2 text-sm">
-                        Manage tickets, escalations and FAQs
-                    </p>
+                    <h1 className="text-2xl font-black tracking-tighter uppercase">Support Portal <span className="text-primary text-3xl"></span></h1>
+                    <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Manage platform support and salon requests</p>
                 </div>
-                
-                {/* Modern Navigation Tabs */}
-                <div className="flex items-center gap-1 bg-slate-100/80 backdrop-blur rounded-2xl p-1 border border-slate-200/50">
+                <div className="flex items-center gap-2 bg-surface p-1 rounded-xl border border-border/60">
                     <button 
-                        onClick={() => { setActiveTab('tickets'); setExpandedFaqIndex(null); setEditingFaqIndex(null); }}
-                        className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${activeTab === 'tickets' ? 'bg-white text-[#B4912B] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                        onClick={() => setActiveTab('tickets')}
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'tickets' ? 'bg-[#B4912B] text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
                     >
                         Salon Tickets
                     </button>
                     <button 
-                        onClick={() => { setActiveTab('faqs'); setExpandedFaqIndex(null); setEditingFaqIndex(null); }}
-                        className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${activeTab === 'faqs' ? 'bg-white text-[#B4912B] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                        onClick={() => setActiveTab('faqs')}
+                        className={`px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'faqs' ? 'bg-[#B4912B] text-white shadow-lg' : 'text-text-muted hover:text-text'}`}
                     >
                         Manage FAQs
                     </button>
+                   
                 </div>
             </div>
 
-            {/* Top Stats Dashboard */}
-            {activeTab === 'tickets' && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Tickets</p>
-                        <h3 className="text-3xl font-black mt-2 text-slate-800">{stats.total}</h3>
-                    </div>
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Pending</p>
-                        <h3 className="text-3xl font-black mt-2 text-amber-600">{stats.pending}</h3>
-                    </div>
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">In Progress</p>
-                        <h3 className="text-3xl font-black mt-2 text-sky-600">{stats.inProgress}</h3>
-                    </div>
-                    <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-5 border border-white/30 shadow-[0_10px_40px_rgba(0,0,0,0.04)]">
-                        <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">Resolved %</p>
-                        <h3 className="text-3xl font-black mt-2 text-emerald-600">{stats.resolvedPercentage}%</h3>
-                    </div>
-                </div>
-            )}
-
             {activeTab === 'tickets' ? (
-                /* Ticket Section */
-                <div className="space-y-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                        <div className="flex-1">
-                            <h2 className="text-lg font-black tracking-tight text-slate-800">Support Requests</h2>
-                            <p className="text-xs text-slate-500 mt-1">Search, filter, and take actions on tickets</p>
+                /* Salon Support Tickets Section */
+                <div className="space-y-6 pt-2">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center !text-amber-600 dark:!text-amber-400">
+                                <MessageSquare size={18} className="!stroke-amber-600 dark:!stroke-amber-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold tracking-tight leading-none">Salon Support Tickets</h2>
+                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Manage requests from salon owners and staff</p>
+                            </div>
                         </div>
-                        
                         <div className="flex items-center gap-3">
                             <button 
                                 onClick={() => setIsCreateModalOpen(true)}
-                                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white text-sm font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#B4912B]/20"
+                                className="flex items-center gap-2 px-4 py-2 bg-[#B4912B] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:brightness-110 transition-all shadow-lg active:scale-95"
                             >
-                                <Plus className="w-4 h-4 text-white" /> Create Ticket
+                                <Plus className="w-4 h-4" /> Create Ticket
                             </button>
-                            <button onClick={fetchTickets} className="p-2 hover:bg-white rounded-xl border border-slate-200 shadow-sm transition-all text-slate-500 hover:text-[#B4912B]">
+                            <button onClick={fetchTickets} className="p-2 hover:bg-surface rounded-lg transition-colors text-text-muted hover:text-primary">
                                 <RefreshCw className={`w-4 h-4 ${loadingTickets ? 'animate-spin' : ''}`} />
                             </button>
                         </div>
                     </div>
 
-                    {/* Search and Filters Redesign */}
-                    <div className="flex flex-col sm:flex-row gap-3 bg-white/50 backdrop-blur rounded-3xl p-3 border border-slate-200/50">
-                        {/* Search Input */}
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                            <input 
-                                type="text"
-                                placeholder="Search by subject, salon, message or ID..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-11 pr-4 py-2.5 rounded-2xl bg-white border border-slate-200 text-sm focus:outline-none focus:border-[#B4912B] focus:ring-2 focus:ring-[#B4912B]/10 transition-all placeholder:text-slate-400"
-                            />
-                        </div>
-                        {/* Status Filter buttons */}
-                        <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 p-1 rounded-2xl border border-slate-200/40">
-                            {['all', 'pending', 'in-progress', 'resolved', 'escalated'].map((filter) => (
-                                <button
-                                    key={filter}
-                                    onClick={() => setStatusFilter(filter)}
-                                    className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${statusFilter === filter ? 'bg-white text-[#B4912B] shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
-                                >
-                                    {filter === 'in-progress' ? 'In Progress' : filter}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Tickets List */}
                     <div className="grid grid-cols-1 gap-4">
                         {loadingTickets ? (
                             <div className="py-20 text-center animate-pulse">
-                                <MessageSquare className="w-12 h-12 text-[#B4912B]/20 mx-auto mb-4" />
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Fetching support tickets...</p>
+                                <MessageSquare className="w-12 h-12 text-blue-500/20 mx-auto mb-4" />
+                                <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">Fetching support tickets...</p>
                             </div>
-                        ) : filteredTickets.length === 0 ? (
-                            <div className="py-20 text-center bg-white border-2 border-dashed border-slate-200 rounded-[32px] p-8 shadow-sm">
-                                <MessageSquare className="w-20 h-20 text-slate-200 mx-auto mb-4" />
-                                <h3 className="text-xl font-bold text-slate-800">Inbox Zero 🎉</h3>
-                                <p className="text-slate-500 mt-2 text-sm max-w-sm mx-auto">No support requests found matching your query at the moment.</p>
+                        ) : tickets.length === 0 ? (
+                            <div className="py-20 text-center bg-white border border-border border-dashed rounded-2xl">
+                                <CheckCircle className="w-16 h-16 text-emerald-400/20 mx-auto mb-4" />
+                                <h3 className="text-sm font-black uppercase tracking-widest text-text-muted">No Active Tickets</h3>
+                                <p className="text-[11px] text-text-muted mt-2 uppercase tracking-widest">Everything is running smoothly. No active tickets found.</p>
                             </div>
                         ) : (
-                            filteredTickets.map(t => {
+                            tickets.map(t => {
                                 const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
-                                const prStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.low;
                                 return (
-                                    <div key={t._id} className="group relative bg-white/80 backdrop-blur-xl border border-white rounded-[24px] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] hover:-translate-y-1 transition-all duration-300 overflow-hidden">
-                                        
-                                        {/* Left Accent Status Border */}
-                                        <div className={`absolute left-0 top-0 h-full w-1.5 ${stStyle.accent}`} />
-                                        
-                                        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6 pl-2">
-                                            {/* Details (Left side) */}
-                                            <div className="flex-1 space-y-3">
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <span className="px-2 py-0.5 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 text-[10px] font-mono font-bold">
-                                                        #{t._id.slice(-6)}
-                                                    </span>
-                                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
+                                    <div key={t._id} className="group relative bg-white border border-border rounded-2xl p-5 hover:shadow-2xl hover:border-[#B4912B]/30 transition-all duration-300">
+                                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                                            <div className="flex-1 space-y-2">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="px-2 py-0.5 rounded bg-teal-50 text-primary text-[10px] font-black uppercase tracking-tight">#{t._id.slice(-6)}</span>
+                                                    <span className={`px-2 py-0.5 rounded text-[9px] font-black border uppercase tracking-widest ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
                                                         {stStyle.label}
                                                     </span>
-                                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${prStyle.bg} ${prStyle.text} ${prStyle.border}`}>
-                                                        {t.priority}
-                                                    </span>
                                                     {t.status === 'escalated' && (
-                                                        <span className="animate-pulse flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold uppercase tracking-wider">
-                                                            <ArrowUpCircle className="w-3.5 h-3.5" /> Escalated Priority
+                                                        <span className="animate-pulse flex items-center gap-1.5 px-2 py-0.5 rounded bg-rose-500 text-white text-[9px] font-black uppercase tracking-widest">
+                                                            <ArrowUpCircle className="w-3 h-3" /> High Priority Support
                                                         </span>
                                                     )}
                                                 </div>
-                                                <h3 className="text-lg font-bold text-slate-800 group-hover:text-[#B4912B] transition-colors">{t.subject}</h3>
-                                                <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap">{t.description}</p>
+                                                <h3 className="text-base font-bold text-text group-hover:text-primary transition-colors">{t.subject}</h3>
+                                                <p className="text-sm text-text-secondary leading-relaxed line-clamp-2">{t.description}</p>
                                                 
-                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 border-t border-slate-100">
+                                                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-full bg-slate-50 border border-slate-200 flex items-center justify-center">
-                                                            <Shield className="w-3.5 h-3.5 text-emerald-500" />
+                                                        <div className="w-6 h-6 rounded-full bg-surface border border-border flex items-center justify-center">
+                                                            <Shield className="w-3 h-3 text-emerald-500" />
                                                         </div>
-                                                        <span className="text-xs font-bold text-slate-700">{t.tenantId?.name || 'Platform (Global)'}</span>
+                                                        <span className="text-[11px] font-bold text-text">{t.tenantId?.name}</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-slate-500">
-                                                        <Users className="w-4 h-4" />
-                                                        <span className="text-xs font-semibold">{t.userId?.name || 'Unknown User'} ({t.userId?.role || 'Guest'})</span>
+                                                    <div className="flex items-center gap-2 opacity-70">
+                                                        <Users className="w-3.5 h-3.5" />
+                                                        <span className="text-[10px] font-medium text-text-muted">{t.userId?.name} ({t.userId?.role})</span>
                                                     </div>
-                                                    <div className="flex items-center gap-2 text-slate-400">
-                                                        <Clock className="w-4 h-4" />
-                                                        <span className="text-xs font-mono">{new Date(t.createdAt).toLocaleString()}</span>
+                                                    <div className="flex items-center gap-2 opacity-60">
+                                                        <Clock className="w-3.5 h-3.5" />
+                                                        <span className="text-[10px] font-mono">{new Date(t.createdAt).toLocaleString()}</span>
                                                     </div>
                                                 </div>
                                             </div>
 
-                                            {/* Actions (Right side) */}
-                                            <div className="flex lg:flex-col items-stretch lg:items-end justify-between gap-3 lg:w-48 shrink-0 bg-slate-50 lg:bg-transparent p-3 lg:p-0 rounded-2xl">
-                                                <div className="space-y-1.5 w-full">
-                                                    <label className="hidden lg:block text-[10px] text-slate-400 uppercase tracking-widest font-black text-right pr-1">Change Status</label>
+                                            <div className="flex md:flex-col items-center gap-2">
+                                                <div className="flex gap-2 w-full">
                                                     <select 
                                                         value={t.status}
                                                         onChange={(e) => updateStatus(t._id, e.target.value)}
-                                                        className="w-full px-3 py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold uppercase tracking-wider outline-none focus:border-[#B4912B] transition-all shadow-sm cursor-pointer"
+                                                        className="flex-1 px-3 py-2 rounded-xl bg-surface border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-[#B4912B] transition-all"
                                                     >
                                                         {Object.entries(STATUS_STYLES).map(([val, cfg]) => (
                                                             <option key={val} value={val}>{cfg.label}</option>
                                                         ))}
                                                     </select>
-                                                </div>
-                                                <div className="flex items-center gap-2 justify-end w-full">
-                                                    {t.status !== 'resolved' && t.status !== 'closed' && (
-                                                        <button 
-                                                            onClick={() => updateStatus(t._id, 'closed')}
-                                                            className="flex-1 lg:flex-initial flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-bold transition-all"
-                                                        >
-                                                            <XCircle className="w-4 h-4" /> Close
-                                                        </button>
-                                                    )}
                                                     <button 
                                                         onClick={() => handleDeleteTicket(t._id)}
-                                                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all rounded-xl"
+                                                        className="p-2 text-text-muted hover:text-red-500 transition-colors rounded-xl hover:bg-red-50 border border-transparent hover:border-red-100"
                                                     >
-                                                        <Trash2 className="w-4.5 h-4.5" />
+                                                        <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
+                                                
+                                                {t.status !== 'resolved' && t.status !== 'closed' && (
+                                                    <button 
+                                                        onClick={() => updateStatus(t._id, 'closed')}
+                                                        className="md:w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-[10px] font-black uppercase tracking-widest transition-all"
+                                                    >
+                                                        <XCircle className="w-3.5 h-3.5" /> Close ticket
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -474,180 +356,131 @@ export default function SASupportPage() {
                     </div>
                 </div>
             ) : (
-                /* Accordion-Style FAQ Section */
-                <div className="space-y-6">
+                /* Manage FAQs Section */
+                <div className="space-y-6 pt-2">
                     <div className="flex items-center justify-between">
-                        <div>
-                            <h2 className="text-lg font-black tracking-tight text-slate-800">Platform FAQs</h2>
-                            <p className="text-xs text-slate-500 mt-1">Manage common questions shown to all salon units</p>
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-500/20 flex items-center justify-center !text-violet-600 dark:!text-violet-400">
+                                <HelpCircle size={18} className="!stroke-violet-600 dark:!stroke-violet-400" />
+                            </div>
+                            <div>
+                                <h2 className="text-lg font-bold tracking-tight leading-none">Platform FAQs</h2>
+                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Manage common questions shown to all salon units</p>
+                            </div>
                         </div>
-                        <button 
-                            onClick={addFaq}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#B4912B] via-[#C69F32] to-[#8B6F23] text-white rounded-xl text-xs font-bold hover:brightness-110 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-[#B4912B]/20"
-                        >
-                            <Plus className="w-4 h-4 text-white" /> Add Question
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button 
+                                onClick={addFaq}
+                                className="flex items-center gap-2 px-4 py-2 bg-[#B4912B] text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all shadow-lg shadow-[#B4912B]/20 active:scale-95"
+                            >
+                                <Plus className="w-4 h-4" /> Add Question
+                            </button>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 gap-4">
                         {loadingFaqs ? (
                             <div className="py-20 text-center animate-pulse">
-                                <RefreshCw className="w-12 h-12 text-[#B4912B]/20 mx-auto mb-4 animate-spin" />
-                                <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Updating FAQ list...</p>
+                                <RefreshCw className="w-12 h-12 text-indigo-500/20 mx-auto mb-4 animate-spin" />
+                                <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">Updating FAQ list...</p>
                             </div>
                         ) : faqs.length === 0 ? (
-                            <div className="py-20 text-center bg-white border border-slate-200 border-dashed rounded-3xl shadow-sm">
-                                <HelpCircle className="w-16 h-16 text-slate-200 mx-auto mb-4" />
-                                <p className="text-sm text-slate-500">No FAQs found. Click "Add Question" to create one.</p>
+                            <div className="py-20 text-center bg-white border border-border border-dashed rounded-2xl">
+                                <Info className="w-16 h-16 text-rose-500/20 mx-auto mb-4" />
+                                <p className="text-[11px] font-black uppercase tracking-widest text-text-muted">No FAQs found. Click "Add Question" to start.</p>
                             </div>
                         ) : (
-                            faqs.map((faq, i) => {
-                                const isExpanded = expandedFaqIndex === i;
-                                const isEditing = editingFaqIndex === i;
-                                return (
-                                    <div key={i} className="bg-white/80 backdrop-blur-xl border border-slate-200/80 rounded-3xl p-5 hover:border-[#B4912B]/30 transition-all shadow-sm">
-                                        
-                                        {/* Question row (Header) */}
-                                        <div 
-                                            onClick={() => {
-                                                if (!isEditing) setExpandedFaqIndex(isExpanded ? null : i);
-                                            }}
-                                            className="flex items-center justify-between cursor-pointer"
-                                        >
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <span className="px-3 py-1 rounded-full bg-violet-50 text-violet-700 text-[10px] font-bold uppercase tracking-wider shrink-0">
-                                                    {faq.category || 'General'}
-                                                </span>
-                                                <span className="font-bold text-base text-slate-800 truncate pr-4">
-                                                    {faq.question}
-                                                </span>
+                            faqs.map((faq, i) => (
+                                <div key={i} className="bg-white border border-border rounded-2xl p-6 hover:shadow-xl transition-all group">
+                                    <div className="flex items-start gap-5">
+                                        <div className="w-8 h-8 rounded-lg bg-surface border border-border flex items-center justify-center text-text-muted group-hover:text-primary group-hover:border-[#B4912B]/30 transition-colors">
+                                            <span className="text-[10px] font-black">Q{i+1}</span>
+                                        </div>
+                                        <div className="flex-1 space-y-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex-1 space-y-1.5">
+                                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Question</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={faq.question}
+                                                        onChange={(e) => updateFaqLocal(i, 'question', e.target.value)}
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-bold text-text focus:border-[#B4912B] outline-none transition-all"
+                                                    />
+                                                </div>
+                                                <div className="w-40 space-y-1.5">
+                                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Category</label>
+                                                    <input 
+                                                        type="text" 
+                                                        value={faq.category}
+                                                        onChange={(e) => updateFaqLocal(i, 'category', e.target.value)}
+                                                        className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-xs font-bold text-text focus:border-[#B4912B] outline-none transition-all"
+                                                    />
+                                                </div>
                                             </div>
-                                            
-                                            <div className="flex items-center gap-3 shrink-0" onClick={e => e.stopPropagation()}>
-                                                {!isEditing && (
-                                                    <button 
-                                                        onClick={() => { setExpandedFaqIndex(i); setEditingFaqIndex(i); }} 
-                                                        className="p-1.5 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-slate-600 transition-colors"
-                                                    >
-                                                        <Edit3 className="w-4 h-4" />
-                                                    </button>
-                                                )}
+                                            <div className="space-y-1.5">
+                                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest ml-1">Answer</label>
+                                                <textarea 
+                                                    value={faq.answer}
+                                                    onChange={(e) => updateFaqLocal(i, 'answer', e.target.value)}
+                                                    rows="2"
+                                                    className="w-full px-4 py-2.5 bg-surface border border-border rounded-xl text-sm font-medium text-text-secondary focus:border-[#B4912B] outline-none transition-all resize-none"
+                                                />
+                                            </div>
+                                            <div className="flex justify-end gap-2 pt-2">
+                                                <button 
+                                                    onClick={() => handleSaveFaq(faq)}
+                                                    disabled={savingFaqs}
+                                                    className="flex items-center gap-2 px-4 py-2 !bg-emerald-500 dark:!bg-emerald-600 !text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:!bg-emerald-600 dark:hover:!bg-emerald-500 transition-all disabled:opacity-50"
+                                                >
+                                                    <Save className="w-3 h-3" /> {faq._id ? 'Update' : 'Save New'}
+                                                </button>
                                                 <button 
                                                     onClick={() => removeFaq(faq, i)}
-                                                    className="p-1.5 hover:bg-red-50 rounded-lg text-slate-400 hover:text-red-500 transition-colors"
+                                                    className="flex items-center gap-2 px-4 py-2 !bg-rose-50 dark:!bg-rose-500/10 !text-rose-600 dark:!text-rose-400 border !border-rose-200 dark:!border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:!bg-rose-100 dark:hover:!bg-rose-500/20 transition-all"
                                                 >
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="w-3 h-3" /> Delete
                                                 </button>
-                                                
-                                                {!isEditing && (
-                                                    <div className="text-slate-400" onClick={() => setExpandedFaqIndex(isExpanded ? null : i)}>
-                                                        {isExpanded ? <ChevronUp className="w-5 h-5 cursor-pointer" /> : <ChevronDown className="w-5 h-5 cursor-pointer" />}
-                                                    </div>
-                                                )}
                                             </div>
                                         </div>
-
-                                        {/* Expanded Answer Area */}
-                                        {isExpanded && (
-                                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                                {isEditing ? (
-                                                    /* Edit Form fields */
-                                                    <div className="space-y-4">
-                                                        <div className="grid sm:grid-cols-2 gap-4">
-                                                            <div className="space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Question Title</label>
-                                                                <input 
-                                                                    type="text" 
-                                                                    value={faq.question}
-                                                                    onChange={(e) => updateFaqLocal(i, 'question', e.target.value)}
-                                                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-[#B4912B] focus:bg-white outline-none transition-all"
-                                                                />
-                                                            </div>
-                                                            <div className="space-y-1.5">
-                                                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Category</label>
-                                                                <input 
-                                                                    type="text" 
-                                                                    value={faq.category}
-                                                                    onChange={(e) => updateFaqLocal(i, 'category', e.target.value)}
-                                                                    className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold focus:border-[#B4912B] focus:bg-white outline-none transition-all"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                        <div className="space-y-1.5">
-                                                            <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">FAQ Answer</label>
-                                                            <textarea 
-                                                                value={faq.answer}
-                                                                onChange={(e) => updateFaqLocal(i, 'answer', e.target.value)}
-                                                                rows="3"
-                                                                className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:border-[#B4912B] focus:bg-white outline-none transition-all resize-none"
-                                                            />
-                                                        </div>
-                                                        <div className="flex justify-end gap-2">
-                                                            <button 
-                                                                onClick={() => setEditingFaqIndex(null)}
-                                                                className="px-4 py-2 border border-slate-200 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-50 transition-all"
-                                                            >
-                                                                Cancel
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleSaveFaq(faq, i)}
-                                                                disabled={savingFaqs}
-                                                                className="flex items-center gap-1.5 px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-bold hover:bg-emerald-600 transition-all disabled:opacity-50"
-                                                            >
-                                                                <Save className="w-3.5 h-3.5" /> Save Changes
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                ) : (
-                                                    /* View-only Answer */
-                                                    <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-wrap pl-1">
-                                                        {faq.answer}
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
                                     </div>
-                                );
-                            })
+                                </div>
+                            ))
                         )}
                     </div>
                 </div>
             )}
 
-            {/* Premium Create Ticket Modal */}
+            {/* Create Ticket Modal */}
             {isCreateModalOpen && (
                 <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setIsCreateModalOpen(false)}></div>
-                    <div className="relative w-full max-w-lg bg-white/95 backdrop-blur-2xl rounded-[32px] shadow-2xl border border-white overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-6 bg-gradient-to-r from-[#B4912B] to-[#8B6F23] flex items-center justify-between text-white">
-                            <div>
-                                <h2 className="text-xl font-black uppercase tracking-tight">Create Support Ticket</h2>
-                                <p className="text-[10px] text-white/80 font-bold uppercase tracking-widest mt-1">Submit a platform level issue or query</p>
-                            </div>
-                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-all">
+                    <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-border flex items-center justify-between bg-surface/50">
+                            <h2 className="text-xl font-black uppercase tracking-tight">Create <span className="text-primary">Support Ticket</span></h2>
+                            <button onClick={() => setIsCreateModalOpen(false)} className="p-2 hover:bg-surface rounded-xl transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         
                         <form onSubmit={handleCreateTicket} className="p-6 space-y-4">
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ticket Subject</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Ticket Subject</label>
                                 <input 
                                     type="text" 
                                     required
                                     value={newTicket.subject}
                                     onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
                                     placeholder="e.g., App sync issue"
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-[#B4912B] focus:bg-white outline-none transition-all placeholder:text-slate-400/50"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all placeholder:text-text-muted/50"
                                 />
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Target Salon (Optional)</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Target Salon (Optional)</label>
                                 <select 
                                     value={newTicket.tenantId}
                                     onChange={(e) => setNewTicket({...newTicket, tenantId: e.target.value})}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-[#B4912B] focus:bg-white outline-none transition-all"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                 >
                                     <option value="">Platform Level (Global)</option>
                                     {salons.map(s => (
@@ -658,11 +491,11 @@ export default function SASupportPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Priority</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Priority</label>
                                     <select 
                                         value={newTicket.priority}
                                         onChange={(e) => setNewTicket({...newTicket, priority: e.target.value})}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-[#B4912B] focus:bg-white outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                     >
                                         <option value="low">Low</option>
                                         <option value="medium">Medium</option>
@@ -671,11 +504,11 @@ export default function SASupportPage() {
                                     </select>
                                 </div>
                                 <div className="space-y-1.5">
-                                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Initial Status</label>
+                                    <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Initial Status</label>
                                     <select 
                                         value={newTicket.status}
                                         onChange={(e) => setNewTicket({...newTicket, status: e.target.value})}
-                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-bold focus:border-[#B4912B] focus:bg-white outline-none transition-all"
+                                        className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-bold focus:border-[#B4912B] outline-none transition-all"
                                     >
                                         <option value="open">Open</option>
                                         <option value="in-progress">In Progress</option>
@@ -685,14 +518,14 @@ export default function SASupportPage() {
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Description</label>
+                                <label className="text-[10px] font-black uppercase tracking-widest text-text-muted ml-1">Description</label>
                                 <textarea 
                                     required
                                     value={newTicket.description}
                                     onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
                                     rows="4"
                                     placeholder="Describe the issue in detail..."
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium focus:border-[#B4912B] focus:bg-white outline-none transition-all resize-none placeholder:text-slate-400/50"
+                                    className="w-full px-4 py-3 bg-surface border border-border rounded-xl text-sm font-medium focus:border-[#B4912B] outline-none transition-all resize-none placeholder:text-text-muted/50"
                                 />
                             </div>
 
@@ -700,14 +533,14 @@ export default function SASupportPage() {
                                 <button 
                                     type="button"
                                     onClick={() => setIsCreateModalOpen(false)}
-                                    className="flex-1 px-6 py-3 border border-slate-200 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-50 transition-all"
+                                    className="flex-1 px-6 py-3 border border-border rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-surface transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button 
                                     type="submit"
                                     disabled={creating}
-                                    className="flex-[2] px-6 py-3 bg-gradient-to-r from-[#B4912B] to-[#8B6F23] text-white rounded-2xl text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#B4912B]/20 transition-all disabled:opacity-50"
+                                    className="flex-[2] px-6 py-3 bg-[#B4912B] text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:brightness-110 shadow-lg shadow-[#B4912B]/20 transition-all disabled:opacity-50"
                                 >
                                     {creating ? <RefreshCw className="w-4 h-4 animate-spin mx-auto" /> : 'Create Ticket'}
                                 </button>
