@@ -261,6 +261,42 @@ export default function Transactions({ outletId }) {
 
     return (
         <div className="flex flex-col h-full slide-right overflow-y-auto no-scrollbar pb-10 bg-white dark:bg-transparent">
+            <style>{`
+                .admin-panel .record-txn-btn,
+                .admin-panel button.record-txn-btn,
+                html:not(.dark) .admin-panel button.record-txn-btn,
+                .dark .admin-panel button.record-txn-btn {
+                    background-color: #B4912B !important;
+                    background: #B4912B !important;
+                    border-color: #B4912B !important;
+                    color: #ffffff !important;
+                }
+                .admin-panel .record-txn-btn:hover,
+                .admin-panel button.record-txn-btn:hover,
+                html:not(.dark) .admin-panel button.record-txn-btn:hover,
+                .dark .admin-panel button.record-txn-btn:hover {
+                    background-color: #c5a23c !important;
+                    background: #c5a23c !important;
+                    border-color: #c5a23c !important;
+                    color: #ffffff !important;
+                }
+                .admin-panel .record-txn-btn *,
+                .admin-panel button.record-txn-btn * {
+                    color: #ffffff !important;
+                }
+                .txn-amount-income.txn-amount-income.txn-amount-income.txn-amount-income.txn-amount-income {
+                    color: #059669 !important;
+                }
+                .dark .txn-amount-income {
+                    color: #34d399 !important;
+                }
+                .txn-amount-expense.txn-amount-expense.txn-amount-expense.txn-amount-expense.txn-amount-expense {
+                    color: #e11d48 !important;
+                }
+                .dark .txn-amount-expense {
+                    color: #fb7185 !important;
+                }
+            `}</style>,StartLine:283,TargetContent:
             {/* Header */}
             <div className="px-8 py-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div>
@@ -272,7 +308,7 @@ export default function Transactions({ outletId }) {
                 <button
                     type="button"
                     onClick={() => setIsOpen(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm record-txn-btn bg-primary"
                 >
                     <Plus className="w-4 h-4" />
                     Record Transaction
@@ -493,7 +529,7 @@ export default function Transactions({ outletId }) {
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     <div className="text-left w-full">
-                                                        <span className={`font-black text-sm ${isIncome ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-450'}`}>
+                                                        <span className={`font-black text-sm ${isIncome ? 'txn-amount-income text-emerald-600' : 'txn-amount-expense text-rose-600'}`}>
                                                             {isIncome ? '+' : '-'} ₹{t.amount.toLocaleString('en-IN')}
                                                         </span>
                                                     </div>

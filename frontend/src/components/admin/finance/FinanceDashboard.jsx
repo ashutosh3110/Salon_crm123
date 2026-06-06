@@ -25,9 +25,32 @@ function timeAgo(d) {
     const h = Math.floor(m / 60);
     if (h < 24) return `${h}h ago`;
     const days = Math.floor(h / 24);
-    if (days < 7) return `${days}d ago`;
     return new Date(d).toLocaleDateString('en-IN');
 }
+
+const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+        return (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-xl shadow-xl text-left">
+                <p className="text-xs font-black text-slate-800 dark:text-slate-200 uppercase mb-1.5 tracking-wider">{label}</p>
+                <div className="space-y-1">
+                    {payload.map((item, idx) => {
+                        const isRevenue = item.name.toLowerCase() === 'revenue' || item.name.toLowerCase() === 'inflow';
+                        const colorClass = isRevenue 
+                            ? 'text-emerald-600 dark:text-emerald-400' 
+                            : 'text-amber-600 dark:text-amber-500';
+                        return (
+                            <p key={idx} className={`text-[10px] font-bold uppercase tracking-wider ${colorClass}`}>
+                                {item.name}: {formatInr(item.value)}
+                            </p>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+    return null;
+};
 
 export default function FinanceDashboard({ data, loading, error, onRetry }) {
     const navigate = useNavigate();
@@ -139,17 +162,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                                             tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
                                         />
                                         <YAxis hide />
-                                        <Tooltip
-                                            formatter={(v) => formatInr(v)}
-                                            contentStyle={{
-                                                backgroundColor: 'var(--surface)',
-                                                border: '1px solid var(--border)',
-                                                borderRadius: '0px',
-                                                fontSize: '10px',
-                                                fontWeight: '900',
-                                                textTransform: 'uppercase',
-                                            }}
-                                        />
+                                        <Tooltip content={<CustomTooltip />} />
                                         <Bar dataKey="revenue" fill="var(--primary)" barSize={12} name="Revenue" />
                                         <Bar dataKey="expense" fill="#f59e0b" barSize={12} name="Expense" />
                                     </BarChart>
@@ -157,8 +170,6 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                             )}
                         </div>
                     </div>
-
-
                 </div>
 
                 <div className="space-y-6 text-left font-black">
