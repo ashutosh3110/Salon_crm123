@@ -628,22 +628,46 @@ export default function SupplierInvoices() {
 
     return (
         <div className="flex flex-col slide-right overflow-hidden p-4 sm:p-6 space-y-6">
+            <style>{`
+                .admin-panel .record-post-invoice-btn,
+                .admin-panel button.record-post-invoice-btn,
+                html:not(.dark) .admin-panel button.record-post-invoice-btn,
+                .dark .admin-panel button.record-post-invoice-btn {
+                    background-color: #B4912B !important;
+                    background: #B4912B !important;
+                    border-color: #B4912B !important;
+                    color: #ffffff !important;
+                }
+                .admin-panel .record-post-invoice-btn:hover,
+                .admin-panel button.record-post-invoice-btn:hover,
+                html:not(.dark) .admin-panel button.record-post-invoice-btn:hover,
+                .dark .admin-panel button.record-post-invoice-btn:hover {
+                    background-color: #c5a23c !important;
+                    background: #c5a23c !important;
+                    border-color: #c5a23c !important;
+                    color: #ffffff !important;
+                }
+                .admin-panel .record-post-invoice-btn *,
+                .admin-panel button.record-post-invoice-btn * {
+                    color: #ffffff !important;
+                }
+            `}</style>
             {/* ─── Summary Cards ─── */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                    <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600">
+                    <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400">
                         <Receipt className="w-5 h-5" />
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total Invoices</p>
                         <p className="text-xl font-black text-text">{summaryStats.totalInvoices}</p>
                         {summaryStats.pendingCount > 0 && (
-                            <p className="text-[10px] font-bold text-amber-600">{summaryStats.pendingCount} unpaid</p>
+                            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-400">{summaryStats.pendingCount} unpaid</p>
                         )}
                     </div>
                 </div>
                 <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                    <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-500/15 text-blue-600 dark:text-blue-400">
                         <IndianRupee className="w-5 h-5" />
                     </div>
                     <div>
@@ -652,21 +676,21 @@ export default function SupplierInvoices() {
                     </div>
                 </div>
                 <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                    <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total Paid</p>
-                        <p className="text-xl font-black text-emerald-600">₹{summaryStats.totalPaid.toLocaleString('en-IN')}</p>
+                        <p className="text-xl font-black text-emerald-600 dark:text-emerald-400">₹{summaryStats.totalPaid.toLocaleString('en-IN')}</p>
                     </div>
                 </div>
                 <div className="bg-white border border-border rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow">
-                    <div className="p-2.5 rounded-xl bg-rose-50 text-rose-600">
+                    <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400">
                         <TrendingDown className="w-5 h-5" />
                     </div>
                     <div>
                         <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider">Total Due</p>
-                        <p className="text-xl font-black text-rose-600">₹{summaryStats.totalDue.toLocaleString('en-IN')}</p>
+                        <p className="text-xl font-black text-rose-600 dark:text-rose-400">₹{summaryStats.totalDue.toLocaleString('en-IN')}</p>
                     </div>
                 </div>
             </div>
@@ -784,8 +808,8 @@ export default function SupplierInvoices() {
                                     <div className="flex items-center gap-3">
                                         <div
                                             className={`p-2 rounded-lg ${inv.status === 'Paid'
-                                                    ? 'bg-emerald-50 text-emerald-600'
-                                                    : 'bg-surface text-text-muted'
+                                                    ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400'
+                                                    : 'bg-surface dark:bg-slate-800 text-text-muted dark:text-slate-400'
                                                 }`}
                                         >
                                             <FileText className="w-4 h-4" />
@@ -831,12 +855,12 @@ export default function SupplierInvoices() {
                                 <td className="px-6 py-5">
                                     <span
                                         className={`px-2.5 py-1 rounded-xl text-[9px] font-bold uppercase tracking-widest border ${inv.status === 'Paid'
-                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
+                                                ? 'bg-emerald-50 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20'
                                                 : inv.status === 'Partial'
-                                                    ? 'bg-amber-50 text-amber-600 border-amber-100'
+                                                    ? 'bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-500/20'
                                                     : inv.status === 'Overdue'
-                                                        ? 'bg-rose-50 text-rose-600 border-rose-100'
-                                                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                                                        ? 'bg-rose-50 dark:bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20'
+                                                        : 'bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/50'
                                             }`}
                                     >
                                         {inv.status}
@@ -853,7 +877,7 @@ export default function SupplierInvoices() {
                                             <button
                                                 type="button"
                                                 onClick={() => handleQuickPay(inv)}
-                                                className="p-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-600 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all"
+                                                className="p-2 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-200 dark:border-emerald-500/20 rounded-xl text-emerald-600 dark:text-emerald-400 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 transition-all"
                                                 title={`Quick Pay (₹${Number(inv.outstanding).toLocaleString('en-IN')})`}
                                             >
                                                 <IndianRupee className="w-4 h-4" />
@@ -1411,7 +1435,7 @@ export default function SupplierInvoices() {
                                         type="button"
                                         onClick={handleCreateInvoice}
                                         disabled={totals.overpaidAmount > 0}
-                                        className="px-6 py-2 bg-slate-900 text-white hover:bg-primary rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none"
+                                        className="px-6 py-2 bg-slate-900 text-white hover:bg-primary rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-primary/20 transition-all disabled:opacity-40 disabled:pointer-events-none record-post-invoice-btn"
                                     >
                                         Record & Post Invoice
                                     </button>
