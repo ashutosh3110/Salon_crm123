@@ -308,13 +308,13 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                     <p className="text-[8px] text-text-muted font-bold uppercase tracking-tighter">Visible to customers in the salon app</p>
                                 </div>
                             </div>
-                            <button
-                                type="button"
+                            <div
+                                role="button"
                                 onClick={() => setFormData(prev => ({ ...prev, isShopProduct: !prev.isShopProduct }))}
-                                className={`w-12 h-6 rounded-full p-1 transition-all duration-300 ${formData.isShopProduct ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                className={`relative w-11 h-6 rounded-full transition-all duration-300 cursor-pointer ${formData.isShopProduct ? 'bg-[#B4912B]' : 'bg-slate-200 dark:bg-slate-700 border border-slate-300 dark:border-slate-600'}`}
                             >
-                                <div className={`w-4 h-4 rounded-full bg-white transition-all duration-300 transform shadow-sm ${formData.isShopProduct ? 'translate-x-6' : 'translate-x-0'}`} />
-                            </button>
+                                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-all duration-300 shadow-sm ${formData.isShopProduct ? 'translate-x-5' : 'translate-x-0'}`} />
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
