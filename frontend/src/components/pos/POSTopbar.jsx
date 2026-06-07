@@ -87,7 +87,7 @@ export default function POSTopbar({ onMenuClick }) {
                             <p className="text-xs font-black text-text uppercase tracking-tighter leading-none">{user?.name || 'Active User'}</p>
                             <p className="text-[10px] font-bold text-text-muted mt-0.5 uppercase tracking-widest">{user?.role || 'Staff'}</p>
                         </div>
-                        <div className="w-10 h-10 bg-text text-background flex items-center justify-center font-black text-xs relative group cursor-pointer hover:bg-primary hover:text-white transition-colors overflow-hidden">
+                        <div className="w-10 h-10 bg-text text-white flex items-center justify-center font-black text-xs relative group cursor-pointer hover:bg-primary hover:text-white transition-colors overflow-hidden">
                             {user?.avatar ? (
                                 <img src={getImageUrl(user.avatar)} alt="" className="w-full h-full object-cover" />
                             ) : (

@@ -164,7 +164,7 @@ export function calculateTotals({
         const rateSetting = item.type === 'service' ? serviceGstRate : productGstRate;
         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
 
-        const isItemInclusive = item.isInclusiveTax !== undefined 
+        const isItemInclusive = item.isInclusiveTax !== undefined
             ? (String(item.isInclusiveTax) === 'true')
             : inclusiveTaxFallback;
 

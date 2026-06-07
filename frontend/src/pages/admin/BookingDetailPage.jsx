@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import {
     ChevronLeft,
     Calendar,
@@ -20,7 +20,9 @@ import {
     ShieldCheck,
     Store,
     Smartphone,
-    Loader2
+    Loader2,
+    Edit,
+    Scissors
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { toast } from 'react-hot-toast';
@@ -58,6 +60,7 @@ const paymentStatusColors = {
 export default function BookingDetailPage() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const {
         bookings,
         fetchBookings,
@@ -67,7 +70,9 @@ export default function BookingDetailPage() {
         platformSettings,
         fetchPlatformSettings,
         staff,
-        fetchStaff
+        fetchStaff,
+        services,
+        fetchServices
     } = useBusiness();
     const [booking, setBooking] = useState(null);
     const [invoice, setInvoice] = useState(null);
@@ -75,7 +80,95 @@ export default function BookingDetailPage() {
     const [isEditingNotes, setIsEditingNotes] = useState(false);
     const [notes, setNotes] = useState('');
     const [isReassignModalOpen, setIsReassignModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [editForm, setEditForm] = useState({
+        serviceId: '',
+        staffId: '',
+        date: '',
+        time: '',
+        notes: ''
+    });
+
+    const handleCloseEditModal = () => {
+        setIsEditModalOpen(false);
+        if (new URLSearchParams(location.search).get('edit') === 'true') {
+            navigate(`/admin/bookings/${id}`, { replace: true });
+        }
+    };
+
+    useEffect(() => {
+        if (booking && new URLSearchParams(location.search).get('edit') === 'true') {
+            setIsEditModalOpen(true);
+        }
+    }, [booking, location.search]);
+
+    useEffect(() => {
+        if (booking && isEditModalOpen) {
+            const formattedDate = booking.appointmentDate ? new Date(booking.appointmentDate).toISOString().split('T')[0] : '';
+            const formattedTime = booking.time || (booking.appointmentDate ? new Date(booking.appointmentDate).toTimeString().substring(0, 5) : '10:00');
+            setEditForm({
+                serviceId: booking.serviceId?._id || booking.serviceId || '',
+                staffId: booking.staffId?._id || booking.staffId || '',
+                date: formattedDate,
+                time: formattedTime,
+                notes: booking.notes || ''
+            });
+        }
+    }, [booking, isEditModalOpen]);
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (isUpdating) return;
+        
+        const selectedService = services.find(s => s._id === editForm.serviceId);
+        if (!selectedService) {
+            toast.error('Invalid service selected');
+            return;
+        }
+
+        const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
+        const gstRate = selectedService.gst !== undefined ? selectedService.gst : (platformSettings?.serviceGst || 18);
+        const original = selectedService.price || 0;
+        let subtotal = 0;
+        let tax = 0;
+        let total = 0;
+        if (isInclusive) {
+            subtotal = Number((original / (1 + (gstRate / 100))).toFixed(2));
+            tax = Number((original - subtotal).toFixed(2));
+            total = Number(original.toFixed(2));
+        } else {
+            subtotal = Number(original.toFixed(2));
+            tax = Number((subtotal * (gstRate / 100)).toFixed(2));
+            total = Number((subtotal + tax).toFixed(2));
+        }
+
+        try {
+            setIsUpdating(true);
+            const appointmentDate = new Date(`${editForm.date}T${editForm.time}`).toISOString();
+            
+            await updateBookingStatus(id, {
+                serviceId: editForm.serviceId,
+                staffId: editForm.staffId,
+                appointmentDate,
+                time: editForm.time,
+                notes: editForm.notes,
+                duration: Number(selectedService.duration || 30),
+                subtotal,
+                tax,
+                totalPrice: total
+            });
+            
+            setIsEditModalOpen(false);
+            navigate(`/admin/bookings/${id}`, { replace: true });
+            toast.success('Booking updated successfully');
+        } catch (error) {
+            toast.error('Failed to update booking');
+            console.error(error);
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     const fetchedRef = React.useRef(false);
 
@@ -88,6 +181,7 @@ export default function BookingDetailPage() {
                 const promises = [];
                 if (staff?.length === 0 && fetchStaff) promises.push(fetchStaff());
                 if (bookings?.length === 0 && fetchBookings) promises.push(fetchBookings());
+                if (services?.length === 0 && fetchServices) promises.push(fetchServices());
                 if ((!invoices || invoices.length === 0) && fetchInvoices) promises.push(fetchInvoices());
                 if (!platformSettings && fetchPlatformSettings) promises.push(fetchPlatformSettings());
 
@@ -211,6 +305,16 @@ export default function BookingDetailPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
+                    {(booking.source?.toUpperCase() === 'APP' || booking.source?.toUpperCase() === 'ADMIN' || !booking.source) && (
+                        <button
+                            disabled={isUpdating}
+                            onClick={() => setIsEditModalOpen(true)}
+                            className="px-4 py-2 bg-[#B8860B] hover:bg-[#997009] text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all shadow-sm flex items-center gap-2 disabled:opacity-50"
+                        >
+                            <Edit className="w-3.5 h-3.5" />
+                            Edit Booking
+                        </button>
+                    )}
                     {booking.status === 'pending' && (
                         <>
                             <button 
@@ -606,6 +710,151 @@ export default function BookingDetailPage() {
                                 </button>
                             </div>
                         </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+            {isEditModalOpen && createPortal(
+                <div className="fixed inset-0 bg-[#0f172a]/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+                    <div className="admin-panel w-full max-w-lg">
+                        <form
+                            onSubmit={handleEditSubmit}
+                            style={{ backgroundColor: 'var(--background)', borderColor: 'var(--border)' }}
+                            className="w-full rounded-[28px] border shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                        >
+                            {/* Header */}
+                            <div 
+                                style={{ backgroundColor: 'var(--card)', borderBottomColor: 'var(--border)' }}
+                                className="flex items-center justify-between p-6 pb-5 border-b"
+                            >
+                                <div className="flex items-center gap-4">
+                                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-500/20 flex items-center justify-center text-[#B4912B]">
+                                        <Edit className="w-5 h-5 text-[#B4912B]" />
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 style={{ color: 'var(--foreground)' }} className="text-base font-black uppercase tracking-tight font-mono leading-none">Edit Booking Details</h3>
+                                        <p style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider mt-1.5">Modify appointment details below</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    type="button"
+                                    onClick={() => !isUpdating && handleCloseEditModal()}
+                                    style={{ borderColor: 'var(--border)' }}
+                                    className="w-8 h-8 rounded-xl flex items-center justify-center border hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all disabled:opacity-50"
+                                    disabled={isUpdating}
+                                >
+                                    <XCircle style={{ color: 'var(--muted-foreground)' }} className="w-4 h-4 hover:text-rose-500" />
+                                </button>
+                            </div>
+
+                            {/* Body */}
+                            <div 
+                                style={{ backgroundColor: 'var(--background)' }}
+                                className="p-6 space-y-4 max-h-[60vh] overflow-y-auto"
+                            >
+                                {/* Service Selection */}
+                                <div className="space-y-1.5 text-left">
+                                    <label style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider ml-1">Select Service</label>
+                                    <div className="relative">
+                                        <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <select
+                                            required
+                                            value={editForm.serviceId}
+                                            onChange={e => setEditForm({ ...editForm, serviceId: e.target.value })}
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all text-text"
+                                        >
+                                            <option value="">Choose a service...</option>
+                                            {(services || []).map(s => (
+                                                <option key={s._id || s.id} value={s._id || s.id}>{s.name} - ₹{s.price}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Staff Selection */}
+                                <div className="space-y-1.5 text-left">
+                                    <label style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider ml-1">Assign Staff</label>
+                                    <div className="relative">
+                                        <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                        <select
+                                            required
+                                            value={editForm.staffId}
+                                            onChange={e => setEditForm({ ...editForm, staffId: e.target.value })}
+                                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none bg-surface-alt transition-all text-text"
+                                        >
+                                            <option value="">Select staff member...</option>
+                                            {(staff || []).map(s => (
+                                                <option key={s._id} value={s._id}>{s.name} ({s.role})</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {/* Date & Time */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5 text-left">
+                                        <label style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider ml-1">Date</label>
+                                        <div className="relative">
+                                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                            <input
+                                                required
+                                                type="date"
+                                                value={editForm.date}
+                                                onChange={e => setEditForm({ ...editForm, date: e.target.value })}
+                                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-text"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-1.5 text-left">
+                                        <label style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider ml-1">Time</label>
+                                        <div className="relative">
+                                            <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                                            <input
+                                                required
+                                                type="time"
+                                                value={editForm.time}
+                                                onChange={e => setEditForm({ ...editForm, time: e.target.value })}
+                                                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-text"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Notes */}
+                                <div className="space-y-1.5 text-left">
+                                    <label style={{ color: 'var(--muted-foreground)' }} className="text-[10px] font-bold uppercase tracking-wider ml-1">Notes</label>
+                                    <textarea
+                                        value={editForm.notes}
+                                        onChange={e => setEditForm({ ...editForm, notes: e.target.value })}
+                                        className="w-full px-4 py-2.5 rounded-xl border border-border bg-surface-alt text-sm focus:ring-2 focus:ring-primary/20 outline-none transition-all text-text resize-none h-20"
+                                        placeholder="Add any special request or description..."
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div 
+                                style={{ backgroundColor: 'var(--card)', borderTopColor: 'var(--border)' }}
+                                className="p-5 border-t flex justify-end gap-3"
+                            >
+                                <button 
+                                    type="button"
+                                    disabled={isUpdating}
+                                    onClick={handleCloseEditModal}
+                                    style={{ borderColor: 'var(--border)', color: 'var(--muted-foreground)' }}
+                                    className="px-6 py-3 rounded-xl text-[10px] font-black hover:bg-slate-200/50 dark:hover:bg-slate-800 uppercase tracking-wider transition-all disabled:opacity-50 border"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={isUpdating}
+                                    className="px-6 py-3 bg-[#B8860B] hover:bg-[#997009] text-white text-[10px] font-black uppercase tracking-wider rounded-xl transition-all disabled:opacity-50 shadow-md flex items-center gap-2"
+                                >
+                                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin text-white" /> : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>,
                 document.body

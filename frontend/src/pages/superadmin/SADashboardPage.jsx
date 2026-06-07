@@ -628,8 +628,8 @@ export default function SADashboardPage() {
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 text-right">
-                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary border border-[#B4912B]/20 bg-primary/5 group-hover:bg-primary group-hover:text-primary-foreground px-3 py-1.5 rounded-lg transition-all">
-                                            View <ArrowRight className="w-3 h-3" />
+                                        <div className="inline-flex items-center gap-1 text-[11px] font-semibold bg-primary text-white border border-transparent group-hover:bg-primary/5 group-hover:text-primary group-hover:border-[#B4912B]/30 px-3 py-1.5 rounded-lg transition-all">
+                                            View <ArrowRight className="w-3 h-3 text-current" />
                                         </div>
                                     </td>
                                 </tr>

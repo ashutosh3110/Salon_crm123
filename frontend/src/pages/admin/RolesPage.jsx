@@ -23,6 +23,7 @@ import {
     ClipboardList,
     Crown,
     Settings,
+    Calendar,
     Store,
     UserCog,
     Tag,
@@ -124,8 +125,20 @@ const PERMISSION_STRUCTURE = [
             { id: 'finance_dashboard', label: 'Finance Dashboard', icon: LayoutDashboard, description: 'Expense & income overview' },
             { id: 'finance_transactions', label: 'Transactions', icon: ArrowLeftRight, description: 'Detailed cash transactions' },
             { id: 'finance_cash_book', label: 'Cash & Bank Book', icon: Wallet, description: 'Ledgers' },
-            { id: 'finance_expenses', label: 'Expenses', icon: DollarSign, description: 'Log operational expenses' },
-            { id: 'finance_reports', label: 'Sales & Expense Reports', icon: FileText, description: 'Financial exports' }
+            { id: 'finance_expenses', label: 'Expenses', icon: DollarSign, description: 'Log operational expenses' }
+        ]
+    },
+    {
+        id: 'finance_reports',
+        label: 'Reports',
+        icon: ClipboardList,
+        description: 'Access business and overall reports (sales, bookings, staff, CRM, expenses)',
+        subPermissions: [
+            { id: 'reports_sales', label: 'Sales & Billing Report', icon: DollarSign, description: 'View sales and billing analytics' },
+            { id: 'reports_bookings', label: 'Bookings & Services Report', icon: Calendar, description: 'View booking metrics' },
+            { id: 'reports_staff', label: 'Staff Performance Report', icon: UserCog, description: 'View staff performance data' },
+            { id: 'reports_customer', label: 'Customer & CRM Report', icon: Users, description: 'View customer insights' },
+            { id: 'reports_expenses', label: 'Expenses & Finance Report', icon: CreditCard, description: 'View expense analysis' }
         ]
     },
     {

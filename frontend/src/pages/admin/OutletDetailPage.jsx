@@ -170,7 +170,9 @@ export default function OutletDetailPage() {
                                         <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-3 flex items-center gap-2">
                                             <Clock className="w-3.5 h-3.5 text-primary/40" /> Opening Hours
                                         </p>
-                                        <p className="text-xl font-black text-text uppercase tracking-tight">09:00 - 21:00 HRS</p>
+                                        <p className="text-xl font-black text-text uppercase tracking-tight">
+                                            {outlet.openingTime && outlet.closingTime ? `${outlet.openingTime} - ${outlet.closingTime}` : '09:00 AM - 09:00 PM'}
+                                        </p>
                                         <div className="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-2 flex items-center gap-1.5">
                                             <div className="w-1.5 h-1.5 rounded-xl bg-emerald-500 animate-pulse" /> SALON OPEN
                                         </div>
@@ -277,7 +279,7 @@ export default function OutletDetailPage() {
                                             <span className="text-sm font-black text-text uppercase tracking-tight">{day}</span>
                                         </div>
                                         <div className="text-[11px] font-black text-text-muted uppercase tracking-widest">
-                                            09:00 - 21:00 HRS
+                                            {outlet.openingTime && outlet.closingTime ? `${outlet.openingTime} - ${outlet.closingTime}` : '09:00 AM - 09:00 PM'}
                                         </div>
                                     </div>
                                 ))}

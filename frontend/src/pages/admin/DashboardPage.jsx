@@ -5,10 +5,12 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import api from '../../services/api';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 const defaultWeek = () => ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(name => ({ name, revenue: 0, appointments: 0 }));
 
 export default function DashboardPage() {
+    const { user } = useAuth();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [payload, setPayload] = useState(null);
@@ -324,7 +326,7 @@ export default function DashboardPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-left">
                 <div className="text-left">
                     <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
-                        Welcome Back, Admin! <span className="animate-pulse">👋</span>
+                        Welcome Back, {(user?.role === 'admin' || user?.role === 'superadmin') ? 'Admin' : (user?.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'Staff')}! <span className="animate-pulse">👋</span>
                     </h1>
                     <p className="text-[13px] text-slate-500 dark:text-slate-400 font-normal mt-1.5">
                         Here's what's happening with your business today.

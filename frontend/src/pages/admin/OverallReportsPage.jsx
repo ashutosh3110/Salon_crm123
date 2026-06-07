@@ -54,6 +54,35 @@ export default function OverallReportsPage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || 'sales';
     const setActiveTab = (tabId) => setSearchParams({ tab: tabId });
+
+    const tabPermissions = useMemo(() => ({
+        sales: 'reports_sales',
+        bookings: 'reports_bookings',
+        staff: 'reports_staff',
+        customer: 'reports_customer',
+        expenses: 'reports_expenses',
+    }), []);
+
+    const hasTabPermission = (tabId) => {
+        if (!user) return false;
+        if (user.role === 'admin' || user.role === 'superadmin') return true;
+        const requiredPerm = tabPermissions[tabId];
+        if (!requiredPerm) return true;
+        const perms = user.permissions || [];
+        return perms.includes('*') || perms.includes(requiredPerm);
+    };
+
+    const hasAnyTabPermission = useMemo(() => {
+        return Object.keys(tabPermissions).some(tabId => hasTabPermission(tabId));
+    }, [user, tabPermissions]);
+
+    useEffect(() => {
+        if (!user) return;
+        const allowedTabs = Object.keys(tabPermissions).filter(tabId => hasTabPermission(tabId));
+        if (allowedTabs.length > 0 && !allowedTabs.includes(activeTab)) {
+            setActiveTab(allowedTabs[0]);
+        }
+    }, [user, activeTab, tabPermissions]);
     
     // Data States
     const [invoices, setInvoices] = useState([]);
@@ -474,6 +503,11 @@ export default function OverallReportsPage() {
                 <div className="p-6 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl">
                     <p className="font-bold">Error loading reports:</p>
                     <p className="text-sm">{error}</p>
+                </div>
+            ) : !hasAnyTabPermission ? (
+                <div className="p-10 bg-amber-50/50 dark:bg-slate-800/50 border border-amber-200 dark:border-slate-750 text-center rounded-2xl">
+                    <p className="font-bold text-amber-600 dark:text-amber-400">Access Denied</p>
+                    <p className="text-sm text-slate-500 mt-2">You do not have permission to view any reports in this section.</p>
                 </div>
             ) : (
                 <AnimatePresence mode="wait">

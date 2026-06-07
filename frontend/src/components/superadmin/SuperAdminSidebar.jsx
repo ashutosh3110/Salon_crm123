@@ -162,14 +162,14 @@ export default function SuperAdminSidebar({ collapsed, setCollapsed, mobileOpen,
                             <item.icon className={`shrink-0 w-5 h-5 transition-colors ${active ? 'text-white' : 'text-text-muted group-hover:text-text-secondary'}`} />
 
                             {!effectiveCollapsed && (
-                                <span className="flex-1 whitespace-nowrap">
+                                <span className={`flex-1 whitespace-nowrap ${active ? 'text-white-force' : ''}`}>
                                     {item.label}
                                 </span>
                             )}
 
                             {/* Badge (expanded only) */}
                             {!effectiveCollapsed && item.badge && (
-                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-white/20 text-white' : item.badgeColor
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full min-w-[20px] text-center ${active ? 'bg-white/20 text-white-force' : item.badgeColor
                                     }`} title={item.badgeTitle}>
                                     {item.badge}
                                 </span>

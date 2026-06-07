@@ -3646,6 +3646,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-discount-text { color: #e11d48 !important; }
                     .qi-input-bg { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
 
+                    .qi-cash-pill { background-color: #f0fdf4 !important; border: 1.5px solid #10b981 !important; color: #047857 !important; }
+                    .qi-cash-pill input { color: #047857 !important; }
+                    .qi-cash-pill svg { color: #047857 !important; }
+                    
+                    .qi-upi-pill { background-color: #f5f3ff !important; border: 1.5px solid #8b5cf6 !important; color: #6d28d9 !important; }
+                    .qi-upi-pill input { color: #6d28d9 !important; }
+                    .qi-upi-pill svg { color: #6d28d9 !important; }
+                    
+                    .qi-wallet-pill { background-color: #f0fdf4 !important; border: 1.5px solid #10b981 !important; color: #065f46 !important; }
+                    .qi-wallet-pill input { color: #065f46 !important; }
+                    .qi-wallet-pill svg { color: #065f46 !important; }
+
                     /* ---- DARK MODE OVERRIDES ---- */
                     html.dark .qi-left { background-color: #0A0F1E !important; color: #f1f5f9 !important; }
                     html.dark .qi-left input { color: #f1f5f9 !important; }
@@ -3670,6 +3682,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     html.dark .qi-discount-bg { background-color: rgba(225,29,72,0.1) !important; border-color: rgba(225,29,72,0.3) !important; }
                     html.dark .qi-discount-text { color: #f1f5f9 !important; }
                     html.dark .qi-input-bg { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; }
+                    
+                    html.dark .qi-cash-pill { background-color: rgba(16,185,129,0.15) !important; border-color: rgba(16,185,129,0.4) !important; color: #a7f3d0 !important; }
+                    html.dark .qi-cash-pill input { color: #a7f3d0 !important; }
+                    html.dark .qi-cash-pill svg { color: #a7f3d0 !important; }
+                    
+                    html.dark .qi-upi-pill { background-color: rgba(139,92,246,0.15) !important; border-color: rgba(139,92,246,0.4) !important; color: #c084fc !important; }
+                    html.dark .qi-upi-pill input { color: #c084fc !important; }
+                    html.dark .qi-upi-pill svg { color: #c084fc !important; }
+                    
+                    html.dark .qi-wallet-pill { background-color: rgba(16,185,129,0.15) !important; border-color: rgba(16,185,129,0.4) !important; color: #a7f3d0 !important; }
+                    html.dark .qi-wallet-pill input { color: #a7f3d0 !important; }
+                    html.dark .qi-wallet-pill svg { color: #a7f3d0 !important; }
                 `}</style>
 
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
@@ -4062,68 +4086,41 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                         {/* BILLING STRIP */}
                         <div className="qi-strip flex-shrink-0 border-t" style={{ borderTopColor: '#e2e8f0' }}>
-                            <div className="w-full px-4 py-2.5 flex items-center gap-0 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
-                                <div className="flex flex-col shrink-0 pr-4">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
-                                    <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.total.toFixed(2)}</span>
+                            <div className="w-full px-4 py-2.5 flex items-center justify-between gap-2 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
+                                <div className="flex flex-col flex-1 pr-4 items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
+                                    <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.total.toFixed(2)}</span>
                                 </div>
 
 
 
                                 {totals.cgst > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
-                                            Toatl CGST
+                                    <div className="flex flex-col flex-1 px-4 items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                            Total CGST
 
                                         </span>
-                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
+                                        <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {totals.sgst > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                    <div className="flex flex-col flex-1 px-4 items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
                                             Total SGST
                                         </span>
-                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
+                                        <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
                                     </div>
                                 )}
-
-                                {/* Discount */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[100px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <div className="qi-discount-bg flex items-center rounded-lg overflow-hidden h-[22px]" style={{ border: '1px solid' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setQManualDiscount(p => ({ ...p, type: p.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                                className="px-1.5 text-[10px] font-black h-full flex items-center gap-0.5 border-r qi-discount-bg"
-                                                style={{ color: '#fb7185' }}
-                                            >
-                                                <Tag className="w-2.5 h-2.5" />
-                                                {qManualDiscount.type === 'fixed' ? ' ₹' : ' %'}
-                                            </button>
-                                            <input
-                                                type="number"
-                                                className="qi-discount-text w-11 text-[11px] font-black outline-none text-center px-1"
-                                                style={{ background: 'transparent' }}
-                                                value={qManualDiscount.value || ''}
-                                                onChange={e => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
+                            
                                 {/* Payment Date */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[130px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                        <Calendar className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[145px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
+                                    <div className="flex items-center gap-1.5 mt-1.5 justify-center">
                                         <input
                                             type="date"
                                             required
-                                            className="qi-date-text text-[11px] font-black outline-none uppercase cursor-pointer"
+                                            className="qi-date-text text-[13px] font-black outline-none uppercase cursor-pointer text-center"
                                             style={{ background: 'transparent', width: 'auto' }}
                                             value={qPaymentDate}
                                             onChange={e => setQPaymentDate(e.target.value)}
@@ -4132,14 +4129,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {/* Cash */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Cash Payment</span>
-                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
-                                        <Banknote className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Cash Payment</span>
+                                    <div className="qi-cash-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                        <Banknote className="w-4 h-4 flex-shrink-0" />
                                         <input
                                             type="number"
-                                            className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent' }}
+                                            className="flex-1 min-w-0 text-[13px] font-black outline-none font-mono text-center bg-transparent"
                                             value={qPayments.cash || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, cash: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -4148,14 +4144,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {/* Online/UPI */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Online/UPI</span>
-                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
-                                        <Smartphone className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#8b5cf6' }}>Online/UPI</span>
+                                    <div className="qi-upi-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                        <Smartphone className="w-4 h-4 flex-shrink-0" />
                                         <input
                                             type="number"
-                                            className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent' }}
+                                            className="flex-1 min-w-0 text-[13px] font-black outline-none font-mono text-center bg-transparent"
                                             value={qPayments.online || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, online: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -4164,13 +4159,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {qClient && qClientWalletBalance > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Wallet (&#8377;{qClientWalletBalance.toFixed(0)})</span>
-                                        <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #a7f3d0', background: '#f0fdf4' }}>
-                                            <Wallet className="w-3 h-3" style={{ color: '#10b981' }} />
+                                    <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Wallet (&#8377;{qClientWalletBalance.toFixed(0)})</span>
+                                        <div className="qi-wallet-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                            <Wallet className="w-4 h-4 flex-shrink-0" />
                                             <input
                                                 type="number"
-                                                className="w-14 text-[11px] font-black outline-none font-mono"
                                                 style={{ background: 'transparent', color: '#065f46' }}
                                                 value={qRedeemWallet || ''}
                                                 onChange={e => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}

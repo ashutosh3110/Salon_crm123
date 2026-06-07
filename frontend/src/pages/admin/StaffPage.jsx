@@ -685,7 +685,7 @@ export default function StaffPage() {
                             <div className="grid grid-cols-2 gap-3 pb-4">
                                 <div className="col-span-2 space-y-1">
                                     <div className="flex justify-between items-end mb-1">
-                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo</label>
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profile Photo <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                         <span className="text-[8px] font-black text-primary uppercase tracking-widest opacity-60">
                                             MAX: {platformSettings?.maxImageSize || 5}{platformSettings?.maxImageSizeUnit || 'MB'}
                                         </span>
@@ -721,7 +721,7 @@ export default function StaffPage() {
                                 </div>
 
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Member Full Name <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         required
@@ -737,7 +737,7 @@ export default function StaffPage() {
                                     {errors.name && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.name}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Email Address <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="email"
                                         required
@@ -752,7 +752,7 @@ export default function StaffPage() {
                                     {errors.email && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.email}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone Number</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Phone Number <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="tel"
                                         value={form.phone}
@@ -767,7 +767,7 @@ export default function StaffPage() {
                                     {errors.phone && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.phone}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <select
                                         value={form.roleId}
                                         onChange={(e) => {
@@ -793,7 +793,7 @@ export default function StaffPage() {
                                     {errors.roleId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.roleId}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <select
                                         value={form.outletId}
                                         onChange={(e) => {
@@ -808,7 +808,7 @@ export default function StaffPage() {
                                     {errors.outletId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.outletId}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">DOB</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">DOB <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="date"
                                         max={new Date().toISOString().split('T')[0]}
@@ -822,7 +822,7 @@ export default function StaffPage() {
                                     {errors.dob && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.dob}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">PAN Number <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         maxLength={10}
@@ -849,7 +849,7 @@ export default function StaffPage() {
                                     {errors.pan && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.pan}</p>}
                                 </div>
                                 <div className="space-y-1 col-span-2">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Residential Address <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <textarea
                                         value={form.address || ''}
                                         onChange={(e) => {
@@ -866,7 +866,7 @@ export default function StaffPage() {
                                     <p className="text-[9px] font-black text-primary uppercase tracking-[0.2em] font-mono">Payout & Bank Details</p>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Base Salary (₹)</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Base Salary (₹) <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         value={form.salary || ''}
@@ -881,7 +881,7 @@ export default function StaffPage() {
                                     {errors.salary && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.salary}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Bank Institution</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Bank Institution <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         value={form.bankName || ''}
@@ -895,7 +895,7 @@ export default function StaffPage() {
                                     {errors.bankName && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.bankName}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Account Number</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Account Number <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         maxLength={18}
@@ -911,7 +911,7 @@ export default function StaffPage() {
                                     {errors.accountNo && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.accountNo}</p>}
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">IFSC Code</label>
+                                    <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">IFSC Code <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <input
                                         type="text"
                                         maxLength={11}

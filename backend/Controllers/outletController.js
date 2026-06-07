@@ -192,6 +192,10 @@ exports.createOutlet = async (req, res) => {
             req.body.images = [...existingImages, ...newImages];
         }
 
+        if (req.body['workingDays[]']) {
+            req.body.workingDays = Array.isArray(req.body['workingDays[]']) ? req.body['workingDays[]'] : [req.body['workingDays[]']];
+        }
+
         const outlet = await Outlet.create(req.body);
 
         res.status(201).json({ success: true, data: outlet });
@@ -254,6 +258,10 @@ exports.updateOutlet = async (req, res) => {
         // Exclude likes and likedBy from updates (managed via dedicated toggleLike)
         delete req.body.likes;
         delete req.body.likedBy;
+
+        if (req.body['workingDays[]']) {
+            req.body.workingDays = Array.isArray(req.body['workingDays[]']) ? req.body['workingDays[]'] : [req.body['workingDays[]']];
+        }
 
         outlet = await Outlet.findByIdAndUpdate(req.params.id, req.body, {
             new: true,

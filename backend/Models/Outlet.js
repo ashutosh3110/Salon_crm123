@@ -49,6 +49,15 @@ const outletSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    openingTime: {
+        type: String,
+    },
+    closingTime: {
+        type: String,
+    },
+    workingDays: [{
+        type: String
+    }],
     showServicePrice: {
         type: Boolean,
         default: true
