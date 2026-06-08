@@ -88,7 +88,7 @@ export function calculateTotals({
         const gross = itemPrice * qty;
 
         let ownDiscount = 0;
-        if (item.originalBooking) {
+        if (item.originalBooking || item.originalOrder) {
             // Price is already final and discounted from the app, do not discount again.
             ownDiscount = 0;
             totalGrossAmount += gross;
@@ -166,9 +166,11 @@ export function calculateTotals({
         const rateSetting = item.type === 'service' ? serviceGstRate : productGstRate;
         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
 
-        const isItemInclusive = item.isInclusiveTax !== undefined
-            ? (String(item.isInclusiveTax) === 'true')
-            : inclusiveTaxFallback;
+        const isItemInclusive = (item.originalBooking || item.originalOrder)
+            ? true
+            : (item.isInclusiveTax !== undefined
+                ? (String(item.isInclusiveTax) === 'true')
+                : inclusiveTaxFallback);
 
         let itemCgst = 0;
         let itemSgst = 0;

@@ -158,13 +158,14 @@ export default function AppBookingDetailsPage() {
     const itemsTotal = booking?.subtotal ?? booking?.service?.price ?? 0;
     const totalAmount = booking?.totalPrice ?? booking?.price ?? 0;
     const taxAmount = booking?.tax ?? 0;
+    const promoDiscount = booking?.promoDiscount ?? 0;
     // Calculate discount if it's explicitly stored OR infer it from the difference
-    const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal + taxAmount - totalAmount);
+    const membershipDiscount = booking?.membershipDiscount ?? Math.max(0, itemsTotal + taxAmount - totalAmount - promoDiscount);
     const isInclusive = booking?.service?.isInclusiveTax === true || String(booking?.service?.isInclusiveTax) === 'true' || booking?.serviceId?.isInclusiveTax === true || String(booking?.serviceId?.isInclusiveTax) === 'true';
     const gstPercent = taxAmount > 0 ? Math.round((taxAmount / ((totalAmount - taxAmount) || 1)) * 100) : 18;
     const taxVal = taxAmount > 0 ? taxAmount : (isInclusive ? 
-        (itemsTotal - membershipDiscount) * (1 - 1 / (1 + gstPercent / 100)) : 
-        (itemsTotal - membershipDiscount) * (gstPercent / 100));
+        (itemsTotal - membershipDiscount - promoDiscount) * (1 - 1 / (1 + gstPercent / 100)) : 
+        (itemsTotal - membershipDiscount - promoDiscount) * (gstPercent / 100));
     
     const cgstVal = Number((taxVal / 2).toFixed(2));
     const sgstVal = Number((taxVal - cgstVal).toFixed(2));
@@ -231,6 +232,12 @@ export default function AppBookingDetailsPage() {
                                      <span>- ₹{membershipDiscount.toLocaleString()}</span>
                                  </div>
                              )}
+                             {promoDiscount > 0 && (
+                                 <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#C8956C]">
+                                     <span>Coupon Discount {booking.couponCode ? `(${booking.couponCode})` : ''}</span>
+                                     <span>- ₹{promoDiscount.toLocaleString()}</span>
+                                 </div>
+                             )}
                              {(taxAmount > 0 || !booking.tax) && (
                                  <div className="space-y-1.5 py-1 border-t border-black/5 dark:border-white/5">
                                      <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
@@ -278,7 +285,11 @@ export default function AppBookingDetailsPage() {
                             <p className="text-[9px] font-black uppercase tracking-widest opacity-40 flex items-center gap-1.5">
                                 <User size={10} className="text-[#C8956C]" /> Expert
                             </p>
-                            <p className="text-sm font-bold uppercase tracking-tight">{booking.staff?.name}</p>
+                            <p className="text-sm font-bold uppercase tracking-tight">
+                                {Array.isArray(booking.staff)
+                                    ? booking.staff.map(s => s?.name).filter(Boolean).join(', ') || 'Unassigned'
+                                    : (booking.staff?.name || 'Unassigned')}
+                            </p>
                         </div>
                         <div className="space-y-2 col-span-2">
                             <p className="text-[9px] font-black uppercase tracking-widest opacity-40 flex items-center gap-1.5">

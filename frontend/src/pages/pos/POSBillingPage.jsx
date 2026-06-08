@@ -514,6 +514,7 @@ export default function POSBillingPage() {
 
     // Billing & Payment System Updates
     const [includePreviousDue, setIncludePreviousDue] = useState(false);
+    const [previousDuePaidAmount, setPreviousDuePaidAmount] = useState(0);
     const [paymentDate, setPaymentDate] = useState(getTodayDateString());
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
@@ -709,17 +710,22 @@ export default function POSBillingPage() {
             customerState,
             salonState: fiscal.state,
             includePreviousDue,
-            previousDue: selectedClient?.dueAmount || 0,
+            previousDue: Number(previousDuePaidAmount || 0),
             redeemWallet,
             payments
         });
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState, payments, appointmentId, orderId]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, previousDuePaidAmount, fiscal, platformSettings, customerState, payments, appointmentId, orderId]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
         if (!selectedClient?._id) return 0;
         return (allWallets || {})[selectedClient._id]?.balance || 0;
     }, [selectedClient, allWallets]);
+
+    const isOverpaid = useMemo(() => {
+        const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
+        return mainPaidAmount - (totals.total - totals.redeemWallet) > 0.005;
+    }, [payments, totals.total, totals.redeemWallet]);
 
     // Sync payment amount to total unless manually edited by user
     useEffect(() => {
@@ -731,7 +737,7 @@ export default function POSBillingPage() {
     // Main Terminal Overpayment Warning Toast
     useEffect(() => {
         const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
-        const mainTotalLiability = totals.total - totals.redeemWallet + (includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0);
+        const mainTotalLiability = totals.total - totals.redeemWallet;
         const overpaidDiff = Math.round((mainPaidAmount - mainTotalLiability) * 100) / 100;
         if (overpaidDiff > 0) {
             toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, {
@@ -1182,10 +1188,11 @@ export default function POSBillingPage() {
             return;
         }
 
-        // In bookings/orders mode: customer already paid online — auto-set payment
-        if (serviceMode === 'bookings' || serviceMode === 'orders') {
-            const fullAmount = totals.total - (redeemWallet || 0);
-            setPayments([{ method: 'online', amount: Math.max(0, fullAmount) }]);
+        const walletPaymentsSum = payments.filter(p => p.method === 'wallet').reduce((s, p) => s + p.amount, 0);
+        const totalWalletUse = (redeemWallet || 0) + walletPaymentsSum;
+        if (totalWalletUse > clientWalletBalance) {
+            alert(`Insufficient wallet balance. Customer wallet balance is ₹${clientWalletBalance.toFixed(2)}`);
+            return;
         }
 
         const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
@@ -1254,11 +1261,11 @@ export default function POSBillingPage() {
                     serviceGstPercent: totals.serviceGstRate,
                     productGstPercent: totals.productGstRate,
                     subtotal: totals.subtotal,
-                    payments: payments.map(p => ({ method: p.method, amount: p.amount })),
-                    useWalletAmount: totals.redeemWallet,
+                    payments: payments.filter(p => p.method !== 'wallet').map(p => ({ method: p.method, amount: p.amount })),
+                    useWalletAmount: totals.redeemWallet + walletPaymentsSum,
                     discount: totals.discount,
                     membershipDiscount: totals.membershipDiscount,
-                    previousDueCollected: includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0,
+                    previousDueCollected: includePreviousDue ? Number(previousDuePaidAmount || 0) : 0,
                     bookingId: appointmentId,
                     orderId: orderId
                 };
@@ -1438,6 +1445,7 @@ export default function POSBillingPage() {
         setSelectedBookingIds([]);
         setSelectedOrderIds([]);
         setIncludePreviousDue(false);
+        setPreviousDuePaidAmount(0);
         setPaymentDate(getTodayDateString());
         setInvoiceIdToEdit(null);
     };
@@ -2323,48 +2331,84 @@ export default function POSBillingPage() {
                                     </div>
                                 </div>
 
-                                {/* ── 7. PAYMENT STATUS ── */}
+                                {/* ── 7. PAYMENT DETAILS ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
                                         <Wallet className="w-3.5 h-3.5 text-[#cca839]" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Status</span>
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Details</span>
                                     </div>
-                                    <div className="px-4 py-3">
-                                        {(() => {
-                                            const isImportedPaid = serviceMode === 'bookings' || serviceMode === 'orders';
-                                            const grandTotal = totals.total;
-                                            const paid = isImportedPaid ? grandTotal : redeemWallet;
-                                            const pending = isImportedPaid ? 0 : Math.max(0, grandTotal - paid);
-                                            const isPaid = isImportedPaid || pending <= 0.5;
-                                            const isPartial = paid > 0 && !isPaid;
-
-                                            return (
-                                                <div className="space-y-2">
-                                                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-black w-fit ${
-                                                        isPaid
-                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40'
-                                                            : isPartial
-                                                                ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40'
-                                                                : 'bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400'
-                                                    }`}>
-                                                        <div className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : isPartial ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                                                        {isPaid ? 'Pre-Paid' : isPartial ? 'Partial Paid' : 'Pending'}
-                                                    </div>
-                                                    {isPartial && (
-                                                        <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2.5">
-                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Paid</p>
-                                                                <p className="text-[13px] font-black text-emerald-700">₹{paid.toFixed(2)}</p>
-                                                            </div>
-                                                            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-2.5">
-                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pending</p>
-                                                                <p className="text-[13px] font-black text-amber-700">₹{pending.toFixed(2)}</p>
-                                                            </div>
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wider">Payment Date <span className="text-rose-500 font-bold">*</span></span>
+                                            <input type="date" required value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)}
+                                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 dark:text-slate-200 dark:[color-scheme:dark] focus:border-[#cca839]/50 cursor-pointer" />
+                                        </div>
+                                        <div className="flex items-center justify-between pb-1">
+                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
+                                            <label className="flex items-center gap-1.5 text-xs font-semibold text-[#cca839] cursor-pointer hover:opacity-80 transition-all bg-[#cca839]/5 px-2 py-1 rounded-lg border border-[#cca839]/10">
+                                                <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-[#cca839]/20 text-[#cca839] focus:ring-[#cca839]/20 cursor-pointer" />
+                                                <span className="uppercase tracking-tight text-slate-500 dark:text-slate-400">Partial Pay</span>
+                                            </label>
+                                        </div>
+                                        {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
+                                            <div className="flex flex-col gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                                <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
+                                                    <input type="checkbox" checked={includePreviousDue} onChange={(e) => {
+                                                        setIncludePreviousDue(e.target.checked);
+                                                        const dueVal = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
+                                                        setPreviousDuePaidAmount(dueVal);
+                                                        if (!isManualPayment && payments.length === 1) {
+                                                            setPayments([{ ...payments[0], amount: totals.currentBillTotal + dueVal }]);
+                                                        }
+                                                    }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                    <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
+                                                </label>
+                                                {includePreviousDue && (
+                                                    <div className="flex items-center gap-2 pl-4">
+                                                        <span className="text-[9px] font-bold text-slate-500">COLLECT AMOUNT:</span>
+                                                        <div className="relative w-28">
+                                                            <input type="number" min="0" max={Math.ceil(Number(selectedClient.dueAmount))} value={previousDuePaidAmount} onChange={(e) => {
+                                                                const val = Math.min(Math.ceil(Number(selectedClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
+                                                                setPreviousDuePaidAmount(val);
+                                                                if (!isManualPayment && payments.length === 1) {
+                                                                    setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
+                                                                }
+                                                            }} className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 px-2 text-right text-xs font-bold outline-none focus:border-[#cca839] transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
                                                         </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {payments.map((p, i) => (
+                                            <div key={i} className="flex flex-col gap-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 pb-2 last:pb-0">
+                                                <div className="flex gap-2">
+                                                    <select value={p.method} onChange={(e) => updatePayment(i, "method", e.target.value)} className="flex-1 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-[#cca839] transition-all uppercase text-slate-800 dark:text-white">
+                                                        <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
+                                                        <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
+                                                        <option value="wallet" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">WALLET</option>
+                                                    </select>
+                                                    <div className="relative">
+                                                        <input type="number" data-payment-idx={i} value={p.amount} onChange={(e) => updatePayment(i, "amount", Number(e.target.value))} className="w-28 h-8 rounded-lg border border-slate-200 dark:border-slate-700 px-2 text-right text-xs font-bold outline-none focus:border-[#cca839] transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                                    </div>
+                                                    {payments.length > 1 && (
+                                                        <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0"><X className="w-3.5 h-3.5" /></button>
                                                     )}
                                                 </div>
-                                            );
-                                        })()}
+                                                {payments.length === 1 && totals.total > p.amount && (
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                                        <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">₹{(totals.total - p.amount).toFixed(2)} will be marked as Due</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
+                                            <button onClick={addPaymentMethod} className="w-full h-8 border border-dashed border-[#cca839]/40 bg-[#cca839]/5 rounded-lg text-xs font-semibold text-[#cca839] hover:bg-[#cca839]/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1">
+                                                <Plus className="w-3 h-3" /> Split Payment
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -2384,24 +2428,34 @@ export default function POSBillingPage() {
                                             <span>− ₹{(totals.discount + totals.membershipDiscount).toFixed(2)}</span>
                                         </div>
                                     )}
-                                    {(totals.cgst + totals.sgst + totals.igst) > 0 && (
-                                        <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-2">
-                                            <span>GST</span>
-                                            <span className={totals.cgst > totals.cgstExcl ? 'text-slate-400' : ''}>
-                                                {totals.cgst > totals.cgstExcl ? '(Included)' : `+ ₹${(totals.cgst + totals.sgst + totals.igst).toFixed(2)}`}
-                                            </span>
-                                        </div>
-                                    )}
                                     {totals.redeemWallet > 0 && (
                                         <div className="flex items-center justify-between text-[10px] font-semibold text-[#16a34a] mb-2">
                                             <span>Wallet</span>
                                             <span>− ₹{totals.redeemWallet.toFixed(2)}</span>
                                         </div>
                                     )}
+                                    {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
+                                        <div className="flex justify-between text-[10px] font-semibold text-rose-600 dark:text-rose-400 mb-2 animate-pulse">
+                                            <span>Previous Dues Added</span>
+                                            <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
+                                        </div>
+                                    )}
                                     <div className="border-t border-slate-200 dark:border-slate-700 mt-2 pt-3 flex items-center justify-between">
                                         <span className="text-[11px] font-black uppercase tracking-widest text-[#16a34a]">Grand Total</span>
                                         <span className="text-[28px] font-black leading-none text-slate-900 dark:text-white tracking-tight">₹{totals.total.toFixed(2)}</span>
                                     </div>
+                                    {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Balance Due</span>
+                                            <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Overpaid</span>
+                                            <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Action buttons */}
@@ -2435,7 +2489,7 @@ export default function POSBillingPage() {
                                     {/* Generate Bill */}
                                     <button
                                         onClick={handleCheckout}
-                                        disabled={checkingOut || cart.length === 0}
+                                        disabled={checkingOut || cart.length === 0 || isOverpaid}
                                         className="flex-1 h-11 rounded-xl bg-[#cca839] text-white text-xs font-black uppercase tracking-wider hover:bg-[#b8932c] active:scale-95 transition-all shadow-lg shadow-[#cca839]/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {checkingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
@@ -2606,11 +2660,33 @@ export default function POSBillingPage() {
                                         </label>
                                     </div>
                                     {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
-                                        <div className="flex items-center pb-2 mb-2 border-b border-border/50">
+                                        <div className="flex flex-col gap-2 pb-2 mb-2 border-b border-border/50">
                                             <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
-                                                <input type="checkbox" checked={includePreviousDue} onChange={(e) => { setIncludePreviousDue(e.target.checked); if (!isManualPayment && payments.length === 1) { const extra = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0; setPayments([{ ...payments[0], amount: totals.currentBillTotal + extra }]); } }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                <input type="checkbox" checked={includePreviousDue} onChange={(e) => {
+                                                    setIncludePreviousDue(e.target.checked);
+                                                    const dueVal = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
+                                                    setPreviousDuePaidAmount(dueVal);
+                                                    if (!isManualPayment && payments.length === 1) {
+                                                        setPayments([{ ...payments[0], amount: totals.currentBillTotal + dueVal }]);
+                                                    }
+                                                }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
                                                 <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
                                             </label>
+                                            {includePreviousDue && (
+                                                <div className="flex items-center gap-2 pl-4">
+                                                    <span className="text-[9px] font-bold text-text-muted">COLLECT AMOUNT:</span>
+                                                    <div className="relative w-28">
+                                                        <input type="number" min="0" max={Math.ceil(Number(selectedClient.dueAmount))} value={previousDuePaidAmount} onChange={(e) => {
+                                                            const val = Math.min(Math.ceil(Number(selectedClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
+                                                            setPreviousDuePaidAmount(val);
+                                                            if (!isManualPayment && payments.length === 1) {
+                                                                    setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
+                                                            }
+                                                        }} className="w-full h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     {payments.map((p, i) => (
@@ -2619,6 +2695,7 @@ export default function POSBillingPage() {
                                                 <select value={p.method} onChange={(e) => updatePayment(i, "method", e.target.value)} className="flex-1 h-8 rounded-lg !border !border-slate-200 dark:!border-slate-700 !bg-white dark:!bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase !text-slate-800 dark:!text-white">
                                                     <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
                                                     <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
+                                                    <option value="wallet" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">WALLET</option>
                                                 </select>
                                                 <div className="relative">
                                                     <input type="number" data-payment-idx={i} value={p.amount} onChange={(e) => updatePayment(i, "amount", Number(e.target.value))} className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
@@ -2688,7 +2765,13 @@ export default function POSBillingPage() {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => setShowDiscountModal(true)} className="h-10 rounded-xl !border !border-slate-300 dark:!border-slate-800 !bg-slate-100 dark:!bg-slate-900 text-xs font-bold uppercase hover:!bg-slate-200 dark:hover:!bg-slate-800 transition-colors !text-slate-800 dark:!text-slate-200 px-4">Offers</button>
-                                    <button onClick={handleCheckout} className="flex-1 h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">Complete Bill</button>
+                                    <button
+                                        onClick={handleCheckout}
+                                        disabled={checkingOut || cart.length === 0 || isOverpaid}
+                                        className="flex-1 h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Complete Bill
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2797,7 +2880,8 @@ export default function POSBillingPage() {
                             </div>
                             <button 
                                 onClick={() => setShowDiscountModal(false)} 
-                                className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95"
+                                disabled={manualDiscount.type === 'percentage' ? manualDiscount.value > 100 : manualDiscount.value > (totals.subtotal || 0)}
+                                className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Confirm & Apply
                             </button>
