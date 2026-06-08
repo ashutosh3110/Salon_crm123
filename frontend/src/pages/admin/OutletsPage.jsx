@@ -43,10 +43,14 @@ const CustomTooltip = ({ active, payload }) => {
 
 export default function OutletsPage() {
     const navigate = useNavigate();
-    const { outlets, deleteOutlet } = useBusiness();
+    const { outlets, deleteOutlet, fetchOutlets } = useBusiness();
     const [search, setSearch] = useState('');
     const [cityFilter, setCityFilter] = useState('all');
     const [filteredOutlets, setFilteredOutlets] = useState(outlets);
+
+    useEffect(() => {
+        fetchOutlets();
+    }, [fetchOutlets]);
 
     // Get unique cities for filter
     const cities = ['all', ...new Set(outlets.map(o => o.address?.city || o.city).filter(Boolean))];

@@ -524,11 +524,24 @@ export default function BookingDetailPage() {
                                                     <p className="text-sm font-black italic font-mono">{isInclusive ? '' : '+'}₹{sgst.toFixed(2)}</p>
                                                 </div>
 
+                                                <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold border-t border-dashed border-border/50 pt-2">
+                                                    <p className="text-[10px] font-black uppercase tracking-widest">
+                                                        Advance Paid
+                                                    </p>
+                                                    <p className="text-sm font-black italic font-mono">₹{(booking.advancePaid || 0).toFixed(2)}</p>
+                                                </div>
+
                                                 <div className="pt-3 border-t border-border flex items-center justify-between">
                                                     <p className="text-[11px] font-black text-text uppercase tracking-widest">
                                                         Total Payable ({isInclusive ? 'Incl. GST' : 'Excl. GST'})
                                                     </p>
                                                     <p className="text-xl font-black text-primary italic font-mono tracking-tighter">₹{total.toFixed(2)}</p>
+                                                </div>
+                                                <div className="pt-2.5 border-t border-dashed border-border/50 flex items-center justify-between text-rose-600 dark:text-rose-450 font-bold">
+                                                    <p className="text-[11px] font-black uppercase tracking-widest">
+                                                        Remaining Balance
+                                                    </p>
+                                                    <p className="text-xl font-black italic font-mono tracking-tighter">₹{Math.max(0, total - (booking.advancePaid || 0)).toFixed(2)}</p>
                                                 </div>
                                             </>
                                         );

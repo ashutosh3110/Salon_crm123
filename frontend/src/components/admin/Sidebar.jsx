@@ -75,6 +75,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
     const isRestricted = useMemo(() => {
         if (user?.role === 'superadmin') return false;
+        if (user?.impersonatedBy) return false;
 
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
         const planName = String(rawPlan || 'none').trim().toLowerCase();

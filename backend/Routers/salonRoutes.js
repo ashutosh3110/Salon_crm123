@@ -11,7 +11,9 @@ const {
     getMe,
     updateMe,
     resendCredentials,
-    getCustomerInitialData
+    getCustomerInitialData,
+    changeAdminPassword,
+    impersonateSalon
 } = require('../Controllers/salonController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -20,6 +22,8 @@ router.get('/me', protect, getMe);
 router.patch('/me', protect, updateMe);
 router.get('/stats', protect, authorize('superadmin'), getSalonStats);
 router.post('/:id/resend-credentials', protect, authorize('superadmin'), resendCredentials);
+router.post('/:id/change-password', protect, authorize('superadmin'), changeAdminPassword);
+router.post('/:id/impersonate', protect, authorize('superadmin'), impersonateSalon);
 
 router.route('/')
     .get(protect, authorize('superadmin'), getSalons)

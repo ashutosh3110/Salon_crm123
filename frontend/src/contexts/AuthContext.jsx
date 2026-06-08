@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
         register: async (formData) => {
             const response = await api.post('/salons/register', {
                 ...formData
-            });
+            }, { skipToast: true });
             return response.data;
         },
         isAuthenticated: !!user

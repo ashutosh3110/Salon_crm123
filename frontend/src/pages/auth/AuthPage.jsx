@@ -112,6 +112,17 @@ export default function AuthPage() {
         setLoading(true);
 
         try {
+            const checkRes = await api.get(`/auth/check-email?email=${encodeURIComponent(signupForm.email)}`, { skipToast: true });
+            if (checkRes.data.exists) {
+                setError(checkRes.data.message || 'This email address is already registered on the platform. Please use a different email address.');
+                setLoading(false);
+                return;
+            }
+        } catch (err) {
+            // Ignore check errors
+        }
+
+        try {
             const params = new URLSearchParams(location.search);
             const planParam = params.get('plan');
             

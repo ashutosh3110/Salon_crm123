@@ -407,6 +407,7 @@ exports.updateStatus = async (req, res) => {
         if (req.body.tax !== undefined) booking.tax = req.body.tax;
         if (req.body.promoDiscount !== undefined) booking.promoDiscount = req.body.promoDiscount;
         if (req.body.membershipDiscount !== undefined) booking.membershipDiscount = req.body.membershipDiscount;
+        if (req.body.advancePaid !== undefined) booking.advancePaid = req.body.advancePaid;
 
         // Auto-complete payment for salon payments when booking is completed
         if (booking.status === 'completed' && booking.paymentMethod === 'salon') {

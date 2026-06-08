@@ -187,6 +187,7 @@ const SAAnalyticsPage = lazy(() => import('./pages/superadmin/SAAnalyticsPage'))
 const SAInquiriesPage = lazy(() => import('./pages/superadmin/SAInquiriesPage'));
 const SACMSPage = lazy(() => import('./pages/superadmin/SACMSPage'));
 const SABlogPage = lazy(() => import('./pages/superadmin/SABlogPage'));
+const SADatabaseBackupPage = lazy(() => import('./pages/superadmin/SADatabaseBackupPage'));
 
 // Customer App - Lazy Loaded
 const AppLayout = lazy(() => import('./layouts/AppLayout'));
@@ -324,11 +325,13 @@ function App() {
       <Toaster 
         position="top-center" 
         reverseOrder={false} 
+        containerStyle={{ zIndex: 99999 }}
         toastOptions={{
           duration: 4000,
           style: {
             background: '#333',
             color: '#fff',
+            zIndex: 99999
           },
         }}
       />
@@ -682,6 +685,7 @@ function App() {
                             <Route path="/superadmin/support" element={<SASupportPage />} />
                             <Route path="/superadmin/inquiries" element={<SAInquiriesPage />} />
                             <Route path="/superadmin/marketing/cms" element={<MarketingCMSPage />} />
+                            <Route path="/superadmin/backup" element={<SADatabaseBackupPage />} />
                           </Route>
                         </Route>
 

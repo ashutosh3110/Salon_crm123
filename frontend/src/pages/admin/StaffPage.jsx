@@ -273,6 +273,23 @@ export default function StaffPage() {
         e.preventDefault();
         if (!validateForm()) return;
         setLoading(true);
+
+        // Global Email check on frontend
+        if (!editing || editing.email !== form.email) {
+            try {
+                const checkRes = await api.get(`/auth/check-email?email=${encodeURIComponent(form.email)}`);
+                if (checkRes.data.exists) {
+                    const errorMsg = checkRes.data.message || 'This email address is already registered on the platform. Please use a different email address.';
+                    setErrors(prev => ({ ...prev, email: errorMsg }));
+                    toast.error(errorMsg);
+                    setLoading(false);
+                    return;
+                }
+            } catch (err) {
+                // Ignore API check error and proceed
+            }
+        }
+
         try {
             const formData = new FormData();
 

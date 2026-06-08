@@ -158,6 +158,7 @@ export default function NewBookingPage() {
     const [couponCode, setCouponCode] = useState('');
     const [promoDiscount, setPromoDiscount] = useState(0);
     const [isPromoApplied, setIsPromoApplied] = useState(false);
+    const [advancePayment, setAdvancePayment] = useState(0);
 
     // Reset promo if customer changes
     useEffect(() => {
@@ -406,6 +407,14 @@ export default function NewBookingPage() {
         return { original, discount, promoDiscount, subtotal, tax, total, gstRate, isInclusive, cgst, sgst };
     }, [selectedService, activeMembership, platformSettings, promoDiscount]);
 
+    useEffect(() => {
+        if (priceCalculation.total) {
+            setAdvancePayment(Math.round(priceCalculation.total * 0.4));
+        } else {
+            setAdvancePayment(0);
+        }
+    }, [priceCalculation.total]);
+
     // Reset pagination on search
     useEffect(() => {
         setCustomerPage(1);
@@ -461,7 +470,8 @@ export default function NewBookingPage() {
                 discountAmount: priceCalculation.discount,
                 promoDiscount: priceCalculation.promoDiscount,
                 couponCode: isPromoApplied ? couponCode : undefined,
-                source: 'admin'
+                source: 'admin',
+                advancePaid: Number(advancePayment)
             });
 
             toast.success('Booking created successfully');
@@ -1055,6 +1065,18 @@ export default function NewBookingPage() {
                                                 Apply
                                             </button>
                                         )}
+                                    </div>
+
+                                    {/* Advance Payment Input */}
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Advance Pay (Editable)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="ENTER ADVANCE AMOUNT"
+                                            value={advancePayment}
+                                            onChange={(e) => setAdvancePayment(Number(e.target.value))}
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black text-text outline-none rounded-xl focus:border-[#B8860B] transition-colors"
+                                        />
                                     </div>
 
                                     <div className="space-y-3 pt-4 border-t border-dashed border-border">

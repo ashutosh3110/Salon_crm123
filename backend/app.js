@@ -54,6 +54,7 @@ const finance = require('./Routers/financeRoutes');
 const marketing = require('./Routers/marketingRoutes');
 const notifications = require('./Routers/notificationRoutes');
 const support = require('./Routers/supportRoutes');
+const backup = require('./Routers/backupRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -94,6 +95,7 @@ app.use('/marketing', marketing);
 app.use('/notifications', notifications);
 app.use('/v1/notifications', notifications);
 app.use('/support', support);
+app.use('/super-admin/database', backup);
 
 // New Explicit Home Page Routes
 const banners = require('./Routers/bannerRoutes');

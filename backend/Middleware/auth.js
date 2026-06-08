@@ -63,21 +63,28 @@ exports.protect = async (req, res, next) => {
             userObj.role = 'customer';
         }
 
-        // Security check: Block if inactive or salon is suspended
-        if (userObj.isActive === false) {
-            return res.status(403).json({ success: false, message: 'Account is inactive' });
+        // Security check: Block if inactive or salon is suspended (unless impersonated by SuperAdmin)
+        const isImpersonated = !!decoded.impersonatedBy;
+        if (isImpersonated) {
+            userObj.impersonatedBy = decoded.impersonatedBy;
         }
 
-        if (userObj.status === 'suspended') {
-            return res.status(403).json({ success: false, message: 'Access is suspended' });
-        }
+        if (!isImpersonated) {
+            if (userObj.isActive === false) {
+                return res.status(403).json({ success: false, message: 'Account is inactive' });
+            }
 
-        // If staff, check parent salon
-        if (userObj.role && !['superadmin', 'admin', 'customer'].includes(userObj.role) && userObj.salonId) {
-            const Salon = require('../Models/Salon');
-            const parent = await Salon.findById(userObj.salonId);
-            if (parent && (parent.status === 'suspended' || !parent.isActive)) {
-                return res.status(403).json({ success: false, message: 'Salon access is paused' });
+            if (userObj.status === 'suspended') {
+                return res.status(403).json({ success: false, message: 'Access is suspended' });
+            }
+
+            // If staff, check parent salon
+            if (userObj.role && !['superadmin', 'admin', 'customer'].includes(userObj.role) && userObj.salonId) {
+                const Salon = require('../Models/Salon');
+                const parent = await Salon.findById(userObj.salonId);
+                if (parent && (parent.status === 'suspended' || !parent.isActive)) {
+                    return res.status(403).json({ success: false, message: 'Salon access is paused' });
+                }
             }
         }
 

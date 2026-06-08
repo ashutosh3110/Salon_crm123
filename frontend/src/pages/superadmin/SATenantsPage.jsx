@@ -5,7 +5,7 @@ import {
     Building2, Search, Plus, Edit3, Ban, MoreVertical, X,
     CheckCircle, EyeIcon, ArrowUpRight, Trash2, LogIn,
     ChevronDown, Filter, RefreshCw, MapPin, Users, Home,
-    Crown, Clock, AlertTriangle, XCircle, Layers, Calendar, Package
+    Crown, Clock, AlertTriangle, XCircle, Layers, Calendar, Package, KeyRound, Eye, EyeOff
 } from 'lucide-react';
 import CustomDropdown from '../../components/superadmin/CustomDropdown';
 import { exportToExcel } from '../../utils/exportUtils';
@@ -600,6 +600,8 @@ export default function SATenantsPage() {
     const [planModalData, setPlanModalData] = useState(null);
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState(null);
+    const [changePasswordModal, setChangePasswordModal] = useState(null);
+    const [impersonateModal, setImpersonateModal] = useState(null); // { tenant }
     const [stats, setStats] = useState(null);
     const [availablePlans, setAvailablePlans] = useState([]);
     const [page, setPage] = useState(1);
@@ -686,7 +688,7 @@ export default function SATenantsPage() {
                 page,
                 limit: 10
             };
-            const response = await api.get('/salons', { params });
+            const response = await api.get('/salons', { params, skipToast: true });
             const data = response.data.data;
             if (data && data.results) {
                 setTenants(data.results);
@@ -809,10 +811,10 @@ export default function SATenantsPage() {
             if (modal.mode === 'create') {
                 // Ensure new salons are active
                 const payload = { ...form, status: 'active' };
-                await api.post('/salons', payload);
+                await api.post('/salons', payload, { skipToast: true });
                 showToast(`Salon "${form.name}" created!`);
             } else {
-                await api.put(`/salons/${modal.tenant._id}`, form);
+                await api.put(`/salons/${modal.tenant._id}`, form, { skipToast: true });
                 showToast(`"${form.name}" updated!`);
             }
             await fetchTenants();
@@ -834,7 +836,7 @@ export default function SATenantsPage() {
     const handleApprove = async (tenant) => {
         if (!window.confirm(`Approve and activate "${tenant.name}"? This will allow the owner to log in.`)) return;
         try {
-            await api.put(`/salons/${tenant._id}`, { status: 'active' });
+            await api.put(`/salons/${tenant._id}`, { status: 'active' }, { skipToast: true });
             showToast(`Salon "${tenant.name}" is now Active!`);
             fetchTenants();
             fetchStats();
@@ -854,7 +856,7 @@ export default function SATenantsPage() {
         if (isSuspended) {
             if (!window.confirm(`Reactivate "${tenant.name}"? This will send a notification email.`)) return;
             try {
-                await api.put(`/salons/${tenant._id}`, { status: 'active' });
+                await api.put(`/salons/${tenant._id}`, { status: 'active' }, { skipToast: true });
                 showToast(`Salon "${tenant.name}" is now Active!`);
                 fetchTenants();
                 fetchStats();
@@ -875,7 +877,7 @@ export default function SATenantsPage() {
             : { status: 'suspended', suspensionReason: reason };
 
         try {
-            await api.put(`/salons/${tenant._id}`, payload);
+            await api.put(`/salons/${tenant._id}`, payload, { skipToast: true });
             showToast(`Salon "${tenant.name}" has been ${isReject ? 'Rejected' : 'Suspended'}.`);
             setStatusModal(null);
             fetchTenants();
@@ -890,7 +892,7 @@ export default function SATenantsPage() {
 
     const handleQuickPlanUpdate = async (tenantId, newPlan) => {
         try {
-            await api.put(`/salons/${tenantId}`, { subscriptionPlan: newPlan });
+            await api.put(`/salons/${tenantId}`, { subscriptionPlan: newPlan }, { skipToast: true });
             showToast(`Plan upgraded to ${newPlan.toUpperCase()}!`);
             fetchTenants();
             setModal(null);
@@ -901,10 +903,57 @@ export default function SATenantsPage() {
     };
 
 
+    const handleImpersonate = async (tenant) => {
+        setSaving(true);
+        try {
+            const res = await api.post(`/salons/${tenant._id}/impersonate`, null, { skipToast: true });
+            const { accessToken, user: adminUser } = res.data.data;
+
+            // Save current superadmin session so we can return
+            const saToken = localStorage.getItem('token');
+            const saUser = localStorage.getItem('auth_user_superadmin');
+            localStorage.setItem('sa_backup_token', saToken);
+            localStorage.setItem('sa_backup_user', saUser);
+            localStorage.setItem('impersonating_salon', JSON.stringify({ id: tenant._id, name: tenant.name }));
+
+            // Set admin session
+            localStorage.setItem('auth_token_admin', accessToken);
+            localStorage.setItem('auth_user_admin', JSON.stringify(adminUser));
+            localStorage.setItem('active_auth_role', 'admin');
+            localStorage.setItem('token', accessToken);
+
+            setImpersonateModal(null);
+            showToast(`Logged in as ${tenant.name} admin!`);
+
+            // Navigate to admin panel
+            setTimeout(() => { window.location.href = '/admin'; }, 500);
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Failed to impersonate.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleChangePassword = async (tenant, newPassword, sendEmailNotif) => {
+        setSaving(true);
+        try {
+            const res = await api.post(`/salons/${tenant._id}/change-password`, {
+                newPassword,
+                sendEmail: sendEmailNotif
+            }, { skipToast: true });
+            showToast(res.data.message || 'Password changed successfully!');
+            setChangePasswordModal(null);
+        } catch (error) {
+            showToast(error.response?.data?.message || 'Failed to change password.', 'error');
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const handleDelete = async (tenant) => {
         if (!confirm(`Permanently delete "${tenant.name}"? This cannot be undone.`)) return;
         try {
-            await api.delete(`/salons/${tenant._id}`);
+            await api.delete(`/salons/${tenant._id}`, { skipToast: true });
             showToast(`Salon deleted.`, 'error');
             fetchTenants();
         } catch (error) {
@@ -917,7 +966,7 @@ export default function SATenantsPage() {
         if (!confirm(`This will reset the password of "${tenant.name}" owner to a random 6-digit password and send them an email. Continue?`)) return;
         
         try {
-            const res = await api.post(`/salons/${tenant._id}/resend-credentials`);
+            const res = await api.post(`/salons/${tenant._id}/resend-credentials`, null, { skipToast: true });
             showToast(res.data.message);
         } catch (error) {
             console.error('Error resending credentials:', error);
@@ -925,9 +974,7 @@ export default function SATenantsPage() {
         }
     };
 
-    const handleImpersonate = (tenant) => {
-        showToast(`Impersonating "${tenant.name}" — feature logs audit trail.`, 'info');
-    };
+
 
     const toggleExpand = (e, id) => {
         e.stopPropagation();
@@ -939,7 +986,7 @@ export default function SATenantsPage() {
     const handleSalonToggle = async (salonId, currentVal) => {
         try {
             const newVal = !currentVal;
-            await api.put(`/salons/${salonId}`, { showServicePrice: newVal });
+            await api.put(`/salons/${salonId}`, { showServicePrice: newVal }, { skipToast: true });
             setTenants(prev => prev.map(t => t._id === salonId ? { ...t, showServicePrice: newVal } : t));
             showToast(`Global price visibility updated for salon.`);
         } catch (err) {
@@ -950,7 +997,7 @@ export default function SATenantsPage() {
     const handleOutletToggle = async (salonId, outletId, currentVal) => {
         try {
             const newVal = !currentVal;
-            await api.put(`/outlets/${outletId}`, { showServicePrice: newVal });
+            await api.put(`/outlets/${outletId}`, { showServicePrice: newVal }, { skipToast: true });
             setTenants(prev => prev.map(t => {
                 if (t._id === salonId) {
                     return {
@@ -1252,6 +1299,24 @@ export default function SATenantsPage() {
                                                             </button>
                                                         )}
 
+                                                        {/* Login as Admin (Impersonate) */}
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setImpersonateModal({ tenant: t }); }}
+                                                            className="action-btn-emerald p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 transition-all"
+                                                            title="Login as Admin"
+                                                        >
+                                                            <LogIn className="w-4 h-4" />
+                                                        </button>
+
+                                                        {/* Change Password */}
+                                                        <button 
+                                                            onClick={(e) => { e.stopPropagation(); setChangePasswordModal({ tenant: t }); }}
+                                                            className="action-btn-primary p-2 rounded-lg bg-surface border border-border text-text-muted hover:text-[#B4912B] hover:border-[#B4912B]/30 transition-all"
+                                                            title="Change Admin Password"
+                                                        >
+                                                            <KeyRound className="w-4 h-4" />
+                                                        </button>
+
                                                         {/* Delete */}
                                                         <button 
                                                             onClick={(e) => { e.stopPropagation(); handleDelete(t); }}
@@ -1395,6 +1460,228 @@ export default function SATenantsPage() {
                     saving={saving}
                 />
             )}
+
+            {/* Impersonate Confirmation Modal */}
+            {impersonateModal && (
+                <ImpersonateConfirmModal
+                    tenant={impersonateModal.tenant}
+                    onClose={() => setImpersonateModal(null)}
+                    onConfirm={handleImpersonate}
+                    saving={saving}
+                />
+            )}
+
+            {/* Change Password Modal */}
+            {changePasswordModal && (
+                <ChangePasswordModal
+                    tenant={changePasswordModal.tenant}
+                    onClose={() => setChangePasswordModal(null)}
+                    onConfirm={handleChangePassword}
+                    saving={saving}
+                />
+            )}
+        </div>
+    );
+}
+
+/* ─── Change Password Modal ─────────────────────────────────────────────── */
+function ChangePasswordModal({ tenant, onClose, onConfirm, saving }) {
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPass, setShowPass] = useState(false);
+    const [sendEmail, setSendEmail] = useState(true);
+    const [error, setError] = useState('');
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        setError('');
+        if (newPassword.length < 6) {
+            setError('Password must be at least 6 characters.');
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+        onConfirm(tenant, newPassword, sendEmail);
+    };
+
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div
+                className="relative bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl border border-border w-full max-w-md p-6 space-y-5"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-center">
+                            <KeyRound className="w-5 h-5 text-[#B4912B]" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-black text-text">Change Password</h3>
+                            <p className="text-[11px] text-text-muted font-medium">{tenant.name} — {tenant.email}</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface transition-all text-text-muted hover:text-text">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* New Password */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">New Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPass ? 'text' : 'password'}
+                                value={newPassword}
+                                onChange={e => setNewPassword(e.target.value)}
+                                required
+                                minLength={6}
+                                placeholder="Min. 6 characters"
+                                className="w-full px-4 py-3 pr-10 rounded-xl border border-border bg-surface text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[#B4912B]/20 focus:border-[#B4912B] transition-all"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPass(v => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                            >
+                                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-text-muted">Confirm Password</label>
+                        <div className="relative">
+                            <input
+                                type={showPass ? 'text' : 'password'}
+                                value={confirmPassword}
+                                onChange={e => setConfirmPassword(e.target.value)}
+                                required
+                                placeholder="Re-enter password"
+                                className="w-full px-4 py-3 pr-10 rounded-xl border border-border bg-surface text-sm text-text placeholder-text-muted focus:outline-none focus:ring-2 focus:ring-[#B4912B]/20 focus:border-[#B4912B] transition-all"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPass(v => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text transition-colors"
+                            >
+                                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Error */}
+                    {error && (
+                        <p className="text-xs font-bold text-red-500 bg-red-50 px-3 py-2 rounded-lg border border-red-100">{error}</p>
+                    )}
+
+                    {/* Send Email Toggle */}
+                    <label className="flex items-center gap-3 p-3 rounded-xl border border-border bg-surface cursor-pointer hover:border-[#B4912B]/30 transition-all">
+                        <input
+                            type="checkbox"
+                            checked={sendEmail}
+                            onChange={e => setSendEmail(e.target.checked)}
+                            className="w-4 h-4 rounded accent-[#B4912B]"
+                        />
+                        <div>
+                            <p className="text-xs font-bold text-text">Notify admin via email</p>
+                            <p className="text-[10px] text-text-muted">Send new credentials to {tenant.email}</p>
+                        </div>
+                    </label>
+
+                    {/* Actions */}
+                    <div className="flex gap-3 pt-1">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="flex-1 px-4 py-3 rounded-xl border border-border bg-surface text-sm font-bold text-text-secondary hover:border-[#B4912B]/30 hover:text-text transition-all"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="flex-1 px-4 py-3 rounded-xl bg-[#B4912B] text-white text-sm font-black hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-[#B4912B]/20 disabled:opacity-50"
+                        >
+                            {saving ? 'Saving...' : 'Change Password'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+/* ─── Impersonate Confirm Modal ──────────────────────────────────────────── */
+function ImpersonateConfirmModal({ tenant, onClose, onConfirm, saving }) {
+    return (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <div
+                className="relative bg-white dark:bg-[#1a1a1a] rounded-2xl shadow-2xl border border-border w-full max-w-md p-6 space-y-5"
+                onClick={e => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center">
+                            <LogIn className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-black text-text">Login as Admin</h3>
+                            <p className="text-[11px] text-text-muted font-medium">Impersonate salon account</p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-surface transition-all text-text-muted hover:text-text">
+                        <X className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* Salon Info */}
+                <div className="p-4 rounded-xl bg-surface border border-border space-y-2">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-center text-sm font-black text-[#B4912B]">
+                            {tenant.name[0].toUpperCase()}
+                        </div>
+                        <div>
+                            <p className="text-sm font-black text-text">{tenant.name}</p>
+                            <p className="text-[11px] text-text-muted">{tenant.email}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Warning */}
+                <div className="flex items-start gap-2.5 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                    <p className="text-[11px] text-amber-700 font-medium leading-relaxed">
+                        You will be logged in as this salon's admin. Your SuperAdmin session will be saved — you can return anytime by clearing the session.
+                    </p>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="flex-1 px-4 py-3 rounded-xl border border-border bg-surface text-sm font-bold text-text-secondary hover:border-[#B4912B]/30 hover:text-text transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => onConfirm(tenant)}
+                        disabled={saving}
+                        className="flex-1 px-4 py-3 rounded-xl bg-emerald-600 text-white text-sm font-black hover:bg-emerald-700 active:scale-95 transition-all shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                        <LogIn className="w-4 h-4" />
+                        {saving ? 'Logging in...' : 'Login as Admin'}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

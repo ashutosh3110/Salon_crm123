@@ -307,3 +307,24 @@ exports.updatePassword = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
+
+exports.checkEmail = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ success: false, message: 'Email is required' });
+        }
+        
+        const { checkGlobalEmailUnique } = require('../Utils/emailValidation');
+        const isUnique = await checkGlobalEmailUnique(email);
+        
+        res.json({
+            success: true,
+            exists: !isUnique,
+            message: isUnique ? 'Email is available' : 'This email address is already registered on the platform. Please use a different email address.'
+        });
+    } catch (err) {
+        console.error('Check email error:', err);
+        res.status(500).json({ success: false, message: 'Server error' });
+    }
+};

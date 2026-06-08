@@ -8,7 +8,7 @@ import {
     LayoutDashboard, Building2, Receipt, Settings,
     LogOut, ChevronLeft, ChevronRight, X,
     BarChart3, HeadphonesIcon, PackageOpen, FileText, MessageSquare, Layout, Smartphone,
-    MoreVertical, ChevronsLeft, ChevronsRight
+    MoreVertical, ChevronsLeft, ChevronsRight, Database
 } from 'lucide-react';
 
 const menuItems = [
@@ -69,6 +69,12 @@ const menuItems = [
         label: 'Settings',
         icon: Settings,
         path: '/superadmin/settings',
+        badge: null,
+    },
+    {
+        label: 'Database Backup',
+        icon: Database,
+        path: '/superadmin/backup',
         badge: null,
     },
     {
