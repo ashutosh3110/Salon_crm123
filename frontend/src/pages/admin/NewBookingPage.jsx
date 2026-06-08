@@ -1114,12 +1114,30 @@ export default function NewBookingPage() {
                                             <span>{priceCalculation.isInclusive ? '' : '+ '}₹{priceCalculation.sgst}</span>
                                         </div>
 
-                                        <div className="pt-3 border-t border-border flex items-end justify-between">
-                                            <div>
-                                                <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">
-                                                    Final Total ({priceCalculation.isInclusive ? 'Incl. GST' : 'Excl. GST'})
-                                                </p>
-                                                <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                        <div className="pt-3 border-t border-border space-y-3">
+                                            <div className="flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">
+                                                        Final Total ({priceCalculation.isInclusive ? 'Incl. GST' : 'Excl. GST'})
+                                                    </p>
+                                                    <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border border-border/60 space-y-2 rounded-xl">
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                                    <span>Total Amount</span>
+                                                    <span className="font-mono">₹{priceCalculation.total}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#B8860B] font-bold">
+                                                    <span>Advance Paid</span>
+                                                    <span className="font-mono">₹{Number(advancePayment) || 0}</span>
+                                                </div>
+                                                <div className="h-[1px] bg-border/40 my-1" />
+                                                <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
+                                                    <span>Remaining Payment</span>
+                                                    <span className="font-mono text-sm">₹{Math.max(0, priceCalculation.total - (Number(advancePayment) || 0))}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
