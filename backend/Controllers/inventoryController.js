@@ -22,7 +22,7 @@ exports.updateStock = async (req, res) => {
         }
 
         const previousStock = product.stock || 0;
-        
+
         // Ensure quantity is positive
         const qty = Math.abs(Number(quantity));
 
@@ -47,7 +47,7 @@ exports.updateStock = async (req, res) => {
                 newOutletStock -= qty;
             }
             product.stockByOutlet.set(outletId.toString(), newOutletStock);
-            
+
             // Ensure outlet is in outletIds array
             if (!product.outletIds.includes(outletId)) {
                 product.outletIds.push(outletId);
@@ -74,7 +74,7 @@ exports.updateStock = async (req, res) => {
         // FINANCE INTEGRATION: If this is a purchase, create a supplier invoice
         if (type === 'IN' && reason === 'Purchase' && req.body.supplierId && req.body.purchasePrice) {
             const totalAmount = qty * Number(req.body.purchasePrice);
-            
+
             const invoice = await SupplierInvoice.create([{
                 salonId,
                 supplierId: req.body.supplierId,
@@ -187,16 +187,18 @@ exports.getLowStockAlerts = async (req, res) => {
 exports.getInventorySummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        
+
         const stats = await Product.aggregate([
             { $match: { salonId: new mongoose.Types.ObjectId(salonId) } },
-            { $group: {
-                _id: null,
-                totalProducts: { $sum: 1 },
-                totalStockValue: { $sum: { $multiply: ["$stock", "$costPrice"] } },
-                potentialRevenue: { $sum: { $multiply: ["$stock", "$sellingPrice"] } },
-                outOfStock: { $sum: { $cond: [{ $eq: ["$stock", 0] }, 1, 0] } }
-            }}
+            {
+                $group: {
+                    _id: null,
+                    totalProducts: { $sum: 1 },
+                    totalStockValue: { $sum: { $multiply: ["$stock", "$costPrice"] } },
+                    potentialRevenue: { $sum: { $multiply: ["$stock", "$sellingPrice"] } },
+                    outOfStock: { $sum: { $cond: [{ $eq: ["$stock", 0] }, 1, 0] } }
+                }
+            }
         ]);
 
         const summary = stats[0] || { totalProducts: 0, totalStockValue: 0, potentialRevenue: 0, outOfStock: 0 };

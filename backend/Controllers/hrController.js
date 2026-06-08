@@ -47,11 +47,11 @@ exports.markAttendance = async (req, res) => {
         if (bulk && Array.isArray(bulk)) {
             const operations = bulk.map(item => ({
                 updateOne: {
-                    filter: { staffId: item.staffId, date: new Date(date).setHours(0,0,0,0) },
-                    update: { 
-                        staffId: item.staffId, 
-                        salonId, 
-                        date: new Date(date).setHours(0,0,0,0), 
+                    filter: { staffId: item.staffId, date: new Date(date).setHours(0, 0, 0, 0) },
+                    update: {
+                        staffId: item.staffId,
+                        salonId,
+                        date: new Date(date).setHours(0, 0, 0, 0),
                         status: item.status || 'present',
                         checkIn: item.checkIn,
                         checkOut: item.checkOut,
@@ -66,14 +66,14 @@ exports.markAttendance = async (req, res) => {
 
         // Single upsert
         const attendance = await Attendance.findOneAndUpdate(
-            { staffId, date: new Date(date).setHours(0,0,0,0) },
-            { 
-                staffId, 
-                salonId, 
-                date: new Date(date).setHours(0,0,0,0), 
-                status, 
-                checkIn, 
-                checkOut, 
+            { staffId, date: new Date(date).setHours(0, 0, 0, 0) },
+            {
+                staffId,
+                salonId,
+                date: new Date(date).setHours(0, 0, 0, 0),
+                status,
+                checkIn,
+                checkOut,
                 notes,
                 performedBy: req.user._id
             },
@@ -97,14 +97,14 @@ exports.getAttendanceSummary = async (req, res) => {
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0, 23, 59, 59);
 
-        let query = { 
+        let query = {
             salonId,
             date: { $gte: startDate, $lte: endDate }
         };
         if (staffId) query.staffId = staffId;
 
         const logs = await Attendance.find(query);
-        
+
         // Group by staffId
         const summary = {};
         logs.forEach(log => {
@@ -179,13 +179,13 @@ exports.getAttendance = async (req, res) => {
 
         let query = { salonId };
         if (staffId) query.staffId = staffId;
-        
+
         if (date) {
-            query.date = new Date(date).setHours(0,0,0,0);
+            query.date = new Date(date).setHours(0, 0, 0, 0);
         } else if (startDate && endDate) {
-            query.date = { 
-                $gte: new Date(startDate).setHours(0,0,0,0), 
-                $lte: new Date(endDate).setHours(23,59,59,999) 
+            query.date = {
+                $gte: new Date(startDate).setHours(0, 0, 0, 0),
+                $lte: new Date(endDate).setHours(23, 59, 59, 999)
             };
         }
 
@@ -201,11 +201,11 @@ exports.getAttendance = async (req, res) => {
 // @access  Private/Admin
 exports.generatePayroll = async (req, res) => {
     try {
-        const { 
-            month, year, staffId, 
+        const {
+            month, year, staffId,
             baseSalary, workingDays, presentDays, leaveDays,
-            incentive, overtime, pf, tax, otherDeductions, 
-            notes, status 
+            incentive, overtime, pf, tax, otherDeductions,
+            notes, status
         } = req.body;
         const salonId = req.user.salonId;
 
@@ -233,22 +233,22 @@ exports.generatePayroll = async (req, res) => {
             const perDaySalary = baseSalary / 30;
             const earnedSalary = perDaySalary * (presentDays || 0);
             const netSalary = Math.round(
-                earnedSalary + 
-                (Number(incentive) || 0) + 
-                (Number(overtime) || 0) - 
-                (Number(pf) || 0) - 
-                (Number(tax) || 0) - 
+                earnedSalary +
+                (Number(incentive) || 0) +
+                (Number(overtime) || 0) -
+                (Number(pf) || 0) -
+                (Number(tax) || 0) -
                 (Number(otherDeductions) || 0) -
                 advanceSalarySum
             );
 
             const payroll = await Payroll.findOneAndUpdate(
                 { staffId, month, year },
-                { 
-                    staffId, 
-                    salonId, 
-                    month, 
-                    year, 
+                {
+                    staffId,
+                    salonId,
+                    month,
+                    year,
                     baseSalary,
                     workingDays: 30,
                     presentDays: presentDays || 0,
@@ -287,7 +287,7 @@ exports.generatePayroll = async (req, res) => {
 
         for (const staff of staffList) {
             const salary = staff.hrProfile?.baseSalary || 0;
-            
+
             const attendance = await Attendance.find({
                 staffId: staff._id,
                 date: { $gte: startDate, $lte: endDate }
@@ -296,7 +296,7 @@ exports.generatePayroll = async (req, res) => {
             const presentCount = attendance.filter(a => a.status === 'present' || a.status === 'late').length;
             const halfDayCount = attendance.filter(a => a.status === 'half-day').length;
             const leaveCount = attendance.filter(a => a.status === 'leave').length;
-            
+
             const effectivePresent = presentCount + (halfDayCount * 0.5);
             const perDay = salary / 30;
             const earned = Math.round(effectivePresent * perDay);
@@ -352,11 +352,11 @@ exports.generatePayroll = async (req, res) => {
 
             const payroll = await Payroll.findOneAndUpdate(
                 { staffId: staff._id, month, year },
-                { 
-                    staffId: staff._id, 
-                    salonId, 
-                    month, 
-                    year, 
+                {
+                    staffId: staff._id,
+                    salonId,
+                    month,
+                    year,
                     baseSalary: salary,
                     workingDays: 30,
                     presentDays: effectivePresent,
@@ -394,12 +394,12 @@ exports.updatePayrollStatus = async (req, res) => {
     try {
         const { status, paymentMethod } = req.body;
         const payroll = await Payroll.findByIdAndUpdate(
-            req.params.id, 
-            { 
-                status, 
-                paymentMethod, 
-                paymentDate: status === 'paid' ? new Date() : undefined 
-            }, 
+            req.params.id,
+            {
+                status,
+                paymentMethod,
+                paymentDate: status === 'paid' ? new Date() : undefined
+            },
             { new: true }
         );
         res.status(200).json({ success: true, data: payroll });
@@ -452,8 +452,8 @@ exports.updateLeaveStatus = async (req, res) => {
     try {
         const { status, adminNotes } = req.body;
         const request = await LeaveRequest.findByIdAndUpdate(
-            req.params.id, 
-            { status, adminNotes, approvedBy: req.user._id }, 
+            req.params.id,
+            { status, adminNotes, approvedBy: req.user._id },
             { new: true }
         );
         res.status(200).json({ success: true, data: request });
@@ -471,7 +471,7 @@ exports.getOverallPerformance = async (req, res) => {
         const salonId = req.user.salonId;
 
         const staff = await Staff.find({ salonId, status: 'active' });
-        
+
         const performanceData = await Promise.all(staff.map(async (s) => {
             const query = {
                 salonId,
@@ -484,7 +484,7 @@ exports.getOverallPerformance = async (req, res) => {
 
             const bookings = await Booking.find(query);
             const revenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-            
+
             // Repeat customers count (simplified logic)
             const customerIds = bookings.map(b => b.clientId?.toString()).filter(id => id);
             const uniqueCustomers = new Set(customerIds);
@@ -519,8 +519,8 @@ exports.getOverallPerformance = async (req, res) => {
             };
         }));
 
-        res.status(200).json({ 
-            success: true, 
+        res.status(200).json({
+            success: true,
             data: {
                 period: { startDate, endDate },
                 staff: performanceData
@@ -624,7 +624,7 @@ exports.sendPayrollWhatsApp = async (req, res) => {
         }
 
         const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
-        
+
         // Deduct 1 credit from the salon
         const canSend = await checkAndDeductWhatsAppCredit(payroll.salonId);
         if (!canSend) {

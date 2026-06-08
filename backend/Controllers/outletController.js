@@ -15,9 +15,9 @@ exports.getOutlets = async (req, res) => {
     try {
         // Prioritize salonId from query (for public/customer app discovery)
         let salonId = req.query.salonId || (req.user && req.user.salonId);
-        
+
         let matchStage = { isActive: true }; // Default to showing only active outlets for public
-        
+
         if (req.user && req.user.role === 'superadmin' && !req.query.salonId) {
             matchStage = {}; // Superadmin sees everything unless filtering
         } else if (salonId && mongoose.Types.ObjectId.isValid(salonId)) {
@@ -48,7 +48,7 @@ exports.getOutlets = async (req, res) => {
             },
             {
                 $addFields: {
-                    staffCount: { 
+                    staffCount: {
                         $size: {
                             $filter: {
                                 input: "$staff",
@@ -78,7 +78,7 @@ exports.getOutlet = async (req, res) => {
 
         // Get related data
         const staff = await Staff.find({ outletId: outlet._id, role: { $ne: 'customer' } });
-        
+
         // Services either mapped to this outlet or global (no specific outletIds or includes this one)
         const services = await Service.find({
             salonId: req.user.salonId,
@@ -147,9 +147,9 @@ exports.createOutlet = async (req, res) => {
         const outletCount = await Outlet.countDocuments({ salonId: req.user.salonId });
 
         if (salon.limits?.outletLimit > 0 && outletCount >= salon.limits.outletLimit) {
-            return res.status(400).json({ 
-                success: false, 
-                message: `Plan Limit Reached: Your ${salon.subscriptionPlan} plan only allows up to ${salon.limits.outletLimit} outlets.` 
+            return res.status(400).json({
+                success: false,
+                message: `Plan Limit Reached: Your ${salon.subscriptionPlan} plan only allows up to ${salon.limits.outletLimit} outlets.`
             });
         }
 
@@ -214,7 +214,7 @@ exports.updateOutlet = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             query.salonId = req.user.salonId;
         }
-        
+
         let outlet = await Outlet.findOne(query);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
 
@@ -381,8 +381,8 @@ const handleOutletLikeToggle = async (outletId, customerId) => {
         console.error('Socket broadcast failed:', socketError);
     }
 
-    return { 
-        likes: outlet.likes, 
+    return {
+        likes: outlet.likes,
         isLiked: index === -1,
         likedBy: outlet.likedBy
     };
@@ -392,7 +392,7 @@ exports.toggleLike = async (req, res) => {
     try {
         const result = await handleOutletLikeToggle(req.params.id, req.user._id);
         if (!result) return res.status(404).json({ success: false, message: 'Outlet not found' });
-        
+
         res.status(200).json({ success: true, ...result });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

@@ -95,12 +95,12 @@ exports.getSalonDashboard = async (req, res) => {
         let chartData = [];
         if (range === 'today') {
             const hourlyRevenue = await Booking.aggregate([
-                { 
-                    $match: { 
-                        salonId, 
+                {
+                    $match: {
+                        salonId,
                         createdAt: { $gte: rangeAgo, $lte: rangeEnd },
                         status: 'completed'
-                    } 
+                    }
                 },
                 {
                     $group: {
@@ -123,12 +123,12 @@ exports.getSalonDashboard = async (req, res) => {
             }
         } else {
             const revenueData = await Booking.aggregate([
-                { 
-                    $match: { 
-                        salonId, 
+                {
+                    $match: {
+                        salonId,
                         createdAt: { $gte: rangeAgo, $lte: rangeEnd },
                         status: 'completed'
-                    } 
+                    }
                 },
                 {
                     $group: {
@@ -145,14 +145,14 @@ exports.getSalonDashboard = async (req, res) => {
                 const date = new Date(rangeAgo);
                 date.setDate(rangeAgo.getDate() + i);
                 const dateString = date.toISOString().split('T')[0];
-                
+
                 let label = '';
                 if (range === 'month' || range === 'custom') {
                     label = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
                 } else {
                     label = days[date.getDay()];
                 }
-                
+
                 const match = revenueData.find(d => d._id === dateString);
                 chartData.push({
                     name: label,
@@ -424,7 +424,7 @@ exports.getSuperAdminAnalytics = async (req, res) => {
     try {
         const Payment = require('../Models/Payment');
         const Salon = require('../Models/Salon');
-        
+
         const { startDate, endDate } = req.query;
         let dateQuery = {};
         const hasDateFilter = !!(startDate || endDate);

@@ -17,10 +17,10 @@ exports.protect = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // 1. Check SuperAdmin (User)
         let account = await User.findById(decoded.id);
-        
+
         // 2. Check Staff (Salon Employees)
         if (!account) {
             const Staff = require('../Models/Staff');
@@ -94,7 +94,7 @@ exports.protect = async (req, res, next) => {
 exports.authorize = (...requirements) => {
     return async (req, res, next) => {
         const user = req.user;
-        
+
         // Always allow superadmin and salon owner (admin) to access their routes
         if (['superadmin', 'admin'].includes(user.role)) {
             return next();
@@ -113,7 +113,7 @@ exports.authorize = (...requirements) => {
             // Check for permission (prefixed with p:)
             if (reqmt.startsWith('p:')) {
                 const permissionNeeded = reqmt.split(':')[1];
-                
+
                 // Fetch permissions if not already attached to req.user
                 if (!user.permissions && user.roleId) {
                     try {
@@ -128,7 +128,7 @@ exports.authorize = (...requirements) => {
                 }
 
                 if (user.permissions && (
-                    user.permissions.includes(permissionNeeded) || 
+                    user.permissions.includes(permissionNeeded) ||
                     user.permissions.includes('*') ||
                     user.permissions.some(p => p.startsWith(permissionNeeded + '_'))
                 )) {
@@ -144,7 +144,7 @@ exports.authorize = (...requirements) => {
                 message: `User role ${user.role} is not authorized for this action`
             });
         }
-        
+
         next();
     };
 };
