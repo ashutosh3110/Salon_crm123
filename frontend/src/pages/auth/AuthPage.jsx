@@ -87,7 +87,7 @@ export default function AuthPage() {
         setLoading(true);
         try {
             const result = await login(signinForm.email, signinForm.password);
-            
+
             // SECURITY: Block SuperAdmin from this portal
             if (result.user.role === 'superadmin') {
                 setError('Restricted: Superadmins must use the master portal.');
@@ -125,7 +125,7 @@ export default function AuthPage() {
         try {
             const params = new URLSearchParams(location.search);
             const planParam = params.get('plan');
-            
+
             let currentPlan = selectedPlan;
 
             await register({
@@ -182,7 +182,7 @@ export default function AuthPage() {
                         style={{ background: theme === 'dark' ? 'rgba(15,15,15,0.5)' : 'rgba(255,255,255,0.5)', borderColor: 'var(--wapixo-border)' }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-[#B4912B]/5 via-transparent to-[#B4912B]/5" />
-                        
+
                         <div className="relative z-10 space-y-8">
                             <AnimatePresence mode="wait">
                                 <motion.div
@@ -271,10 +271,10 @@ export default function AuthPage() {
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--wapixo-text-muted)' }}>Password</label>
                                                         <Link to="/forgot-password" size="sm" className="text-[9px] font-black uppercase tracking-widest hover:text-[#B4912B] transition-colors" style={{ color: 'var(--wapixo-text-muted)' }}>Recover</Link>
                                                     </div>
-                                                    <PasswordField 
-                                                        name="password" 
-                                                        value={signinForm.password} 
-                                                        onChange={handleSigninChange} 
+                                                    <PasswordField
+                                                        name="password"
+                                                        value={signinForm.password}
+                                                        onChange={handleSigninChange}
                                                         required
                                                         placeholder="••••••••"
                                                         containerClassName="border-b-2 transition-all duration-300"
@@ -370,7 +370,7 @@ export default function AuthPage() {
                                                         Your application is currently being reviewed by our Superadmin. Once approved, you will receive an onboarding email with your credentials.
                                                     </p>
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => toggleView('signin')}
                                                     className="px-12 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#B4912B]/10 active:scale-95"
                                                 >

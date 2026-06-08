@@ -107,6 +107,7 @@ exports.login = async (req, res) => {
                     email: userData.email,
                     role: roleName,
                     salonId: salonId,
+                    outletId: userData.outletId,
                     permissions: permissions,
                     status: userData.status || 'active',
                     subscriptionPlan: subscriptionPlan,

@@ -39,20 +39,20 @@ export default function ProtectedRoute({ allowedRoles, feature, permission }) {
     if (user && user.role !== 'superadmin') {
         const isSubscriptionPage = window.location.pathname.startsWith('/admin/subscription');
         const isSupportPage = window.location.pathname.startsWith('/admin/support');
-        
+
         // Multi-tier check
         const salonStatus = (salon?.status || user?.salonStatus || user?.status || 'none').toLowerCase();
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
         const planName = String(rawPlan || 'none').trim().toLowerCase();
-        
+
         // A salon is restricted if it has no plan or is explicitly inactive/suspended
         const hasNoPlan = ['none', 'undefined', 'null', '', 'pending'].includes(planName);
-        
+
         // Safety check for active status: default to active unless explicitly suspended or isActive=false
-        const salonActive = salon 
-            ? (salon.isActive !== false && salon.status !== 'suspended') 
+        const salonActive = salon
+            ? (salon.isActive !== false && salon.status !== 'suspended')
             : (user?.isActive !== false && user?.status !== 'suspended');
-        
+
         // Special statuses that bypass plan restriction
         const isTrial = salonStatus === 'trial';
         const isPending = salonStatus === 'pending';

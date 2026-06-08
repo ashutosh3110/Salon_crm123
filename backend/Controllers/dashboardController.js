@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Outlet = require('../Models/Outlet');
 const Booking = require('../Models/Booking');
 const Customer = require('../Models/Customer');
@@ -14,6 +15,13 @@ exports.getSalonDashboard = async (req, res) => {
 
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID not found in user context' });
+        }
+
+        let outletId = req.query.outletId || req.user.outletId;
+
+        // If logged-in user is staff (role is not admin/superadmin) and has an assigned outlet, force that outlet
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId;
         }
 
         // Get dynamic range
@@ -53,6 +61,11 @@ exports.getSalonDashboard = async (req, res) => {
             daysToFetch = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
         }
 
+        const queryFilter = { salonId };
+        if (outletId) {
+            queryFilter.outletId = new mongoose.Types.ObjectId(outletId);
+        }
+
         // Parallel counts for efficiency
         const [
             outletsCount,
@@ -63,17 +76,23 @@ exports.getSalonDashboard = async (req, res) => {
             salonDoc,
             bookingStatusCounts
         ] = await Promise.all([
-            Outlet.countDocuments({ salonId }),
-            Booking.countDocuments({ salonId }),
-            Customer.countDocuments({ salonId }), // Assuming customer is per salon
-            Staff.countDocuments({ salonId }),
+            Outlet.countDocuments(outletId ? { salonId, _id: outletId } : { salonId }),
+            Booking.countDocuments(queryFilter),
+            (async () => {
+                if (outletId) {
+                    const uniqueClients = await Booking.distinct('clientId', { salonId, outletId: new mongoose.Types.ObjectId(outletId) });
+                    return uniqueClients.length;
+                }
+                return await Customer.countDocuments({ salonId });
+            })(),
+            Staff.countDocuments(outletId ? { salonId, outletId: new mongoose.Types.ObjectId(outletId) } : { salonId }),
             WalletTransaction.aggregate([
-                { $match: { salonId, type: 'CREDIT' } },
+                { $match: { salonId, ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }), type: 'CREDIT' } },
                 { $group: { _id: null, total: { $sum: '$amount' } } }
             ]).then(res => res[0]?.total || 0),
             Salon.findById(salonId).select('whatsappSettings'),
             Booking.aggregate([
-                { $match: { salonId, createdAt: { $gte: rangeAgo, $lte: rangeEnd } } },
+                { $match: { salonId, ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }), createdAt: { $gte: rangeAgo, $lte: rangeEnd } } },
                 { $group: { _id: '$status', count: { $sum: 1 } } }
             ])
         ]);
@@ -98,6 +117,7 @@ exports.getSalonDashboard = async (req, res) => {
                 {
                     $match: {
                         salonId,
+                        ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }),
                         createdAt: { $gte: rangeAgo, $lte: rangeEnd },
                         status: 'completed'
                     }
@@ -126,6 +146,7 @@ exports.getSalonDashboard = async (req, res) => {
                 {
                     $match: {
                         salonId,
+                        ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }),
                         createdAt: { $gte: rangeAgo, $lte: rangeEnd },
                         status: 'completed'
                     }
@@ -168,6 +189,7 @@ exports.getSalonDashboard = async (req, res) => {
 
         const completedBookings = await Booking.find({
             salonId,
+            ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }),
             status: 'completed',
             createdAt: { $gte: sixtyDaysAgo }
         }).select('totalPrice createdAt');
@@ -208,7 +230,10 @@ exports.getSalonDashboard = async (req, res) => {
         });
 
         // Get recent activity (last 5 bookings)
-        const recentBookings = await Booking.find({ salonId })
+        const recentBookings = await Booking.find({
+            salonId,
+            ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) })
+        })
             .populate('clientId', 'name')
             .populate('serviceId', 'name')
             .sort({ createdAt: -1 })
@@ -245,7 +270,7 @@ exports.getSalonDashboard = async (req, res) => {
                     const COLORS = ['#8B1A2D', '#B4912B', '#2C3E50', '#3b82f6', '#10b981', '#f59e0b'];
                     const Service = require('../Models/Service');
                     const dist = await Booking.aggregate([
-                        { $match: { salonId, status: 'completed' } },
+                        { $match: { salonId, ...(outletId && { outletId: new mongoose.Types.ObjectId(outletId) }), status: 'completed' } },
                         { $group: { _id: '$serviceId', count: { $sum: 1 } } },
                         { $sort: { count: -1 } },
                         { $limit: 6 },
