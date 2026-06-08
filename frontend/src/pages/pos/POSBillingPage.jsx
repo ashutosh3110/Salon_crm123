@@ -520,6 +520,7 @@ export default function POSBillingPage() {
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
     const [invoiceIdToEdit, setInvoiceIdToEdit] = useState(null);
     const [editInvoiceData, setEditInvoiceData] = useState(null);
+    const loadedInvoiceIdRef = useRef(null);
 
     // ── Handle Incoming Navigation State (from Appointments or Edit Invoice) ──
     useEffect(() => {
@@ -571,6 +572,11 @@ export default function POSBillingPage() {
 
         if (location.state?.editInvoice) {
             const invoice = location.state.editInvoice;
+            if (loadedInvoiceIdRef.current === invoice._id) {
+                return;
+            }
+            loadedInvoiceIdRef.current = invoice._id;
+
             // Quick Invoices do not have bookingId or orderId
             const isQuickInvoice = !invoice.bookingId && !invoice.orderId;
             if (isQuickInvoice) {
@@ -722,6 +728,14 @@ export default function POSBillingPage() {
         return (allWallets || {})[selectedClient._id]?.balance || 0;
     }, [selectedClient, allWallets]);
 
+    const selectedBooking = useMemo(() => {
+        return appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
+    }, [appointmentId, businessBookings]);
+
+    const bookingAdvancePaid = useMemo(() => {
+        return selectedBooking ? Number(selectedBooking.advancePaid || 0) : 0;
+    }, [selectedBooking]);
+
     const isOverpaid = useMemo(() => {
         const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
         return mainPaidAmount - (totals.total - totals.redeemWallet) > 0.005;
@@ -730,9 +744,10 @@ export default function POSBillingPage() {
     // Sync payment amount to total unless manually edited by user
     useEffect(() => {
         if (!isManualPayment && payments.length === 1) {
-            setPayments([{ ...payments[0], amount: totals.total }]);
+            const remainingPay = Math.max(0, totals.total - bookingAdvancePaid);
+            setPayments([{ ...payments[0], amount: remainingPay }]);
         }
-    }, [totals.total, isManualPayment, payments.length]);
+    }, [totals.total, isManualPayment, payments.length, bookingAdvancePaid]);
 
     // Main Terminal Overpayment Warning Toast
     useEffect(() => {
@@ -1261,7 +1276,13 @@ export default function POSBillingPage() {
                     serviceGstPercent: totals.serviceGstRate,
                     productGstPercent: totals.productGstRate,
                     subtotal: totals.subtotal,
-                    payments: payments.filter(p => p.method !== 'wallet').map(p => ({ method: p.method, amount: p.amount })),
+                    payments: (() => {
+                        const finalP = payments.filter(p => p.method !== 'wallet').map(p => ({ method: p.method, amount: p.amount }));
+                        if (bookingAdvancePaid > 0) {
+                            finalP.push({ method: 'advance', amount: bookingAdvancePaid });
+                        }
+                        return finalP;
+                    })(),
                     useWalletAmount: totals.redeemWallet + walletPaymentsSum,
                     discount: totals.discount,
                     membershipDiscount: totals.membershipDiscount,
@@ -1833,7 +1854,15 @@ export default function POSBillingPage() {
 
                                             {/* Price row */}
                                             <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700/60">
-                                                <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                <div>
+                                                    <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                    {Number(b.advancePaid || 0) > 0 && (
+                                                        <div className="text-[10px] font-bold text-slate-500 mt-1 space-y-0.5">
+                                                            <div className="text-amber-600 dark:text-amber-400">Advance: ₹{b.advancePaid}</div>
+                                                            <div className="text-[#cca839] font-extrabold">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${item.isInclusiveTax
                                                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                         : 'bg-blue-50 text-blue-600 border border-blue-200'
@@ -2241,6 +2270,14 @@ export default function POSBillingPage() {
                                                     <span className="text-[11px] font-black">− ₹{totals.redeemWallet.toFixed(2)}</span>
                                                 </div>
                                             )}
+                                            {bookingAdvancePaid > 0 && (
+                                                <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                                                    <span className="text-[11px] font-semibold flex items-center gap-1">
+                                                        <Wallet className="w-3 h-3" /> Advance Paid
+                                                    </span>
+                                                    <span className="text-[11px] font-black">− ₹{bookingAdvancePaid.toFixed(2)}</span>
+                                                </div>
+                                            )}
 
                                             {/* Total discount line */}
                                             {(totals.discount + totals.membershipDiscount + totals.redeemWallet) > 0 && (
@@ -2396,15 +2433,15 @@ export default function POSBillingPage() {
                                                         <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0"><X className="w-3.5 h-3.5" /></button>
                                                     )}
                                                 </div>
-                                                {payments.length === 1 && totals.total > p.amount && (
+                                                {payments.length === 1 && (totals.total - bookingAdvancePaid) > p.amount && (
                                                     <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
                                                         <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-                                                        <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">₹{(totals.total - p.amount).toFixed(2)} will be marked as Due</span>
+                                                        <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">₹{(totals.total - bookingAdvancePaid - p.amount).toFixed(2)} will be marked as Due</span>
                                                     </div>
                                                 )}
                                             </div>
                                         ))}
-                                        {payments.reduce((s, p) => s + p.amount, 0) < totals.total && (
+                                        {payments.reduce((s, p) => s + p.amount, 0) < (totals.total - bookingAdvancePaid) && (
                                             <button onClick={addPaymentMethod} className="w-full h-8 border border-dashed border-[#cca839]/40 bg-[#cca839]/5 rounded-lg text-xs font-semibold text-[#cca839] hover:bg-[#cca839]/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1">
                                                 <Plus className="w-3 h-3" /> Split Payment
                                             </button>
@@ -2444,16 +2481,35 @@ export default function POSBillingPage() {
                                         <span className="text-[11px] font-black uppercase tracking-widest text-[#16a34a]">Grand Total</span>
                                         <span className="text-[28px] font-black leading-none text-slate-900 dark:text-white tracking-tight">₹{totals.total.toFixed(2)}</span>
                                     </div>
-                                    {totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
-                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
-                                            <span className="uppercase tracking-widest">Balance Due</span>
-                                            <span>₹{(totals.total - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                    {bookingAdvancePaid > 0 && (
+                                        <div className="flex items-center justify-between text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-2">
+                                            <span>Advance Paid</span>
+                                            <span>− ₹{bookingAdvancePaid.toFixed(2)}</span>
                                         </div>
                                     )}
-                                    {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet) > 0.005 && (
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-1.5">
+                                        <span>Paid Now</span>
+                                        <span>− ₹{payments.reduce((s, p) => s + p.amount, 0).toFixed(2)}</span>
+                                    </div>
+                                    {(() => {
+                                        const remainingBalance = Math.max(0, totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0));
+                                        return (
+                                            <div className="flex justify-between text-xs font-black text-emerald-600 dark:text-emerald-400 mt-2.5 bg-emerald-50 dark:bg-emerald-500/5 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                                                <span className="uppercase tracking-widest">Remaining Payment</span>
+                                                <span>₹{remainingBalance.toFixed(2)}</span>
+                                            </div>
+                                        );
+                                    })()}
+                                    {totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Balance Due</span>
+                                            <span>₹{(totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - bookingAdvancePaid - totals.redeemWallet) > 0.005 && (
                                         <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
                                             <span className="uppercase tracking-widest">Overpaid</span>
-                                            <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - totals.redeemWallet)).toFixed(2)}</span>
+                                            <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - bookingAdvancePaid - totals.redeemWallet)).toFixed(2)}</span>
                                         </div>
                                     )}
                                 </div>
