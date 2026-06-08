@@ -9,9 +9,7 @@ const { spendWallet } = require('../Utils/walletHelper');
 const Salon = require('../Models/Salon');
 const Service = require('../Models/Service');
 
-// @desc    Checkout and generate invoice
-// @route   POST /api/pos/checkout
-// @access  Private
+
 exports.checkout = async (req, res) => {
     try {
         const {
@@ -147,7 +145,7 @@ exports.checkout = async (req, res) => {
         // 3. Calculate loyalty points (configured per item or fallback to default settings rate)
         let earnedPoints = 0;
         let hasItemPoints = false;
-        
+
         for (const item of items) {
             let itemPoints = 0;
             if (item.type === 'service' && item.itemId) {
@@ -194,8 +192,8 @@ exports.checkout = async (req, res) => {
             cgst: roundTo2(cgst),
             sgst: roundTo2(sgst),
             total: roundTo2(total),
-            payments: payments.map(p => ({ 
-                ...p, 
+            payments: payments.map(p => ({
+                ...p,
                 amount: roundTo2(p.amount),
                 date: createdAt ? new Date(createdAt) : new Date()
             })),
@@ -230,7 +228,7 @@ exports.checkout = async (req, res) => {
         const customer = await Customer.findById(clientId);
         if (customer) {
             customer.loyaltyPoints = (customer.loyaltyPoints || 0) - useLoyaltyPoints + earnedPoints;
-            
+
             // Use wallet helper to spend balance if applicable
             if (useWalletAmount > 0) {
                 await spendWallet(clientId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`, createdAt);
@@ -238,10 +236,10 @@ exports.checkout = async (req, res) => {
 
             const totalReceived = (Number(useWalletAmount) || 0) + (Number(paidAmount) || 0);
             const collectedPrev = Number(previousDueCollected) || 0;
-            
+
             // New due amount = (Existing Due + Current Bill) - (All money received today)
             customer.dueAmount = Math.max(0, (customer.dueAmount || 0) + total - totalReceived);
-            
+
             customer.totalVisits = (customer.totalVisits || 0) + 1;
             customer.totalSpend = (customer.totalSpend || 0) + total;
             customer.lastVisit = createdAt ? new Date(createdAt) : new Date();
@@ -333,7 +331,7 @@ exports.getDashboard = async (req, res) => {
 
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
-        
+
         let startOfDay, endOfDay;
 
         if (range === 'yesterday') {
@@ -442,7 +440,7 @@ exports.sendInvoiceWhatsApp = async (req, res) => {
             console.warn(`[POS-Controller] sendInvoiceWhatsApp: No PDF file uploaded for Invoice: ${invoice.invoiceNumber}`);
             return res.status(400).json({ success: false, message: 'No PDF file provided' });
         }
-        
+
         console.log(`[POS-Controller] sendInvoiceWhatsApp: File received. Name: ${req.file.originalname}, Size: ${req.file.size} bytes, Path: ${req.file.path}`);
 
         const protocol = req.protocol;
@@ -588,7 +586,7 @@ exports.updateInvoice = async (req, res) => {
         invoice.previousDueCollected = previousDueCollected !== undefined ? previousDueCollected : invoice.previousDueCollected;
         invoice.dueAmount = dueAmount !== undefined ? dueAmount : invoice.dueAmount;
         invoice.paymentStatus = paymentStatus || invoice.paymentStatus;
-        
+
         const finalSubtotal = invoice.subtotal;
         invoice.total = Math.round(Math.max(0, finalSubtotal - invoice.discount - (Number(invoice.membershipDiscount) || 0) + invoice.tax) * 100) / 100;
 

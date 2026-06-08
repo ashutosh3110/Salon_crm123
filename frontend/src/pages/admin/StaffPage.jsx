@@ -206,7 +206,7 @@ export default function StaffPage() {
             // Lock body and html
             document.body.style.setProperty('overflow', 'hidden', 'important');
             document.documentElement.style.setProperty('overflow', 'hidden', 'important');
-            
+
             // Scan and lock any active scroll containers in the DOM (excluding modal/portal elements)
             const allElements = document.querySelectorAll('*');
             allElements.forEach(el => {
@@ -222,7 +222,7 @@ export default function StaffPage() {
         } else {
             document.body.style.removeProperty('overflow');
             document.documentElement.style.removeProperty('overflow');
-            
+
             const lockedElements = document.querySelectorAll('[data-scroll-locked="true"]');
             lockedElements.forEach(el => {
                 el.style.removeProperty('overflow-y');
@@ -230,7 +230,7 @@ export default function StaffPage() {
                 el.removeAttribute('data-scroll-locked');
             });
         }
-        
+
         return () => {
             document.body.style.removeProperty('overflow');
             document.documentElement.style.removeProperty('overflow');
@@ -403,225 +403,225 @@ export default function StaffPage() {
         <div className="space-y-4 animate-reveal max-w-[1600px] mx-auto pb-8 text-left p-4 md:p-6 bg-[#f8fafc] dark:bg-[#121826] min-h-screen">
             <div className="bg-white dark:bg-slate-900 !rounded-[24px] shadow-sm border border-slate-200 dark:border-slate-800 p-6 md:p-8 !overflow-hidden">
                 {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 mt-2 mb-8">
-                <div className="text-left leading-none">
-                    <h1 className="text-3xl font-black text-text tracking-tight uppercase">OUR TEAM</h1>
-                    <p className="text-[12px] font-bold text-slate-500 mt-2.5 uppercase tracking-widest">MANAGE STAFF & PERMISSIONS</p>
-                    <div className="w-12 h-[3px] bg-[#C69A20] mt-3"></div>
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-2 mt-2 mb-8">
+                    <div className="text-left leading-none">
+                        <h1 className="text-3xl font-black text-text tracking-tight uppercase">OUR TEAM</h1>
+                        <p className="text-[12px] font-bold text-slate-500 mt-2.5 uppercase tracking-widest">MANAGE STAFF & PERMISSIONS</p>
+                        <div className="w-12 h-[3px] bg-[#C69A20] mt-3"></div>
+                    </div>
+                    <button
+                        onClick={() => {
+                            setEditing(null);
+                            setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
+                            setShowModal(true);
+                        }}
+                        className="flex items-center gap-2 !bg-[#cca839] dark:!bg-[#cca839] !text-white dark:!text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:!bg-[#b59533] dark:hover:!bg-[#b59533] transition-all shadow-sm"
+                    >
+                        <Plus className="w-4 h-4" /> ADD NEW MEMBER
+                    </button>
                 </div>
-                <button
-                    onClick={() => {
-                        setEditing(null);
-                        setForm({ name: '', email: '', phone: '', role: '', roleId: '', outletId: '', password: '', salary: '', bankName: '', accountNo: '', ifsc: '', avatar: '', stylistBio: '', stylistExperience: '', stylistSpecializations: '', availability: JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY)) });
-                        setShowModal(true);
-                    }}
-                    className="flex items-center gap-2 !bg-[#cca839] dark:!bg-[#cca839] !text-white dark:!text-white px-6 py-3.5 text-[11px] font-black uppercase tracking-widest rounded-xl hover:!bg-[#b59533] dark:hover:!bg-[#b59533] transition-all shadow-sm"
-                >
-                    <Plus className="w-4 h-4" /> ADD NEW MEMBER
-                </button>
-            </div>
 
-            {/* Pending Approvals Alert - Compact */}
-            {pendingExpertsCount > 0 && (
-                <div
-                    onClick={() => navigate('/admin/marketing/cms')}
-                    className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left mb-6 rounded-lg mx-2"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white">
-                            <ShieldAlert className="w-4 h-4" />
+                {/* Pending Approvals Alert - Compact */}
+                {pendingExpertsCount > 0 && (
+                    <div
+                        onClick={() => navigate('/admin/marketing/cms')}
+                        className="bg-amber-500/10 border border-amber-500/20 p-2 shadow-sm flex items-center justify-between cursor-pointer group hover:bg-amber-500/15 transition-all text-left mb-6 rounded-lg mx-2"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-white">
+                                <ShieldAlert className="w-4 h-4" />
+                            </div>
+                            <div className="text-left">
+                                <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider leading-none mb-1 italic">Update Required</p>
+                                <h4 className="text-[11px] font-black text-text tracking-tight uppercase">
+                                    {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Under Review
+                                </h4>
+                            </div>
                         </div>
-                        <div className="text-left">
-                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-wider leading-none mb-1 italic">Update Required</p>
-                            <h4 className="text-[11px] font-black text-text tracking-tight uppercase">
-                                {pendingExpertsCount} Stylist Profile{pendingExpertsCount > 1 ? 's' : ''} Under Review
-                            </h4>
+                        <div className="flex items-center gap-2 text-[9px] font-black text-amber-600 uppercase tracking-widest group-hover:gap-3 transition-all font-mono">
+                            Review <ArrowRight className="w-3 h-3" />
                         </div>
                     </div>
-                    <div className="flex items-center gap-2 text-[9px] font-black text-amber-600 uppercase tracking-widest group-hover:gap-3 transition-all font-mono">
-                        Review <ArrowRight className="w-3 h-3" />
-                    </div>
-                </div>
-            )}
+                )}
 
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4 mb-6 mt-6">
-                <div className="relative flex-1">
-                    <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        placeholder="SEARCH BY NAME OR EMAIL..."
-                        className="w-full !pl-14 pr-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black uppercase tracking-widest focus:border-slate-300 dark:focus:border-slate-700 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
-                    />
-                </div>
-                <div className="flex gap-4">
-                    <div className="relative">
-                        <select
-                            value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
-                            onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
-                            className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none w-44 max-w-[180px] text-slate-700 dark:text-slate-300 shadow-sm truncate"
-                        >
-                            <option value="All Roles">All Roles</option>
-                            {roles.map(r => (
-                                <option key={r._id} value={r.name.toUpperCase()}>
-                                    {r.name.length > 18 ? r.name.slice(0, 15) + '...' : r.name}
-                                </option>
-                            ))}
-                        </select>
-                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                {/* Filters */}
+                <div className="flex flex-col md:flex-row gap-4 mb-6 mt-6">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="SEARCH BY NAME OR EMAIL..."
+                            className="w-full !pl-14 pr-5 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black uppercase tracking-widest focus:border-slate-300 dark:focus:border-slate-700 outline-none transition-all placeholder:text-slate-300 text-text shadow-sm"
+                        />
                     </div>
-                    <div className="relative">
-                        <select
-                            value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
-                            onChange={(e) => setOutletFilter(e.target.value === 'All Salons' ? 'all' : outlets.find(o => o.name === e.target.value)?._id)}
-                            className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none min-w-[160px] text-slate-700 dark:text-slate-300 shadow-sm"
-                        >
-                            <option value="All Salons">All Salons</option>
-                            {outlets.map(o => <option key={o._id} value={o.name}>{o.name}</option>)}
-                        </select>
-                        <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <div className="flex gap-4">
+                        <div className="relative">
+                            <select
+                                value={roleFilter === 'all' ? 'All Roles' : roleFilter.toUpperCase()}
+                                onChange={(e) => setRoleFilter(e.target.value === 'All Roles' ? 'all' : e.target.value.toLowerCase())}
+                                className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none w-44 max-w-[180px] text-slate-700 dark:text-slate-300 shadow-sm truncate"
+                            >
+                                <option value="All Roles">All Roles</option>
+                                {roles.map(r => (
+                                    <option key={r._id} value={r.name.toUpperCase()}>
+                                        {r.name.length > 18 ? r.name.slice(0, 15) + '...' : r.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        </div>
+                        <div className="relative">
+                            <select
+                                value={outletFilter === 'all' ? 'All Salons' : outlets.find(o => o._id === outletFilter)?.name}
+                                onChange={(e) => setOutletFilter(e.target.value === 'All Salons' ? 'all' : outlets.find(o => o.name === e.target.value)?._id)}
+                                className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none min-w-[160px] text-slate-700 dark:text-slate-300 shadow-sm"
+                            >
+                                <option value="All Salons">All Salons</option>
+                                {outlets.map(o => <option key={o._id} value={o.name}>{o.name}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Table */}
-            <div className="bg-white dark:bg-slate-900 !rounded-[24px] !border-[1.5px] border-slate-200 dark:border-slate-800 !overflow-hidden min-h-[400px] shadow-sm">
-                <div className="overflow-x-auto no-scrollbar">
-                    <table className="w-full text-left border-collapse min-w-[900px]">
-                        <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STAFF MEMBER</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">CONTACT NUMBER</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">ROLE</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">PRIMARY SALON</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STATUS</th>
-                                <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">ACTIONS</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
-                            {filteredStaff.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="px-6 py-20 text-center">
-                                        <div className="flex flex-col items-center justify-center opacity-20">
-                                            <UserCog className="w-12 h-12 text-text-muted mb-3" />
-                                            <p className="text-[10px] font-black uppercase tracking-widest">No matching members found.</p>
-                                        </div>
-                                    </td>
+                {/* Table */}
+                <div className="bg-white dark:bg-slate-900 !rounded-[24px] !border-[1.5px] border-slate-200 dark:border-slate-800 !overflow-hidden min-h-[400px] shadow-sm">
+                    <div className="overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[900px]">
+                            <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STAFF MEMBER</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">CONTACT NUMBER</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">ROLE</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">PRIMARY SALON</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">STATUS</th>
+                                    <th className="px-6 py-5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">ACTIONS</th>
                                 </tr>
-                            ) : (
-                                paginatedStaff.map((s, index) => (
-                                    <tr
-                                        key={s._id}
-                                        className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group"
-                                    >
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 dark:border-slate-800/50 overflow-hidden ${getAvatarColor(s.name)}`}>
-                                                    <span>{s.name?.charAt(0) || 'U'}</span>
-                                                    {s.avatar && (
-                                                        <img
-                                                            src={getImageUrl(s.avatar)}
-                                                            alt=""
-                                                            className="absolute inset-0 w-full h-full object-cover"
-                                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                                        />
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <div className="font-black text-slate-700 dark:text-slate-200 text-[12px] uppercase">{s.name}</div>
-                                                    <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold lowercase mt-0.5">{s.email}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <span className="text-[12px] font-black text-slate-700 dark:text-slate-200 tracking-tight">
-                                                {maskPhone(s.phone, user?.role)}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-700/50">
-                                                {s.role?.replace('_', ' ')}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate max-w-[150px]">
-                                                {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'MAIN UNIT'}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            {(s.status?.toLowerCase() === 'inactive' || s.status?.toLowerCase() === 'suspended') ? (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-[10px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest border border-rose-100 dark:border-rose-900/30">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
-                                                    {s.status || 'INACTIVE'}
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-[10px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                    {s.status || 'ACTIVE'}
-                                                </span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-5">
-                                            <div className="flex items-center justify-center gap-2">
-                                                <button
-                                                    onClick={() => setViewingStaff(s)}
-                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
-                                                >
-                                                    <Eye className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => openEdit(s)}
-                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
-                                                >
-                                                    <Edit className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleToggleStatus(s._id, s.status || 'active')}
-                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
-                                                >
-                                                    <Ban className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(s._id)}
-                                                    className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
-                                                >
-                                                    <Trash2 className="w-4 h-4" />
-                                                </button>
+                            </thead>
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/50">
+                                {filteredStaff.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="6" className="px-6 py-20 text-center">
+                                            <div className="flex flex-col items-center justify-center opacity-20">
+                                                <UserCog className="w-12 h-12 text-text-muted mb-3" />
+                                                <p className="text-[10px] font-black uppercase tracking-widest">No matching members found.</p>
                                             </div>
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Footer */}
-                <div className="bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
-                    <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                        SHOWING {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} OF {filteredStaff.length} MEMBERS
-                    </span>
-                    <div className="flex gap-2">
-                        <button
-                            type="button"
-                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                            disabled={currentPage === 1}
-                            className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
-                        >
-                            PREVIOUS
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                            disabled={currentPage === totalPages || totalPages === 0}
-                            className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
-                        >
-                            NEXT
-                        </button>
+                                ) : (
+                                    paginatedStaff.map((s, index) => (
+                                        <tr
+                                            key={s._id}
+                                            className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group"
+                                        >
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`relative w-10 h-10 rounded-full flex items-center justify-center font-black text-[14px] uppercase border border-slate-100 dark:border-slate-800/50 overflow-hidden ${getAvatarColor(s.name)}`}>
+                                                        <span>{s.name?.charAt(0) || 'U'}</span>
+                                                        {s.avatar && (
+                                                            <img
+                                                                src={getImageUrl(s.avatar)}
+                                                                alt=""
+                                                                className="absolute inset-0 w-full h-full object-cover"
+                                                                onError={(e) => { e.target.style.display = 'none'; }}
+                                                            />
+                                                        )}
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-black text-slate-700 dark:text-slate-200 text-[12px] uppercase">{s.name}</div>
+                                                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-bold lowercase mt-0.5">{s.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className="text-[12px] font-black text-slate-700 dark:text-slate-200 tracking-tight">
+                                                    {maskPhone(s.phone, user?.role)}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="inline-flex items-center px-3 py-1.5 rounded-lg bg-slate-50 dark:bg-slate-800 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-700/50">
+                                                    {s.role?.replace('_', ' ')}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase truncate max-w-[150px]">
+                                                    {s.outletId?.name || outlets.find(o => o._id === (s.outletId?._id || s.outletId))?.name || 'MAIN UNIT'}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                {(s.status?.toLowerCase() === 'inactive' || s.status?.toLowerCase() === 'suspended') ? (
+                                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/30 text-[10px] font-black text-rose-500 dark:text-rose-400 uppercase tracking-widest border border-rose-100 dark:border-rose-900/30">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                                        {s.status || 'INACTIVE'}
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 text-[10px] font-black text-emerald-500 dark:text-emerald-400 uppercase tracking-widest border border-emerald-100 dark:border-emerald-900/30">
+                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                                        {s.status || 'ACTIVE'}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <button
+                                                        onClick={() => setViewingStaff(s)}
+                                                        className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                    >
+                                                        <Eye className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => openEdit(s)}
+                                                        className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleToggleStatus(s._id, s.status || 'active')}
+                                                        className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                    >
+                                                        <Ban className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(s._id)}
+                                                        className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-rose-500 dark:text-slate-400 dark:hover:text-rose-400 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
                     </div>
-                </div>
+
+                    {/* Footer */}
+                    <div className="bg-white dark:bg-slate-900 px-6 py-4 flex items-center justify-between border-t border-slate-200 dark:border-slate-800">
+                        <span className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                            SHOWING {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, filteredStaff.length)} OF {filteredStaff.length} MEMBERS
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                disabled={currentPage === 1}
+                                className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
+                            >
+                                PREVIOUS
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                disabled={currentPage === totalPages || totalPages === 0}
+                                className="px-5 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest hover:border-slate-300 dark:hover:border-slate-600 transition-all disabled:opacity-30 bg-white dark:bg-slate-800"
+                            >
+                                NEXT
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -1144,7 +1144,7 @@ export default function StaffPage() {
 
             {viewingStaff && createPortal(
                 <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setViewingStaff(null)}>
-                    <div 
+                    <div
                         className="bg-white dark:bg-[#0f172a] w-full max-w-2xl shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 max-h-[90vh] overflow-y-auto admin-panel"
                         onClick={(e) => e.stopPropagation()}
                     >

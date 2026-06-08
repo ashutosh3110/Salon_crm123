@@ -32,37 +32,37 @@ exports.login = async (req, res) => {
         }
 
         if (!userData) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid email or password' 
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
             });
         }
 
         // 4. Status Checks
         if (userData.isActive === false) {
-            const msg = (userData.status === 'pending') 
+            const msg = (userData.status === 'pending')
                 ? 'Your account is under review by Super Admin. You will be able to login once approved.'
                 : 'Your account is currently inactive. Please contact support.';
-            
-            return res.status(403).json({ 
-                success: false, 
+
+            return res.status(403).json({
+                success: false,
                 message: msg
             });
         }
 
         if (userData.status === 'suspended') {
-            return res.status(403).json({ 
-                success: false, 
-                message: 'Access is suspended. Please contact Admin.' 
+            return res.status(403).json({
+                success: false,
+                message: 'Access is suspended. Please contact Admin.'
             });
         }
 
         // Check password
         const isMatch = await userData.comparePassword(password);
         if (!isMatch) {
-            return res.status(401).json({ 
-                success: false, 
-                message: 'Invalid email or password' 
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password'
             });
         }
 
@@ -117,9 +117,9 @@ exports.login = async (req, res) => {
 
     } catch (err) {
         console.error('Login error:', err);
-        res.status(500).json({ 
-            success: false, 
-            message: 'Internal server error' 
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error'
         });
     }
 };
@@ -142,7 +142,7 @@ exports.forgotPassword = async (req, res) => {
 
         const sendEmail = require('../Utils/sendEmail');
         const Otp = require('../Models/Otp');
-        
+
         // Generate random 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -206,8 +206,8 @@ exports.resetPassword = async (req, res) => {
         // Find across collections
         let Model = User;
         let userData = await User.findOne({ email });
-        
-        if (!userData) { 
+
+        if (!userData) {
             userData = await Staff.findOne({ email });
             Model = Staff;
         }

@@ -8,12 +8,12 @@ const Outlet = require('../Models/Outlet');
 exports.getUsers = async (req, res) => {
     try {
         let salonId = req.query.salonId;
-        
+
         // If not provided in query, try to get from authenticated user
         if (!salonId && req.user) {
             salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
         }
-        
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
@@ -62,16 +62,16 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         let { email, name, role, roleId, phone, password, outletId } = req.body;
-        
+
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
-            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) { }
         }
         if (typeof req.body.hrProfile === 'string') {
-            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) { }
         }
         if (typeof req.body.stylistSpecializations === 'string') {
-            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) { }
         }
 
         // Keep role string as display name or fallback
@@ -101,7 +101,7 @@ exports.createUser = async (req, res) => {
             const Outlet = require('../Models/Outlet');
             const { sendWapixoTemplate } = require('../Utils/whatsapp');
             const sendEmail = require('../Utils/sendEmail');
-            
+
             const salon = await Salon.findById(req.user.salonId);
             const outlet = await Outlet.findById(outletId);
             const businessName = salon?.businessName || salon?.name || 'Wapixo';
@@ -169,7 +169,7 @@ exports.updateUser = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             filter.salonId = req.user.salonId;
         }
-        
+
         let staff = await Staff.findOne(filter);
 
         if (!staff) {
@@ -191,13 +191,13 @@ exports.updateUser = async (req, res) => {
 
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
-            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) { }
         }
         if (typeof req.body.hrProfile === 'string') {
-            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) { }
         }
         if (typeof req.body.stylistSpecializations === 'string') {
-            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) { }
         }
 
         // Handle uploaded avatar

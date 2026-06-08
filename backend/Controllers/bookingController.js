@@ -51,9 +51,9 @@ exports.getBookings = async (req, res) => {
         // Transform for frontend compatibility
         const result = bookings.map(b => ({
             ...b._doc,
-            client: b.clientId, 
-            service: b.serviceId, 
-            staff: b.staffId, 
+            client: b.clientId,
+            service: b.serviceId,
+            staff: b.staffId,
             outlet: b.outletId,
             tenantId: b.salonId // Mapping salonId to tenantId as expected by frontend
         }));
@@ -81,12 +81,12 @@ exports.createBooking = async (req, res) => {
         if (!serviceId) {
             return res.status(400).json({ success: false, message: 'Service is required' });
         }
-        
+
         // Prevent booking in the past for app bookings
         if (source === 'APP' && new Date(appointmentDate) < new Date()) {
             return res.status(400).json({ success: false, message: 'Cannot book for a past time' });
         }
-        
+
         // Fetch service to get price if not provided
         const service = await Service.findById(serviceId);
         if (!service) {
@@ -96,7 +96,7 @@ exports.createBooking = async (req, res) => {
         const targetCustomerId = req.body.clientId || req.user._id;
         const customer = await Customer.findById(targetCustomerId);
         if (!customer && req.body.clientId) {
-             return res.status(404).json({ success: false, message: 'Target customer not found' });
+            return res.status(404).json({ success: false, message: 'Target customer not found' });
         }
 
         // Fetch active membership to apply discount securely in backend
@@ -233,7 +233,7 @@ exports.createBooking = async (req, res) => {
         // If booking is created as completed, update customer stats
         if (booking.status === 'completed') {
             await Customer.findByIdAndUpdate(targetCustomerId, {
-                $inc: { 
+                $inc: {
                     totalVisits: 1,
                     totalSpend: totalPrice || 0
                 },
@@ -255,7 +255,7 @@ exports.createBooking = async (req, res) => {
         try {
             const dateStr = new Date(populated.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             const { checkAndDeductWhatsAppCredit, sendWhatsAppTemplate, sendWhatsAppMessage } = require('../Utils/whatsapp');
             const canSend = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
 
@@ -296,7 +296,7 @@ exports.createBooking = async (req, res) => {
             const { sendNotification, sendAdminNotification } = require('../Utils/notification');
             const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             await sendNotification({
                 customerId: populated.clientId._id,
                 salonId: populated.salonId._id,
@@ -416,7 +416,7 @@ exports.updateStatus = async (req, res) => {
         // If status changed to completed, increment visits and spend
         if (booking.status === 'completed' && oldStatus !== 'completed') {
             await Customer.findByIdAndUpdate(booking.clientId, {
-                $inc: { 
+                $inc: {
                     totalVisits: 1,
                     totalSpend: booking.totalPrice || 0
                 },
@@ -434,13 +434,13 @@ exports.updateStatus = async (req, res) => {
             try {
                 let points = 0;
                 let hasServicePoints = false;
-                
+
                 const service = await Service.findById(booking.serviceId);
                 if (service && service.loyaltyPoints) {
                     points = service.loyaltyPoints;
                     hasServicePoints = true;
                 }
-                
+
                 if (!hasServicePoints) {
                     const settings = await Setting.findOne();
                     if (settings && settings.loyaltySettings && settings.loyaltySettings.active) {
@@ -448,7 +448,7 @@ exports.updateStatus = async (req, res) => {
                         points = Math.floor(booking.totalPrice / rate);
                     }
                 }
-                
+
                 if (points > 0) {
                     await Customer.findByIdAndUpdate(booking.clientId, {
                         $inc: { loyaltyPoints: points }
@@ -522,7 +522,7 @@ exports.updateStatus = async (req, res) => {
                 // 3. WhatsApp Notifications
                 const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
                 const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
-                
+
                 // WhatsApp to Customer
                 const canSendCustStatus = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
                 if (canSendCustStatus && populated.clientId?.phone) {
@@ -530,7 +530,7 @@ exports.updateStatus = async (req, res) => {
                         const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
                         const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const staffNames = Array.isArray(populated.staffId) ? populated.staffId.map(s => s.name).join(', ') : (populated.staffId?.name || 'Assigned Stylist');
-                        
+
                         await sendWapixoTemplate(populated.clientId.phone, process.env.WHATSAPP_TEMPLATE_BOOKING_LINK, [
                             clientName, salonName, populated.outletId?.name || 'Our Salon',
                             populated.outletId?.city || 'Our Location', staffNames, populated.serviceId?.name || 'Service',
@@ -594,10 +594,10 @@ exports.getAvailableSlots = async (req, res) => {
 
         // 2. Get Outlet Working Hours for that staff
         const outlet = await mongoose.model('Outlet').findById(staff.outletId);
-        
+
         let shiftStart = "09:00";
         let shiftEnd = "21:00";
-        
+
         if (outlet) {
             const parseTo24 = (timeStr) => {
                 if (!timeStr) return null;
@@ -612,7 +612,7 @@ exports.getAvailableSlots = async (req, res) => {
                 }
                 return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
             };
-            
+
             const oStart = parseTo24(outlet.openingTime);
             const oEnd = parseTo24(outlet.closingTime);
             if (oStart) shiftStart = oStart;
@@ -625,7 +625,7 @@ exports.getAvailableSlots = async (req, res) => {
         const dailyBreaks = staff.availability?.breaks || [];
         const breakDoc = await Break.findOne({ staffId, date });
         const specificBreaks = breakDoc ? breakDoc.breaks : [];
-        
+
         const breaks = []; // Disabled break filtering as requested to show all slots without lunch breaks
 
         // 4. Get Existing Bookings for that staff and date
@@ -668,7 +668,7 @@ exports.getAvailableSlots = async (req, res) => {
 
         // 5. Generate Slots
         const availableSlots = [];
-        
+
         // Process each working hour block (staff can have multiple shifts per day)
         dayAvailability.forEach(shift => {
             let current = toMinutes(shift.start);
@@ -701,20 +701,20 @@ exports.getAvailableSlots = async (req, res) => {
                 // User's example suggests incrementing by serviceDuration, 
                 // but usually, we allow bookings every 15 or 30 mins.
                 // Let's stick to 30 min intervals for slot starts as seen in their UI.
-                current += 30; 
+                current += 30;
             }
         });
 
         // Filter out past slots if the requested date is today
         const now = new Date();
-        const nowStr = now.getFullYear() + '-' + 
-                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                      String(now.getDate()).padStart(2, '0');
-        
+        const nowStr = now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0');
+
         const isToday = date === nowStr;
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        const finalSlots = isToday 
+        const finalSlots = isToday
             ? availableSlots.filter(slotTime => toMinutes(slotTime) > currentMinutes)
             : availableSlots;
 
@@ -740,7 +740,7 @@ exports.getAvailability = async (req, res) => {
 
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
-        
+
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
@@ -802,7 +802,7 @@ exports.verifyPayment = async (req, res) => {
     try {
         const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
         const secret = process.env.RAZORPAY_KEY_SECRET;
-        
+
         const shasum = crypto.createHmac('sha256', secret);
         shasum.update(`${razorpayOrderId}|${razorpayPaymentId}`);
         const digest = shasum.digest('hex');

@@ -71,8 +71,8 @@ exports.getExpenses = async (req, res) => {
 
 exports.addExpense = async (req, res) => {
     try {
-        const expense = await Expense.create({ 
-            ...req.body, 
+        const expense = await Expense.create({
+            ...req.body,
             salonId: req.user.salonId,
             createdBy: req.user._id
         });
@@ -119,7 +119,7 @@ exports.getPettyCashSummary = async (req, res) => {
         const eodQuery = { salonId, date: businessDate };
         if (outletId && outletId !== 'all') eodQuery.outletId = outletId;
         const eod = await EndOfDay.findOne(eodQuery);
-        
+
         res.status(200).json({
             success: true,
             data: {
@@ -139,25 +139,27 @@ exports.getPettyCashSummary = async (req, res) => {
 exports.getPettyCashEntries = async (req, res) => {
     try {
         const { outletId } = req.query;
-        const query = { 
-            salonId: req.user.salonId, 
-            accountType: 'cash' 
+        const query = {
+            salonId: req.user.salonId,
+            accountType: 'cash'
         };
         if (outletId && outletId !== 'all') query.outletId = outletId;
         const transactions = await FinanceTransaction.find(query).sort({ date: -1 }).limit(100);
-        
-        res.status(200).json({ 
-            success: true, 
-            data: { results: transactions.map(t => ({
-                id: t._id,
-                type: t.category === 'Top-Up' ? 'FUND_ADDED' : 'EXPENSE',
-                amount: t.amount,
-                description: t.description,
-                category: t.category,
-                staff: 'Manager',
-                date: t.date.toISOString().split('T')[0],
-                timestamp: t.date
-            })) }
+
+        res.status(200).json({
+            success: true,
+            data: {
+                results: transactions.map(t => ({
+                    id: t._id,
+                    type: t.category === 'Top-Up' ? 'FUND_ADDED' : 'EXPENSE',
+                    amount: t.amount,
+                    description: t.description,
+                    category: t.category,
+                    staff: 'Manager',
+                    date: t.date.toISOString().split('T')[0],
+                    timestamp: t.date
+                }))
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -170,17 +172,19 @@ exports.getPettyCashClosings = async (req, res) => {
         const query = { salonId: req.user.salonId };
         if (outletId && outletId !== 'all') query.outletId = outletId;
         const closings = await EndOfDay.find(query).sort({ date: -1 });
-        res.status(200).json({ 
-            success: true, 
-            data: { results: closings.map(c => ({
-                id: c._id,
-                date: c.date,
-                closingBalance: c.cashInHand || c.actualCash || 0,
-                discrepancy: c.discrepancy || 0,
-                denominations: {},
-                verifiedBy: 'Manager',
-                timestamp: c.createdAt
-            })) }
+        res.status(200).json({
+            success: true,
+            data: {
+                results: closings.map(c => ({
+                    id: c._id,
+                    date: c.date,
+                    closingBalance: c.cashInHand || c.actualCash || 0,
+                    discrepancy: c.discrepancy || 0,
+                    denominations: {},
+                    verifiedBy: 'Manager',
+                    timestamp: c.createdAt
+                }))
+            }
         });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -308,7 +312,7 @@ exports.addSupplierInvoice = async (req, res) => {
                 const supplier = await Supplier.findById(invoice.supplierId);
                 if (supplier && supplier.phone) {
                     const message = `Hello ${supplier.name},\n\nWe have recorded a new Invoice from you:\nInvoice No: ${invoice.invoiceNumber}\nDate: ${new Date(invoice.invoiceDate).toLocaleDateString()}\nTotal Amount: ₹${invoice.totalAmount}\nPaid Amount: ₹${invoice.paidAmount}\nOutstanding Balance: ₹${invoice.totalAmount - invoice.paidAmount}\n\nThank you!\n- Salon Team`;
-                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => {});
+                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => { });
                     await sendWhatsAppMessage(supplier.phone, message).catch(err => console.error('Failed to send WhatsApp:', err));
                 }
             } catch (err) {
@@ -326,12 +330,12 @@ exports.addInvoicePayment = async (req, res) => {
     try {
         const { invoiceId, amount, paymentMethod, notes } = req.body;
         const invoice = await SupplierInvoice.findOne({ _id: invoiceId, salonId: req.user.salonId });
-        
+
         if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
 
         invoice.paidAmount += amount;
         invoice.balanceAmount = invoice.totalAmount - invoice.paidAmount;
-        
+
         if (invoice.balanceAmount <= 0) invoice.status = 'paid';
         else invoice.status = 'partially-paid';
 
@@ -359,7 +363,7 @@ exports.addInvoicePayment = async (req, res) => {
                 const supplier = await Supplier.findById(invoice.supplierId);
                 if (supplier && supplier.phone) {
                     const message = `Hello ${supplier.name},\n\nWe have recorded a payment of ₹${amount} against Invoice No: ${invoice.invoiceNumber}.\nRemaining Outstanding Balance: ₹${invoice.balanceAmount}\n\nThank you!\n- Salon Team`;
-                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => {});
+                    await checkAndDeductWhatsAppCredit(req.user.salonId).catch(() => { });
                     await sendWhatsAppMessage(supplier.phone, message).catch(err => console.error('Failed to send WhatsApp:', err));
                 }
             } catch (err) {
@@ -381,7 +385,7 @@ exports.getFinanceSummary = async (req, res) => {
         const { outletId } = req.query;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-        
+
         // Build queries
         const invoiceQuery = { salonId, status: { $ne: 'cancelled' } };
         const transactionQuery = { salonId };
@@ -400,7 +404,7 @@ exports.getFinanceSummary = async (req, res) => {
         const transactions = await FinanceTransaction.find(transactionQuery).sort({ date: -1 });
         const mtdSupplierInvoices = await SupplierInvoice.find(supplierInvoiceQuery);
         const supplierPurchasesMtd = mtdSupplierInvoices.reduce((sum, inv) => sum + (inv.totalAmount || 0), 0);
-        
+
         // 1. Transactions and Balances
         let cashInHand = 0;
         let bankBalance = 0;
@@ -425,7 +429,7 @@ exports.getFinanceSummary = async (req, res) => {
 
         // 2. KPIs (MTD)
         const monthlyTransactions = transactions.filter(t => t.date >= startOfMonth);
-        
+
         const mtdInvoices = invoices.filter(inv => inv.createdAt >= startOfMonth);
         let mtdSales = 0;
         mtdInvoices.forEach(inv => {
@@ -435,7 +439,7 @@ exports.getFinanceSummary = async (req, res) => {
         });
 
         const grossInflow = mtdSales + monthlyTransactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
-        
+
         // Filter out transactions related to Supplier Payment to prevent double counting
         const supplierPaymentsMtd = monthlyTransactions
             .filter(t => t.type === 'expense' && t.category === 'Supplier Payment')
@@ -450,10 +454,10 @@ exports.getFinanceSummary = async (req, res) => {
             const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
             const mStart = new Date(d.getFullYear(), d.getMonth(), 1);
             const mEnd = new Date(d.getFullYear(), d.getMonth() + 1, 0);
-            
+
             const monthTx = transactions.filter(t => t.date >= mStart && t.date <= mEnd);
             const monthInvoices = invoices.filter(inv => inv.createdAt >= mStart && inv.createdAt <= mEnd);
-            
+
             let monthSales = 0;
             monthInvoices.forEach(inv => {
                 (inv.payments || []).forEach(p => {
@@ -537,7 +541,7 @@ exports.getEODSummary = async (req, res) => {
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
-        
+
         // Fetch last closed EOD for opening cash
         const lastEodQuery = { salonId, date: { $lt: start } };
         if (outletId && outletId !== 'all') lastEodQuery.outletId = outletId;
@@ -545,8 +549,8 @@ exports.getEODSummary = async (req, res) => {
         const openingCash = lastEod?.actualCash || 0;
 
         // Exclude cancelled invoices
-        const invoiceQuery = { 
-            salonId, 
+        const invoiceQuery = {
+            salonId,
             createdAt: { $gte: start, $lte: end },
             status: { $ne: 'cancelled' }
         };
@@ -554,9 +558,9 @@ exports.getEODSummary = async (req, res) => {
         const invoices = await Invoice.find(invoiceQuery);
 
         // Fetch other ledger transactions for expenses and other cash inflows
-        const transQuery = { 
-            salonId, 
-            date: { $gte: start, $lte: end } 
+        const transQuery = {
+            salonId,
+            date: { $gte: start, $lte: end }
         };
         if (outletId && outletId !== 'all') transQuery.outletId = outletId;
         const transactions = await FinanceTransaction.find(transQuery);
@@ -660,8 +664,8 @@ exports.closeEOD = async (req, res) => {
         const end = new Date(date); end.setHours(23, 59, 59, 999);
 
         // Fetch POS invoices to aggregate sales
-        const invoiceQuery = { 
-            salonId, 
+        const invoiceQuery = {
+            salonId,
             createdAt: { $gte: start, $lte: end },
             status: { $ne: 'cancelled' }
         };
@@ -695,9 +699,9 @@ exports.closeEOD = async (req, res) => {
         });
 
         // Fetch other ledger transactions for expenses and other cash inflows
-        const transQuery = { 
-            salonId, 
-            date: { $gte: start, $lte: end } 
+        const transQuery = {
+            salonId,
+            date: { $gte: start, $lte: end }
         };
         if (outletId && outletId !== 'all') transQuery.outletId = outletId;
         const transactions = await FinanceTransaction.find(transQuery);
@@ -1032,7 +1036,7 @@ exports.getTransactions = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const { type, accountType, category, startDate, endDate, outletId, page = 1, limit = 50 } = req.query;
-        
+
         const query = { salonId };
         if (type) query.type = type;
         if (accountType) query.accountType = accountType;
@@ -1047,13 +1051,13 @@ exports.getTransactions = async (req, res) => {
                 query.date.$lte = end;
             }
         }
-        
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const [transactions, total] = await Promise.all([
             FinanceTransaction.find(query).sort({ date: -1 }).skip(skip).limit(parseInt(limit)),
             FinanceTransaction.countDocuments(query)
         ]);
-        
+
         res.json({
             success: true,
             data: {
@@ -1212,7 +1216,7 @@ exports.getInvoicePayments = async (req, res) => {
     try {
         const { id } = req.params;
         const FinanceTransaction = require('../Models/FinanceTransaction');
-        
+
         const transactions = await FinanceTransaction.find({
             salonId: req.user.salonId,
             referenceId: id,
@@ -1348,7 +1352,7 @@ exports.getSalesReports = async (req, res) => {
 
         // Group by Date for Trend
         const trendMap = new Map();
-        
+
         // Populate all buckets with 0 to ensure continuous charts
         let current = new Date(start);
         while (current <= end) {
@@ -1424,7 +1428,7 @@ exports.getSalesReports = async (req, res) => {
                 const itemRevenue = (item.price || 0) * (item.quantity || 1) * ratio;
                 if (item.type === 'service') {
                     serviceMap[item.name] = (serviceMap[item.name] || 0) + itemRevenue;
-                    
+
                     if (item.stylistIds && item.stylistIds.length > 0) {
                         const splitRevenue = itemRevenue / item.stylistIds.length;
                         item.stylistIds.forEach(idStr => {
@@ -1565,7 +1569,7 @@ exports.seedSampleReports = async (req, res) => {
 
             const items = [];
             let subtotal = 0;
-            
+
             // Add 1-2 services
             const numServices = 1 + Math.floor(Math.random() * 2);
             for (let s = 0; s < numServices; s++) {
