@@ -839,6 +839,18 @@ html:not(.dark) .sa-panel table span[class*="text-blue-500"] {
   color: #3B82F6 !important;
 }
 
+html:not(.dark) .sa-panel table span[class*="text-blue-600"] {
+  color: #2563eb !important;
+}
+
+html:not(.dark) .sa-panel table span[class*="text-red-600"] {
+  color: #dc2626 !important;
+}
+
+html:not(.dark) .sa-panel table span[class*="text-orange-600"] {
+  color: #ea580c !important;
+}
+
 html:not(.dark) .sa-panel table span[class*="text-indigo-500"] {
   color: #6366F1 !important;
 }
@@ -2362,4 +2374,79 @@ html:not(.dark) .new-theme span[class*="text-rose-"],
 html:not(.dark) .new-theme span[class*="text-red-"],
 html:not(.dark) .new-theme span[style*="color: red"] {
   color: #ef4444 !important;
+}
+
+/* Global Fix: Remove focus outline and borders from recharts elements */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-wrapper:active,
+.recharts-surface:active,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible,
+.recharts-wrapper *:focus-within,
+.recharts-wrapper *,
+.recharts-active-dot,
+.recharts-active-dot *,
+svg:focus,
+svg:focus-visible,
+svg *:focus,
+svg *:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Recharts text elements override to prevent smudge / double bolding from global stroke overrides */
+.recharts-wrapper text,
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-cartesian-axis-tick text {
+  stroke: none !important;
+  font-weight: 600 !important;
+  fill: #475569 !important; /* Elegant slate gray for light mode */
+}
+
+/* Ensure bright, highly readable text color inside charts in dark mode */
+html.dark .recharts-wrapper text,
+html.dark .recharts-text,
+html.dark .recharts-cartesian-axis-tick-value,
+html.dark .recharts-cartesian-axis-tick text {
+  fill: #cbd5e1 !important; /* Soft white/slate gray for dark mode */
+}
+
+/* Prevent global SVG stroke rules from adding borders to chart shapes (bars, pie cells, tooltip cursors) */
+.recharts-rectangle,
+.recharts-bar-rectangle,
+.recharts-pie-sector,
+.recharts-tooltip-cursor,
+.recharts-active-dot circle,
+.recharts-dot circle {
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+/* Make tooltip cursor transparent or very light */
+.recharts-tooltip-cursor {
+  fill: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.dark .recharts-tooltip-cursor {
+  fill: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Prevent global light-mode stroke rule from overriding colors of custom donut charts and mini-charts */
+html:not(.dark) .new-theme .recharts-wrapper svg *,
+html:not(.dark) .new-theme .recharts-surface *,
+.new-theme .recharts-wrapper svg *,
+.new-theme .recharts-surface *,
+.recharts-wrapper svg *,
+.recharts-surface *,
+svg.transform circle,
+svg[viewBox="0 0 100 100"] circle,
+svg[viewBox="0 0 100 40"] path,
+svg[viewBox="0 0 100 40"] circle {
+  stroke: unset !important;
 }

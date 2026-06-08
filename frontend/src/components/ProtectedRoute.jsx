@@ -24,9 +24,7 @@ export default function ProtectedRoute({ allowedRoles, feature, permission }) {
 
     // Role check
     if (allowedRoles && !allowedRoles.includes(user.role)) {
-        if (!['admin', 'superadmin'].includes(user.role)) {
-            return <Navigate to="/unauthorized" replace />;
-        }
+        return <Navigate to="/unauthorized" replace />;
     }
 
     // Permission check

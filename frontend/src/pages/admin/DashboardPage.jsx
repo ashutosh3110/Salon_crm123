@@ -590,8 +590,8 @@ export default function DashboardPage() {
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorRevenue)"
-                                        activeDot={{ r: 6, fill: '#A57C1E', strokeWidth: 2, stroke: '#fff' }}
-                                        dot={{ r: 4, fill: '#A57C1E', strokeWidth: 0 }}
+                                        activeDot={{ r: 6, fill: '#A57C1E', stroke: 'none', strokeWidth: 0 }}
+                                        dot={{ r: 4, fill: '#A57C1E', stroke: 'none', strokeWidth: 0 }}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -656,9 +656,11 @@ export default function DashboardPage() {
                                             innerRadius={36}
                                             outerRadius={54}
                                             paddingAngle={4}
+                                            stroke="none"
+                                            strokeWidth={0}
                                         >
                                             {serviceDistribution.map((entry, index) => (
-                                                <Cell key={index} fill={entry.color} />
+                                                <Cell key={index} fill={entry.color} stroke="none" strokeWidth={0} />
                                             ))}
                                         </Pie>
                                     </PieChart>
@@ -778,19 +780,21 @@ export default function DashboardPage() {
                                             innerRadius={42}
                                             outerRadius={60}
                                             paddingAngle={3}
+                                            stroke="none"
+                                            strokeWidth={0}
                                         >
                                             {[
                                                 { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
                                                 { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
                                                 { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
                                                 { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
-                                            ].filter(d => d.value > 0).length === 0 ? <Cell fill="#e2e8f0" /> : [
+                                            ].filter(d => d.value > 0).length === 0 ? <Cell fill="#e2e8f0" stroke="none" strokeWidth={0} /> : [
                                                 { name: 'Pending', value: payload?.stats?.bookingStatuses?.pending ?? 0, color: '#f59e0b' },
                                                 { name: 'Confirmed', value: payload?.stats?.bookingStatuses?.confirmed ?? 0, color: '#10b981' },
                                                 { name: 'Completed', value: payload?.stats?.bookingStatuses?.completed ?? 0, color: '#3b82f6' },
                                                 { name: 'Cancelled', value: payload?.stats?.bookingStatuses?.cancelled ?? 0, color: '#ef4444' }
                                             ].filter(d => d.value > 0).map((entry, index) => (
-                                                <Cell key={index} fill={entry.color} />
+                                                <Cell key={index} fill={entry.color} stroke="none" strokeWidth={0} />
                                             ))}
                                         </Pie>
                                     </PieChart>

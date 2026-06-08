@@ -612,7 +612,7 @@ export default function OverallReportsPage() {
                                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} />
                                                     <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
                                                     <Tooltip formatter={(value) => [formatCurrency(value), 'Revenue']} />
-                                                    <Area type="monotone" dataKey="revenue" stroke="#C69A20" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" />
+                                                    <Area type="monotone" dataKey="revenue" stroke="#C69A20" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" dot={{ r: 4, fill: '#C69A20', stroke: 'none', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#C69A20', stroke: 'none', strokeWidth: 0 }} />
                                                 </AreaChart>
                                             </ResponsiveContainer>
                                         ) : (
@@ -639,9 +639,11 @@ export default function OverallReportsPage() {
                                                         outerRadius={80}
                                                         paddingAngle={4}
                                                         dataKey="value"
+                                                        stroke="none"
+                                                        strokeWidth={0}
                                                     >
                                                         {salesStats.paymentMethods.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" strokeWidth={0} />
                                                         ))}
                                                     </Pie>
                                                     <Tooltip formatter={(value) => formatCurrency(value)} />
@@ -828,11 +830,13 @@ export default function OverallReportsPage() {
                                                     outerRadius={75}
                                                     paddingAngle={5}
                                                     dataKey="value"
+                                                    stroke="none"
+                                                    strokeWidth={0}
                                                 >
-                                                    <Cell fill="#10b981" />
-                                                    <Cell fill="#3b82f6" />
-                                                    <Cell fill="#C69A20" />
-                                                    <Cell fill="#ef4444" />
+                                                    <Cell fill="#10b981" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#3b82f6" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#C69A20" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#ef4444" stroke="none" strokeWidth={0} />
                                                 </Pie>
                                                 <Tooltip />
                                                 <Legend verticalAlign="bottom" height={36} iconSize={10} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
@@ -1188,9 +1192,11 @@ export default function OverallReportsPage() {
                                                         outerRadius={75}
                                                         paddingAngle={4}
                                                         dataKey="value"
+                                                        stroke="none"
+                                                        strokeWidth={0}
                                                     >
                                                         {expenseStats.categoryData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" strokeWidth={0} />
                                                         ))}
                                                     </Pie>
                                                     <Tooltip formatter={(value) => formatCurrency(value)} />

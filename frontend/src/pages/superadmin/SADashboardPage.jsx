@@ -477,9 +477,9 @@ export default function SADashboardPage() {
                     <ResponsiveContainer width="100%" height={160}>
                         <PieChart>
                             <Pie data={currentPlanDist} cx="50%" cy="50%" innerRadius={45} outerRadius={72}
-                                dataKey="value" labelLine={false} label={renderPieLabel}>
+                                dataKey="value" labelLine={false} label={renderPieLabel} stroke="none" strokeWidth={0}>
                                 {currentPlanDist.map((entry, i) => (
-                                    <Cell key={i} fill={entry.color} stroke="white" strokeWidth={2} />
+                                    <Cell key={i} fill={entry.color} stroke="none" strokeWidth={0} />
                                 ))}
                             </Pie>
                             <Tooltip formatter={(v) => [`${v} salons`, '']} />
@@ -555,8 +555,8 @@ export default function SADashboardPage() {
                                     tickFormatter={v => `${v}%`} domain={[0, 7]} />
                                 <Tooltip content={<CustomTooltip suffix="%" />} />
                                 <Line type="monotone" dataKey="rate" name="Churn Rate" stroke="#f59e0b" strokeWidth={2.5}
-                                    dot={{ r: 4, fill: '#f59e0b', stroke: '#fff', strokeWidth: 2 }}
-                                    activeDot={{ r: 6 }} />
+                                    dot={{ r: 4, fill: '#f59e0b', stroke: 'none', strokeWidth: 0 }}
+                                    activeDot={{ r: 6, fill: '#f59e0b', stroke: 'none', strokeWidth: 0 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     )}

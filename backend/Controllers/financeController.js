@@ -1428,6 +1428,7 @@ exports.getSalesReports = async (req, res) => {
                     if (item.stylistIds && item.stylistIds.length > 0) {
                         const splitRevenue = itemRevenue / item.stylistIds.length;
                         item.stylistIds.forEach(idStr => {
+                            if (!idStr) return;
                             const id = idStr.toString();
                             if (!stylistStats[id]) {
                                 stylistStats[id] = { id, value: 0 };

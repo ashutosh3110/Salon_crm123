@@ -378,27 +378,30 @@ export default function NewBookingPage() {
         }
 
         const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
-        const gstRate = selectedService.gst !== undefined ? selectedService.gst : (platformSettings?.serviceGst || 18);
+        const gstRate = (selectedService.gst !== undefined && selectedService.gst !== null) ? selectedService.gst : (platformSettings?.serviceGst || 18);
         
         const netAfterMembership = original - discount;
         const netAfterPromo = Math.max(0, netAfterMembership - promoDiscount);
 
-        let subtotal = 0; // Taxable subtotal (Excl. GST)
+        let subtotal = 0; 
         let tax = 0;
         let total = 0;
+        let cgst = 0;
+        let sgst = 0;
 
         if (isInclusive) {
+            total = Number(netAfterPromo.toFixed(2));
             subtotal = Number((netAfterPromo / (1 + (gstRate / 100))).toFixed(2));
             tax = Number((netAfterPromo - subtotal).toFixed(2));
-            total = Number(netAfterPromo.toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
         } else {
             subtotal = Number(netAfterPromo.toFixed(2));
             tax = Number((subtotal * (gstRate / 100)).toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
             total = Number((subtotal + tax).toFixed(2));
         }
-
-        const cgst = Number((tax / 2).toFixed(2));
-        const sgst = Number((tax - cgst).toFixed(2));
 
         return { original, discount, promoDiscount, subtotal, tax, total, gstRate, isInclusive, cgst, sgst };
     }, [selectedService, activeMembership, platformSettings, promoDiscount]);
@@ -1102,19 +1105,19 @@ export default function NewBookingPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-6">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
                             <button 
                                 onClick={prevStep}
-                                className="flex-1 py-6 bg-surface border-2 border-border text-[11px] font-black text-text-muted uppercase tracking-[0.4em] hover:bg-surface-alt transition-all rounded-2xl italic"
+                                className="w-full sm:w-36 py-2.5 bg-surface border-2 border-border text-[11px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all rounded-2xl italic"
                             >
                                 Back
                             </button>
                             <button 
                                 onClick={handleFinalBooking}
                                 disabled={loading}
-                                className="flex-[2] py-6 bg-text text-white text-[11px] font-black uppercase tracking-[0.4em] rounded-2xl hover:bg-primary transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group italic"
+                                className="w-full sm:w-56 py-2.5 bg-text text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group italic"
                             >
-                                {loading ? 'Processing...' : 'Confirm Booking'} <Zap className="w-5 h-5 group-hover:scale-125 transition-all text-primary" />
+                                {loading ? 'Processing...' : 'Confirm Booking'} <Zap className="w-4 h-4 group-hover:scale-125 transition-all text-primary" />
                             </button>
                         </div>
                     </div>

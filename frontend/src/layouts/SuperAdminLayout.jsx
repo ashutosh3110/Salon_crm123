@@ -887,6 +887,25 @@ export default function SuperAdminLayout() {
                     border-radius: 12px !important;
                 }
 
+                /* Remove focus outline and borders from recharts elements */
+                .recharts-wrapper,
+                .recharts-surface,
+                .recharts-wrapper:focus,
+                .recharts-surface:focus,
+                .recharts-wrapper:active,
+                .recharts-surface:active,
+                .recharts-wrapper *:focus,
+                .recharts-wrapper *:focus-visible,
+                .recharts-wrapper *:focus-within,
+                svg:focus,
+                svg:focus-visible,
+                svg *:focus,
+                svg *:focus-visible {
+                    outline: none !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                }
+
             `}</style>
 
 

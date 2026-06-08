@@ -1049,7 +1049,7 @@ export default function POSInvoicesPage() {
                                                 <stop offset="95%" stopColor={stat.areaColor} stopOpacity={0}/>
                                             </linearGradient>
                                         </defs>
-                                        <Area type="monotone" dataKey="v" stroke={stat.areaColor} fillOpacity={1} fill={`url(#${stat.areaId})`} strokeWidth={2} dot={false} />
+                                        <Area type="monotone" dataKey="v" stroke="none" fillOpacity={1} fill={`url(#${stat.areaId})`} strokeWidth={0} dot={false} />
                                     </AreaChart>
                                 </ResponsiveContainer>
                             </div>
@@ -1118,9 +1118,9 @@ export default function POSInvoicesPage() {
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} dy={8} />
                                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 900 }} tickFormatter={(val) => '₹'+val} />
                                     <RechartsTooltip cursor={{fill: 'rgba(0,0,0,0.03)'}} contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />
-                                    <Bar dataKey="Cash" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={8} />
-                                    <Bar dataKey="UPI" fill="#8b5cf6" radius={[3, 3, 0, 0]} maxBarSize={8} />
-                                    <Bar dataKey="Unpaid" fill="#fb923c" radius={[3, 3, 0, 0]} maxBarSize={8} />
+                                    <Bar dataKey="Cash" fill="#10b981" radius={[3, 3, 0, 0]} maxBarSize={8} stroke="none" strokeWidth={0} />
+                                    <Bar dataKey="UPI" fill="#8b5cf6" radius={[3, 3, 0, 0]} maxBarSize={8} stroke="none" strokeWidth={0} />
+                                    <Bar dataKey="Unpaid" fill="#fb923c" radius={[3, 3, 0, 0]} maxBarSize={8} stroke="none" strokeWidth={0} />
                                 </BarChart>
                             </ResponsiveContainer>
                         </div>
@@ -1137,9 +1137,9 @@ export default function POSInvoicesPage() {
                         <div className="relative h-36">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
-                                    <Pie data={donutData} innerRadius={46} outerRadius={62} paddingAngle={3} dataKey="value" stroke="none" startAngle={90} endAngle={-270}>
+                                    <Pie data={donutData} innerRadius={46} outerRadius={62} paddingAngle={3} dataKey="value" stroke="none" strokeWidth={0} startAngle={90} endAngle={-270}>
                                         {donutData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
+                                            <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} stroke="none" strokeWidth={0} />
                                         ))}
                                     </Pie>
                                     <RechartsTooltip contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '10px', fontWeight: 'bold' }} />

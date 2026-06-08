@@ -4317,104 +4317,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                                     {/* CGST / SGST Breakdown for the item */}
                                     {(() => {
-                                        const qty = Number(item.quantity) || 1;
-                                        const itemPrice = Number(item.price) || 0;
-                                        const gross = itemPrice * qty;
-
-                                        // Membership discount
-                                        let ownDiscount = 0;
-                                        if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
-                                            const discType = item.membershipDiscountType;
-                                            const discVal = Number(item.membershipDiscountValue) || 0;
-                                            if (discType === 'percentage') {
-                                                ownDiscount = (gross * discVal) / 100;
-                                            } else {
-                                                ownDiscount = discVal;
-                                            }
-                                        } else if (qActiveMembership && qActiveMembership.planId) {
-                                            const plan = qActiveMembership.planId;
-                                            if (item.type === 'service') {
-                                                if (plan.serviceDiscountType === 'percentage') {
-                                                    ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                } else {
-                                                    ownDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                }
-                                            } else if (item.type === 'product') {
-                                                if (plan.productDiscountType === 'percentage') {
-                                                    ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                } else {
-                                                    ownDiscount = (Number(plan.productDiscountValue) || 0);
-                                                }
-                                            }
-                                        }
-                                        ownDiscount = Math.min(ownDiscount, gross);
-                                        const remaining = gross - ownDiscount;
-
-                                        // General discount calculation
-                                        let totalSubtotal = qCart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
-                                        let generalDiscount = 0;
-                                        if (qManualDiscount) {
-                                            if (qManualDiscount.type === 'percentage') {
-                                                generalDiscount += (totalSubtotal * (Number(qManualDiscount.value) || 0)) / 100;
-                                            } else {
-                                                generalDiscount += Number(qManualDiscount.value) || 0;
-                                            }
-                                        }
-
-                                        // Total remaining of all items
-                                        let totalRemaining = qCart.reduce((sum, it) => {
-                                            const itQty = Number(it.quantity) || 1;
-                                            const itPrice = Number(it.price) || 0;
-                                            const itGross = itPrice * itQty;
-                                            let itOwnDiscount = 0;
-                                            if (it.membershipDiscountType !== undefined && it.membershipDiscountValue !== undefined) {
-                                                if (it.membershipDiscountType === 'percentage') {
-                                                    itOwnDiscount = (itGross * Number(it.membershipDiscountValue)) / 100;
-                                                } else {
-                                                    itOwnDiscount = Number(it.membershipDiscountValue);
-                                                }
-                                            } else if (qActiveMembership && qActiveMembership.planId) {
-                                                const plan = qActiveMembership.planId;
-                                                if (it.type === 'service') {
-                                                    if (plan.serviceDiscountType === 'percentage') {
-                                                        itOwnDiscount = (itGross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                    } else {
-                                                        itOwnDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                    }
-                                                } else if (it.type === 'product') {
-                                                    if (plan.productDiscountType === 'percentage') {
-                                                        itOwnDiscount = (itGross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                    } else {
-                                                        itOwnDiscount = (Number(plan.productDiscountValue) || 0);
-                                                    }
-                                                }
-                                            }
-                                            return sum + Math.max(0, itGross - itOwnDiscount);
-                                        }, 0);
-
-                                        const generalDiscountRatio = 0;
-                                        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
-                                        const discountedAmount = Math.max(0, remaining - itemGeneralDiscount);
-
-                                        // GST calculation
+                                        const calculatedItem = totals.itemData?.[idx];
                                         const rateSetting = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
-                                        const isItemInclusive = item.isInclusiveTax !== undefined
-                                            ? (String(item.isInclusiveTax) === 'true')
-                                            : !!fiscal?.inclusiveTax;
-
-                                        let gstAmount = 0;
-                                        if (isItemInclusive) {
-                                            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
-                                            gstAmount = discountedAmount - taxableAmount;
-                                        } else {
-                                            gstAmount = (discountedAmount * itemTaxPercent) / 100;
-                                        }
-
-                                        const cgstVal = gstAmount / 2;
-                                        const sgstVal = gstAmount / 2;
                                         const cgstPercent = itemTaxPercent / 2;
                                         const sgstPercent = itemTaxPercent / 2;
+                                        
+                                        const cgstVal = calculatedItem ? calculatedItem.cgst : 0;
+                                        const sgstVal = calculatedItem ? calculatedItem.sgst : 0;
+                                        const igstVal = calculatedItem ? calculatedItem.igst : 0;
+                                        const isSameState = totals.isSameState;
+
+                                        if (!isSameState && igstVal > 0) {
+                                            return (
+                                                <div className="flex items-center gap-2 border-t border-dashed border-slate-100 pt-2 text-[10px] font-bold text-slate-500">
+                                                    <div className="flex-1 flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md">
+                                                        <span>IGST ({itemTaxPercent.toFixed(1)}%):</span>
+                                                        <span className="font-mono text-slate-800">&#8377;{igstVal.toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
 
                                         return (
                                             <div className="flex items-center gap-2 border-t border-dashed border-slate-100 pt-2 text-[10px] font-bold text-slate-500">

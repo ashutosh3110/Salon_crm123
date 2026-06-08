@@ -337,7 +337,7 @@ export default function SAAnalyticsPage() {
                                 <XAxis dataKey="month" tickFormatter={formatXAxis} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent', stroke: 'transparent' }} />
-                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B4912B" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                <Area type="monotone" dataKey="revenue" name="Revenue" stroke="#B4912B" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" dot={{ r: 4, fill: '#B4912B', stroke: 'none', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#B4912B', stroke: 'none', strokeWidth: 0 }} />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
@@ -364,9 +364,9 @@ export default function SAAnalyticsPage() {
                             <div className="w-full min-w-0 overflow-hidden">
                                 <ResponsiveContainer width="100%" height={200} minWidth={0}>
                                     <PieChart>
-                                        <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" nameKey="name" stroke="none">
+                                        <Pie data={planDistribution} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value" nameKey="name" stroke="none" strokeWidth={0}>
                                             {planDistribution.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" strokeWidth={0} />
                                             ))}
                                         </Pie>
                                         <Tooltip content={<CustomTooltip />} />

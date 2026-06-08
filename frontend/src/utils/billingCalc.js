@@ -146,6 +146,8 @@ export function calculateTotals({
     let productTaxExcl = 0;
     let totalExclusiveTax = 0;
 
+    const round2 = num => Math.round((num + Number.EPSILON) * 100) / 100;
+
     itemData.forEach(d => {
         if (d.gross === 0) return;
         const { item, gross, ownDiscount, remaining } = d;
@@ -168,45 +170,75 @@ export function calculateTotals({
             ? (String(item.isInclusiveTax) === 'true')
             : inclusiveTaxFallback;
 
-        if (isItemInclusive) {
-            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
-            const gstAmount = discountedAmount - taxableAmount;
+        let itemCgst = 0;
+        let itemSgst = 0;
+        let itemIgst = 0;
+        let itemTaxable = 0;
+        let itemTotalTax = 0;
 
-            totalGstAmount += gstAmount;
-            totalBaseAmount += taxableAmount;
-            if (item.type === 'service') {
-                serviceTax += gstAmount;
+        const isSameState = customerState && salonState ? customerState === salonState : true;
+
+        if (isItemInclusive) {
+            itemTaxable = round2((discountedAmount * 100) / (100 + itemTaxPercent));
+            itemTotalTax = round2(discountedAmount - itemTaxable);
+            
+            if (isSameState) {
+                itemCgst = round2(itemTotalTax / 2);
+                itemSgst = round2(itemTotalTax - itemCgst);
             } else {
-                productTax += gstAmount;
+                itemIgst = itemTotalTax;
+            }
+            
+            totalGstAmount += itemTotalTax;
+            totalBaseAmount += itemTaxable;
+            if (item.type === 'service') {
+                serviceTax += itemTotalTax;
+            } else {
+                productTax += itemTotalTax;
             }
         } else {
-            const taxableAmount = discountedAmount;
-            const gstAmount = (taxableAmount * itemTaxPercent) / 100;
-
-            totalGstAmount += gstAmount;
-            totalBaseAmount += taxableAmount;
-            totalExclusiveTax += gstAmount;
+            itemTaxable = round2(discountedAmount);
+            itemTotalTax = round2((itemTaxable * itemTaxPercent) / 100);
+            
+            if (isSameState) {
+                itemCgst = round2(itemTotalTax / 2);
+                itemSgst = round2(itemTotalTax - itemCgst);
+            } else {
+                itemIgst = itemTotalTax;
+            }
+            
+            totalGstAmount += itemTotalTax;
+            totalBaseAmount += itemTaxable;
+            totalExclusiveTax += itemTotalTax;
 
             if (item.type === 'service') {
-                serviceTax += gstAmount;
-                serviceTaxExcl += gstAmount;
+                serviceTax += itemTotalTax;
+                serviceTaxExcl += itemTotalTax;
             } else {
-                productTax += gstAmount;
-                productTaxExcl += gstAmount;
+                productTax += itemTotalTax;
+                productTaxExcl += itemTotalTax;
             }
         }
+
+        d.cgst = itemCgst;
+        d.sgst = itemSgst;
+        d.igst = itemIgst;
+        d.totalTax = itemTotalTax;
+        d.taxable = itemTaxable;
+        d.isInclusive = isItemInclusive;
     });
 
-    const round2 = num => Math.round((num + Number.EPSILON) * 100) / 100;
-
     const isSameState = customerState && salonState ? customerState === salonState : true;
-    const cgst = isSameState ? round2(totalGstAmount / 2) : 0;
-    const sgst = isSameState ? round2(totalGstAmount / 2) : 0;
-    const igst = !isSameState ? round2(totalGstAmount) : 0;
+    
+    // Sum from item-level rounded calculations
+    const cgst = itemData.reduce((sum, d) => sum + (d.cgst || 0), 0);
+    const sgst = itemData.reduce((sum, d) => sum + (d.sgst || 0), 0);
+    const igst = itemData.reduce((sum, d) => sum + (d.igst || 0), 0);
 
-    const cgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-    const sgstExcl = isSameState ? round2(totalExclusiveTax / 2) : 0;
-    const igstExcl = !isSameState ? round2(totalExclusiveTax) : 0;
+    const cgstExcl = isSameState ? itemData.reduce((sum, d) => sum + (d.isInclusive ? 0 : d.cgst || 0), 0) : 0;
+    const sgstExcl = isSameState ? itemData.reduce((sum, d) => sum + (d.isInclusive ? 0 : d.sgst || 0), 0) : 0;
+    const igstExcl = !isSameState ? itemData.reduce((sum, d) => sum + (d.isInclusive ? 0 : d.igst || 0), 0) : 0;
+
     const finalExclusiveTax = cgstExcl + sgstExcl + igstExcl;
     const totalDeductions = generalDiscount + totalMembershipDiscount;
     const currentBillTotal = round2(Math.max(0, (subtotal + finalExclusiveTax) - totalDeductions));
@@ -245,6 +277,8 @@ export function calculateTotals({
         taxable: round2(totalBaseAmount),
         currentBillTotal,
         previousDue,
-        redeemWallet: round2(finalRedeemWallet)
+        redeemWallet: round2(finalRedeemWallet),
+        itemData
     };
 }
+

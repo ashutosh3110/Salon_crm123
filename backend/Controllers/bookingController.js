@@ -201,6 +201,11 @@ exports.createBooking = async (req, res) => {
             await spendWallet(targetCustomerId, finalTotal, `Payment for service: ${service.name}`);
         }
 
+        // Sanitize staffId if 'any' is passed
+        if (req.body.staffId === 'any' || (Array.isArray(req.body.staffId) && (req.body.staffId.includes('any') || req.body.staffId.length === 0))) {
+            req.body.staffId = [];
+        }
+
         const booking = await Booking.create({
             ...req.body,
             salonId,
@@ -385,7 +390,13 @@ exports.updateStatus = async (req, res) => {
         const oldStatus = booking.status;
         if (req.body.status) booking.status = req.body.status;
         if (req.body.paymentStatus) booking.paymentStatus = req.body.paymentStatus;
-        if (req.body.staffId) booking.staffId = req.body.staffId;
+        if (req.body.staffId) {
+            if (req.body.staffId === 'any' || (Array.isArray(req.body.staffId) && (req.body.staffId.includes('any') || req.body.staffId.length === 0))) {
+                booking.staffId = [];
+            } else {
+                booking.staffId = req.body.staffId;
+            }
+        }
         if (req.body.notes !== undefined) booking.notes = req.body.notes;
         if (req.body.serviceId) booking.serviceId = req.body.serviceId;
         if (req.body.appointmentDate) booking.appointmentDate = req.body.appointmentDate;

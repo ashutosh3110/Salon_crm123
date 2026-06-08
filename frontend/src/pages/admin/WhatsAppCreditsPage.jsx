@@ -292,9 +292,9 @@ export default function WhatsAppCreditsPage() {
                                     <div className="relative w-36 h-36 shrink-0">
                                         <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90">
                                             <circle cx="50" cy="50" r="40" fill="none" stroke="#e2e8f0" strokeWidth="14" />
-                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#34d399" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="100" />
-                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#3b82f6" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="180" />
-                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#8b5cf6" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="220" />
+                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#B4912B" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="100" />
+                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#D4AF37" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="180" />
+                                            <circle cx="50" cy="50" r="40" fill="none" stroke="#E6C975" strokeWidth="14" strokeDasharray="251.2" strokeDashoffset="220" />
                                         </svg>
                                         <div className="absolute inset-0 flex flex-col items-center justify-center">
                                             <span className="text-[8px] text-slate-400 font-bold uppercase tracking-widest mb-0.5">Total</span>
@@ -304,10 +304,10 @@ export default function WhatsAppCreditsPage() {
                                     </div>
                                     <div className="space-y-4 w-full sm:w-auto">
                                         {[
-                                            { name: 'Rehan Hair - Indore', val: '1,450 (44.6%)', color: 'bg-emerald-400' },
-                                            { name: 'Rehan Hair - Delhi', val: '820 (25.2%)', color: 'bg-blue-500' },
-                                            { name: 'Rehan Hair - Bhopal', val: '610 (18.8%)', color: 'bg-purple-500' },
-                                            { name: 'Others', val: '365 (11.4%)', color: 'bg-slate-300' }
+                                            { name: 'Rehan Hair - Indore', val: '1,450 (44.6%)', color: 'bg-[#B4912B]' },
+                                            { name: 'Rehan Hair - Delhi', val: '820 (25.2%)', color: 'bg-[#D4AF37]' },
+                                            { name: 'Rehan Hair - Bhopal', val: '610 (18.8%)', color: 'bg-[#E6C975]' },
+                                            { name: 'Others', val: '365 (11.4%)', color: 'bg-[#cbd5e1]' }
                                         ].map((l, i) => (
                                             <div key={i}>
                                                 <div className="flex items-center gap-2 text-[9px] font-bold text-slate-600 mb-0.5">

@@ -374,6 +374,8 @@ export default function SalesReports({ outletId }) {
                                             strokeWidth={3}
                                             fillOpacity={1} 
                                             fill="url(#colorSales)" 
+                                            dot={{ stroke: 'none', strokeWidth: 0 }}
+                                            activeDot={{ stroke: 'none', strokeWidth: 0 }}
                                         />
                                     </AreaChart>
                                 </ResponsiveContainer>
@@ -403,9 +405,11 @@ export default function SalesReports({ outletId }) {
                                                 outerRadius={80}
                                                 paddingAngle={4}
                                                 dataKey="value"
+                                                stroke="none"
+                                                strokeWidth={0}
                                             >
                                                 {distributionData.map((entry, index) => (
-                                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                    <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" strokeWidth={0} />
                                                 ))}
                                             </Pie>
                                             <Tooltip 

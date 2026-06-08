@@ -128,7 +128,7 @@ export default function BookingDetailPage() {
         }
 
         const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
-        const gstRate = selectedService.gst !== undefined ? selectedService.gst : (platformSettings?.serviceGst || 18);
+        const gstRate = (selectedService.gst !== undefined && selectedService.gst !== null) ? selectedService.gst : (platformSettings?.serviceGst || 18);
         const original = selectedService.price || 0;
         let subtotal = 0;
         let tax = 0;
