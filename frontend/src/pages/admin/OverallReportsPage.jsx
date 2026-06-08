@@ -47,7 +47,7 @@ const CHART_COLORS = ['#C69A20', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#e
 
 
 export default function OverallReportsPage() {
-    const { outlets = [] } = useBusiness();
+    const { outlets = [], fetchOutlets } = useBusiness();
     const { user } = useAuth();
     const [selectedOutletId, setSelectedOutletId] = useState('all');
     const [dateRange, setDateRange] = useState('month'); // 'today' | 'week' | 'month' | 'all'
@@ -122,7 +122,10 @@ export default function OverallReportsPage() {
 
     useEffect(() => {
         loadData();
-    }, []);
+        if (fetchOutlets) {
+            fetchOutlets();
+        }
+    }, [fetchOutlets]);
 
     // Helper functions
     const formatCurrency = (val) => {
