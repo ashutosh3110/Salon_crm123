@@ -201,8 +201,8 @@
 
   html:not(.dark) .new-theme svg,
   html:not(.dark) .new-theme svg * {
-    color: #334155 !important;
-    stroke: #334155 !important;
+    color: #B4912B !important;
+    stroke: #B4912B !important;
   }
 
   html:not(.dark) .new-theme button:hover svg,
@@ -241,6 +241,23 @@
   html:not(.dark) .new-theme .text-white-force,
   html:not(.dark) .new-theme .text-white-force * {
     color: #ffffff !important;
+  }
+
+  .icon-white-outline-force,
+  .icon-white-outline-force *,
+  .icon-white-outline-force svg,
+  .icon-white-outline-force svg *,
+  html:not(.dark) .admin-panel .icon-white-outline-force,
+  html:not(.dark) .admin-panel .icon-white-outline-force *,
+  html:not(.dark) .admin-panel .icon-white-outline-force svg,
+  html:not(.dark) .admin-panel .icon-white-outline-force svg *,
+  html:not(.dark) .new-theme .icon-white-outline-force,
+  html:not(.dark) .new-theme .icon-white-outline-force *,
+  html:not(.dark) .new-theme .icon-white-outline-force svg,
+  html:not(.dark) .new-theme .icon-white-outline-force svg * {
+    stroke: #ffffff !important;
+    color: #ffffff !important;
+    fill: transparent !important;
   }
 
   .text-white-muted-force,

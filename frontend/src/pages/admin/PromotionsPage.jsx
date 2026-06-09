@@ -378,7 +378,7 @@ export default function PromotionsPage() {
                     }}
                     className="flex items-center justify-center gap-1.5 !bg-[#B4912B] !text-white px-4 py-2 rounded-2xl text-[9px] font-black uppercase tracking-[0.15em] shadow-[0_0_12px_rgba(180,145,43,0.4)] hover:shadow-[0_0_20px_rgba(180,145,43,0.6)] hover:!bg-[#9a7b24] transition-all whitespace-nowrap cursor-pointer"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Add coupon
+                    <Plus className="w-3.5 h-3.5 icon-white-outline-force" /> Add coupon
                 </button>
             </div>
 

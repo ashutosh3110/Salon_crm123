@@ -172,7 +172,7 @@ export default function BridalRemindersView() {
                     onClick={() => setShowAddModal(true)}
                     className="flex items-center gap-1.5 bg-primary text-primary-foreground px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:brightness-110 hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] transition-all cursor-pointer whitespace-nowrap"
                 >
-                    <Plus className="w-3.5 h-3.5" /> Add Booking
+                    <Plus className="w-3.5 h-3.5 icon-white-outline-force" /> Add Booking
                 </button>
             </div>
 

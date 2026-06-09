@@ -633,7 +633,7 @@ export default function PayrollManager() {
                         onClick={() => setIndividualModal(true)}
                         className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 bg-[#B4912B] hover:bg-[#9a7b24] text-white rounded-lg text-xs font-bold shadow-sm transition-all"
                     >
-                        <Plus className="w-3.5 h-3.5" />
+                        <Plus className="w-3.5 h-3.5 icon-white-outline-force" />
                         Create Pay Slip
                     </button>
                 </div>
@@ -698,7 +698,7 @@ export default function PayrollManager() {
                                                 onClick={() => setIndividualModal(true)}
                                                 className="flex items-center gap-2 px-5 py-2.5 bg-[#B4912B] text-white text-xs font-bold rounded-lg hover:bg-[#9a7b24] transition-colors shadow-sm"
                                             >
-                                                <Plus className="w-4 h-4" />
+                                                <Plus className="w-4 h-4 icon-white-outline-force" />
                                                 Create Pay Slip
                                             </button>
                                         </div>

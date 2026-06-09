@@ -322,7 +322,6 @@ export default function SettingsPage({ section: propSection }) {
                         to={`/admin/settings/${t.id}`} 
                         className={tabClass(t.id)}
                     >
-                        {t.id === 'booking-link' && <LinkIcon className="w-3.5 h-3.5 mr-1.5" />}
                         {t.label}
                     </Link>
                 ))}
@@ -492,7 +491,7 @@ export default function SettingsPage({ section: propSection }) {
                                         disabled={isSaving}
                                         className="px-6 py-3 bg-[#B4912B] hover:bg-[#9A7B25] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
-                                        <Save className="w-4 h-4" />
+                                        <Save className="w-4 h-4 icon-white-outline-force" />
                                         {isSaving ? 'SAVING…' : 'SAVE PROFILE'}
                                     </button>
                                 </div>
@@ -674,7 +673,7 @@ export default function SettingsPage({ section: propSection }) {
                                         disabled={isSaving}
                                         className="px-6 py-3 bg-[#D99A29] dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-[#c88d25] dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
-                                        <Lock className="w-3.5 h-3.5" />
+                                        <Lock className="w-3.5 h-3.5 icon-white-outline-force" />
                                         {isSaving ? 'UPDATING…' : 'UPDATE PASSWORD'}
                                     </button>
                                 </div>
@@ -880,7 +879,7 @@ export default function SettingsPage({ section: propSection }) {
                                         disabled={isSaving || salonLoading}
                                         className="px-6 py-3 !bg-[#D99A29] hover:!bg-[#c88d25] !text-white !border-0 rounded-lg font-bold text-[11px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm disabled:opacity-50"
                                     >
-                                        <Save className="w-4 h-4" />
+                                        <Save className="w-4 h-4 icon-white-outline-force" />
                                         {isSaving ? 'SAVING…' : 'SAVE BUSINESS INFO'}
                                     </button>
                                 </div>
@@ -925,7 +924,7 @@ export default function SettingsPage({ section: propSection }) {
                                             onClick={handleAddTerm}
                                             className="px-6 py-3 bg-primary text-white rounded-md font-bold text-[11px] uppercase tracking-widest hover:opacity-90 transition-colors flex items-center justify-center gap-2 shrink-0 shadow-sm"
                                         >
-                                            <Plus className="w-4 h-4" /> Add
+                                            <Plus className="w-4 h-4 icon-white-outline-force" /> Add
                                         </button>
                                     </div>
                                 </div>
@@ -1007,7 +1006,7 @@ export default function SettingsPage({ section: propSection }) {
                                                 disabled={isSaving}
                                                 className="px-6 py-3 w-full sm:w-auto bg-amber-600 dark:!bg-[#B4912B] text-white rounded-lg font-bold text-[11px] uppercase tracking-widest hover:bg-amber-700 dark:hover:!bg-[#9A7B25] dark:!border-[#B4912B] transition-all text-center flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
                                             >
-                                                <Save className="w-4 h-4" />
+                                                <Save className="w-4 h-4 icon-white-outline-force" />
                                                 {isSaving ? 'Saving…' : 'Save Terms & Conditions'}
                                             </button>
                                         </div>
@@ -1099,7 +1098,7 @@ export default function SettingsPage({ section: propSection }) {
                                         }}
                                         className="px-6 py-2.5 bg-primary text-primary-foreground font-bold text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2 shrink-0 rounded-xl shadow-sm"
                                     >
-                                        <Copy className="w-4 h-4" /> Copy Link
+                                        <Copy className="w-4 h-4 icon-white-outline-force" /> Copy Link
                                     </button>
                                 </div>
                             </div>

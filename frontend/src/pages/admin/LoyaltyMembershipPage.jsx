@@ -83,16 +83,16 @@ export default function LoyaltyMembershipPage({ tab: initialTab = 'plans' }) {
                             key={tab.id}
                             onClick={() => navigate(`/admin/loyalty/${tab.id}`)}
                             className={`flex items-center gap-2 px-5 py-3 transition-all duration-300 relative group whitespace-nowrap ${isActive
-                                ? 'bg-[#B4912B] text-white'
+                                ? 'bg-[#B4912B] text-white text-white-force'
                                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                                 }`}
                         >
                             <Icon
-                                className={`transition-colors duration-300 ${isActive ? 'text-white' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`}
+                                className={`transition-colors duration-300 ${isActive ? 'text-white icon-white-outline-force' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'}`}
                                 style={{ width: '16px', height: '16px' }}
                             />
                             <span
-                                className="block uppercase tracking-widest transition-colors duration-300"
+                                className={`block uppercase tracking-widest transition-colors duration-300 ${isActive ? 'text-white-force' : ''}`}
                                 style={{ fontSize: '9.5px', fontWeight: 800 }}
                             >
                                 {tab.label}

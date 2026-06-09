@@ -404,7 +404,7 @@ export default function MembersListTab() {
                         onClick={() => setShowAssignModal(true)}
                         className="h-11 px-5 bg-[#B4912B] hover:bg-[#9a7b24] text-white rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-sm shrink-0"
                     >
-                        <UserPlus className="w-4 h-4" />
+                        <UserPlus className="w-4 h-4 icon-white-outline-force" />
                         Assign Plan
                     </button>
 

@@ -167,7 +167,7 @@ export default function MembershipRemindersTab() {
                 <div className="flex items-center gap-3">
 
                     <button onClick={handleBulkSend} disabled={isBulkSending} className="h-9 px-5 rounded-xl bg-[#B4912B] hover:bg-[#9A7B25] text-white flex items-center gap-2 font-bold text-xs transition-colors shadow-sm disabled:opacity-50">
-                        {isBulkSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
+                        {isBulkSending ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5 icon-white-outline-force" />}
                         {isBulkSending ? 'Sending...' : 'Send Bulk Reminder'}
                     </button>
                 </div>
