@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { Calendar, BarChart3, Users, Sparkles, Clock, Shield } from 'lucide-react';
+import { useTheme } from '../../../contexts/ThemeContext';
 
 const features = [
     {
@@ -47,12 +48,17 @@ const itemVariants = {
 };
 
 export default function Features({ data }) {
+    const { theme } = useTheme();
     // Merge static icons with dynamic content if data exists
-    const displayFeatures = data && data.length > 0 ? features.map((f, i) => ({
-        ...f,
-        title: data[i]?.title || f.title,
-        desc: data[i]?.desc || f.desc
-    })) : features;
+    const defaultIcons = [Calendar, BarChart3, Users, Sparkles, Clock, Shield];
+    
+    const displayFeatures = data && data.length > 0 
+        ? data.map((item, i) => ({
+            icon: defaultIcons[i % defaultIcons.length],
+            title: item.title,
+            desc: item.desc
+        })) 
+        : features;
 
     return (
         <section
@@ -126,13 +132,26 @@ export default function Features({ data }) {
                     <motion.div
                         key={title}
                         variants={itemVariants}
-                        whileHover={{ background: 'var(--wapixo-bg-alt)' }}
                         style={{
                             padding: 'clamp(1.5rem, 3vw, 2.25rem)',
                             background: 'var(--wapixo-bg)',
                             border: '1px solid var(--wapixo-border)',
                             cursor: 'default',
-                            transition: 'background 0.3s ease',
+                            transition: 'all 0.3s ease',
+                            position: 'relative',
+                            zIndex: 1
+                        }}
+                        onMouseEnter={(e) => {
+                            if (window.innerWidth >= 768) {
+                                e.currentTarget.style.zIndex = '10';
+                                e.currentTarget.style.background = 'var(--wapixo-bg-alt)';
+                                e.currentTarget.style.boxShadow = theme === 'dark' ? '0 20px 40px rgba(0,0,0,0.4)' : '0 15px 40px rgba(0, 0, 0, 0.1), 0 0 15px rgba(180, 145, 43, 0.1)';
+                            }
+                        }}
+                        onMouseLeave={(e) => {
+                            e.currentTarget.style.zIndex = '1';
+                            e.currentTarget.style.background = 'var(--wapixo-bg)';
+                            e.currentTarget.style.boxShadow = 'none';
                         }}
                     >
                         <div style={{

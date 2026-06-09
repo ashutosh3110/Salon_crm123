@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import { useTheme } from '../../contexts/ThemeContext';
-
 import api, { API_BASE_URL } from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
 
@@ -42,6 +42,14 @@ export default function BlogPage() {
 
     return (
         <div className="new-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)' }}>
+            <Helmet>
+                <title>Salon Management Blog & Insights | Wapixo Journal</title>
+                <meta name="description" content="Read expert tips on salon management, appointment booking, staff management, POS billing, and growing your salon business in India." />
+                <link rel="canonical" href="https://wapixo.com/blog" />
+                <meta property="og:title" content="Wapixo Blog — Salon Business Insights" />
+                <meta property="og:description" content="Expert tips, guides and stories for salon owners in India." />
+                <meta property="og:url" content="https://wapixo.com/blog" />
+            </Helmet>
             <WapixoNavbar />
 
             {/* Elegant Header - Matching Wapixo Ref */}

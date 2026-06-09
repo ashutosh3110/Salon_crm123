@@ -187,6 +187,7 @@ const SAAnalyticsPage = lazy(() => import('./pages/superadmin/SAAnalyticsPage'))
 const SAInquiriesPage = lazy(() => import('./pages/superadmin/SAInquiriesPage'));
 const SACMSPage = lazy(() => import('./pages/superadmin/SACMSPage'));
 const SABlogPage = lazy(() => import('./pages/superadmin/SABlogPage'));
+const SADatabaseBackupPage = lazy(() => import('./pages/superadmin/SADatabaseBackupPage'));
 
 // Customer App - Lazy Loaded
 const AppLayout = lazy(() => import('./layouts/AppLayout'));
@@ -268,6 +269,7 @@ const InventorySettingsPage = lazy(() => import('./pages/inventory/InventorySett
 
 const ManagerLayout = lazy(() => import('./layouts/ManagerLayout'));
 const ManagerDashboard = lazy(() => import('./pages/manager/ManagerDashboard'));
+const StaffDashboardPage = lazy(() => import('./pages/admin/StaffDashboardPage'));
 const TeamPage = lazy(() => import('./pages/manager/TeamPage'));
 const PerformancePage = lazy(() => import('./pages/manager/PerformancePage'));
 const AttendancePage = lazy(() => import('./pages/manager/AttendancePage'));
@@ -324,11 +326,13 @@ function App() {
       <Toaster 
         position="top-center" 
         reverseOrder={false} 
+        containerStyle={{ zIndex: 99999 }}
         toastOptions={{
           duration: 4000,
           style: {
             background: '#333',
             color: '#fff',
+            zIndex: 99999
           },
         }}
       />
@@ -583,7 +587,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<ManagerLayout />}>
-                            <Route path="/manager" element={<ManagerDashboard />} />
+                            <Route path="/manager" element={<StaffDashboardPage />} />
                             <Route path="/manager/team" element={<TeamPage />} />
                             <Route path="/manager/performance" element={<PerformancePage />} />
                             <Route path="/manager/attendance" element={<AttendancePage />} />
@@ -602,7 +606,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<ReceptionistLayout />}>
-                            <Route path="/receptionist" element={<ReceptionistDashboard />} />
+                            <Route path="/receptionist" element={<StaffDashboardPage />} />
                             <Route path="/receptionist/appointments" element={<AppointmentsPage />} />
                             <Route path="/receptionist/queue" element={<QueuePage />} />
                             <Route path="/receptionist/checkin" element={<CheckInPage />} />
@@ -619,7 +623,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<StylistLayout />}>
-                            <Route path="/stylist" element={<StylistDashboard />} />
+                            <Route path="/stylist" element={<StaffDashboardPage />} />
                             <Route path="/stylist/schedule" element={<Navigate to="/stylist" replace />} />
                             <Route path="/stylist/clients" element={<StylistClientsPage />} />
                             <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />
@@ -636,7 +640,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<AccountantLayout />}>
-                            <Route path="/accountant" element={<AccountantDashboard />} />
+                            <Route path="/accountant" element={<StaffDashboardPage />} />
                             <Route path="/accountant/revenue" element={<RevenuePage />} />
                             <Route path="/accountant/expenses" element={<ExpensesPage />} />
                             <Route path="/accountant/invoices" element={<SupplierInvoicesPage />} />
@@ -653,7 +657,7 @@ function App() {
                    */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<InventoryLayout />}>
-                            <Route path="/inventory" element={<InventoryDashboard />} />
+                            <Route path="/inventory" element={<StaffDashboardPage />} />
                             <Route path="/inventory/stock" element={<InventoryStockOverview />} />
                             <Route path="/inventory/purchase" element={<PurchasePage />} />
                             <Route path="/inventory/transfer" element={<StockTransferPage />} />
@@ -682,6 +686,7 @@ function App() {
                             <Route path="/superadmin/support" element={<SASupportPage />} />
                             <Route path="/superadmin/inquiries" element={<SAInquiriesPage />} />
                             <Route path="/superadmin/marketing/cms" element={<MarketingCMSPage />} />
+                            <Route path="/superadmin/backup" element={<SADatabaseBackupPage />} />
                           </Route>
                         </Route>
 

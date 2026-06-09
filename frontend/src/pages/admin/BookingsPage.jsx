@@ -81,9 +81,11 @@ export default function BookingsPage() {
     const {
         bookings: contextBookings,
         staff: contextStaff,
+        outlets: contextOutlets,
         updateBookingStatus,
         bookingsLoading,
-        fetchBookings
+        fetchBookings,
+        fetchOutlets
     } = useBusiness();
 
     const [view, setView] = useState('list'); // 'list' or 'calendar'
@@ -93,7 +95,8 @@ export default function BookingsPage() {
 
     // Filter states
     const [searchTerm, setSearchTerm] = useState('');
-    const [dateFilter, setDateFilter] = useState('all');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
     const [outletFilter, setOutletFilter] = useState('all');
     const [staffFilter, setStaffFilter] = useState('all');
     const [statusFilter, setStatusFilter] = useState('all');
@@ -104,8 +107,8 @@ export default function BookingsPage() {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchTerm, dateFilter, outletFilter, staffFilter, statusFilter]);
-    
+    }, [searchTerm, startDate, endDate, outletFilter, staffFilter, statusFilter]);
+
     // Prevent background scroll when any modal is open
     useEffect(() => {
         if (selectedBooking || isBookingModalOpen) {
@@ -115,7 +118,7 @@ export default function BookingsPage() {
             document.body.style.overflow = 'unset';
             document.body.style.height = 'auto';
         }
-        return () => { 
+        return () => {
             document.body.style.overflow = 'unset';
             document.body.style.height = 'auto';
         };
@@ -127,9 +130,13 @@ export default function BookingsPage() {
 
     const staff = contextStaff;
     const loading = bookingsLoading;
+    const outlets = useMemo(() => {
+        return Array.isArray(contextOutlets) ? contextOutlets : [];
+    }, [contextOutlets]);
 
     useEffect(() => {
         fetchBookings?.();
+        fetchOutlets?.();
     }, []);
 
     const filteredBookings = useMemo(() => {
@@ -138,7 +145,7 @@ export default function BookingsPage() {
             const clientName = b.client?.name || '';
             const clientPhone = b.client?.phone || '';
             const st = searchTerm.trim().toLowerCase().replace(/\s+/g, '');
-            const matchesSearch = !st || 
+            const matchesSearch = !st ||
                 (b._id || '').toLowerCase().includes(st) ||
                 (b.client?.name || '').toLowerCase().replace(/\s+/g, '').includes(st) ||
                 (b.client?.phone || '').replace(/\D/g, '').includes(st.replace(/\D/g, '')) ||
@@ -155,32 +162,25 @@ export default function BookingsPage() {
             return matchesSearch && matchesStatus && matchesStaff && matchesOutlet;
         });
 
-        // Date Filter implementation
-        if (dateFilter !== 'all') {
-            const now = new Date();
-            const todayStr = now.toDateString();
-
-            if (dateFilter === 'today') {
-                result = result.filter(b => {
-                    const bDate = b.appointmentDate || b.date;
-                    return bDate && new Date(bDate).toDateString() === todayStr;
-                });
-            } else if (dateFilter === 'week') {
-                const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                result = result.filter(b => {
-                    const bDate = b.appointmentDate || b.date;
-                    return bDate && new Date(bDate) >= weekAgo;
-                });
-            } else if (dateFilter === 'month') {
-                const monthAgo = new Date(now.getFullYear(), now.getMonth(), 1);
-                result = result.filter(b => {
-                    const bDate = b.appointmentDate || b.date;
-                    return bDate && new Date(bDate) >= monthAgo;
-                });
-            }
+        // Date Filter implementation: Start Date to End Date
+        if (startDate) {
+            const start = new Date(startDate);
+            start.setHours(0, 0, 0, 0);
+            result = result.filter(b => {
+                const bDate = b.appointmentDate || b.date;
+                return bDate && new Date(bDate) >= start;
+            });
+        }
+        if (endDate) {
+            const end = new Date(endDate);
+            end.setHours(23, 59, 59, 999);
+            result = result.filter(b => {
+                const bDate = b.appointmentDate || b.date;
+                return bDate && new Date(bDate) <= end;
+            });
         }
         return result;
-    }, [bookings, searchTerm, statusFilter, staffFilter, dateFilter]);
+    }, [bookings, searchTerm, statusFilter, staffFilter, startDate, endDate, outletFilter]);
 
     const totalPages = Math.ceil(filteredBookings.length / itemsPerPage);
     const paginatedBookings = useMemo(() => {
@@ -224,41 +224,41 @@ export default function BookingsPage() {
     const stats = useMemo(() => {
         const safeBookings = Array.isArray(bookings) ? bookings : [];
         return [
-            { 
-                label: "TOTAL BOOKINGS", 
-                value: safeBookings.length, 
+            {
+                label: "TOTAL BOOKINGS",
+                value: safeBookings.length,
                 subtext: "All time bookings",
-                icon: CalendarDays, 
+                icon: CalendarDays,
                 iconColorClass: '!text-[#7C3AED] dark:!text-[#A78BFA]',
                 iconBgClass: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
                 cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
                 cardBorderClass: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#A78BFA]/50',
             },
-            { 
-                label: 'ACCEPTED', 
-                value: safeBookings.filter(b => b.status === 'confirmed').length, 
+            {
+                label: 'ACCEPTED',
+                value: safeBookings.filter(b => b.status === 'confirmed').length,
                 subtext: "Confirmed bookings",
-                icon: CheckCircle2, 
+                icon: CheckCircle2,
                 iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
                 iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
                 cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
                 cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
             },
-            { 
-                label: 'COMPLETION RATE', 
-                value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`, 
+            {
+                label: 'COMPLETION RATE',
+                value: `${safeBookings.length ? Math.round((safeBookings.filter(b => b.status === 'completed').length / safeBookings.length) * 100) : 0}%`,
                 subtext: "Bookings completed",
-                icon: TrendingUp, 
+                icon: TrendingUp,
                 iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
                 iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
                 cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
                 cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
             },
-            { 
-                label: 'CANCELLED', 
-                value: safeBookings.filter(b => b.status === 'cancelled').length, 
+            {
+                label: 'CANCELLED',
+                value: safeBookings.filter(b => b.status === 'cancelled').length,
                 subtext: "Cancelled bookings",
-                icon: XCircle, 
+                icon: XCircle,
                 iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
                 iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
                 cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
@@ -325,23 +325,23 @@ export default function BookingsPage() {
                             <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${stat.iconBgClass}`}>
                                 <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
                             </div>
-                            
+
                             {/* Label + Value + Subtitle */}
                             <div className="flex flex-col !items-start !text-left">
-                                <span 
-                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
                                     className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
                                 >
-                                   {stat.label}
+                                    {stat.label}
                                 </span>
-                                <h3 
-                                    style={{ fontSize: '24px', fontWeight: 850 }} 
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
                                     className="text-slate-800 dark:text-slate-55 leading-none tracking-tight !text-left"
                                 >
                                     {typeof stat.value === 'string' ? stat.value : <AnimatedCounter value={stat.value} />}
                                 </h3>
-                                <span 
-                                    style={{ fontSize: '12px', fontWeight: 500 }} 
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 500 }}
                                     className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
                                 >
                                     {stat.subtext}
@@ -353,8 +353,8 @@ export default function BookingsPage() {
 
                 {/* Status Pie Chart */}
                 <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
-                    <span 
-                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                    <span
+                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
                         className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-3 !text-left block"
                     >
                         STATUS MIX
@@ -384,8 +384,8 @@ export default function BookingsPage() {
 
                 {/* Source Chart */}
                 <div className="!bg-white dark:!bg-slate-900 p-4 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col h-full justify-between">
-                    <span 
-                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} 
+                    <span
+                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
                         className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-3 !text-left block font-sans"
                     >
                         SOURCES
@@ -436,17 +436,56 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto">
+                    <div className="flex items-center gap-2 w-full xl:w-auto flex-1 xl:flex-none">
+                        <div 
+                            onClick={(e) => { try { e.currentTarget.querySelector('input')?.showPicker(); } catch (err) {} }}
+                            className="flex items-center bg-surface border border-border/40 rounded-xl px-3 h-8 text-[11px] font-black text-text-muted gap-2 shadow-sm hover:shadow-md transition-all flex-1 xl:flex-none w-full xl:w-36 cursor-pointer"
+                        >
+                            <Calendar className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                            <span className="text-[10px] uppercase tracking-wider text-text-muted/60">Start:</span>
+                            <input
+                                type="date"
+                                value={startDate}
+                                onChange={(e) => setStartDate(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-transparent border-none outline-none text-[11px] font-bold text-text-muted focus:text-text w-full cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            />
+                        </div>
+                        <div 
+                            onClick={(e) => { try { e.currentTarget.querySelector('input')?.showPicker(); } catch (err) {} }}
+                            className="flex items-center bg-surface border border-border/40 rounded-xl px-3 h-8 text-[11px] font-black text-text-muted gap-2 shadow-sm hover:shadow-md transition-all flex-1 xl:flex-none w-full xl:w-36 cursor-pointer"
+                        >
+                            <Calendar className="w-3.5 h-3.5 text-text-muted shrink-0" />
+                            <span className="text-[10px] uppercase tracking-wider text-text-muted/60">End:</span>
+                            <input
+                                type="date"
+                                value={endDate}
+                                onChange={(e) => setEndDate(e.target.value)}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-transparent border-none outline-none text-[11px] font-bold text-text-muted focus:text-text w-full cursor-pointer [color-scheme:light] dark:[color-scheme:dark]"
+                            />
+                        </div>
+                        {(startDate || endDate) && (
+                            <button
+                                onClick={() => {
+                                    setStartDate('');
+                                    setEndDate('');
+                                }}
+                                className="px-2 py-1 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all"
+                                title="Clear dates"
+                            >
+                                Clear
+                            </button>
+                        )}
+                    </div>
                     <CustomDropdown
-                        value={dateFilter}
-                        onChange={setDateFilter}
+                        value={outletFilter}
+                        onChange={setOutletFilter}
                         options={[
-                            { value: 'all', label: 'All Dates' },
-                            { value: 'today', label: 'Today' },
-                            { value: 'week', label: 'This Week' },
-                            { value: 'month', label: 'This Month' }
+                            { value: 'all', label: 'All Outlets' },
+                            ...outlets.map(o => ({ value: o._id, label: o.name }))
                         ]}
                         className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
-                        icon={CalendarDays}
                     />
                     <CustomDropdown
                         value={staffFilter}
@@ -469,7 +508,7 @@ export default function BookingsPage() {
                         ]}
                         className="w-full xl:w-32 h-8 bg-surface border border-border/40 rounded-xl shadow-sm hover:shadow-md [&>button]:border-none [&>button]:shadow-none [&>button]:h-full [&>button]:py-0 [&>button]:bg-transparent [&_span]:normal-case [&_span]:text-[11px] [&_span]:font-black [&_span]:text-text-muted flex-1 xl:flex-none"
                     />
-                     
+
                     <button className="flex items-center justify-center gap-1 px-3 h-8 bg-surface border border-border/40 text-text-muted text-[11px] font-black rounded-xl shadow-sm hover:text-primary transition-all flex-1 xl:flex-none shrink-0 uppercase tracking-wider">
                         <Filter className="w-3.5 h-3.5" /> Filters
                     </button>
@@ -482,79 +521,7 @@ export default function BookingsPage() {
                     Loading bookings...
                 </div>
             ) : view === 'calendar' ? (
-                <div className="flex flex-col lg:flex-row bg-surface-alt border border-border overflow-hidden shadow-lg lg:h-[700px] animate-reveal">
-                    {/* Calendar Sidebar */}
-                    <div className="w-full lg:w-72 shrink-0 bg-surface flex flex-col border-b lg:border-b-0 lg:border-r border-border">
-                        <div className="p-5 border-b border-border bg-surface-alt/50">
-                            <h3 className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2">
-                                <Calendar className="w-3.5 h-3.5 text-primary" />
-                                Select Date
-                            </h3>
-                        </div>
-
-                        <div className="p-3">
-                            <MiniCalendar
-                                selectedDate={selectedDate}
-                                onDateSelect={setSelectedDate}
-                            />
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-4 scroll-smooth no-scrollbar">
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-[9px] font-black text-text-muted uppercase tracking-wider">
-                                        {selectedDate.toLocaleDateString('en-IN', { weekday: 'long', month: 'short', day: 'numeric' })}
-                                    </h4>
-                                    <span className="text-[8px] font-black text-primary bg-primary/10 px-2 py-0.5 uppercase tracking-wider border border-primary/20">
-                                        {filteredBookings.filter(b => {
-                                            const d = new Date(b.appointmentDate);
-                                            return d.getDate() === selectedDate.getDate() &&
-                                                d.getMonth() === selectedDate.getMonth() &&
-                                                d.getFullYear() === selectedDate.getFullYear();
-                                        }).length} Bookings
-                                    </span>
-                                </div>
-                                <div className="space-y-2">
-                                    {filteredBookings.filter(b => {
-                                        const d = new Date(b.appointmentDate);
-                                        return d.getDate() === selectedDate.getDate() &&
-                                            d.getMonth() === selectedDate.getMonth();
-                                    }).length === 0 ? (
-                                        <p className="text-[10px] text-gray-400 font-black uppercase mt-8 text-center italic opacity-40">No bookings on this day.</p>
-                                    ) : (
-                                        filteredBookings.filter(b => {
-                                            const d = new Date(b.appointmentDate);
-                                            return d.getDate() === selectedDate.getDate() &&
-                                                d.getMonth() === selectedDate.getMonth() &&
-                                                d.getFullYear() === selectedDate.getFullYear();
-                                        }).map((b, i) => (
-                                            <div key={i} className="flex gap-3 px-3 group cursor-pointer hover:bg-surface-alt/50 py-3 transition-all border border-transparent hover:border-border">
-                                                <div className="flex flex-col items-center gap-1.5 mt-1">
-                                                    <div className="w-2 h-2 bg-primary shadow-[0_0_6px_rgba(var(--primary-rgb),0.4)]" />
-                                                    <div className="w-[1px] h-full bg-border" />
-                                                </div>
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-black text-text uppercase tracking-tight leading-none">
-                                                        {new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </span>
-                                                    <span className="text-xs font-black text-text-secondary tracking-tight mt-1 leading-none uppercase">{b.client?.name}</span>
-                                                    <span className="text-[8px] text-primary font-black uppercase tracking-wider mt-1.5 leading-none">{b.service?.name}</span>
-                                                </div>
-                                            </div>
-                                        ))
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-4 border-t border-border bg-surface-alt/30">
-                            <div className="flex items-center gap-2 text-[9px] font-black text-text-muted uppercase tracking-wider">
-                                <div className="w-2 h-2 bg-primary" />
-                                <span>Calendar Sync Active</span>
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="flex flex-col bg-surface-alt border border-border overflow-hidden shadow-lg lg:h-[700px] animate-reveal">
                     <div className="flex-1 flex flex-col bg-background min-h-[500px] lg:min-h-0">
                         <BookingCalendar
                             bookings={filteredBookings}
@@ -614,12 +581,12 @@ export default function BookingsPage() {
                                             <td className="px-4 py-2">
                                                 <div className="flex items-center justify-center gap-1">
                                                     <span className="text-[10px] font-black text-text-secondary uppercase tracking-wider">#{b._id?.slice(-6).toUpperCase() || 'NULL'}</span>
-                                                    <button 
-                                                        onClick={(e) => { 
-                                                            e.stopPropagation(); 
-                                                            navigator.clipboard.writeText(b._id); 
+                                                    <button
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            navigator.clipboard.writeText(b._id);
                                                             toast.success('Booking ID copied to clipboard!');
-                                                        }} 
+                                                        }}
                                                         className="text-text-muted hover:text-text transition-colors p-1"
                                                     >
                                                         <Copy className="w-3 h-3" />
@@ -664,12 +631,22 @@ export default function BookingsPage() {
                                             </td>
                                             <td className="px-4 py-2 text-center">
                                                 <div className="flex items-center justify-center gap-1.5" onClick={e => e.stopPropagation()}>
-                                                    <button 
+                                                    <button
                                                         onClick={() => navigate(`/admin/bookings/${b._id}`)}
                                                         className="p-1.5 bg-surface border border-border/40 text-text-muted rounded-lg hover:text-text hover:border-primary/30 transition-all shadow-sm active:scale-95"
+                                                        title="View Details"
                                                     >
                                                         <Eye className="w-3 h-3" />
                                                     </button>
+                                                    {(b.source?.toUpperCase() === 'APP' || b.source?.toUpperCase() === 'ADMIN' || !b.source) && (
+                                                        <button
+                                                            onClick={() => navigate(`/admin/bookings/${b._id}?edit=true`)}
+                                                            className="p-1.5 bg-surface border border-border/40 text-[#B8860B] rounded-lg hover:bg-[#B8860B]/10 hover:border-[#B8860B]/30 transition-all shadow-sm active:scale-95"
+                                                            title="Edit Booking"
+                                                        >
+                                                            <Edit className="w-3 h-3" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -686,7 +663,7 @@ export default function BookingsPage() {
                                 Showing {(currentPage - 1) * itemsPerPage + 1} to {Math.min(currentPage * itemsPerPage, filteredBookings.length)} of {filteredBookings.length} bookings
                             </span>
                             <div className="flex items-center gap-1">
-                                <button 
+                                <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.max(1, prev - 1)); }}
                                     disabled={currentPage === 1}
@@ -697,7 +674,7 @@ export default function BookingsPage() {
                                 <div className="px-2 py-0.5 border border-border/60 text-text font-black text-[10px] rounded-md mx-1">
                                     {currentPage}
                                 </div>
-                                <button 
+                                <button
                                     type="button"
                                     onClick={(e) => { e.stopPropagation(); setCurrentPage(prev => Math.min(totalPages, prev + 1)); }}
                                     disabled={currentPage === totalPages || totalPages === 0}

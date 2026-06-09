@@ -514,11 +514,13 @@ export default function POSBillingPage() {
 
     // Billing & Payment System Updates
     const [includePreviousDue, setIncludePreviousDue] = useState(false);
+    const [previousDuePaidAmount, setPreviousDuePaidAmount] = useState(0);
     const [paymentDate, setPaymentDate] = useState(getTodayDateString());
     const [autoSendWhatsApp, setAutoSendWhatsApp] = useState(true);
     const [isWhatsAppSending, setIsWhatsAppSending] = useState(false);
     const [invoiceIdToEdit, setInvoiceIdToEdit] = useState(null);
     const [editInvoiceData, setEditInvoiceData] = useState(null);
+    const loadedInvoiceIdRef = useRef(null);
 
     // ── Handle Incoming Navigation State (from Appointments or Edit Invoice) ──
     useEffect(() => {
@@ -570,6 +572,11 @@ export default function POSBillingPage() {
 
         if (location.state?.editInvoice) {
             const invoice = location.state.editInvoice;
+            if (loadedInvoiceIdRef.current === invoice._id) {
+                return;
+            }
+            loadedInvoiceIdRef.current = invoice._id;
+
             // Quick Invoices do not have bookingId or orderId
             const isQuickInvoice = !invoice.bookingId && !invoice.orderId;
             if (isQuickInvoice) {
@@ -709,11 +716,11 @@ export default function POSBillingPage() {
             customerState,
             salonState: fiscal.state,
             includePreviousDue,
-            previousDue: selectedClient?.dueAmount || 0,
+            previousDue: Number(previousDuePaidAmount || 0),
             redeemWallet,
             payments
         });
-    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, fiscal, platformSettings, customerState, payments, appointmentId, orderId]);
+    }, [cart, manualDiscount, appliedPromotion, appliedVoucher, activeMembership, redeemWallet, taxPercent, selectedClient, includePreviousDue, previousDuePaidAmount, fiscal, platformSettings, customerState, payments, appointmentId, orderId]);
 
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
@@ -721,17 +728,31 @@ export default function POSBillingPage() {
         return (allWallets || {})[selectedClient._id]?.balance || 0;
     }, [selectedClient, allWallets]);
 
+    const selectedBooking = useMemo(() => {
+        return appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
+    }, [appointmentId, businessBookings]);
+
+    const bookingAdvancePaid = useMemo(() => {
+        return selectedBooking ? Number(selectedBooking.advancePaid || 0) : 0;
+    }, [selectedBooking]);
+
+    const isOverpaid = useMemo(() => {
+        const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
+        return mainPaidAmount - (totals.total - totals.redeemWallet) > 0.005;
+    }, [payments, totals.total, totals.redeemWallet]);
+
     // Sync payment amount to total unless manually edited by user
     useEffect(() => {
         if (!isManualPayment && payments.length === 1) {
-            setPayments([{ ...payments[0], amount: totals.total }]);
+            const remainingPay = Math.max(0, totals.total - bookingAdvancePaid);
+            setPayments([{ ...payments[0], amount: remainingPay }]);
         }
-    }, [totals.total, isManualPayment, payments.length]);
+    }, [totals.total, isManualPayment, payments.length, bookingAdvancePaid]);
 
     // Main Terminal Overpayment Warning Toast
     useEffect(() => {
         const mainPaidAmount = payments.reduce((s, p) => s + p.amount, 0);
-        const mainTotalLiability = totals.total - totals.redeemWallet + (includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0);
+        const mainTotalLiability = totals.total - totals.redeemWallet;
         const overpaidDiff = Math.round((mainPaidAmount - mainTotalLiability) * 100) / 100;
         if (overpaidDiff > 0) {
             toast(`Info: Total payment exceeds total liability by ₹${overpaidDiff.toFixed(2)}`, {
@@ -1182,10 +1203,11 @@ export default function POSBillingPage() {
             return;
         }
 
-        // In bookings/orders mode: customer already paid online — auto-set payment
-        if (serviceMode === 'bookings' || serviceMode === 'orders') {
-            const fullAmount = totals.total - (redeemWallet || 0);
-            setPayments([{ method: 'online', amount: Math.max(0, fullAmount) }]);
+        const walletPaymentsSum = payments.filter(p => p.method === 'wallet').reduce((s, p) => s + p.amount, 0);
+        const totalWalletUse = (redeemWallet || 0) + walletPaymentsSum;
+        if (totalWalletUse > clientWalletBalance) {
+            alert(`Insufficient wallet balance. Customer wallet balance is ₹${clientWalletBalance.toFixed(2)}`);
+            return;
         }
 
         const paidAmount = payments.reduce((s, p) => s + p.amount, 0);
@@ -1254,11 +1276,17 @@ export default function POSBillingPage() {
                     serviceGstPercent: totals.serviceGstRate,
                     productGstPercent: totals.productGstRate,
                     subtotal: totals.subtotal,
-                    payments: payments.map(p => ({ method: p.method, amount: p.amount })),
-                    useWalletAmount: totals.redeemWallet,
+                    payments: (() => {
+                        const finalP = payments.filter(p => p.method !== 'wallet').map(p => ({ method: p.method, amount: p.amount }));
+                        if (bookingAdvancePaid > 0) {
+                            finalP.push({ method: 'advance', amount: bookingAdvancePaid });
+                        }
+                        return finalP;
+                    })(),
+                    useWalletAmount: totals.redeemWallet + walletPaymentsSum,
                     discount: totals.discount,
                     membershipDiscount: totals.membershipDiscount,
-                    previousDueCollected: includePreviousDue ? Number(selectedClient?.dueAmount || 0) : 0,
+                    previousDueCollected: includePreviousDue ? Number(previousDuePaidAmount || 0) : 0,
                     bookingId: appointmentId,
                     orderId: orderId
                 };
@@ -1438,6 +1466,7 @@ export default function POSBillingPage() {
         setSelectedBookingIds([]);
         setSelectedOrderIds([]);
         setIncludePreviousDue(false);
+        setPreviousDuePaidAmount(0);
         setPaymentDate(getTodayDateString());
         setInvoiceIdToEdit(null);
     };
@@ -1825,7 +1854,15 @@ export default function POSBillingPage() {
 
                                             {/* Price row */}
                                             <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-dashed border-slate-200 dark:border-slate-700/60">
-                                                <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                <div>
+                                                    <p className="text-base font-black text-slate-900">₹{item.price}</p>
+                                                    {Number(b.advancePaid || 0) > 0 && (
+                                                        <div className="text-[10px] font-bold text-slate-500 mt-1 space-y-0.5">
+                                                            <div className="text-amber-600 dark:text-amber-400">Advance: ₹{b.advancePaid}</div>
+                                                            <div className="text-[#cca839] font-extrabold">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${item.isInclusiveTax
                                                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                                                         : 'bg-blue-50 text-blue-600 border border-blue-200'
@@ -2233,6 +2270,14 @@ export default function POSBillingPage() {
                                                     <span className="text-[11px] font-black">− ₹{totals.redeemWallet.toFixed(2)}</span>
                                                 </div>
                                             )}
+                                            {bookingAdvancePaid > 0 && (
+                                                <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                                                    <span className="text-[11px] font-semibold flex items-center gap-1">
+                                                        <Wallet className="w-3 h-3" /> Advance Paid
+                                                    </span>
+                                                    <span className="text-[11px] font-black">− ₹{bookingAdvancePaid.toFixed(2)}</span>
+                                                </div>
+                                            )}
 
                                             {/* Total discount line */}
                                             {(totals.discount + totals.membershipDiscount + totals.redeemWallet) > 0 && (
@@ -2323,48 +2368,84 @@ export default function POSBillingPage() {
                                     </div>
                                 </div>
 
-                                {/* ── 7. PAYMENT STATUS ── */}
+                                {/* ── 7. PAYMENT DETAILS ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
                                         <Wallet className="w-3.5 h-3.5 text-[#cca839]" />
-                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Status</span>
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Details</span>
                                     </div>
-                                    <div className="px-4 py-3">
-                                        {(() => {
-                                            const isImportedPaid = serviceMode === 'bookings' || serviceMode === 'orders';
-                                            const grandTotal = totals.total;
-                                            const paid = isImportedPaid ? grandTotal : redeemWallet;
-                                            const pending = isImportedPaid ? 0 : Math.max(0, grandTotal - paid);
-                                            const isPaid = isImportedPaid || pending <= 0.5;
-                                            const isPartial = paid > 0 && !isPaid;
-
-                                            return (
-                                                <div className="space-y-2">
-                                                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-[11px] font-black w-fit ${
-                                                        isPaid
-                                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/40'
-                                                            : isPartial
-                                                                ? 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/40'
-                                                                : 'bg-slate-50 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-400'
-                                                    }`}>
-                                                        <div className={`w-2 h-2 rounded-full ${isPaid ? 'bg-emerald-500' : isPartial ? 'bg-amber-500 animate-pulse' : 'bg-slate-400'}`} />
-                                                        {isPaid ? 'Pre-Paid' : isPartial ? 'Partial Paid' : 'Pending'}
-                                                    </div>
-                                                    {isPartial && (
-                                                        <div className="grid grid-cols-2 gap-2 mt-2">
-                                                            <div className="bg-emerald-50 dark:bg-emerald-900/10 rounded-xl p-2.5">
-                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Paid</p>
-                                                                <p className="text-[13px] font-black text-emerald-700">₹{paid.toFixed(2)}</p>
-                                                            </div>
-                                                            <div className="bg-amber-50 dark:bg-amber-900/10 rounded-xl p-2.5">
-                                                                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">Pending</p>
-                                                                <p className="text-[13px] font-black text-amber-700">₹{pending.toFixed(2)}</p>
-                                                            </div>
+                                    <div className="p-4 space-y-3">
+                                        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                                            <span className="text-[10px] font-black text-slate-500 dark:text-slate-450 uppercase tracking-wider">Payment Date <span className="text-rose-500 font-bold">*</span></span>
+                                            <input type="date" required value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)}
+                                                className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-[11px] font-black uppercase rounded-lg px-2.5 py-1 outline-none text-slate-800 dark:text-slate-200 dark:[color-scheme:dark] focus:border-[#cca839]/50 cursor-pointer" />
+                                        </div>
+                                        <div className="flex items-center justify-between pb-1">
+                                            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
+                                            <label className="flex items-center gap-1.5 text-xs font-semibold text-[#cca839] cursor-pointer hover:opacity-80 transition-all bg-[#cca839]/5 px-2 py-1 rounded-lg border border-[#cca839]/10">
+                                                <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-[#cca839]/20 text-[#cca839] focus:ring-[#cca839]/20 cursor-pointer" />
+                                                <span className="uppercase tracking-tight text-slate-500 dark:text-slate-400">Partial Pay</span>
+                                            </label>
+                                        </div>
+                                        {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
+                                            <div className="flex flex-col gap-2 pb-2 border-b border-slate-100 dark:border-slate-800">
+                                                <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
+                                                    <input type="checkbox" checked={includePreviousDue} onChange={(e) => {
+                                                        setIncludePreviousDue(e.target.checked);
+                                                        const dueVal = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
+                                                        setPreviousDuePaidAmount(dueVal);
+                                                        if (!isManualPayment && payments.length === 1) {
+                                                            setPayments([{ ...payments[0], amount: totals.currentBillTotal + dueVal }]);
+                                                        }
+                                                    }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                    <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
+                                                </label>
+                                                {includePreviousDue && (
+                                                    <div className="flex items-center gap-2 pl-4">
+                                                        <span className="text-[9px] font-bold text-slate-500">COLLECT AMOUNT:</span>
+                                                        <div className="relative w-28">
+                                                            <input type="number" min="0" max={Math.ceil(Number(selectedClient.dueAmount))} value={previousDuePaidAmount} onChange={(e) => {
+                                                                const val = Math.min(Math.ceil(Number(selectedClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
+                                                                setPreviousDuePaidAmount(val);
+                                                                if (!isManualPayment && payments.length === 1) {
+                                                                    setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
+                                                                }
+                                                            }} className="w-full h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-850 px-2 text-right text-xs font-bold outline-none focus:border-[#cca839] transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
                                                         </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                        {payments.map((p, i) => (
+                                            <div key={i} className="flex flex-col gap-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0 pb-2 last:pb-0">
+                                                <div className="flex gap-2">
+                                                    <select value={p.method} onChange={(e) => updatePayment(i, "method", e.target.value)} className="flex-1 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-[#cca839] transition-all uppercase text-slate-800 dark:text-white">
+                                                        <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
+                                                        <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
+                                                        <option value="wallet" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">WALLET</option>
+                                                    </select>
+                                                    <div className="relative">
+                                                        <input type="number" data-payment-idx={i} value={p.amount} onChange={(e) => updatePayment(i, "amount", Number(e.target.value))} className="w-28 h-8 rounded-lg border border-slate-200 dark:border-slate-700 px-2 text-right text-xs font-bold outline-none focus:border-[#cca839] transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                                    </div>
+                                                    {payments.length > 1 && (
+                                                        <button onClick={() => removePayment(i)} className="h-8 w-8 flex items-center justify-center text-rose-500 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 shrink-0"><X className="w-3.5 h-3.5" /></button>
                                                     )}
                                                 </div>
-                                            );
-                                        })()}
+                                                {payments.length === 1 && (totals.total - bookingAdvancePaid) > p.amount && (
+                                                    <div className="flex items-center gap-1.5 px-2 py-1 bg-rose-50 border border-rose-100 rounded-lg">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                                                        <span className="text-xs font-semibold text-rose-600 uppercase tracking-tight">₹{(totals.total - bookingAdvancePaid - p.amount).toFixed(2)} will be marked as Due</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                        {payments.reduce((s, p) => s + p.amount, 0) < (totals.total - bookingAdvancePaid) && (
+                                            <button onClick={addPaymentMethod} className="w-full h-8 border border-dashed border-[#cca839]/40 bg-[#cca839]/5 rounded-lg text-xs font-semibold text-[#cca839] hover:bg-[#cca839]/10 transition-colors flex items-center justify-center gap-1.5 uppercase tracking-wider mt-1">
+                                                <Plus className="w-3 h-3" /> Split Payment
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -2384,24 +2465,53 @@ export default function POSBillingPage() {
                                             <span>− ₹{(totals.discount + totals.membershipDiscount).toFixed(2)}</span>
                                         </div>
                                     )}
-                                    {(totals.cgst + totals.sgst + totals.igst) > 0 && (
-                                        <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-2">
-                                            <span>GST</span>
-                                            <span className={totals.cgst > totals.cgstExcl ? 'text-slate-400' : ''}>
-                                                {totals.cgst > totals.cgstExcl ? '(Included)' : `+ ₹${(totals.cgst + totals.sgst + totals.igst).toFixed(2)}`}
-                                            </span>
-                                        </div>
-                                    )}
                                     {totals.redeemWallet > 0 && (
                                         <div className="flex items-center justify-between text-[10px] font-semibold text-[#16a34a] mb-2">
                                             <span>Wallet</span>
                                             <span>− ₹{totals.redeemWallet.toFixed(2)}</span>
                                         </div>
                                     )}
+                                    {includePreviousDue && Number(selectedClient?.dueAmount || 0) > 0 && (
+                                        <div className="flex justify-between text-[10px] font-semibold text-rose-600 dark:text-rose-400 mb-2 animate-pulse">
+                                            <span>Previous Dues Added</span>
+                                            <span>+₹{Number(selectedClient.dueAmount).toFixed(2)}</span>
+                                        </div>
+                                    )}
                                     <div className="border-t border-slate-200 dark:border-slate-700 mt-2 pt-3 flex items-center justify-between">
                                         <span className="text-[11px] font-black uppercase tracking-widest text-[#16a34a]">Grand Total</span>
                                         <span className="text-[28px] font-black leading-none text-slate-900 dark:text-white tracking-tight">₹{totals.total.toFixed(2)}</span>
                                     </div>
+                                    {bookingAdvancePaid > 0 && (
+                                        <div className="flex items-center justify-between text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-2">
+                                            <span>Advance Paid</span>
+                                            <span>− ₹{bookingAdvancePaid.toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-1.5">
+                                        <span>Paid Now</span>
+                                        <span>− ₹{payments.reduce((s, p) => s + p.amount, 0).toFixed(2)}</span>
+                                    </div>
+                                    {(() => {
+                                        const remainingBalance = Math.max(0, totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0));
+                                        return (
+                                            <div className="flex justify-between text-xs font-black text-emerald-600 dark:text-emerald-400 mt-2.5 bg-emerald-50 dark:bg-emerald-500/5 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
+                                                <span className="uppercase tracking-widest">Remaining Payment</span>
+                                                <span>₹{remainingBalance.toFixed(2)}</span>
+                                            </div>
+                                        );
+                                    })()}
+                                    {totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Balance Due</span>
+                                            <span>₹{(totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0)).toFixed(2)}</span>
+                                        </div>
+                                    )}
+                                    {payments.reduce((s, p) => s + p.amount, 0) - (totals.total - bookingAdvancePaid - totals.redeemWallet) > 0.005 && (
+                                        <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/10 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
+                                            <span className="uppercase tracking-widest">Overpaid</span>
+                                            <span>₹{(payments.reduce((s, p) => s + p.amount, 0) - (totals.total - bookingAdvancePaid - totals.redeemWallet)).toFixed(2)}</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Action buttons */}
@@ -2435,7 +2545,7 @@ export default function POSBillingPage() {
                                     {/* Generate Bill */}
                                     <button
                                         onClick={handleCheckout}
-                                        disabled={checkingOut || cart.length === 0}
+                                        disabled={checkingOut || cart.length === 0 || isOverpaid}
                                         className="flex-1 h-11 rounded-xl bg-[#cca839] text-white text-xs font-black uppercase tracking-wider hover:bg-[#b8932c] active:scale-95 transition-all shadow-lg shadow-[#cca839]/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {checkingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
@@ -2606,11 +2716,33 @@ export default function POSBillingPage() {
                                         </label>
                                     </div>
                                     {selectedClient && Number(selectedClient.dueAmount || 0) > 0 && (
-                                        <div className="flex items-center pb-2 mb-2 border-b border-border/50">
+                                        <div className="flex flex-col gap-2 pb-2 mb-2 border-b border-border/50">
                                             <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-black text-rose-600 select-none">
-                                                <input type="checkbox" checked={includePreviousDue} onChange={(e) => { setIncludePreviousDue(e.target.checked); if (!isManualPayment && payments.length === 1) { const extra = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0; setPayments([{ ...payments[0], amount: totals.currentBillTotal + extra }]); } }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                <input type="checkbox" checked={includePreviousDue} onChange={(e) => {
+                                                    setIncludePreviousDue(e.target.checked);
+                                                    const dueVal = e.target.checked ? Number(selectedClient.dueAmount || 0) : 0;
+                                                    setPreviousDuePaidAmount(dueVal);
+                                                    if (!isManualPayment && payments.length === 1) {
+                                                        setPayments([{ ...payments[0], amount: totals.currentBillTotal + dueVal }]);
+                                                    }
+                                                }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
                                                 <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
                                             </label>
+                                            {includePreviousDue && (
+                                                <div className="flex items-center gap-2 pl-4">
+                                                    <span className="text-[9px] font-bold text-text-muted">COLLECT AMOUNT:</span>
+                                                    <div className="relative w-28">
+                                                        <input type="number" min="0" max={Math.ceil(Number(selectedClient.dueAmount))} value={previousDuePaidAmount} onChange={(e) => {
+                                                            const val = Math.min(Math.ceil(Number(selectedClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
+                                                            setPreviousDuePaidAmount(val);
+                                                            if (!isManualPayment && payments.length === 1) {
+                                                                    setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
+                                                            }
+                                                        }} className="w-full h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                                                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                     {payments.map((p, i) => (
@@ -2619,6 +2751,7 @@ export default function POSBillingPage() {
                                                 <select value={p.method} onChange={(e) => updatePayment(i, "method", e.target.value)} className="flex-1 h-8 rounded-lg !border !border-slate-200 dark:!border-slate-700 !bg-white dark:!bg-slate-800 px-2 text-[10px] font-bold outline-none focus:border-primary transition-all uppercase !text-slate-800 dark:!text-white">
                                                     <option value="cash" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">CASH</option>
                                                     <option value="online" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">ONLINE</option>
+                                                    <option value="wallet" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">WALLET</option>
                                                 </select>
                                                 <div className="relative">
                                                     <input type="number" data-payment-idx={i} value={p.amount} onChange={(e) => updatePayment(i, "amount", Number(e.target.value))} className="w-28 h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
@@ -2688,7 +2821,13 @@ export default function POSBillingPage() {
                                 </div>
                                 <div className="flex gap-2">
                                     <button onClick={() => setShowDiscountModal(true)} className="h-10 rounded-xl !border !border-slate-300 dark:!border-slate-800 !bg-slate-100 dark:!bg-slate-900 text-xs font-bold uppercase hover:!bg-slate-200 dark:hover:!bg-slate-800 transition-colors !text-slate-800 dark:!text-slate-200 px-4">Offers</button>
-                                    <button onClick={handleCheckout} className="flex-1 h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20">Complete Bill</button>
+                                    <button
+                                        onClick={handleCheckout}
+                                        disabled={checkingOut || cart.length === 0 || isOverpaid}
+                                        className="flex-1 h-10 rounded-xl bg-primary text-white text-xs font-bold uppercase hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Complete Bill
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2797,7 +2936,8 @@ export default function POSBillingPage() {
                             </div>
                             <button 
                                 onClick={() => setShowDiscountModal(false)} 
-                                className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95"
+                                disabled={manualDiscount.type === 'percentage' ? manualDiscount.value > 100 : manualDiscount.value > (totals.subtotal || 0)}
+                                className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 Confirm & Apply
                             </button>
@@ -3646,6 +3786,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     .qi-discount-text { color: #e11d48 !important; }
                     .qi-input-bg { background-color: #ffffff !important; border-color: #e2e8f0 !important; }
 
+                    .qi-cash-pill { background-color: #f0fdf4 !important; border: 1.5px solid #10b981 !important; color: #047857 !important; }
+                    .qi-cash-pill input { color: #047857 !important; }
+                    .qi-cash-pill svg { color: #047857 !important; }
+                    
+                    .qi-upi-pill { background-color: #f5f3ff !important; border: 1.5px solid #8b5cf6 !important; color: #6d28d9 !important; }
+                    .qi-upi-pill input { color: #6d28d9 !important; }
+                    .qi-upi-pill svg { color: #6d28d9 !important; }
+                    
+                    .qi-wallet-pill { background-color: #f0fdf4 !important; border: 1.5px solid #10b981 !important; color: #065f46 !important; }
+                    .qi-wallet-pill input { color: #065f46 !important; }
+                    .qi-wallet-pill svg { color: #065f46 !important; }
+
                     /* ---- DARK MODE OVERRIDES ---- */
                     html.dark .qi-left { background-color: #0A0F1E !important; color: #f1f5f9 !important; }
                     html.dark .qi-left input { color: #f1f5f9 !important; }
@@ -3670,6 +3822,18 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     html.dark .qi-discount-bg { background-color: rgba(225,29,72,0.1) !important; border-color: rgba(225,29,72,0.3) !important; }
                     html.dark .qi-discount-text { color: #f1f5f9 !important; }
                     html.dark .qi-input-bg { background-color: #1e293b !important; border-color: rgba(255,255,255,0.1) !important; }
+                    
+                    html.dark .qi-cash-pill { background-color: rgba(16,185,129,0.15) !important; border-color: rgba(16,185,129,0.4) !important; color: #a7f3d0 !important; }
+                    html.dark .qi-cash-pill input { color: #a7f3d0 !important; }
+                    html.dark .qi-cash-pill svg { color: #a7f3d0 !important; }
+                    
+                    html.dark .qi-upi-pill { background-color: rgba(139,92,246,0.15) !important; border-color: rgba(139,92,246,0.4) !important; color: #c084fc !important; }
+                    html.dark .qi-upi-pill input { color: #c084fc !important; }
+                    html.dark .qi-upi-pill svg { color: #c084fc !important; }
+                    
+                    html.dark .qi-wallet-pill { background-color: rgba(16,185,129,0.15) !important; border-color: rgba(16,185,129,0.4) !important; color: #a7f3d0 !important; }
+                    html.dark .qi-wallet-pill input { color: #a7f3d0 !important; }
+                    html.dark .qi-wallet-pill svg { color: #a7f3d0 !important; }
                 `}</style>
 
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
@@ -4062,68 +4226,41 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                         {/* BILLING STRIP */}
                         <div className="qi-strip flex-shrink-0 border-t" style={{ borderTopColor: '#e2e8f0' }}>
-                            <div className="w-full px-4 py-2.5 flex items-center gap-0 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
-                                <div className="flex flex-col shrink-0 pr-4">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
-                                    <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.total.toFixed(2)}</span>
+                            <div className="w-full px-4 py-2.5 flex items-center justify-between gap-2 overflow-x-auto qi-noscroll whitespace-nowrap divide-x divide-slate-200">
+                                <div className="flex flex-col flex-1 pr-4 items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Subtotal</span>
+                                    <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.total.toFixed(2)}</span>
                                 </div>
 
 
 
                                 {totals.cgst > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
-                                            Toatl CGST
+                                    <div className="flex flex-col flex-1 px-4 items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                            Total CGST
 
                                         </span>
-                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
+                                        <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.cgst.toFixed(2)}</span>
                                     </div>
                                 )}
 
                                 {totals.sgst > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
+                                    <div className="flex flex-col flex-1 px-4 items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>
                                             Total SGST
                                         </span>
-                                        <span className="text-[13px] font-black font-mono mt-0.5" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
+                                        <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
                                     </div>
                                 )}
-
-                                {/* Discount */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[100px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Discount</span>
-                                    <div className="flex items-center gap-1 mt-1">
-                                        <div className="qi-discount-bg flex items-center rounded-lg overflow-hidden h-[22px]" style={{ border: '1px solid' }}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setQManualDiscount(p => ({ ...p, type: p.type === 'fixed' ? 'percentage' : 'fixed' }))}
-                                                className="px-1.5 text-[10px] font-black h-full flex items-center gap-0.5 border-r qi-discount-bg"
-                                                style={{ color: '#fb7185' }}
-                                            >
-                                                <Tag className="w-2.5 h-2.5" />
-                                                {qManualDiscount.type === 'fixed' ? ' ₹' : ' %'}
-                                            </button>
-                                            <input
-                                                type="number"
-                                                className="qi-discount-text w-11 text-[11px] font-black outline-none text-center px-1"
-                                                style={{ background: 'transparent' }}
-                                                value={qManualDiscount.value || ''}
-                                                onChange={e => setQManualDiscount({ ...qManualDiscount, value: Number(e.target.value) })}
-                                                placeholder="0"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-
+                            
                                 {/* Payment Date */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[130px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                        <Calendar className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[145px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
+                                    <div className="flex items-center gap-1.5 mt-1.5 justify-center">
                                         <input
                                             type="date"
                                             required
-                                            className="qi-date-text text-[11px] font-black outline-none uppercase cursor-pointer"
+                                            className="qi-date-text text-[13px] font-black outline-none uppercase cursor-pointer text-center"
                                             style={{ background: 'transparent', width: 'auto' }}
                                             value={qPaymentDate}
                                             onChange={e => setQPaymentDate(e.target.value)}
@@ -4132,14 +4269,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {/* Cash */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Cash Payment</span>
-                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
-                                        <Banknote className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Cash Payment</span>
+                                    <div className="qi-cash-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                        <Banknote className="w-4 h-4 flex-shrink-0" />
                                         <input
                                             type="number"
-                                            className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent' }}
+                                            className="flex-1 min-w-0 text-[13px] font-black outline-none font-mono text-center bg-transparent"
                                             value={qPayments.cash || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, cash: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -4148,14 +4284,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {/* Online/UPI */}
-                                <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                    <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#64748b' }}>Online/UPI</span>
-                                    <div className="qi-input-bg flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid' }}>
-                                        <Smartphone className="w-3 h-3" style={{ color: '#94a3b8' }} />
+                                <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                    <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#8b5cf6' }}>Online/UPI</span>
+                                    <div className="qi-upi-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                        <Smartphone className="w-4 h-4 flex-shrink-0" />
                                         <input
                                             type="number"
-                                            className="w-14 text-[11px] font-black outline-none font-mono"
-                                            style={{ background: 'transparent' }}
+                                            className="flex-1 min-w-0 text-[13px] font-black outline-none font-mono text-center bg-transparent"
                                             value={qPayments.online || ''}
                                             onChange={e => { setIsPaymentEdited(true); setQPayments({ ...qPayments, online: Number(e.target.value) }); }}
                                             placeholder="0"
@@ -4164,13 +4299,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </div>
 
                                 {qClient && qClientWalletBalance > 0 && (
-                                    <div className="flex flex-col shrink-0 px-4 min-w-[110px]">
-                                        <span className="text-[9px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Wallet (&#8377;{qClientWalletBalance.toFixed(0)})</span>
-                                        <div className="flex items-center gap-1 mt-1 rounded-lg px-2 h-[22px]" style={{ border: '1px solid #a7f3d0', background: '#f0fdf4' }}>
-                                            <Wallet className="w-3 h-3" style={{ color: '#10b981' }} />
+                                    <div className="flex flex-col flex-1 px-4 min-w-[140px] items-center">
+                                        <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: '#10b981' }}>Wallet (&#8377;{qClientWalletBalance.toFixed(0)})</span>
+                                        <div className="qi-wallet-pill flex items-center gap-1.5 mt-1 rounded-xl px-2.5 h-[32px] justify-center w-full max-w-[140px]">
+                                            <Wallet className="w-4 h-4 flex-shrink-0" />
                                             <input
                                                 type="number"
-                                                className="w-14 text-[11px] font-black outline-none font-mono"
                                                 style={{ background: 'transparent', color: '#065f46' }}
                                                 value={qRedeemWallet || ''}
                                                 onChange={e => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
@@ -4323,104 +4457,27 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
                                     {/* CGST / SGST Breakdown for the item */}
                                     {(() => {
-                                        const qty = Number(item.quantity) || 1;
-                                        const itemPrice = Number(item.price) || 0;
-                                        const gross = itemPrice * qty;
-
-                                        // Membership discount
-                                        let ownDiscount = 0;
-                                        if (item.membershipDiscountType !== undefined && item.membershipDiscountValue !== undefined) {
-                                            const discType = item.membershipDiscountType;
-                                            const discVal = Number(item.membershipDiscountValue) || 0;
-                                            if (discType === 'percentage') {
-                                                ownDiscount = (gross * discVal) / 100;
-                                            } else {
-                                                ownDiscount = discVal;
-                                            }
-                                        } else if (qActiveMembership && qActiveMembership.planId) {
-                                            const plan = qActiveMembership.planId;
-                                            if (item.type === 'service') {
-                                                if (plan.serviceDiscountType === 'percentage') {
-                                                    ownDiscount = (gross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                } else {
-                                                    ownDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                }
-                                            } else if (item.type === 'product') {
-                                                if (plan.productDiscountType === 'percentage') {
-                                                    ownDiscount = (gross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                } else {
-                                                    ownDiscount = (Number(plan.productDiscountValue) || 0);
-                                                }
-                                            }
-                                        }
-                                        ownDiscount = Math.min(ownDiscount, gross);
-                                        const remaining = gross - ownDiscount;
-
-                                        // General discount calculation
-                                        let totalSubtotal = qCart.reduce((sum, it) => sum + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
-                                        let generalDiscount = 0;
-                                        if (qManualDiscount) {
-                                            if (qManualDiscount.type === 'percentage') {
-                                                generalDiscount += (totalSubtotal * (Number(qManualDiscount.value) || 0)) / 100;
-                                            } else {
-                                                generalDiscount += Number(qManualDiscount.value) || 0;
-                                            }
-                                        }
-
-                                        // Total remaining of all items
-                                        let totalRemaining = qCart.reduce((sum, it) => {
-                                            const itQty = Number(it.quantity) || 1;
-                                            const itPrice = Number(it.price) || 0;
-                                            const itGross = itPrice * itQty;
-                                            let itOwnDiscount = 0;
-                                            if (it.membershipDiscountType !== undefined && it.membershipDiscountValue !== undefined) {
-                                                if (it.membershipDiscountType === 'percentage') {
-                                                    itOwnDiscount = (itGross * Number(it.membershipDiscountValue)) / 100;
-                                                } else {
-                                                    itOwnDiscount = Number(it.membershipDiscountValue);
-                                                }
-                                            } else if (qActiveMembership && qActiveMembership.planId) {
-                                                const plan = qActiveMembership.planId;
-                                                if (it.type === 'service') {
-                                                    if (plan.serviceDiscountType === 'percentage') {
-                                                        itOwnDiscount = (itGross * (Number(plan.serviceDiscountValue) || 0)) / 100;
-                                                    } else {
-                                                        itOwnDiscount = (Number(plan.serviceDiscountValue) || 0);
-                                                    }
-                                                } else if (it.type === 'product') {
-                                                    if (plan.productDiscountType === 'percentage') {
-                                                        itOwnDiscount = (itGross * (Number(plan.productDiscountValue) || 0)) / 100;
-                                                    } else {
-                                                        itOwnDiscount = (Number(plan.productDiscountValue) || 0);
-                                                    }
-                                                }
-                                            }
-                                            return sum + Math.max(0, itGross - itOwnDiscount);
-                                        }, 0);
-
-                                        const generalDiscountRatio = 0;
-                                        const itemGeneralDiscount = Math.min(remaining, remaining * generalDiscountRatio);
-                                        const discountedAmount = Math.max(0, remaining - itemGeneralDiscount);
-
-                                        // GST calculation
+                                        const calculatedItem = totals.itemData?.[idx];
                                         const rateSetting = item.type === 'service' ? totals.serviceGstRate : totals.productGstRate;
                                         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
-                                        const isItemInclusive = item.isInclusiveTax !== undefined
-                                            ? (String(item.isInclusiveTax) === 'true')
-                                            : !!fiscal?.inclusiveTax;
-
-                                        let gstAmount = 0;
-                                        if (isItemInclusive) {
-                                            const taxableAmount = (discountedAmount * 100) / (100 + itemTaxPercent);
-                                            gstAmount = discountedAmount - taxableAmount;
-                                        } else {
-                                            gstAmount = (discountedAmount * itemTaxPercent) / 100;
-                                        }
-
-                                        const cgstVal = gstAmount / 2;
-                                        const sgstVal = gstAmount / 2;
                                         const cgstPercent = itemTaxPercent / 2;
                                         const sgstPercent = itemTaxPercent / 2;
+                                        
+                                        const cgstVal = calculatedItem ? calculatedItem.cgst : 0;
+                                        const sgstVal = calculatedItem ? calculatedItem.sgst : 0;
+                                        const igstVal = calculatedItem ? calculatedItem.igst : 0;
+                                        const isSameState = totals.isSameState;
+
+                                        if (!isSameState && igstVal > 0) {
+                                            return (
+                                                <div className="flex items-center gap-2 border-t border-dashed border-slate-100 pt-2 text-[10px] font-bold text-slate-500">
+                                                    <div className="flex-1 flex items-center justify-between bg-slate-50 px-2 py-1 rounded-md">
+                                                        <span>IGST ({itemTaxPercent.toFixed(1)}%):</span>
+                                                        <span className="font-mono text-slate-800">&#8377;{igstVal.toFixed(2)}</span>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
 
                                         return (
                                             <div className="flex items-center gap-2 border-t border-dashed border-slate-100 pt-2 text-[10px] font-bold text-slate-500">

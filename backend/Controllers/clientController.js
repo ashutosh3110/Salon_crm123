@@ -15,7 +15,7 @@ const generateReferralCode = () => {
 exports.getClients = async (req, res) => {
     try {
         const salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
-        
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID context missing' });
         }
@@ -51,7 +51,7 @@ exports.getClients = async (req, res) => {
                 { phone: searchRegex },
                 { email: searchRegex }
             ];
-            
+
             // Merge with existing $or if it exists, otherwise assign it
             if (findQuery.$or) {
                 findQuery.$and = [
@@ -82,14 +82,16 @@ exports.getClients = async (req, res) => {
         // Global Stats (Independent of pagination)
         const stats = await Customer.aggregate([
             { $match: matchQuery },
-            { $group: {
-                _id: null,
-                totalRevenue: { $sum: "$totalSpend" },
-                totalVIPs: { $sum: { $cond: [{ $eq: ["$isVIP", true] }, 1, 0] } },
-                totalInactive: { $sum: { $cond: [{ $eq: ["$status", "inactive"] }, 1, 0] } },
-                totalLiability: { $sum: "$walletBalance" },
-                totalCount: { $sum: 1 }
-            }}
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: "$totalSpend" },
+                    totalVIPs: { $sum: { $cond: [{ $eq: ["$isVIP", true] }, 1, 0] } },
+                    totalInactive: { $sum: { $cond: [{ $eq: ["$status", "inactive"] }, 1, 0] } },
+                    totalLiability: { $sum: "$walletBalance" },
+                    totalCount: { $sum: 1 }
+                }
+            }
         ]);
 
         const globalStats = stats[0] || { totalRevenue: 0, totalVIPs: 0, totalInactive: 0, totalCount: 0 };
@@ -213,7 +215,7 @@ exports.createClient = async (req, res) => {
         try {
             const salon = await Salon.findById(salonId);
             const brandName = salon?.businessName || 'Our Salon';
-            
+
             await sendWapixoTemplate(
                 client.phone,
                 process.env.WHATSAPP_TEMPLATE_WELCOME,
@@ -345,7 +347,7 @@ exports.bulkImport = async (req, res) => {
             const phone = c.phone || c.Phone;
 
             if (!name || !phone) continue;
-            
+
             // Skip if phone exists
             if (existingPhones.has(String(phone))) continue;
 
@@ -362,7 +364,7 @@ exports.bulkImport = async (req, res) => {
                 totalVisits: 0,
                 totalSpend: 0
             });
-            existingPhones.add(String(phone)); 
+            existingPhones.add(String(phone));
         }
 
         if (validCustomers.length === 0) {
@@ -485,15 +487,15 @@ exports.sendManualPaymentReminder = async (req, res) => {
         // Deduct WhatsApp credit
         const canSend = await checkAndDeductWhatsAppCredit(salon._id);
         if (!canSend) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.' 
+            return res.status(400).json({
+                success: false,
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.'
             });
         }
 
         const templateName = process.env.WHATSAPP_TEMPLATE_PAYMENT_REMINDER || 'payment_reminder';
         const salonName = salon.businessName || salon.name || 'Wapixo';
-        
+
         // Always try to send as a WhatsApp template first to bypass Meta's 24-hour messaging window rule.
         let sendResult = await sendWapixoTemplate(client.phone, templateName, [
             client.name,
@@ -595,15 +597,15 @@ exports.sendManualCelebrationWish = async (req, res) => {
         // Deduct WhatsApp credit (checks salon or outlet context)
         const canSend = await checkAndDeductWhatsAppCredit(client.lastOutletId || salon._id);
         if (!canSend) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.' 
+            return res.status(400).json({
+                success: false,
+                message: 'Insufficient WhatsApp credits or WhatsApp notifications disabled for your salon.'
             });
         }
 
         const celebrationTemplate = process.env.WHATSAPP_TEMPLATE_SPECIAL_DAYS || 'special_days';
         const salonName = salon.businessName || salon.name || 'Wapixo';
-        
+
         let msgText = '';
         let points = 0;
         if (type === 'birthday') {

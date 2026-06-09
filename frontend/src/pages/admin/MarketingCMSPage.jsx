@@ -394,14 +394,14 @@ export default function MarketingCMSPage() {
                                                 title="View Creative"
                                                 className="p-2 bg-white/95 dark:bg-slate-950/95 hover:!bg-emerald-500 rounded-xl transition-all shadow-md group/btn"
                                             >
-                                                <Eye className="w-3.5 h-3.5 text-text-secondary group-hover/btn:text-white" />
+                                                <Eye className="w-3.5 h-3.5 text-emerald-600 group-hover/btn:text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleEdit('banner', banner)}
                                                 title="Edit Banner"
                                                 className="p-2 bg-white/95 dark:bg-slate-950/95 hover:!bg-[#B4912B] rounded-xl transition-all shadow-md group/btn"
                                             >
-                                                <Edit className="w-3.5 h-3.5 text-text-secondary group-hover/btn:text-white" />
+                                                <Edit className="w-3.5 h-3.5 text-amber-600 group-hover/btn:text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete('banner', banner.id)}
@@ -434,14 +434,7 @@ export default function MarketingCMSPage() {
                                             <span className="text-[9px] font-black text-text-muted uppercase tracking-widest block mb-1">Banner Title</span>
                                             <h3 className="text-sm font-bold text-text uppercase tracking-tight">{banner.title}</h3>
                                         </div>
-                                        <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                                            <button
-                                                onClick={() => handleEdit('banner', banner)}
-                                                className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-1 hover:gap-2 transition-all outline-none"
-                                            >
-                                                Configure Banner <ArrowRight className="w-3 h-3" />
-                                            </button>
-                                        </div>
+                                     
                                     </div>
                                 </div>
                             ))}
@@ -555,7 +548,7 @@ export default function MarketingCMSPage() {
                                                 onClick={() => handleEdit('lookbook', item)}
                                                 className="p-2 bg-white/95 dark:bg-slate-950/95 hover:!bg-[#B4912B] rounded-xl transition-all shadow-md group/btn"
                                             >
-                                                <Edit className="w-3.5 h-3.5 text-text-secondary group-hover/btn:text-white" />
+                                                <Edit className="w-3.5 h-3.5 text-amber-600 group-hover/btn:text-white" />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete('lookbook', item.id)}

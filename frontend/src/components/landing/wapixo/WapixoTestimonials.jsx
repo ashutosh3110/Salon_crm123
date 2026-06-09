@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Star, Quote, X, Send, User, Building } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { getImageUrl } from '../../../utils/imageUtils';
+import api from '../../../services/api';
 
 import landingData from '../../../data/landingMockData.json';
 
@@ -29,14 +30,25 @@ export default function WapixoTestimonials({ data }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-        // Simulate API call
-        await new Promise(r => setTimeout(r, 1500));
-        setIsSubmitting(false);
-        setSubmitted(true);
-        setTimeout(() => {
-            setShowForm(false);
-            setSubmitted(false);
-        }, 3000);
+        try {
+            const formData = new FormData(e.target);
+            formData.append('rating', rating);
+            
+            await api.post('/testimonials', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            
+            setSubmitted(true);
+            setTimeout(() => {
+                setShowForm(false);
+                setSubmitted(false);
+                setRating(5);
+            }, 3000);
+        } catch (error) {
+            console.error("Error submitting testimonial", error);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -117,15 +129,18 @@ export default function WapixoTestimonials({ data }) {
                 >
                     <style>{`
                         .testimonial-container::-webkit-scrollbar { display: none; }
+                        .testimonial-card { flex: 0 0 85%; }
                         @media (min-width: 768px) {
                             .testimonial-container {
-                                display: grid !important;
-                                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)) !important;
-                                overflow-x: visible !important;
-                                scroll-snap-type: none !important;
-                                padding: 0 !important;
+                                display: flex !important;
+                                overflow-x: auto !important;
+                                scroll-snap-type: x mandatory !important;
+                                padding: 10px 5px 30px !important;
                                 gap: 2rem !important;
                                 margin-bottom: 40px !important;
+                            }
+                            .testimonial-card {
+                                flex: 0 0 calc(33.333% - 1.33rem) !important;
                             }
                         }
                     `}</style>
@@ -136,33 +151,33 @@ export default function WapixoTestimonials({ data }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: idx * 0.1, duration: 0.8 }}
+                            className="testimonial-card"
                             style={{
                                 background: 'var(--wapixo-bg)',
-                                border: '1px solid var(--wapixo-border)',
-                                borderRadius: '4px',
+                                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.4)',
+                                borderRadius: '12px',
                                 padding: 'clamp(1.5rem, 4vw, 3rem) clamp(1.2rem, 4vw, 2.5rem)',
                                 position: 'relative',
                                 display: 'flex',
                                 flexDirection: 'column',
                                 transition: 'all 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
-                                flex: '0 0 85%',
                                 scrollSnapAlign: 'center',
                                 minWidth: '280px',
-                                boxShadow: theme === 'dark' ? 'none' : '0 10px 30px rgba(0,0,0,0.03)'
+                                boxShadow: theme === 'dark' ? 'none' : '0 10px 30px rgba(0, 0, 0, 0.08), 0 0 10px rgba(180, 145, 43, 0.05)'
                             }}
                              onMouseEnter={(e) => {
                                 if (window.innerWidth >= 768) {
-                                    e.currentTarget.style.borderColor = 'var(--wapixo-text-muted)';
+                                    e.currentTarget.style.borderColor = theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'rgba(180, 145, 43, 0.6)';
                                     e.currentTarget.style.background = 'var(--wapixo-bg-alt)';
                                     e.currentTarget.style.transform = 'translateY(-10px)';
-                                    e.currentTarget.style.boxShadow = theme === 'dark' ? '0 20px 40px rgba(0,0,0,0.4)' : '0 20px 40px rgba(0,0,0,0.06)';
+                                    e.currentTarget.style.boxShadow = theme === 'dark' ? '0 20px 40px rgba(0,0,0,0.4)' : '0 15px 40px rgba(0, 0, 0, 0.1), 0 0 15px rgba(180, 145, 43, 0.1)';
                                 }
                             }}
                             onMouseLeave={(e) => {
-                                e.currentTarget.style.borderColor = 'var(--wapixo-border)';
+                                e.currentTarget.style.borderColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(180, 145, 43, 0.4)';
                                 e.currentTarget.style.background = 'var(--wapixo-bg)';
                                 e.currentTarget.style.transform = 'translateY(0)';
-                                e.currentTarget.style.boxShadow = theme === 'dark' ? 'none' : '0 10px 30px rgba(0,0,0,0.03)';
+                                e.currentTarget.style.boxShadow = theme === 'dark' ? 'none' : '0 10px 30px rgba(0, 0, 0, 0.08), 0 0 10px rgba(180, 145, 43, 0.05)';
                             }}
                         >
                             <div style={{ position: 'absolute', top: '2rem', right: '2rem', opacity: 0.05 }}>
@@ -180,9 +195,13 @@ export default function WapixoTestimonials({ data }) {
                             </p>
 
                             <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                                <div style={{ width: '48px', height: '48px', borderRadius: '50%', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)' }}>
-                                    <img src={getImageUrl(t.image)} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(1)' }} />
-                                </div>
+                                {t.image && (
+                                    <img 
+                                        src={getImageUrl(t.image)} 
+                                        alt={t.name} 
+                                        style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover' }} 
+                                    />
+                                )}
                                  <div>
                                     <h4 style={{ color: 'var(--wapixo-text)', fontSize: '0.95rem', fontWeight: 400, margin: 0, letterSpacing: '0.02em' }}>{t.name}</h4>
                                     <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.75rem', fontWeight: 400, margin: '2px 0 0 0', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t.role}</p>
@@ -228,13 +247,13 @@ export default function WapixoTestimonials({ data }) {
                             initial={{ opacity: 0, y: 40 }}
                             animate={{ opacity: 1, y: 0 }}
                             style={{
-                                maxWidth: '600px',
+                                maxWidth: '500px',
                                 margin: '0 auto',
                                 background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255, 255, 255, 0.95)',
-                                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--wapixo-primary)',
-                                boxShadow: theme === 'dark' ? 'none' : '0 0 25px rgba(180, 145, 43, 0.3), inset 0 0 15px rgba(180, 145, 43, 0.1)',
+                                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.4)',
+                                boxShadow: theme === 'dark' ? 'none' : '0 10px 30px rgba(0, 0, 0, 0.08), 0 0 10px rgba(180, 145, 43, 0.05)',
                                 borderRadius: '12px',
-                                padding: '3rem',
+                                padding: '2rem',
                                 textAlign: 'left',
                                 position: 'relative',
                                 backdropFilter: 'blur(10px)'
@@ -262,17 +281,18 @@ export default function WapixoTestimonials({ data }) {
                                     <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'var(--wapixo-text-muted)', fontSize: '0.9rem', fontWeight: 300 }}>Your story will inspire excellence.</p>
                                 </div>
                             ) : (
-                                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                                    <div style={{ marginBottom: '1rem' }}>
-                                        <h3 style={{ color: theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)', fontSize: '1.75rem', fontWeight: 200, margin: '0 0 0.5rem 0', textShadow: theme === 'dark' ? 'none' : '0 0 10px rgba(180,145,43,0.3)' }}>Write Your Story.</h3>
+                                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                                    <div style={{ marginBottom: '0.5rem' }}>
+                                        <h3 style={{ color: theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)', fontSize: '1.5rem', fontWeight: 200, margin: '0 0 0.25rem 0', textShadow: theme === 'dark' ? 'none' : '0 0 5px rgba(180,145,43,0.1)' }}>Write Your Story.</h3>
                                         <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'var(--wapixo-text-muted)', fontSize: '0.8rem', fontWeight: 300 }}>Share your Wapixo experience with the community.</p>
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                                         <div style={{ position: 'relative' }}>
                                             <User size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'var(--wapixo-primary)' }} />
                                             <input
                                                 required
+                                                name="name"
                                                 placeholder="Your Name"
                                                 style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
                                             />
@@ -281,15 +301,25 @@ export default function WapixoTestimonials({ data }) {
                                             <Building size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'var(--wapixo-primary)' }} />
                                             <input
                                                 required
+                                                name="role"
                                                 placeholder="Salon / Role"
                                                 style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
                                             />
                                         </div>
                                     </div>
+                                    <div style={{ position: 'relative' }}>
+                                        <input
+                                            type="file"
+                                            name="image"
+                                            accept="image/*"
+                                            style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '0.75rem 1rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none' }}
+                                        />
+                                        <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.7rem', marginTop: '4px' }}>Optional: Upload your profile photo</p>
+                                    </div>
 
                                     <div>
-                                        <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'var(--wapixo-primary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', textShadow: theme === 'dark' ? 'none' : '0 0 5px rgba(180,145,43,0.2)' }}>Rate Your Experience</p>
-                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                        <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'var(--wapixo-primary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem', textShadow: theme === 'dark' ? 'none' : '0 0 2px rgba(180,145,43,0.1)' }}>Rate Your Experience</p>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <Star
                                                     key={s}
@@ -308,6 +338,7 @@ export default function WapixoTestimonials({ data }) {
                                     <div>
                                         <textarea
                                             required
+                                            name="content"
                                             placeholder="Tell us how Wapixo transformed your business..."
                                             rows={4}
                                             style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', resize: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
@@ -317,6 +348,7 @@ export default function WapixoTestimonials({ data }) {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
+                                        className="testimonial-submit-btn"
                                         style={{
                                             width: '100%',
                                             background: theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)',
@@ -335,14 +367,14 @@ export default function WapixoTestimonials({ data }) {
                                             gap: '0.75rem',
                                             opacity: isSubmitting ? 0.7 : 1,
                                             transition: 'all 0.3s',
-                                            boxShadow: theme === 'dark' ? 'none' : '0 0 20px rgba(180, 145, 43, 0.6)',
-                                            marginTop: '1rem'
+                                            boxShadow: theme === 'dark' ? 'none' : '0 4px 15px rgba(180, 145, 43, 0.2)',
+                                            marginTop: '0.5rem'
                                         }}
                                         onMouseEnter={(e) => {
-                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 0 30px rgba(180, 145, 43, 0.8)';
+                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 6px 20px rgba(180, 145, 43, 0.3)';
                                         }}
                                         onMouseLeave={(e) => {
-                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 0 20px rgba(180, 145, 43, 0.6)';
+                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 4px 15px rgba(180, 145, 43, 0.2)';
                                         }}
                                     >
                                         {isSubmitting ? 'Transmitting...' : (

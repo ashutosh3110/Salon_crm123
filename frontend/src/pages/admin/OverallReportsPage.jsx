@@ -47,13 +47,42 @@ const CHART_COLORS = ['#C69A20', '#10b981', '#3b82f6', '#8b5cf6', '#ef4444', '#e
 
 
 export default function OverallReportsPage() {
-    const { outlets = [] } = useBusiness();
+    const { outlets = [], fetchOutlets } = useBusiness();
     const { user } = useAuth();
     const [selectedOutletId, setSelectedOutletId] = useState('all');
     const [dateRange, setDateRange] = useState('month'); // 'today' | 'week' | 'month' | 'all'
     const [searchParams, setSearchParams] = useSearchParams();
     const activeTab = searchParams.get('tab') || 'sales';
     const setActiveTab = (tabId) => setSearchParams({ tab: tabId });
+
+    const tabPermissions = useMemo(() => ({
+        sales: 'reports_sales',
+        bookings: 'reports_bookings',
+        staff: 'reports_staff',
+        customer: 'reports_customer',
+        expenses: 'reports_expenses',
+    }), []);
+
+    const hasTabPermission = (tabId) => {
+        if (!user) return false;
+        if (user.role === 'admin' || user.role === 'superadmin') return true;
+        const requiredPerm = tabPermissions[tabId];
+        if (!requiredPerm) return true;
+        const perms = user.permissions || [];
+        return perms.includes('*') || perms.includes(requiredPerm);
+    };
+
+    const hasAnyTabPermission = useMemo(() => {
+        return Object.keys(tabPermissions).some(tabId => hasTabPermission(tabId));
+    }, [user, tabPermissions]);
+
+    useEffect(() => {
+        if (!user) return;
+        const allowedTabs = Object.keys(tabPermissions).filter(tabId => hasTabPermission(tabId));
+        if (allowedTabs.length > 0 && !allowedTabs.includes(activeTab)) {
+            setActiveTab(allowedTabs[0]);
+        }
+    }, [user, activeTab, tabPermissions]);
     
     // Data States
     const [invoices, setInvoices] = useState([]);
@@ -93,7 +122,10 @@ export default function OverallReportsPage() {
 
     useEffect(() => {
         loadData();
-    }, []);
+        if (fetchOutlets) {
+            fetchOutlets();
+        }
+    }, [fetchOutlets]);
 
     // Helper functions
     const formatCurrency = (val) => {
@@ -475,6 +507,11 @@ export default function OverallReportsPage() {
                     <p className="font-bold">Error loading reports:</p>
                     <p className="text-sm">{error}</p>
                 </div>
+            ) : !hasAnyTabPermission ? (
+                <div className="p-10 bg-amber-50/50 dark:bg-slate-800/50 border border-amber-200 dark:border-slate-750 text-center rounded-2xl">
+                    <p className="font-bold text-amber-600 dark:text-amber-400">Access Denied</p>
+                    <p className="text-sm text-slate-500 mt-2">You do not have permission to view any reports in this section.</p>
+                </div>
             ) : (
                 <AnimatePresence mode="wait">
                     {/* ──────────────────────────────────────────────────────────────────────── */}
@@ -578,7 +615,7 @@ export default function OverallReportsPage() {
                                                     <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} />
                                                     <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} tickFormatter={(v) => `₹${v}`} />
                                                     <Tooltip formatter={(value) => [formatCurrency(value), 'Revenue']} />
-                                                    <Area type="monotone" dataKey="revenue" stroke="#C69A20" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" />
+                                                    <Area type="monotone" dataKey="revenue" stroke="#C69A20" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRevenue)" dot={{ r: 4, fill: '#C69A20', stroke: 'none', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#C69A20', stroke: 'none', strokeWidth: 0 }} />
                                                 </AreaChart>
                                             </ResponsiveContainer>
                                         ) : (
@@ -605,9 +642,11 @@ export default function OverallReportsPage() {
                                                         outerRadius={80}
                                                         paddingAngle={4}
                                                         dataKey="value"
+                                                        stroke="none"
+                                                        strokeWidth={0}
                                                     >
                                                         {salesStats.paymentMethods.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" strokeWidth={0} />
                                                         ))}
                                                     </Pie>
                                                     <Tooltip formatter={(value) => formatCurrency(value)} />
@@ -794,11 +833,13 @@ export default function OverallReportsPage() {
                                                     outerRadius={75}
                                                     paddingAngle={5}
                                                     dataKey="value"
+                                                    stroke="none"
+                                                    strokeWidth={0}
                                                 >
-                                                    <Cell fill="#10b981" />
-                                                    <Cell fill="#3b82f6" />
-                                                    <Cell fill="#C69A20" />
-                                                    <Cell fill="#ef4444" />
+                                                    <Cell fill="#10b981" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#3b82f6" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#C69A20" stroke="none" strokeWidth={0} />
+                                                    <Cell fill="#ef4444" stroke="none" strokeWidth={0} />
                                                 </Pie>
                                                 <Tooltip />
                                                 <Legend verticalAlign="bottom" height={36} iconSize={10} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
@@ -1154,9 +1195,11 @@ export default function OverallReportsPage() {
                                                         outerRadius={75}
                                                         paddingAngle={4}
                                                         dataKey="value"
+                                                        stroke="none"
+                                                        strokeWidth={0}
                                                     >
                                                         {expenseStats.categoryData.map((entry, index) => (
-                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                                                            <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} stroke="none" strokeWidth={0} />
                                                         ))}
                                                     </Pie>
                                                     <Tooltip formatter={(value) => formatCurrency(value)} />

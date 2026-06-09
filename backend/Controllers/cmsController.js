@@ -54,6 +54,7 @@ exports.updateCmsSection = async (req, res) => {
         let cmsItem = await Cms.findOne({ section, tenantId });
         if (cmsItem) {
             cmsItem.content = content;
+            cmsItem.markModified('content');
             await cmsItem.save();
         } else {
             cmsItem = await Cms.create({ section, content, tenantId });

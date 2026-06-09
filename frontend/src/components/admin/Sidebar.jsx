@@ -75,6 +75,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
     const isRestricted = useMemo(() => {
         if (user?.role === 'superadmin') return false;
+        if (user?.impersonatedBy) return false;
 
         const rawPlan = salon?.subscriptionPlan || user?.subscriptionPlan || 'none';
         const planName = String(rawPlan || 'none').trim().toLowerCase();
@@ -121,14 +122,14 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 ]
             },
             {
-                label: 'Bookings',
+                label: 'Appoitments',
                 icon: Calendar,
                 path: '/admin/bookings',
                 permission: 'bookings',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Booking Registry', icon: List, path: '/admin/bookings', permission: 'bookings_registry' },
-                    { label: 'Direct Booking', icon: Zap, path: '/admin/bookings/new', permission: 'bookings_new' },
+                    { label: 'Booking List', icon: List, path: '/admin/bookings', permission: 'bookings_registry' },
+                    { label: 'New Booking', icon: Zap, path: '/admin/bookings/new', permission: 'bookings_new' },
                 ]
             },
             {
@@ -180,11 +181,11 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 permission: 'finance_reports',
                 category: 'Operations',
                 subItems: [
-                    { label: 'Sales & Billing', icon: DollarSign, path: '/admin/overall-reports?tab=sales' },
-                    { label: 'Bookings & Services', icon: Calendar, path: '/admin/overall-reports?tab=bookings' },
-                    { label: 'Staff Performance', icon: UserCog, path: '/admin/overall-reports?tab=staff' },
-                    { label: 'Customer & CRM', icon: Users, path: '/admin/overall-reports?tab=customer' },
-                    { label: 'Expenses & Finance', icon: CreditCard, path: '/admin/overall-reports?tab=expenses' },
+                    { label: 'Sales & Billing', icon: DollarSign, path: '/admin/overall-reports?tab=sales', permission: 'reports_sales' },
+                    { label: 'Bookings & Services', icon: Calendar, path: '/admin/overall-reports?tab=bookings', permission: 'reports_bookings' },
+                    { label: 'Staff Performance', icon: UserCog, path: '/admin/overall-reports?tab=staff', permission: 'reports_staff' },
+                    { label: 'Customer & CRM', icon: Users, path: '/admin/overall-reports?tab=customer', permission: 'reports_customer' },
+                    { label: 'Expenses & Finance', icon: CreditCard, path: '/admin/overall-reports?tab=expenses', permission: 'reports_expenses' },
                 ]
             },
             {
@@ -297,7 +298,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     const hasSubPermission = item.subItems.length > 0;
                     if (item.permission) {
                         if (item.permission === 'admin_only') return false;
-                        return userPermissions.includes(item.permission) || hasSubPermission;
+                        return userPermissions.includes(item.permission) && hasSubPermission;
                     }
                     return hasSubPermission;
                 }
@@ -546,7 +547,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                         ? (location.pathname + location.search) === sub.path
                                                         : (sub.path === '/pos' || sub.path === '/admin')
                                                             ? location.pathname === sub.path
-                                                            : (location.pathname === sub.path || location.pathname.startsWith(sub.path + '/'));
+                                                            : (location.pathname === sub.path || (location.pathname.startsWith(sub.path + '/') && !location.pathname.startsWith(sub.path + '/new')));
                                                     return (
                                                         <NavLink
                                                             key={sub.path}

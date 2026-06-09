@@ -8,12 +8,12 @@ const Outlet = require('../Models/Outlet');
 exports.getUsers = async (req, res) => {
     try {
         let salonId = req.query.salonId;
-        
+
         // If not provided in query, try to get from authenticated user
         if (!salonId && req.user) {
             salonId = req.user.role === 'customer' ? req.query.salonId : req.user.salonId;
         }
-        
+
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
@@ -62,24 +62,25 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         let { email, name, role, roleId, phone, password, outletId } = req.body;
-        
+
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
-            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) { }
         }
         if (typeof req.body.hrProfile === 'string') {
-            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) { }
         }
         if (typeof req.body.stylistSpecializations === 'string') {
-            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) { }
         }
 
         // Keep role string as display name or fallback
         const roleDisplayName = role || 'Stylist';
 
-        const existingStaff = await Staff.findOne({ email });
-        if (existingStaff) {
-            return res.status(400).json({ success: false, message: 'Staff member already exists with this email' });
+        const { checkGlobalEmailUnique } = require('../Utils/emailValidation');
+        const isEmailUnique = await checkGlobalEmailUnique(email);
+        if (!isEmailUnique) {
+            return res.status(400).json({ success: false, message: 'This email address is already registered on the platform. Please use a different email address.' });
         }
 
         const pass = password || Math.random().toString(36).slice(-8).toUpperCase();
@@ -101,7 +102,7 @@ exports.createUser = async (req, res) => {
             const Outlet = require('../Models/Outlet');
             const { sendWapixoTemplate } = require('../Utils/whatsapp');
             const sendEmail = require('../Utils/sendEmail');
-            
+
             const salon = await Salon.findById(req.user.salonId);
             const outlet = await Outlet.findById(outletId);
             const businessName = salon?.businessName || salon?.name || 'Wapixo';
@@ -118,8 +119,10 @@ exports.createUser = async (req, res) => {
                         <p>Hello <strong>${name}</strong>,</p>
                         <p>You have been added as <strong>${roleDisplayName}</strong> to our salon management system.</p>
                         <div style="background-color: #f9f9f9; padding: 20px; border-radius: 5px; border-left: 4px solid #D32F2F; margin: 20px 0;">
-                            <p style="margin: 0; font-size: 14px;"><strong>Email:</strong> ${email}</p>
+                            <p style="margin: 0 0 10px 0; font-size: 14px;"><strong>Salon Name:</strong> ${salonDisplayName}</p>
+                            <p style="margin: 0; font-size: 14px;"><strong>Login Email:</strong> ${email}</p>
                             <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Temporary Password:</strong> ${pass}</p>
+                            <p style="margin: 10px 0 0 0; font-size: 14px;"><strong>Login URL:</strong> <a href="${loginUrl}" style="color: #D32F2F;">${loginUrl}</a></p>
                         </div>
                         <p>Please login and update your profile.</p>
                         <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
@@ -152,6 +155,7 @@ exports.createUser = async (req, res) => {
 
         res.status(201).json({
             success: true,
+            message: `${roleDisplayName} account created successfully and login credentials have been sent to the registered email address.`,
             data: populatedStaff
         });
     } catch (err) {
@@ -169,7 +173,7 @@ exports.updateUser = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             filter.salonId = req.user.salonId;
         }
-        
+
         let staff = await Staff.findOne(filter);
 
         if (!staff) {
@@ -191,13 +195,13 @@ exports.updateUser = async (req, res) => {
 
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
-            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) {}
+            try { req.body.availability = JSON.parse(req.body.availability); } catch (e) { }
         }
         if (typeof req.body.hrProfile === 'string') {
-            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) {}
+            try { req.body.hrProfile = JSON.parse(req.body.hrProfile); } catch (e) { }
         }
         if (typeof req.body.stylistSpecializations === 'string') {
-            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) {}
+            try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) { }
         }
 
         // Handle uploaded avatar

@@ -550,13 +550,13 @@ export default function StaffManager() {
                                         <div className="col-span-2 text-[10px] font-black text-primary uppercase tracking-[0.3em] pb-2 border-b border-border/20 mb-2">General Details</div>
 
                                         <div className="col-span-2 space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Member Name *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Member Name <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                             <input required type="text" placeholder="e.g. John Doe"
                                                 className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value.replace(/[^a-zA-Z0-9\s'\-\.]/g, '') }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Role <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                             <select required className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.roleKey} onChange={(e) => setForm((f) => ({ ...f, roleKey: e.target.value }))}>
                                                 {ROLE_KEYS.map((k) => (
@@ -565,7 +565,7 @@ export default function StaffManager() {
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Primary Salon <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                             <select required className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
                                                 value={form.outletId} onChange={(e) => setForm((f) => ({ ...f, outletId: e.target.value }))}>
                                                 {outlets.map((o) => (
@@ -574,17 +574,17 @@ export default function StaffManager() {
                                             </select>
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Email Address *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Email Address <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                             <input required type="email" placeholder="e.g. john@example.com" readOnly={!!editTarget}
                                                 className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none read-only:opacity-80"
                                                 value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional)' : 'Password *'}</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">{editTarget ? 'New password (optional)' : <>Password <span className="text-rose-500" style={{ color: 'red' }}>*</span></>}</label>
                                             <PasswordField placeholder="Min 8 chars" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} />
                                         </div>
                                         <div className="space-y-2 text-left">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number *</label>
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em]">Phone Number <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                             <input required type="text" placeholder="10-digit number"
                                                 className="w-full px-5 py-4 rounded-xl bg-background border border-border text-xs font-black uppercase tracking-widest focus:border-primary outline-none"
                                                 value={form.phone} onChange={e => {

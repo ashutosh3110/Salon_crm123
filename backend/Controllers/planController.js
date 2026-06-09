@@ -5,7 +5,12 @@ const Plan = require('../Models/Plan');
 // @access  Public (so users can see them during registration)
 exports.getPlans = async (req, res) => {
     try {
-        const plans = await Plan.find().lean();
+        // Support ?isActive=true filter from public landing page
+        const filter = {};
+        if (req.query.isActive !== undefined) {
+            filter.isActive = req.query.isActive === 'true';
+        }
+        const plans = await Plan.find(filter).lean();
         const Salon = require('../Models/Salon');
         
         // Calculate salon count dynamically for each plan

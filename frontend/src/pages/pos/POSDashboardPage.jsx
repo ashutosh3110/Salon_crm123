@@ -320,7 +320,7 @@ export default function POSDashboardPage() {
                                 <Tooltip 
                                     contentStyle={{ backgroundColor: '#fff', border: '1px solid #e2e8f0', borderRadius: '4px', fontSize: '10px', fontWeight: '900', textTransform: 'uppercase' }}
                                 />
-                                <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 5, fill: '#8b5cf6', stroke: '#fff', strokeWidth: 2 }} activeDot={{ r: 7 }} />
+                                <Line type="monotone" dataKey="value" stroke="#8b5cf6" strokeWidth={2.5} dot={{ r: 4, fill: '#8b5cf6', stroke: 'none', strokeWidth: 0 }} activeDot={{ r: 6, fill: '#8b5cf6', stroke: 'none', strokeWidth: 0 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -381,8 +381,8 @@ export default function POSDashboardPage() {
                         </div>
                     </div>
 
-                    <div className="bg-[#0f172a] rounded-xl shadow-lg p-6 flex flex-col h-[200px]">
-                        <h3 className="text-[11px] font-black text-white uppercase tracking-[0.1em] mb-4">QUICK ACTIONS</h3>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-slate-100 dark:border-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.02)] p-6 flex flex-col h-[200px]">
+                        <h3 className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-[0.1em] mb-4">QUICK ACTIONS</h3>
                         <div className="grid grid-cols-2 gap-4 h-full">
                             <button onClick={() => navigate('/pos/billing')} className="!bg-[#cca839] hover:!bg-[#b59533] transition-colors rounded-lg border-b-2 border-black/20 flex items-center justify-center gap-3 !text-slate-950 shadow-sm h-full">
                                 <Receipt className="w-5 h-5 !text-[#0f172a] !stroke-[#0f172a]" /> <span className="text-[11px] font-black uppercase tracking-widest pt-0.5 !text-slate-950">NEW BILL</span>

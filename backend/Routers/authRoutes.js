@@ -13,4 +13,6 @@ router.post('/forgot-password', authController.forgotPassword);
 router.post('/verify-reset-otp', authController.verifyOTP);
 router.post('/reset-password', authController.resetPassword);
 
+router.get('/check-email', authController.checkEmail);
+
 module.exports = router;

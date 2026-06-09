@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Block private/dashboard routes from indexing
+Disallow: /admin/
+Disallow: /superadmin/
+Disallow: /receptionist/
+Disallow: /stylist/
+Disallow: /accountant/
+Disallow: /manager/
+Disallow: /inventory/
+Disallow: /pos/
+
+Sitemap: https://wapixo.com/sitemap.xml

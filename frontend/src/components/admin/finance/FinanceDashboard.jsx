@@ -163,8 +163,8 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                                         />
                                         <YAxis hide />
                                         <Tooltip content={<CustomTooltip />} />
-                                        <Bar dataKey="revenue" fill="var(--primary)" barSize={12} name="Revenue" />
-                                        <Bar dataKey="expense" fill="#f59e0b" barSize={12} name="Expense" />
+                                        <Bar dataKey="revenue" fill="var(--primary)" barSize={12} name="Revenue" stroke="none" strokeWidth={0} />
+                                        <Bar dataKey="expense" fill="#f59e0b" barSize={12} name="Expense" stroke="none" strokeWidth={0} />
                                     </BarChart>
                                 </ResponsiveContainer>
                             )}

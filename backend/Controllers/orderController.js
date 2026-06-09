@@ -150,7 +150,7 @@ exports.createOrder = async (req, res) => {
             try {
                 let points = 0;
                 let hasProductPoints = false;
-                
+
                 const Product = require('../Models/Product');
                 for (const item of items) {
                     const product = await Product.findById(item.productId);
@@ -159,7 +159,7 @@ exports.createOrder = async (req, res) => {
                         hasProductPoints = true;
                     }
                 }
-                
+
                 if (!hasProductPoints) {
                     const settings = await Setting.findOne();
                     if (settings && settings.loyaltySettings && settings.loyaltySettings.active) {
@@ -167,7 +167,7 @@ exports.createOrder = async (req, res) => {
                         points = Math.floor(totalAmount / rate);
                     }
                 }
-                
+
                 if (points > 0) {
                     await Customer.findByIdAndUpdate(customerId, { $inc: { loyaltyPoints: points } });
                     await LoyaltyTransaction.create({
@@ -249,7 +249,7 @@ exports.createOrder = async (req, res) => {
             // WhatsApp to Admins
             const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
             const canSendAdmin = await checkAndDeductWhatsAppCredit(order.outletId);
-            
+
             if (canSendAdmin) {
                 const admins = await User.find({ salonId, role: 'admin', status: 'active' });
                 for (const ad of admins) {
@@ -394,7 +394,7 @@ exports.updateOrderStatus = async (req, res) => {
 
         if (status === 'delivered') {
             order.paymentStatus = 'paid';
-            
+
             // Deduct stock if not already deducted (checking previousStatus)
             if (previousStatus !== 'delivered') {
                 const Product = require('../Models/Product');
@@ -403,17 +403,17 @@ exports.updateOrderStatus = async (req, res) => {
                         const product = await Product.findById(item.productId);
                         if (product) {
                             const qty = Number(item.quantity) || 1;
-                            
+
                             // 1. Update total stock
                             product.stock = (product.stock || 0) - qty;
-                            
+
                             // 2. Update outlet stock
                             if (order.outletId) {
                                 const outletKey = order.outletId.toString();
                                 const currentStock = product.stockByOutlet.get(outletKey) || 0;
                                 product.stockByOutlet.set(outletKey, Math.max(0, currentStock - qty));
                             }
-                            
+
                             await product.save();
                             console.log(`[Inventory] Deducted ${qty} of ${product.name} for Order #${order._id}`);
                         }
@@ -469,7 +469,7 @@ exports.updateOrderStatus = async (req, res) => {
 
             const clientName = populatedOrder?.customerId?.name || 'Customer';
             const adminMsg = `Order #${order._id.toString().slice(-6).toUpperCase()} for ${clientName} is now ${status.toUpperCase()}.`;
-            
+
             await sendAdminNotification({
                 salonId: order.salonId,
                 title: `Order Update: ${status.toUpperCase()}`,
@@ -482,7 +482,7 @@ exports.updateOrderStatus = async (req, res) => {
             // 3. WhatsApp Notifications
             if (populatedOrder) {
                 const brandName = populatedOrder.salonId?.businessName || populatedOrder.salonId?.name || 'Our Salon';
-                
+
                 // WhatsApp to Customer
                 const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
                 const canSendCust = await checkAndDeductWhatsAppCredit(order.outletId);
@@ -544,9 +544,9 @@ exports.cancelOrder = async (req, res) => {
         // Condition check: Only allow if not out_for_delivery or delivered
         const restrictedStatuses = ['out_for_delivery', 'delivered', 'cancelled', 'rejected'];
         if (restrictedStatuses.includes(order.status)) {
-            return res.status(400).json({ 
-                success: false, 
-                message: `Order cannot be cancelled when status is ${order.status}` 
+            return res.status(400).json({
+                success: false,
+                message: `Order cannot be cancelled when status is ${order.status}`
             });
         }
 

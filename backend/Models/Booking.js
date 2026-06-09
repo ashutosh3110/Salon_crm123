@@ -90,6 +90,10 @@ const bookingSchema = new mongoose.Schema({
     duration: {
         type: Number,
         default: 30
+    },
+    advancePaid: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

@@ -213,6 +213,24 @@
     stroke: #B4912B !important;
   }
 
+  /* Override for solid buttons where icon should stay white */
+  html:not(.dark) .new-theme button.testimonial-submit-btn:hover,
+  html:not(.dark) .new-theme button.app-download-btn:hover,
+  html:not(.dark) .new-theme a.pricing-cta-btn:hover {
+    color: #ffffff !important;
+  }
+
+  html:not(.dark) .new-theme button.testimonial-submit-btn:hover svg,
+  html:not(.dark) .new-theme button.testimonial-submit-btn:hover svg *,
+  html:not(.dark) .new-theme button.app-download-btn:hover svg,
+  html:not(.dark) .new-theme button.app-download-btn:hover svg *,
+  html:not(.dark) .new-theme a.pricing-cta-btn:hover svg,
+  html:not(.dark) .new-theme a.pricing-cta-btn:hover svg * {
+    color: #ffffff !important;
+    stroke: #ffffff !important;
+    fill: #ffffff !important;
+  }
+
 
   html:not(.dark) .new-theme .text-white\/20 {
     color: #64748B !important;
@@ -230,6 +248,21 @@
   html:not(.dark) .new-theme .text-white-muted-force,
   html:not(.dark) .new-theme .text-white-muted-force * {
     color: rgba(255, 255, 255, 0.7) !important;
+  }
+
+  /* Force light text inside the dark footer in light mode */
+  html:not(.dark) .new-theme footer#contact p,
+  html:not(.dark) .new-theme footer#contact a,
+  html:not(.dark) .new-theme footer#contact span {
+    color: #9ca3af !important;
+  }
+  html:not(.dark) .new-theme footer#contact p.footer-heading,
+  html:not(.dark) .new-theme footer#contact a:hover {
+    color: #ffffff !important;
+  }
+  html:not(.dark) .new-theme footer#contact .border-t,
+  html:not(.dark) .new-theme footer#contact .border-b {
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
 
 
@@ -843,6 +876,18 @@ html:not(.dark) .sa-panel table span[class*="text-blue-500"] {
   color: #3B82F6 !important;
 }
 
+html:not(.dark) .sa-panel table span[class*="text-blue-600"] {
+  color: #2563eb !important;
+}
+
+html:not(.dark) .sa-panel table span[class*="text-red-600"] {
+  color: #dc2626 !important;
+}
+
+html:not(.dark) .sa-panel table span[class*="text-orange-600"] {
+  color: #ea580c !important;
+}
+
 html:not(.dark) .sa-panel table span[class*="text-indigo-500"] {
   color: #6366F1 !important;
 }
@@ -851,9 +896,19 @@ html:not(.dark) .sa-panel table span[class*="text-purple-500"] {
   color: #A855F7 !important;
 }
 
-html:not(.dark) .sa-panel table .text-primary,
-html:not(.dark) .sa-panel table [class*="text-primary"]:not([class*="text-primary-foreground"]) {
+html:not(.dark) .sa-panel .text-primary,
+html:not(.dark) .sa-panel [class~="text-primary"] {
   color: #B4912B !important;
+}
+
+html:not(.dark) .sa-panel .text-text-muted,
+html:not(.dark) .sa-panel [class*="text-text-muted"] {
+  color: #64748B !important;
+}
+
+html:not(.dark) .sa-panel .text-text-secondary,
+html:not(.dark) .sa-panel [class*="text-text-secondary"] {
+  color: #475569 !important;
 }
 
 html:not(.dark) .sa-panel table .group:hover .group-hover\:text-primary-foreground {
@@ -864,61 +919,64 @@ html:not(.dark) .sa-panel table .group:hover .group-hover\:text-primary-foregrou
 
 html:not(.dark) .admin-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not(.text-white),
 html:not(.dark) .admin-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not(.text-white),
-html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not(.text-white) {
+html:not(.dark) .admin-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not(.text-white),
+html:not(.dark) .sa-panel span:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not(.text-white),
+html:not(.dark) .sa-panel div:not([class*="text-green"]):not([class*="text-emerald"]):not([class*="text-red"]):not([class*="text-rose"]):not([class*="text-amber"]):not([class*="text-yellow"]):not([class*="text-blue"]):not([class*="text-indigo"]):not([class*="text-violet"]):not([class*="text-orange"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not([class*="recharts"]):not([class*="recharts-"]):not(.text-white),
+html:not(.dark) .sa-panel button:not(.bg-primary):not([class*="bg-primary"]):not([class*="text-green"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-rose"]):not([class*="text-primary"]):not([class*="text-primary-foreground"]):not(.text-white) {
   color: #000000 !important;
 }
 
 /* Ensure SVGs inside soft colored containers in light mode have the correct high-contrast color */
-html:not(.dark) .admin-panel [class*="bg-emerald-"] svg,
-html:not(.dark) .admin-panel [class*="bg-green-"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg,
-html:not(.dark) .sa-panel [class*="bg-emerald-"] svg,
-html:not(.dark) .sa-panel [class*="bg-green-"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"] svg {
+html:not(.dark) .admin-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #047857 !important;
   stroke: #047857 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-rose-"] svg,
-html:not(.dark) .admin-panel [class*="bg-red-"] svg,
-html:not(.dark) .admin-panel [class*="bg-rose-100"] svg,
-html:not(.dark) .sa-panel [class*="bg-rose-"] svg,
-html:not(.dark) .sa-panel [class*="bg-red-"] svg,
-html:not(.dark) .sa-panel [class*="bg-rose-100"] svg {
+html:not(.dark) .admin-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #b91c1c !important;
   stroke: #b91c1c !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
-html:not(.dark) .sa-panel [class*="bg-blue-"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"] svg {
+html:not(.dark) .admin-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #1d4ed8 !important;
   stroke: #1d4ed8 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-amber-"] svg,
-html:not(.dark) .admin-panel [class*="bg-yellow-"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg,
-html:not(.dark) .sa-panel [class*="bg-amber-"] svg,
-html:not(.dark) .sa-panel [class*="bg-yellow-"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"] svg {
+html:not(.dark) .admin-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #b45309 !important;
   stroke: #b45309 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-violet-"] svg,
-html:not(.dark) .admin-panel [class*="bg-purple-"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg,
-html:not(.dark) .sa-panel [class*="bg-violet-"] svg,
-html:not(.dark) .sa-panel [class*="bg-purple-"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"] svg {
+html:not(.dark) .admin-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #6d28d9 !important;
   stroke: #6d28d9 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
-html:not(.dark) .sa-panel [class*="bg-cyan-"] svg {
+html:not(.dark) .admin-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #0891b2 !important;
   stroke: #0891b2 !important;
 }
@@ -1083,102 +1141,102 @@ html:not(.dark) .sa-panel svg[class*="text-purple"] * {
 }
 
 /* EXCEPT if the SVG is inside a soft colored background container, force matching color */
-html:not(.dark) .admin-panel [class*="bg-emerald-"] svg,
-html:not(.dark) .admin-panel [class*="bg-emerald-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-green-"] svg,
-html:not(.dark) .admin-panel [class*="bg-green-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"] svg *,
-html:not(.dark) .sa-panel [class*="bg-emerald-"] svg,
-html:not(.dark) .sa-panel [class*="bg-emerald-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-green-"] svg,
-html:not(.dark) .sa-panel [class*="bg-green-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"] svg * {
+html:not(.dark) .admin-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-emerald-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-green-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#DCFCE7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #047857 !important;
   stroke: #047857 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-rose-"] svg,
-html:not(.dark) .admin-panel [class*="bg-rose-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-red-"] svg,
-html:not(.dark) .admin-panel [class*="bg-red-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-rose-100"] svg,
-html:not(.dark) .admin-panel [class*="bg-rose-100"] svg *,
-html:not(.dark) .sa-panel [class*="bg-rose-"] svg,
-html:not(.dark) .sa-panel [class*="bg-rose-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-red-"] svg,
-html:not(.dark) .sa-panel [class*="bg-red-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-rose-100"] svg,
-html:not(.dark) .sa-panel [class*="bg-rose-100"] svg * {
+html:not(.dark) .admin-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-rose-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-red-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-rose-100"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #b91c1c !important;
   stroke: #b91c1c !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-blue-"] svg,
-html:not(.dark) .admin-panel [class*="bg-blue-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"] svg *,
-html:not(.dark) .sa-panel [class*="bg-blue-"] svg,
-html:not(.dark) .sa-panel [class*="bg-blue-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"] svg * {
+html:not(.dark) .admin-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-blue-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#DBEAFE]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #1d4ed8 !important;
   stroke: #1d4ed8 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-amber-"] svg,
-html:not(.dark) .admin-panel [class*="bg-amber-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-yellow-"] svg,
-html:not(.dark) .admin-panel [class*="bg-yellow-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"] svg *,
-html:not(.dark) .sa-panel [class*="bg-amber-"] svg,
-html:not(.dark) .sa-panel [class*="bg-amber-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-yellow-"] svg,
-html:not(.dark) .sa-panel [class*="bg-yellow-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"] svg * {
+html:not(.dark) .admin-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-amber-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-yellow-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#FEF3C7]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #b45309 !important;
   stroke: #b45309 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-violet-"] svg,
-html:not(.dark) .admin-panel [class*="bg-violet-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-purple-"] svg,
-html:not(.dark) .admin-panel [class*="bg-purple-"] svg *,
-html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg,
-html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg *,
-html:not(.dark) .sa-panel [class*="bg-violet-"] svg,
-html:not(.dark) .sa-panel [class*="bg-violet-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-purple-"] svg,
-html:not(.dark) .sa-panel [class*="bg-purple-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"] svg,
-html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"] svg * {
+html:not(.dark) .admin-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-violet-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-purple-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #6d28d9 !important;
   stroke: #6d28d9 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
-html:not(.dark) .admin-panel [class*="bg-cyan-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-cyan-"] svg,
-html:not(.dark) .sa-panel [class*="bg-cyan-"] svg * {
+html:not(.dark) .admin-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #0891b2 !important;
   stroke: #0891b2 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg,
-html:not(.dark) .admin-panel [class*="bg-fuchsia-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-fuchsia-"] svg,
-html:not(.dark) .sa-panel [class*="bg-fuchsia-"] svg * {
+html:not(.dark) .admin-panel [class*="bg-fuchsia-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-fuchsia-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-fuchsia-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-fuchsia-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #c026d3 !important;
   stroke: #c026d3 !important;
 }
 
-html:not(.dark) .admin-panel [class*="bg-indigo-"] svg,
-html:not(.dark) .admin-panel [class*="bg-indigo-"] svg *,
-html:not(.dark) .sa-panel [class*="bg-indigo-"] svg,
-html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
+html:not(.dark) .admin-panel [class*="bg-indigo-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-indigo-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg *,
+html:not(.dark) .sa-panel [class*="bg-indigo-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-indigo-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg * {
   color: #4f46e5 !important;
   stroke: #4f46e5 !important;
 }
@@ -1199,8 +1257,8 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 .sa-panel button.bg-primary,
 .sa-panel a.bg-primary,
 .sa-panel button[type="submit"],
-.sa-panel button[class*="bg-primary"],
-.sa-panel .inline-flex[class*="bg-primary"],
+.sa-panel button[class~="bg-primary"],
+.sa-panel .inline-flex[class~="bg-primary"],
 .sa-panel button.bg-gradient-to-r {
   background: linear-gradient(to right, #B4912B, #8B6F23) !important;
   color: #ffffff !important;
@@ -1215,8 +1273,8 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 .sa-panel button.bg-primary:hover,
 .sa-panel a.bg-primary:hover,
 .sa-panel button[type="submit"]:hover,
-.sa-panel button[class*="bg-primary"]:hover,
-.sa-panel .inline-flex[class*="bg-primary"]:hover,
+.sa-panel button[class~="bg-primary"]:hover,
+.sa-panel .inline-flex[class~="bg-primary"]:hover,
 .sa-panel button.bg-gradient-to-r:hover {
   filter: brightness(1.1) !important;
   box-shadow: 0 6px 20px 0 rgba(180, 145, 43, 0.45) !important;
@@ -1225,8 +1283,8 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 .sa-panel button.bg-primary:active,
 .sa-panel a.bg-primary:active,
 .sa-panel button[type="submit"]:active,
-.sa-panel button[class*="bg-primary"]:active,
-.sa-panel .inline-flex[class*="bg-primary"]:active,
+.sa-panel button[class~="bg-primary"]:active,
+.sa-panel .inline-flex[class~="bg-primary"]:active,
 .sa-panel button.bg-gradient-to-r:active {
   transform: scale(0.98) !important;
 }
@@ -1235,14 +1293,14 @@ html:not(.dark) .sa-panel [class*="bg-indigo-"] svg * {
 .sa-panel button.bg-primary svg,
 .sa-panel a.bg-primary svg,
 .sa-panel button[type="submit"] svg,
-.sa-panel button[class*="bg-primary"] svg,
-.sa-panel .inline-flex[class*="bg-primary"] svg,
+.sa-panel button[class~="bg-primary"] svg,
+.sa-panel .inline-flex[class~="bg-primary"] svg,
 .sa-panel button.bg-gradient-to-r svg,
 .sa-panel button.bg-primary svg *,
 .sa-panel a.bg-primary svg *,
 .sa-panel button[type="submit"] svg *,
-.sa-panel button[class*="bg-primary"] svg *,
-.sa-panel .inline-flex[class*="bg-primary"] svg *,
+.sa-panel button[class~="bg-primary"] svg *,
+.sa-panel .inline-flex[class~="bg-primary"] svg *,
 .sa-panel button.bg-gradient-to-r svg * {
   color: #ffffff !important;
   stroke: #ffffff !important;
@@ -1482,6 +1540,14 @@ html:not(.dark) .admin-panel [class*="text-text-muted"],
 html:not(.dark) .admin-panel span.text-text-muted,
 html:not(.dark) .admin-panel div.text-text-muted,
 html:not(.dark) .admin-panel p.text-text-muted {
+  color: #475569 !important;
+}
+
+html:not(.dark) .admin-panel .text-text-secondary,
+html:not(.dark) .admin-panel [class*="text-text-secondary"],
+html:not(.dark) .admin-panel span.text-text-secondary,
+html:not(.dark) .admin-panel div.text-text-secondary,
+html:not(.dark) .admin-panel p.text-text-secondary {
   color: #475569 !important;
 }
 
@@ -2333,4 +2399,91 @@ html:not(.dark) .admin-panel span[class*="text-slate-"],
 html:not(.dark) .admin-panel p[class*="text-slate-"],
 html:not(.dark) .admin-panel label[class*="text-slate-"] {
   color: #64748B !important;
+}
+
+/* Ensure validation stars/asterisks with text-rose or text-red colors remain red/rose in light mode overrides */
+html:not(.dark) .admin-panel span.text-rose-500,
+html:not(.dark) .admin-panel span[class*="text-rose-"],
+html:not(.dark) .admin-panel span[class*="text-red-"],
+html:not(.dark) .admin-panel span[style*="color: red"],
+html:not(.dark) .new-theme span.text-rose-500,
+html:not(.dark) .new-theme span[class*="text-rose-"],
+html:not(.dark) .new-theme span[class*="text-red-"],
+html:not(.dark) .new-theme span[style*="color: red"] {
+  color: #ef4444 !important;
+}
+
+/* Global Fix: Remove focus outline and borders from recharts elements */
+.recharts-wrapper,
+.recharts-surface,
+.recharts-wrapper:focus,
+.recharts-surface:focus,
+.recharts-wrapper:active,
+.recharts-surface:active,
+.recharts-wrapper *:focus,
+.recharts-wrapper *:focus-visible,
+.recharts-wrapper *:focus-within,
+.recharts-wrapper *,
+.recharts-active-dot,
+.recharts-active-dot *,
+svg:focus,
+svg:focus-visible,
+svg *:focus,
+svg *:focus-visible {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* Recharts text elements override to prevent smudge / double bolding from global stroke overrides */
+.recharts-wrapper text,
+.recharts-text,
+.recharts-cartesian-axis-tick-value,
+.recharts-cartesian-axis-tick text {
+  stroke: none !important;
+  font-weight: 600 !important;
+  fill: #475569 !important; /* Elegant slate gray for light mode */
+}
+
+/* Ensure bright, highly readable text color inside charts in dark mode */
+html.dark .recharts-wrapper text,
+html.dark .recharts-text,
+html.dark .recharts-cartesian-axis-tick-value,
+html.dark .recharts-cartesian-axis-tick text {
+  fill: #cbd5e1 !important; /* Soft white/slate gray for dark mode */
+}
+
+/* Prevent global SVG stroke rules from adding borders to chart shapes (bars, pie cells, tooltip cursors) */
+.recharts-rectangle,
+.recharts-bar-rectangle,
+.recharts-pie-sector,
+.recharts-tooltip-cursor,
+.recharts-active-dot circle,
+.recharts-dot circle {
+  stroke: none !important;
+  stroke-width: 0 !important;
+}
+
+/* Make tooltip cursor transparent or very light */
+.recharts-tooltip-cursor {
+  fill: rgba(0, 0, 0, 0.05) !important;
+}
+
+html.dark .recharts-tooltip-cursor {
+  fill: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Prevent global light-mode stroke rule from overriding colors of custom donut charts and mini-charts */
+html:not(.dark) .new-theme .recharts-wrapper svg *,
+html:not(.dark) .new-theme .recharts-surface *,
+.new-theme .recharts-wrapper svg *,
+.new-theme .recharts-surface *,
+.recharts-wrapper svg *,
+.recharts-surface *,
+svg.transform circle,
+svg[viewBox="0 0 100 100"] circle,
+svg[viewBox="0 0 100 40"] path,
+svg[viewBox="0 0 100 40"] circle {
+  stroke: unset !important;
 }

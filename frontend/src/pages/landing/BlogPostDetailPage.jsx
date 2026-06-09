@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { useParams, useNavigate } from 'react-router-dom';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import { useTheme } from '../../contexts/ThemeContext';
-
 import api, { API_BASE_URL } from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
 
@@ -58,6 +58,19 @@ export default function BlogPostDetailPage() {
 
     return (
         <div className="new-theme" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)' }}>
+            <Helmet>
+                <title>{post.title} | Wapixo Blog</title>
+                <meta name="description" content={post.content ? post.content.slice(0, 160).replace(/\n/g, ' ') + '...' : 'Read this article on Wapixo — salon management insights and tips for Indian salon owners.'} />
+                <link rel="canonical" href={`https://wapixo.com/blog/${post.slug || slug}`} />
+                <meta property="og:title" content={`${post.title} | Wapixo Journal`} />
+                <meta property="og:description" content={post.content ? post.content.slice(0, 160).replace(/\n/g, ' ') : ''} />
+                <meta property="og:url" content={`https://wapixo.com/blog/${post.slug || slug}`} />
+                <meta property="og:type" content="article" />
+                {post.image && <meta property="og:image" content={getImageUrl(post.image)} />}
+                <meta name="twitter:title" content={post.title} />
+                <meta name="twitter:card" content="summary_large_image" />
+                {post.image && <meta name="twitter:image" content={getImageUrl(post.image)} />}
+            </Helmet>
             <WapixoNavbar />
 
             {/* Elegant Header - Matching Journal Style */}

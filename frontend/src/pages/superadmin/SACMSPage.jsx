@@ -6,71 +6,96 @@ import {
     Shield, FileText, Smartphone, Zap, Heart, Target,
     Package, BarChart2, CheckCircle2, AlertCircle, Info,
     Eye, Edit3, Globe, Smartphone as MobileIcon, Search,
-    Monitor, RefreshCw, HelpCircle
+    Monitor, RefreshCw, HelpCircle, Plus, Trash2, Star
 } from 'lucide-react';
 
 // Import Landing Components for Live Preview
-import HeroScroll from '../../components/landing/wapixo/HeroScroll';
+import AnimatedHero from '../../components/landing/wapixo/AnimatedHero';
 import Features from '../../components/landing/wapixo/Features';
 import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
+import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
+import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
+import { getImageUrl } from '../../utils/imageUtils';
 
 /* ─── CMS Section/Field Mock Data ────────────────────────────────────── */
 const INITIAL_CMS_DATA = {
     landing_hero: {
-        title: "From Chaos to Command.",
-        subtitle: "Using multiple disconnected apps for billing, booking, and staff management leads to data silos and chaos.",
-        badge: "THE TRANSITION",
-        legacy_label: "LEGACY SYSTEMS",
-        standard_label: "THE WAPIXO STANDARD",
-        standard_title: "Unified Ecosystem",
-        standard_desc: "A single, surgical command center for every aspect of your salon. One platform, zero friction."
+        overline: 'Salon Management · Wapixo',
+        headline_part1: 'Run your salon',
+        headline_part2: 'without the chaos.',
+        subtitle: 'Book appointments, track revenue, and manage your team — all from one surgical command center.',
+        cta_primary: 'Start Free Trial',
+        cta_secondary: 'Sign in →',
+        trust_line: 'Trusted by salons across India, UAE, and the UK.',
+        stat1_value: '500+', stat1_label: 'Salons',
+        stat2_value: '50K+', stat2_label: 'Bookings',
+        stat3_value: '99.9%', stat3_label: 'Uptime',
+    },
+    landing_solutions_header: {
+        overline: 'The Transition',
+        headline: 'From Chaos to Command.',
+    },
+    landing_solutions: [
+        { id: 1, problem: 'Fragmented Operations', problemDesc: 'Using multiple disconnected apps leads to data silos and chaos.', solution: 'Unified Ecosystem', solutionDesc: 'A single command center for every aspect of your salon.' },
+        { id: 2, problem: 'The "No-Show" Drain', problemDesc: 'Forgotten appointments mean empty chairs and lost revenue.', solution: 'Autonomous Reminders', solutionDesc: 'Automated WhatsApp and SMS workflows that keep chairs full.' },
+        { id: 3, problem: 'Inventory Blindness', problemDesc: 'Manual stock tracking leads to wastage, theft, and emergency re-orders.', solution: 'Precision Analytics', solutionDesc: 'Real-time barcode synchronization across outlets.' },
+        { id: 4, problem: 'Growth Guesswork', problemDesc: 'Scaling without data is gambling.', solution: 'Actionable Intelligence', solutionDesc: 'Deep-dive analytics that reveal what drives your growth.' },
+    ],
+    site_footer: {
+        tagline: 'Powering smart businesses with intelligent salon management.',
+        copyright_suffix: 'All rights reserved.',
+        powering_text: 'POWERING SMART BUSINESSES',
     },
     legal_privacy: {
-        title: "Privacy Policy",
-        last_updated: "February 2026",
-        content: "Your privacy is important to us. This policy explains how we collect, use, and protect your data..."
+        title: 'Privacy Policy',
+        last_updated: 'February 2026',
+        content: 'Your privacy is important to us. This policy explains how we collect, use, and protect your data...'
     },
     legal_terms: {
-        title: "Terms of Service",
-        last_updated: "February 2026",
-        content: "By using Wapixo, you agree to these legal terms and conditions..."
+        title: 'Terms of Service',
+        last_updated: 'February 2026',
+        content: 'By using Wapixo, you agree to these legal terms and conditions...'
     },
     legal_cookies: {
-        title: "Cookie Policy",
-        last_updated: "February 2026",
-        content: "We use cookies to enhance your experience and analyze platform performance..."
+        title: 'Cookie Policy',
+        last_updated: 'February 2026',
+        content: 'We use cookies to enhance your experience and analyze platform performance...'
     },
     contact_page: {
-        title: "Get in Touch",
-        subtitle: "Have questions about our enterprise solutions? Our experts are ready to assist.",
-        address: "DLF Cyber City, Tower 8, Gurugram, India",
-        email: "solutions@wapixo.io",
-        phone: "+91 999 888 7766"
+        title: 'Get in Touch',
+        subtitle: 'Have questions about our enterprise solutions? Our experts are ready to assist.',
+        address: 'DLF Cyber City, Tower 8, Gurugram, India',
+        email: 'solutions@wapixo.io',
+        phone: '+91 999 888 7766'
     },
     landing_testimonials: [
-        { id: 1, name: "Claudia Alves", role: "CEO, ARTISTRY STUDIO", content: "Wapixo has completely transformed how we manage our multi-outlet salon. The precision in billing and the depth of analytics is unmatched in the industry.", stars: 5 },
-        { id: 2, name: "Priya Sharma", role: "DIRECTOR, URBAN GLOSS", content: "The WhatsApp automation and smart scheduling have reduced our no-shows by 40%. It is not just a software; it is a growth partner for our business.", stars: 5 },
-        { id: 3, name: "Rahul Varma", role: "FOUNDER, ELITE SCISSORS", content: "Managing inventory across 10 locations was a nightmare before Wapixo. Now, everything is synchronized with surgical precision.", stars: 5 }
+        { id: 1, name: 'Claudia Alves', role: 'CEO, ARTISTRY STUDIO', content: 'Wapixo has completely transformed how we manage our multi-outlet salon.', stars: 5 },
+        { id: 2, name: 'Priya Sharma', role: 'DIRECTOR, URBAN GLOSS', content: 'The WhatsApp automation and smart scheduling have reduced our no-shows by 40%.', stars: 5 },
+        { id: 3, name: 'Rahul Varma', role: 'FOUNDER, ELITE SCISSORS', content: 'Managing inventory across 10 locations was a nightmare before Wapixo.', stars: 5 }
     ],
     landing_features: [
-        { id: 1, title: "Smart Booking", desc: "Real-time scheduling with zero conflicts. Your clients book 24/7." },
-        { id: 2, title: "Advanced Analytics", desc: "Revenue insights, peak hours, and growth metrics at a glance." },
-        { id: 3, title: "Client Management", desc: "Complete client histories, preferences, and loyalty tracking." },
-        { id: 4, title: "Loyalty Engine", desc: "Automated rewards and referral programs that retain clients." },
-        { id: 5, title: "Staff Scheduling", desc: "Shift management, commissions, and performance tracking." },
-        { id: 6, title: "Multi-Outlet", desc: "Manage every branch from one powerful dashboard." }
+        { id: 1, title: 'Smart Booking', desc: 'Real-time scheduling with zero conflicts. Your clients book 24/7.' },
+        { id: 2, title: 'Advanced Analytics', desc: 'Revenue insights, peak hours, and growth metrics at a glance.' },
+        { id: 3, title: 'Client Management', desc: 'Complete client histories, preferences, and loyalty tracking.' },
+        { id: 4, title: 'Loyalty Engine', desc: 'Automated rewards and referral programs that retain clients.' },
+        { id: 5, title: 'Staff Scheduling', desc: 'Shift management, commissions, and performance tracking.' },
+        { id: 6, title: 'Multi-Outlet', desc: 'Manage every branch from one powerful dashboard.' }
     ],
     landing_faqs: [
-        { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all SalonCRM features for 14 days. No credit card is required to start.' },
-        { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. SalonCRM is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
+        { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all features for 14 days. No credit card is required to start.' },
+        { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. Wapixo is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
     ]
 };
 
 const CMS_TABS = [
-    { id: 'landing', label: 'Landing Page', icon: Layout },
+    { id: 'landing', label: 'Hero & Content', icon: Layout },
+    { id: 'solutions', label: 'Solutions', icon: Zap },
+    { id: 'footer', label: 'Footer', icon: Globe },
     { id: 'legal', label: 'Legal Pages', icon: Shield },
     { id: 'contact', label: 'Contact Page', icon: MessageSquare },
     { id: 'faqs', label: 'Platform FAQs', icon: HelpCircle },
+    { id: 'reviews', label: 'Reviews', icon: Star },
 ];
 
 
@@ -81,6 +106,7 @@ export default function SACMSPage() {
     const [saving, setSaving] = useState(false);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
+    const [allReviews, setAllReviews] = useState([]);
 
     useEffect(() => {
         fetchCMSData();
@@ -90,14 +116,39 @@ export default function SACMSPage() {
         try {
             setLoading(true);
             const response = await api.get('/cms');
-            if (response.data && Object.keys(response.data).length > 0) {
-                setData(prev => ({ ...prev, ...response.data }));
+            if (response.data && response.data.success && response.data.data) {
+                setData(prev => ({ ...prev, ...response.data.data }));
             }
         } catch (error) {
             console.error('Error fetching CMS data:', error);
             showToast("Error loading content");
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAllReviews = async () => {
+        try {
+            const response = await api.get('/testimonials/all');
+            setAllReviews(response.data?.data || []);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'reviews') {
+            fetchAllReviews();
+        }
+    }, [activeTab]);
+
+    const handleUpdateReviewStatus = async (id, newStatus) => {
+        try {
+            await api.patch(`/testimonials/${id}/status`, { status: newStatus });
+            showToast(`Review ${newStatus} successfully!`);
+            fetchAllReviews();
+        } catch (error) {
+            showToast('Failed to update review status');
         }
     };
 
@@ -109,9 +160,9 @@ export default function SACMSPage() {
     const handleSave = async () => {
         setSaving(true);
         try {
-            // Save all sections that are currently in 'data'
-            const promises = Object.entries(data).map(([section, content]) => 
-                api.patch(`/cms/${section}`, { content })
+            // Save all sections that are part of INITIAL_CMS_DATA
+            const promises = Object.keys(INITIAL_CMS_DATA).map((section) => 
+                api.patch(`/cms/${section}`, { content: data[section] })
             );
             await Promise.all(promises);
             showToast("Public content updated successfully!");
@@ -169,7 +220,9 @@ export default function SACMSPage() {
                     <p className="text-[11px] text-text-muted font-medium uppercase tracking-[0.2em] mt-1">Change your website text and legal pages</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="px-5 py-2.5 bg-surface border border-border text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2">
+                    <button
+                        onClick={() => window.open('/', '_blank')}
+                        className="px-5 py-2.5 bg-surface border border-border text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all flex items-center gap-2">
                         <Eye size={14} /> Preview Site
                     </button>
                     <button
@@ -210,43 +263,85 @@ export default function SACMSPage() {
 
                     {activeTab === 'landing' && (
                         <div className="space-y-12">
-                            {/* Hero & Transition Section */}
+                            {/* Hero Section */}
                             <section className="space-y-6">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
                                         <Type size={18} />
                                     </div>
-                                    <h2 className="text-lg font-bold tracking-tight">Website Introduction</h2>
+                                    <h2 className="text-lg font-bold tracking-tight">Hero Section</h2>
                                 </div>
-                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border regular-radius">
-                                    {renderInput('landing_hero', 'badge', 'Small Legend / Badge')}
-                                    {renderInput('landing_hero', 'title', 'Main Headline')}
-                                    {renderInput('landing_hero', 'subtitle', 'Sub-Headline / Narrative', 'textarea')}
-
-                                    <div className="pt-4 border-t border-border grid grid-cols-2 gap-4">
-                                        {renderInput('landing_hero', 'legacy_label', 'Left Label (Legacy)')}
-                                        {renderInput('landing_hero', 'standard_label', 'Right Label (Standard)')}
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    {renderInput('landing_hero', 'overline', 'Overline Badge (small text above headline)')}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {renderInput('landing_hero', 'headline_part1', 'Headline Line 1')}
+                                        {renderInput('landing_hero', 'headline_part2', 'Headline Line 2 (bold)')}
                                     </div>
-                                    <div className="grid grid-cols-1 gap-6">
-                                        {renderInput('landing_hero', 'standard_title', 'Box: Feature Title')}
-                                        {renderInput('landing_hero', 'standard_desc', 'Box: Feature Description', 'textarea')}
+                                    {renderInput('landing_hero', 'subtitle', 'Subtitle / Description', 'textarea')}
+                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
+                                        {renderInput('landing_hero', 'cta_primary', 'Primary CTA Button')}
+                                        {renderInput('landing_hero', 'cta_secondary', 'Secondary CTA Link')}
+                                    </div>
+                                    {renderInput('landing_hero', 'trust_line', 'Trust Line (below CTAs)')}
+                                    <div className="pt-4 border-t border-border">
+                                        <div className="text-[10px] font-black text-text-muted uppercase mb-3">Stats (3 values)</div>
+                                        <div className="grid grid-cols-3 gap-4">
+                                            <div className="space-y-2">
+                                                {renderInput('landing_hero', 'stat1_value', 'Stat 1 Value')}
+                                                {renderInput('landing_hero', 'stat1_label', 'Stat 1 Label')}
+                                            </div>
+                                            <div className="space-y-2">
+                                                {renderInput('landing_hero', 'stat2_value', 'Stat 2 Value')}
+                                                {renderInput('landing_hero', 'stat2_label', 'Stat 2 Label')}
+                                            </div>
+                                            <div className="space-y-2">
+                                                {renderInput('landing_hero', 'stat3_value', 'Stat 3 Value')}
+                                                {renderInput('landing_hero', 'stat3_label', 'Stat 3 Label')}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </section>
 
                             {/* Features Grid */}
                             <section className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-emerald-50 flex items-center justify-center text-primary">
-                                        <Package size={18} />
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-emerald-50 flex items-center justify-center text-primary">
+                                            <Package size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">Key Features</h2>
                                     </div>
-                                    <h2 className="text-lg font-bold tracking-tight">Key Features</h2>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                const newFeature = { id: Date.now(), title: 'New Feature', desc: 'Describe the feature...' };
+                                                setData(prev => ({ ...prev, landing_features: [...(prev.landing_features || []), newFeature] }));
+                                            }}
+                                            className="px-4 py-2 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-2 transition-all"
+                                        >
+                                            <Plus size={14} /> Add Feature
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="px-4 py-2 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                        >
+                                            {saving ? 'Saving...' : <><Save size={14} /> Save Section</>}
+                                        </button>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                        {data.landing_features.map((feature, idx) => (
-                                            <div key={feature.id} className="space-y-4 p-4 border border-border/50 bg-surface/30">
-                                                <div className="text-[10px] font-black text-primary uppercase">MODULE 0{idx + 1}</div>
+                                        {(data.landing_features || []).map((feature, idx) => (
+                                            <div key={feature.id} className="space-y-4 p-4 border border-border/50 bg-surface/30 relative group">
+                                                <button
+                                                    onClick={() => setData(prev => ({ ...prev, landing_features: prev.landing_features.filter((_, i) => i !== idx) }))}
+                                                    className="absolute top-4 right-4 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                <div className="text-[10px] font-black text-primary uppercase">MODULE {String(idx + 1).padStart(2, '0')}</div>
                                                 <div className="space-y-3">
                                                     <input
                                                         className="w-full bg-transparent border-b border-border/60 py-1 text-sm font-bold focus:border-[#B4912B] outline-none"
@@ -273,64 +368,76 @@ export default function SACMSPage() {
                                 </div>
                             </section>
 
-                            {/* Testimonials */}
-                            <section className="space-y-6">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-indigo-50 flex items-center justify-center text-primary">
-                                        <Heart size={18} />
-                                    </div>
-                                    <h2 className="text-lg font-bold tracking-tight">Customer Reviews</h2>
+
+                        </div>
+                    )}
+
+                    {/* ── SOLUTIONS TAB ── */}
+                    {activeTab === 'solutions' && (
+                        <div className="space-y-8">
+                            {/* Solutions Header */}
+                            <section className="space-y-4">
+                                <h2 className="text-lg font-bold tracking-tight flex items-center gap-3">
+                                    <div className="w-10 h-10 bg-amber-50 flex items-center justify-center text-primary"><Zap size={18} /></div>
+                                    Section Header
+                                </h2>
+                                <div className="bg-white p-6 border border-border grid grid-cols-2 gap-4">
+                                    {renderInput('landing_solutions_header', 'overline', 'Overline Text')}
+                                    {renderInput('landing_solutions_header', 'headline', 'Main Headline')}
                                 </div>
-                                <div className="grid grid-cols-1 gap-8 bg-white p-8 border border-border">
-                                    {data.landing_testimonials.map((t, idx) => (
-                                        <div key={t.id} className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 border border-border bg-surface/20">
-                                            <div className="space-y-4">
-                                                <div className="text-[10px] font-black text-text-muted uppercase">Identity</div>
-                                                <input
-                                                    className="w-full bg-white border border-border px-3 py-2 text-xs font-bold outline-none"
-                                                    value={t.name}
-                                                    onChange={(e) => {
-                                                        const newT = [...data.landing_testimonials];
-                                                        newT[idx].name = e.target.value;
-                                                        setData(prev => ({ ...prev, landing_testimonials: newT }));
-                                                    }}
-                                                    placeholder="Name"
-                                                />
-                                                <input
-                                                    className="w-full bg-white border border-border px-3 py-2 text-xs outline-none"
-                                                    value={t.role}
-                                                    onChange={(e) => {
-                                                        const newT = [...data.landing_testimonials];
-                                                        newT[idx].role = e.target.value;
-                                                        setData(prev => ({ ...prev, landing_testimonials: newT }));
-                                                    }}
-                                                    placeholder="Role / Company"
-                                                />
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-bold text-text-muted uppercase">Rating:</span>
-                                                    <input
-                                                        type="number" max="5" min="1"
-                                                        className="w-16 bg-white border border-border px-2 py-1 text-xs outline-none"
-                                                        value={t.stars}
-                                                        onChange={(e) => {
-                                                            const newT = [...data.landing_testimonials];
-                                                            newT[idx].stars = parseInt(e.target.value);
-                                                            setData(prev => ({ ...prev, landing_testimonials: newT }));
-                                                        }}
+                            </section>
+
+                            {/* Comparison Cards */}
+                            <section className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-lg font-bold tracking-tight">Problem → Solution Cards</h2>
+                                    <button
+                                        onClick={() => {
+                                            const newCard = { id: Date.now(), problem: 'New Problem', problemDesc: 'Describe the problem...', solution: 'Our Solution', solutionDesc: 'Describe the solution...' };
+                                            setData(prev => ({ ...prev, landing_solutions: [...(prev.landing_solutions || []), newCard] }));
+                                        }}
+                                        className="px-4 py-2 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2"
+                                    >
+                                        <Plus size={14} /> Add Card
+                                    </button>
+                                </div>
+                                <div className="space-y-4">
+                                    {(data.landing_solutions || []).map((card, idx) => (
+                                        <div key={card.id} className="bg-white border border-border p-6 relative group">
+                                            <button
+                                                onClick={() => setData(prev => ({ ...prev, landing_solutions: prev.landing_solutions.filter((_, i) => i !== idx) }))}
+                                                className="absolute top-4 right-4 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                            <div className="text-[10px] font-black text-primary uppercase mb-4">Card {idx + 1}</div>
+                                            <div className="grid grid-cols-2 gap-6">
+                                                <div className="space-y-3 p-4 bg-surface/30 border border-border/40">
+                                                    <div className="text-[9px] font-black text-red-400 uppercase tracking-widest">❌ Problem Side</div>
+                                                    <input className="w-full border-b border-border/60 py-1 text-sm font-bold outline-none bg-transparent focus:border-[#B4912B]"
+                                                        value={card.problem}
+                                                        placeholder="Problem Title"
+                                                        onChange={e => { const a = [...data.landing_solutions]; a[idx] = { ...a[idx], problem: e.target.value }; setData(p => ({ ...p, landing_solutions: a })); }}
+                                                    />
+                                                    <textarea className="w-full border-b border-border/60 py-1 text-xs outline-none bg-transparent focus:border-[#B4912B] min-h-[60px] resize-none"
+                                                        value={card.problemDesc}
+                                                        placeholder="Problem description"
+                                                        onChange={e => { const a = [...data.landing_solutions]; a[idx] = { ...a[idx], problemDesc: e.target.value }; setData(p => ({ ...p, landing_solutions: a })); }}
                                                     />
                                                 </div>
-                                            </div>
-                                            <div className="md:col-span-2 space-y-4">
-                                                <div className="text-[10px] font-black text-text-muted uppercase">Success Story</div>
-                                                <textarea
-                                                    className="w-full bg-white border border-border p-4 text-xs leading-relaxed outline-none min-h-[120px]"
-                                                    value={t.content}
-                                                    onChange={(e) => {
-                                                        const newT = [...data.landing_testimonials];
-                                                        newT[idx].content = e.target.value;
-                                                        setData(prev => ({ ...prev, landing_testimonials: newT }));
-                                                    }}
-                                                />
+                                                <div className="space-y-3 p-4 bg-amber-50/50 border border-[#B4912B]/20">
+                                                    <div className="text-[9px] font-black text-primary uppercase tracking-widest">✅ Solution Side</div>
+                                                    <input className="w-full border-b border-border/60 py-1 text-sm font-bold outline-none bg-transparent focus:border-[#B4912B]"
+                                                        value={card.solution}
+                                                        placeholder="Solution Title"
+                                                        onChange={e => { const a = [...data.landing_solutions]; a[idx] = { ...a[idx], solution: e.target.value }; setData(p => ({ ...p, landing_solutions: a })); }}
+                                                    />
+                                                    <textarea className="w-full border-b border-border/60 py-1 text-xs outline-none bg-transparent focus:border-[#B4912B] min-h-[60px] resize-none"
+                                                        value={card.solutionDesc}
+                                                        placeholder="Solution description"
+                                                        onChange={e => { const a = [...data.landing_solutions]; a[idx] = { ...a[idx], solutionDesc: e.target.value }; setData(p => ({ ...p, landing_solutions: a })); }}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -339,7 +446,23 @@ export default function SACMSPage() {
                         </div>
                     )}
 
+                    {/* ── FOOTER TAB ── */}
+                    {activeTab === 'footer' && (
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-slate-50 flex items-center justify-center text-primary"><Globe size={18} /></div>
+                                <h2 className="text-lg font-bold tracking-tight">Footer Content</h2>
+                            </div>
+                            <div className="bg-white p-8 border border-border space-y-6">
+                                {renderInput('site_footer', 'tagline', 'Brand Tagline (below logo)')}
+                                {renderInput('site_footer', 'copyright_suffix', 'Copyright Suffix (after year & name)')}
+                                {renderInput('site_footer', 'powering_text', 'Bottom Strip Text (uppercase)')}
+                            </div>
+                        </section>
+                    )}
+
                     {activeTab === 'legal' && (
+
                         <div className="space-y-8">
                             <div className="bg-white p-8 border border-border space-y-6">
                                 <div className="flex items-center justify-between">
@@ -373,12 +496,13 @@ export default function SACMSPage() {
                     {activeTab === 'contact' && (
                         <section className="space-y-6">
                             <div className="bg-white p-8 border border-border space-y-6">
-                                {renderInput('contact_page', 'title', 'Hero Headline')}
+                                {renderInput('contact_page', 'title', 'Page Headline (H1)')}
                                 {renderInput('contact_page', 'subtitle', 'Support Instruction Text', 'textarea')}
                                 <div className="grid grid-cols-1 gap-6 pt-6 border-t border-border">
                                     {renderInput('contact_page', 'address', 'Physical HQ Address')}
                                     {renderInput('contact_page', 'email', 'Global Support Email')}
-                                    {renderInput('contact_page', 'phone', 'Inquiry Hotlines')}
+                                    {renderInput('contact_page', 'phone', 'Inquiry Hotline')}
+                                    {renderInput('contact_page', 'response_note', 'Fast Response Note', 'textarea')}
                                 </div>
                             </div>
                         </section>
@@ -446,6 +570,80 @@ export default function SACMSPage() {
                             </div>
                         </section>
                     )}
+
+                    {activeTab === 'reviews' && (
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-4 border-b border-border pb-4">
+                                <div className="w-10 h-10 bg-amber-50 flex items-center justify-center text-amber-600">
+                                    <Star size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold tracking-tight">Manage Reviews</h2>
+                                    <p className="text-[11px] text-text-muted mt-1 uppercase tracking-wider">Approve or reject customer testimonials</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-surface border border-border p-6 mt-6">
+                                {allReviews.length === 0 ? (
+                                    <div className="text-center py-10 text-text-muted text-sm">No reviews submitted yet.</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {allReviews.map(review => (
+                                            <div key={review._id} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 border border-border/60 bg-white shadow-sm">
+                                                <div className="flex gap-4">
+                                                    {review.image && (
+                                                        <img 
+                                                            src={getImageUrl(review.image)}
+                                                            alt={review.name}
+                                                            className="w-12 h-12 rounded-full object-cover border border-border"
+                                                        />
+                                                    )}
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <span className="font-bold text-sm text-text">{review.name}</span>
+                                                            <span className="text-[10px] bg-surface px-2 py-0.5 rounded text-text-muted">{review.role}</span>
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
+                                                                review.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                                                review.status === 'rejected' ? 'bg-red-100 text-red-700' :
+                                                                'bg-amber-100 text-amber-700'
+                                                            }`}>
+                                                                {review.status}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1 mb-2">
+                                                            {[...Array(review.rating)].map((_, i) => (
+                                                                <Star key={i} size={12} fill="#B4912B" color="#B4912B" />
+                                                            ))}
+                                                        </div>
+                                                        <p className="text-sm text-text-muted">"{review.content}"</p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex gap-2">
+                                                    {review.status !== 'approved' && (
+                                                        <button 
+                                                            onClick={() => handleUpdateReviewStatus(review._id, 'approved')}
+                                                            className="px-4 py-2 bg-green-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-colors"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+                                                    {review.status !== 'rejected' && (
+                                                        <button 
+                                                            onClick={() => handleUpdateReviewStatus(review._id, 'rejected')}
+                                                            className="px-4 py-2 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Live Preview Pane */}
@@ -463,51 +661,68 @@ export default function SACMSPage() {
                             </div>
                             
                             {/* Preview Window Container */}
-                            <div className="bg-[#050505] border border-white/5 rounded-sm overflow-hidden h-[600px] shadow-inner relative group">
+                            <div className="bg-white border border-border/20 rounded-sm overflow-hidden h-[600px] shadow-inner relative group">
                                 <div className="absolute top-0 left-0 overflow-y-auto custom-scrollbar scale-[0.5] origin-top-left w-[200%] h-[200%] pb-40">
-                                    <div className="new-dark-theme pointer-events-none min-h-full bg-black">
+                                    <div className="new-theme pointer-events-none min-h-full" style={{ background: 'var(--wapixo-bg, #ffffff)' }}>
+                                {/* ── LANDING TAB preview ── */}
                                         {activeTab === 'landing' && (
                                             <div className="space-y-0 w-full">
-                                                {data.landing_hero && <HeroScroll data={data.landing_hero} />}
+                                                {data.landing_hero && <AnimatedHero data={data.landing_hero} />}
                                                 {data.landing_features && <Features data={data.landing_features} />}
                                                 {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
                                             </div>
                                         )}
+                                        {/* ── SOLUTIONS TAB preview ── */}
+                                        {activeTab === 'solutions' && (
+                                            <WapixoSolutions
+                                                data={data.landing_solutions}
+                                                header={data.landing_solutions_header}
+                                            />
+                                        )}
+                                        {/* ── FOOTER TAB preview ── */}
+                                        {activeTab === 'footer' && (
+                                            <WapixoFooter data={data.site_footer} />
+                                        )}
+                                        {/* ── LEGAL TAB preview ── */}
                                         {activeTab === 'legal' && data.legal_privacy && data.legal_terms && (
-                                            <div className="p-16 text-white space-y-12 w-full">
-                                                <h1 className="text-5xl font-black border-b border-[#B4912B] pb-4 inline-block">{data.legal_privacy.title}</h1>
-                                                <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_privacy.content }} />
-                                                
-                                                <h1 className="text-5xl font-black mt-32 border-b border-[#B4912B] pb-4 inline-block">{data.legal_terms.title}</h1>
-                                                <div className="prose prose-invert max-w-none opacity-60 text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: data.legal_terms.content }} />
+                                            <div className="p-16 space-y-12 w-full" style={{ color: 'var(--wapixo-text)' }}>
+                                                <h1 className="text-5xl font-black border-b border-[#B4912B] pb-4 inline-block" style={{ color: 'var(--wapixo-text)' }}>{data.legal_privacy.title}</h1>
+                                                <div className="prose max-w-none opacity-70 text-sm leading-relaxed" style={{ color: 'var(--wapixo-text-muted)' }} dangerouslySetInnerHTML={{ __html: data.legal_privacy.content }} />
+                                                <h1 className="text-5xl font-black mt-32 border-b border-[#B4912B] pb-4 inline-block" style={{ color: 'var(--wapixo-text)' }}>{data.legal_terms.title}</h1>
+                                                <div className="prose max-w-none opacity-70 text-sm leading-relaxed" style={{ color: 'var(--wapixo-text-muted)' }} dangerouslySetInnerHTML={{ __html: data.legal_terms.content }} />
                                             </div>
                                         )}
+                                        {/* ── CONTACT TAB preview ── */}
                                         {activeTab === 'contact' && data.contact_page && (
-                                            <div className="p-16 text-white bg-black min-h-screen flex flex-col justify-center items-center text-center w-full">
-                                                <span className="text-[10px] text-primary font-black uppercase tracking-[0.4em] mb-4">Enterprise Support</span>
-                                                <h2 className="text-6xl font-black mb-6 leading-[1.1]">{data.contact_page.title}</h2>
-                                                <div className="w-12 h-0.5 bg-primary/40 mb-8" />
-                                                <p className="text-lg opacity-50 max-w-xl font-light leading-relaxed mb-12">{data.contact_page.subtitle}</p>
+                                            <div className="p-16 min-h-screen flex flex-col justify-center items-center text-center w-full" style={{ background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+                                                <span className="text-[10px] font-black uppercase tracking-[0.4em] mb-4" style={{ color: 'var(--wapixo-primary)' }}>Enterprise Support</span>
+                                                <h2 className="text-6xl font-black mb-6 leading-[1.1]" style={{ color: 'var(--wapixo-text)' }}>{data.contact_page.title}</h2>
+                                                <div className="w-12 h-0.5 mb-8" style={{ background: 'var(--wapixo-primary)' }} />
+                                                <p className="text-lg max-w-xl font-light leading-relaxed mb-12" style={{ color: 'var(--wapixo-text-muted)' }}>{data.contact_page.subtitle}</p>
                                                 <div className="space-y-6">
                                                     <div className="space-y-1">
-                                                        <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">Global Outreach</p>
-                                                        <p className="text-xl font-medium">{data.contact_page.email}</p>
+                                                        <p className="text-[9px] uppercase font-black tracking-widest" style={{ color: 'var(--wapixo-text-muted)' }}>Email</p>
+                                                        <p className="text-xl font-medium" style={{ color: 'var(--wapixo-text)' }}>{data.contact_page.email}</p>
                                                     </div>
                                                     <div className="space-y-1">
-                                                        <p className="text-[9px] text-text-muted uppercase font-black tracking-widest">Inquiry Hotline</p>
-                                                        <p className="text-xl font-medium">{data.contact_page.phone}</p>
+                                                        <p className="text-[9px] uppercase font-black tracking-widest" style={{ color: 'var(--wapixo-text-muted)' }}>Phone</p>
+                                                        <p className="text-xl font-medium" style={{ color: 'var(--wapixo-text)' }}>{data.contact_page.phone}</p>
                                                     </div>
                                                     <div className="pt-6">
-                                                        <p className="text-[8px] text-text-muted uppercase font-bold tracking-[0.3em]">{data.contact_page.address}</p>
+                                                        <p className="text-[8px] uppercase font-bold tracking-[0.3em]" style={{ color: 'var(--wapixo-text-muted)' }}>{data.contact_page.address}</p>
                                                     </div>
                                                 </div>
                                             </div>
                                         )}
+                                        {/* ── FAQS TAB preview ── */}
+                                        {activeTab === 'faqs' && data.landing_faqs && (
+                                            <WapixoFAQ data={data.landing_faqs} />
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Cinematic Vignette Overlay */}
-                                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] z-10" />
+                                {/* Subtle vignette — much lighter so content shows */}
+                                <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_40px_rgba(0,0,0,0.3)] z-10" />
                             </div>
 
                             <div className="mt-4 flex items-center gap-3">

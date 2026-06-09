@@ -2,20 +2,29 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-export default function AnimatedHero() {
+export default function AnimatedHero({ data = {} }) {
     const { theme } = useTheme();
     const isDark = theme === 'dark';
+
+    // CMS-driven with fallback defaults
+    const overline      = data.overline       || 'Salon Management · Wapixo';
+    const headline1     = data.headline_part1  || 'Run your salon';
+    const headline2     = data.headline_part2  || 'without the chaos.';
+    const subtitle      = data.subtitle        || 'Book appointments, track revenue, and manage your team — all from one surgical command center.';
+    const ctaPrimary    = data.cta_primary     || 'Start Free Trial';
+    const ctaSecondary  = data.cta_secondary   || 'Sign in →';
+    const trustLine     = data.trust_line      || 'Trusted by salons across India, UAE, and the UK.';
+
+    const stats = [
+        { label: data.stat1_label || 'Salons',   value: data.stat1_value || '500+' },
+        { label: data.stat2_label || 'Bookings', value: data.stat2_value || '50K+' },
+        { label: data.stat3_label || 'Uptime',   value: data.stat3_value || '99.9%' },
+    ];
 
     const appointments = [
         { id: 1, name: 'Priya Sharma',  service: 'Hair Spa',     time: '10:00 AM', initial: 'P', color: '#B4912B' },
         { id: 2, name: 'Rahul Verma',   service: 'Classic Fade', time: '11:30 AM', initial: 'R', color: '#6366f1' },
         { id: 3, name: 'Simran Kaur',   service: 'Manicure',     time: '1:00 PM',  initial: 'S', color: '#ec4899' },
-    ];
-
-    const stats = [
-        { label: 'Salons',   value: '500+' },
-        { label: 'Bookings', value: '50K+' },
-        { label: 'Uptime',   value: '99.9%' },
     ];
 
     const borderStyle = `1px solid ${isDark ? 'rgba(255,255,255,0.07)' : 'rgba(0,0,0,0.06)'}`;
@@ -78,7 +87,7 @@ export default function AnimatedHero() {
                         color: 'var(--wapixo-primary)',
                         margin: '0 0 1.25rem 0',
                     }}>
-                        Salon Management · Wapixo
+                        {overline}
                     </p>
 
                     {/* Headline */}
@@ -90,8 +99,8 @@ export default function AnimatedHero() {
                         lineHeight: 1.05,
                         margin: '0 0 1.25rem 0',
                     }}>
-                        Run your salon<br />
-                        <span style={{ fontWeight: 500 }}>without the chaos.</span>
+                        {headline1}<br />
+                        <span style={{ fontWeight: 500 }}>{headline2}</span>
                     </h1>
 
                     {/* Subtitle */}
@@ -103,7 +112,7 @@ export default function AnimatedHero() {
                         maxWidth: '420px',
                         margin: '0 0 2.25rem 0',
                     }}>
-                        Book appointments, track revenue, and manage your team — all from one surgical command center.
+                        {subtitle}
                     </p>
 
                     {/* CTAs */}
@@ -126,7 +135,7 @@ export default function AnimatedHero() {
                                     fontFamily: "'Inter', sans-serif",
                                 }}
                             >
-                                Start Free Trial
+                                {ctaPrimary}
                             </motion.button>
                         </Link>
 
@@ -138,7 +147,7 @@ export default function AnimatedHero() {
                             opacity: 0.7,
                             letterSpacing: '0.01em',
                         }}>
-                            Sign in →
+                            {ctaSecondary}
                         </Link>
                     </div>
 
@@ -175,7 +184,7 @@ export default function AnimatedHero() {
                             letterSpacing: '0.02em',
                             opacity: 0.8
                         }}>
-                            Trusted by salons across India, UAE, and the UK.
+                            {trustLine}
                         </p>
                     </div>
                 </motion.div>

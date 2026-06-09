@@ -54,6 +54,7 @@ const finance = require('./Routers/financeRoutes');
 const marketing = require('./Routers/marketingRoutes');
 const notifications = require('./Routers/notificationRoutes');
 const support = require('./Routers/supportRoutes');
+const backup = require('./Routers/backupRoutes');
 const initCronJobs = require('./Utils/cronJobs');
 
 // Mount routers
@@ -94,10 +95,12 @@ app.use('/marketing', marketing);
 app.use('/notifications', notifications);
 app.use('/v1/notifications', notifications);
 app.use('/support', support);
+app.use('/super-admin/database', backup);
 
 // New Explicit Home Page Routes
 const banners = require('./Routers/bannerRoutes');
 const reviews = require('./Routers/reviewRoutes');
+const testimonials = require('./Routers/testimonialRoutes');
 const membershipPlans = require('./Routers/membershipPlanRoutes');
 const loyaltyRules = require('./Routers/loyaltyRuleRoutes');
 const serviceCategories = require('./Routers/serviceCategoryRoutes');
@@ -105,6 +108,7 @@ const reminderLinks = require('./Routers/reminderLinkRoutes');
 
 app.use('/banners', banners);
 app.use('/reviews', reviews);
+app.use('/testimonials', testimonials);
 app.use('/membership-plans', membershipPlans);
 app.use('/loyalty-rules', loyaltyRules);
 app.use('/service-categories', serviceCategories);

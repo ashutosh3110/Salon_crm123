@@ -29,7 +29,7 @@ export function AuthProvider({ children }) {
         if (role) {
             const storedUser = localStorage.getItem(`auth_user_${role}`);
             if (storedUser) {
-                try { setUser(JSON.parse(storedUser)); } catch (e) {}
+                try { setUser(JSON.parse(storedUser)); } catch (e) { }
             }
         }
         setLoading(false);
@@ -42,12 +42,12 @@ export function AuthProvider({ children }) {
             if (response.data.success) {
                 const { accessToken, user: userData } = response.data.data;
                 const role = userData.role || 'admin';
-                
+
                 localStorage.setItem(`auth_token_${role}`, accessToken);
                 localStorage.setItem(`auth_user_${role}`, JSON.stringify(userData));
                 localStorage.setItem('active_auth_role', role);
                 localStorage.setItem('token', accessToken);
-                
+
                 setUser(userData);
                 return { accessToken, user: userData };
             }
@@ -92,13 +92,13 @@ export function AuthProvider({ children }) {
         cancelAllRequests();
 
         const role = user?.role || localStorage.getItem('active_auth_role') || 'admin';
-        
+
         // 1. Clear ALL data from localStorage for security
         localStorage.clear();
 
         // 4. Reset state
         setUser(null);
-        
+
         // 5. Redirect based on role
         if (role === 'superadmin') {
             navigate('/superadmin/login');
@@ -118,7 +118,7 @@ export function AuthProvider({ children }) {
         register: async (formData) => {
             const response = await api.post('/salons/register', {
                 ...formData
-            });
+            }, { skipToast: true });
             return response.data;
         },
         isAuthenticated: !!user

@@ -51,9 +51,9 @@ exports.getBookings = async (req, res) => {
         // Transform for frontend compatibility
         const result = bookings.map(b => ({
             ...b._doc,
-            client: b.clientId, 
-            service: b.serviceId, 
-            staff: b.staffId, 
+            client: b.clientId,
+            service: b.serviceId,
+            staff: b.staffId,
             outlet: b.outletId,
             tenantId: b.salonId // Mapping salonId to tenantId as expected by frontend
         }));
@@ -81,12 +81,12 @@ exports.createBooking = async (req, res) => {
         if (!serviceId) {
             return res.status(400).json({ success: false, message: 'Service is required' });
         }
-        
+
         // Prevent booking in the past for app bookings
         if (source === 'APP' && new Date(appointmentDate) < new Date()) {
             return res.status(400).json({ success: false, message: 'Cannot book for a past time' });
         }
-        
+
         // Fetch service to get price if not provided
         const service = await Service.findById(serviceId);
         if (!service) {
@@ -96,7 +96,7 @@ exports.createBooking = async (req, res) => {
         const targetCustomerId = req.body.clientId || req.user._id;
         const customer = await Customer.findById(targetCustomerId);
         if (!customer && req.body.clientId) {
-             return res.status(404).json({ success: false, message: 'Target customer not found' });
+            return res.status(404).json({ success: false, message: 'Target customer not found' });
         }
 
         // Fetch active membership to apply discount securely in backend
@@ -201,6 +201,11 @@ exports.createBooking = async (req, res) => {
             await spendWallet(targetCustomerId, finalTotal, `Payment for service: ${service.name}`);
         }
 
+        // Sanitize staffId if 'any' is passed
+        if (req.body.staffId === 'any' || (Array.isArray(req.body.staffId) && (req.body.staffId.includes('any') || req.body.staffId.length === 0))) {
+            req.body.staffId = [];
+        }
+
         const booking = await Booking.create({
             ...req.body,
             salonId,
@@ -228,7 +233,7 @@ exports.createBooking = async (req, res) => {
         // If booking is created as completed, update customer stats
         if (booking.status === 'completed') {
             await Customer.findByIdAndUpdate(targetCustomerId, {
-                $inc: { 
+                $inc: {
                     totalVisits: 1,
                     totalSpend: totalPrice || 0
                 },
@@ -248,27 +253,39 @@ exports.createBooking = async (req, res) => {
 
         // Send Booking Confirmation WhatsApp Message
         try {
-            const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
+            const dateStr = new Date(populated.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
+
+            const { checkAndDeductWhatsAppCredit, sendWhatsAppTemplate, sendWhatsAppMessage } = require('../Utils/whatsapp');
             const canSend = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
 
             if (canSend) {
-                await sendWapixoTemplate(
+                const templateName = process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || 'booking_confirmation';
+                const staffName = (populated.staffId && populated.staffId.length > 0) ? populated.staffId[0].name : 'Any Stylist';
+                const params = [
+                    populated.clientId.name,
+                    populated.salonId.businessName || populated.salonId.name || 'Our Salon',
+                    populated.outletId.name,
+                    populated.outletId.city || populated.outletId.address?.city || 'Our Location',
+                    staffName,
+                    populated.serviceId.name,
+                    dateStr,
+                    timeStr
+                ];
+
+                const result = await sendWhatsAppTemplate(
                     populated.clientId.phone,
-                    process.env.WHATSAPP_TEMPLATE_BOOKING_LINK,
-                    [
-                        populated.clientId.name,
-                        populated.salonId.businessName || populated.salonId.name || 'Our Salon',
-                        populated.outletId.name,
-                        populated.outletId.city || populated.outletId.address?.city || 'Our Location',
-                        populated.staffId?.name || 'Assigned Stylist',
-                        populated.serviceId.name,
-                        dateStr,
-                        timeStr
-                    ]
+                    templateName,
+                    params
                 );
+
+                if (!result || !result.success) {
+                    console.log('[Booking-WhatsApp] Template failed, sending plain text fallback...');
+                    const fallbackMsg = `Hi ${populated.clientId.name}, your booking for ${populated.serviceId.name} at ${populated.salonId.businessName || populated.salonId.name || 'Our Salon'} (${populated.outletId.name}) on ${dateStr} at ${timeStr} is confirmed. Thank you!`;
+                    await sendWhatsAppMessage(populated.clientId.phone, fallbackMsg);
+                }
+            } else {
+                console.log('[Booking-WhatsApp] WhatsApp notification skipped: No credits or disabled.');
             }
         } catch (wsErr) {
             console.error('Booking WhatsApp failed:', wsErr.message);
@@ -279,7 +296,7 @@ exports.createBooking = async (req, res) => {
             const { sendNotification, sendAdminNotification } = require('../Utils/notification');
             const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
             const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
+
             await sendNotification({
                 customerId: populated.clientId._id,
                 salonId: populated.salonId._id,
@@ -373,8 +390,24 @@ exports.updateStatus = async (req, res) => {
         const oldStatus = booking.status;
         if (req.body.status) booking.status = req.body.status;
         if (req.body.paymentStatus) booking.paymentStatus = req.body.paymentStatus;
-        if (req.body.staffId) booking.staffId = req.body.staffId;
+        if (req.body.staffId) {
+            if (req.body.staffId === 'any' || (Array.isArray(req.body.staffId) && (req.body.staffId.includes('any') || req.body.staffId.length === 0))) {
+                booking.staffId = [];
+            } else {
+                booking.staffId = req.body.staffId;
+            }
+        }
         if (req.body.notes !== undefined) booking.notes = req.body.notes;
+        if (req.body.serviceId) booking.serviceId = req.body.serviceId;
+        if (req.body.appointmentDate) booking.appointmentDate = req.body.appointmentDate;
+        if (req.body.time) booking.time = req.body.time;
+        if (req.body.duration !== undefined) booking.duration = req.body.duration;
+        if (req.body.subtotal !== undefined) booking.subtotal = req.body.subtotal;
+        if (req.body.totalPrice !== undefined) booking.totalPrice = req.body.totalPrice;
+        if (req.body.tax !== undefined) booking.tax = req.body.tax;
+        if (req.body.promoDiscount !== undefined) booking.promoDiscount = req.body.promoDiscount;
+        if (req.body.membershipDiscount !== undefined) booking.membershipDiscount = req.body.membershipDiscount;
+        if (req.body.advancePaid !== undefined) booking.advancePaid = req.body.advancePaid;
 
         // Auto-complete payment for salon payments when booking is completed
         if (booking.status === 'completed' && booking.paymentMethod === 'salon') {
@@ -384,7 +417,7 @@ exports.updateStatus = async (req, res) => {
         // If status changed to completed, increment visits and spend
         if (booking.status === 'completed' && oldStatus !== 'completed') {
             await Customer.findByIdAndUpdate(booking.clientId, {
-                $inc: { 
+                $inc: {
                     totalVisits: 1,
                     totalSpend: booking.totalPrice || 0
                 },
@@ -402,13 +435,13 @@ exports.updateStatus = async (req, res) => {
             try {
                 let points = 0;
                 let hasServicePoints = false;
-                
+
                 const service = await Service.findById(booking.serviceId);
                 if (service && service.loyaltyPoints) {
                     points = service.loyaltyPoints;
                     hasServicePoints = true;
                 }
-                
+
                 if (!hasServicePoints) {
                     const settings = await Setting.findOne();
                     if (settings && settings.loyaltySettings && settings.loyaltySettings.active) {
@@ -416,7 +449,7 @@ exports.updateStatus = async (req, res) => {
                         points = Math.floor(booking.totalPrice / rate);
                     }
                 }
-                
+
                 if (points > 0) {
                     await Customer.findByIdAndUpdate(booking.clientId, {
                         $inc: { loyaltyPoints: points }
@@ -490,7 +523,7 @@ exports.updateStatus = async (req, res) => {
                 // 3. WhatsApp Notifications
                 const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Our Salon';
                 const { checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
-                
+
                 // WhatsApp to Customer
                 const canSendCustStatus = await checkAndDeductWhatsAppCredit(populated.outletId?._id || booking.outletId);
                 if (canSendCustStatus && populated.clientId?.phone) {
@@ -498,7 +531,7 @@ exports.updateStatus = async (req, res) => {
                         const dateStr = new Date(populated.appointmentDate).toLocaleDateString();
                         const timeStr = populated.time || new Date(populated.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const staffNames = Array.isArray(populated.staffId) ? populated.staffId.map(s => s.name).join(', ') : (populated.staffId?.name || 'Assigned Stylist');
-                        
+
                         await sendWapixoTemplate(populated.clientId.phone, process.env.WHATSAPP_TEMPLATE_BOOKING_LINK, [
                             clientName, salonName, populated.outletId?.name || 'Our Salon',
                             populated.outletId?.city || 'Our Location', staffNames, populated.serviceId?.name || 'Service',
@@ -526,7 +559,12 @@ exports.updateStatus = async (req, res) => {
 
         res.json({
             success: true,
-            data: booking
+            data: await Booking.findById(booking._id)
+                .populate('clientId', 'name phone email')
+                .populate('serviceId', 'name price duration isInclusiveTax gst')
+                .populate('staffId', 'name profileImage')
+                .populate('outletId', 'name address city')
+                .populate('salonId', 'name logo')
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -555,18 +593,41 @@ exports.getAvailableSlots = async (req, res) => {
         const serviceDuration = service.duration || 30;
         const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
-        // 2. Get Staff Working Hours for that day
-        const dayAvailability = staff.availability?.days?.[dayName] || [];
-        if (dayAvailability.length === 0) {
-            return res.json({ success: true, data: [] });
+        // 2. Get Outlet Working Hours for that staff
+        const outlet = await mongoose.model('Outlet').findById(staff.outletId);
+
+        let shiftStart = "09:00";
+        let shiftEnd = "21:00";
+
+        if (outlet) {
+            const parseTo24 = (timeStr) => {
+                if (!timeStr) return null;
+                const match = timeStr.match(/^(\d+):(\d+)\s*(AM|PM)?$/i);
+                if (!match) return null;
+                let hours = parseInt(match[1]);
+                const minutes = parseInt(match[2]);
+                const ampm = match[3];
+                if (ampm) {
+                    if (ampm.toUpperCase() === 'PM' && hours < 12) hours += 12;
+                    if (ampm.toUpperCase() === 'AM' && hours === 12) hours = 0;
+                }
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            };
+
+            const oStart = parseTo24(outlet.openingTime);
+            const oEnd = parseTo24(outlet.closingTime);
+            if (oStart) shiftStart = oStart;
+            if (oEnd) shiftEnd = oEnd;
         }
+
+        const dayAvailability = [{ start: shiftStart, end: shiftEnd }];
 
         // 3. Get Breaks (Combine Daily Recurring Breaks + Date Specific Breaks)
         const dailyBreaks = staff.availability?.breaks || [];
         const breakDoc = await Break.findOne({ staffId, date });
         const specificBreaks = breakDoc ? breakDoc.breaks : [];
-        
-        const breaks = [...dailyBreaks, ...specificBreaks];
+
+        const breaks = []; // Disabled break filtering as requested to show all slots without lunch breaks
 
         // 4. Get Existing Bookings for that staff and date
         const startOfDay = new Date(date);
@@ -579,6 +640,19 @@ exports.getAvailableSlots = async (req, res) => {
             appointmentDate: { $gte: startOfDay, $lte: endOfDay },
             status: { $nin: ['cancelled', 'no-show'] }
         });
+
+        console.log("=== SLOT DEBUG ===");
+        console.log("Staff:", staff.name);
+        console.log("Date:", date);
+        console.log("Shift:", shiftStart, "-", shiftEnd);
+        console.log("Breaks:", JSON.stringify(breaks));
+        console.log("Bookings:", bookings.map(b => ({
+            id: b._id,
+            time: b.time,
+            appointmentDate: b.appointmentDate,
+            duration: b.duration,
+            resolvedTimeStr: b.time || b.appointmentDate.toTimeString().substring(0, 5)
+        })));
 
         // Helper: Convert "HH:mm" to minutes from midnight
         const toMinutes = (timeStr) => {
@@ -595,7 +669,7 @@ exports.getAvailableSlots = async (req, res) => {
 
         // 5. Generate Slots
         const availableSlots = [];
-        
+
         // Process each working hour block (staff can have multiple shifts per day)
         dayAvailability.forEach(shift => {
             let current = toMinutes(shift.start);
@@ -628,20 +702,20 @@ exports.getAvailableSlots = async (req, res) => {
                 // User's example suggests incrementing by serviceDuration, 
                 // but usually, we allow bookings every 15 or 30 mins.
                 // Let's stick to 30 min intervals for slot starts as seen in their UI.
-                current += 30; 
+                current += 30;
             }
         });
 
         // Filter out past slots if the requested date is today
         const now = new Date();
-        const nowStr = now.getFullYear() + '-' + 
-                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
-                      String(now.getDate()).padStart(2, '0');
-        
+        const nowStr = now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0');
+
         const isToday = date === nowStr;
         const currentMinutes = now.getHours() * 60 + now.getMinutes();
 
-        const finalSlots = isToday 
+        const finalSlots = isToday
             ? availableSlots.filter(slotTime => toMinutes(slotTime) > currentMinutes)
             : availableSlots;
 
@@ -667,7 +741,7 @@ exports.getAvailability = async (req, res) => {
 
         const startOfDay = new Date(date);
         startOfDay.setHours(0, 0, 0, 0);
-        
+
         const endOfDay = new Date(date);
         endOfDay.setHours(23, 59, 59, 999);
 
@@ -729,7 +803,7 @@ exports.verifyPayment = async (req, res) => {
     try {
         const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
         const secret = process.env.RAZORPAY_KEY_SECRET;
-        
+
         const shasum = crypto.createHmac('sha256', secret);
         shasum.update(`${razorpayOrderId}|${razorpayPaymentId}`);
         const digest = shasum.digest('hex');

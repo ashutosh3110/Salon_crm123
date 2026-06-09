@@ -36,7 +36,7 @@ const TIME_SLOTS = Array.from({ length: 48 }, (_, i) => {
     const hour = Math.floor(i / 2);
     const minute = (i % 2) * 30;
     const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
+    const displayHour = String(hour % 12 || 12).padStart(2, '0');
     const displayMinute = minute === 0 ? '00' : '30';
     return `${displayHour}:${displayMinute} ${ampm}`;
 });
@@ -556,53 +556,142 @@ export default function OutletForm() {
                                 </div>
                             </div>
                         </div>
+                        {/* Shift Dynamics */}
+                        <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
 
-                        {/* Shift Dynamics Card */}
-                        <div className="bg-surface border border-teal-200/60 dark:border-teal-500/10 rounded-2xl p-4 shadow-sm">
-                            <div className="space-y-3">
-                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-2xl bg-teal-50 dark:bg-teal-950/30 flex items-center justify-center">
-                                            <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                            {/* Header */}
+                            <div className="p-5 border-b border-slate-100 dark:border-slate-800">
+                                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#D4A373] to-[#B8860B] flex items-center justify-center shadow-lg shadow-[#D4A373]/20">
+                                            <Clock className="w-5 h-5 text-white" />
                                         </div>
+
                                         <div>
-                                            <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Shift Dynamics</h2>
-                                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Global timing rules</p>
+                                            <h2 className="text-base font-black text-slate-900 dark:text-white">
+                                                Shift Dynamics
+                                            </h2>
+                                            <p className="text-xs text-slate-500 dark:text-slate-400">
+                                                Configure working schedule & operational hours
+                                            </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-[110px]">
-                                            <CustomDropdown
-                                                value={form.openingTime}
-                                                onChange={(val) => setForm({ ...form, openingTime: val })}
-                                                options={TIME_SLOTS.map(t => ({ label: t, value: t }))}
-                                                className="w-full [&>.custom-dropdown-trigger]:!py-2 [&>.custom-dropdown-trigger]:rounded-xl [&>.custom-dropdown-trigger]:border-slate-200 dark:[&>.custom-dropdown-trigger]:border-slate-700 [&>.custom-dropdown-trigger]:text-[10px] [&>.custom-dropdown-trigger]:shadow-sm"
-                                            />
-                                        </div>
-                                        <span className="text-[10px] font-black text-slate-800 dark:text-slate-300">to</span>
-                                        <div className="w-[110px]">
-                                            <CustomDropdown
-                                                value={form.closingTime}
-                                                onChange={(val) => setForm({ ...form, closingTime: val })}
-                                                options={TIME_SLOTS.map(t => ({ label: t, value: t }))}
-                                                className="w-full [&>.custom-dropdown-trigger]:!py-2 [&>.custom-dropdown-trigger]:rounded-xl [&>.custom-dropdown-trigger]:border-slate-200 dark:[&>.custom-dropdown-trigger]:border-slate-700 [&>.custom-dropdown-trigger]:text-[10px] [&>.custom-dropdown-trigger]:shadow-sm"
-                                            />
+
+                                    <div className="flex items-center gap-3">
+
+                                        <div className="bg-slate-50 dark:bg-slate-900 rounded-2xl p-2 flex items-center gap-2 border border-slate-200 dark:border-slate-700">
+
+                                            <div className="w-[120px]">
+                                                <CustomDropdown
+                                                    value={form.openingTime}
+                                                    onChange={(val) =>
+                                                        setForm({ ...form, openingTime: val })
+                                                    }
+                                                    options={TIME_SLOTS.map(t => ({
+                                                        label: t,
+                                                        value: t
+                                                    }))}
+                                                />
+                                            </div>
+
+                                            <div className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 flex items-center justify-center text-xs font-black border border-slate-200 dark:border-slate-700">
+                                                →
+                                            </div>
+
+                                            <div className="w-[120px]">
+                                                <CustomDropdown
+                                                    value={form.closingTime}
+                                                    onChange={(val) =>
+                                                        setForm({ ...form, closingTime: val })
+                                                    }
+                                                    options={TIME_SLOTS.map(t => ({
+                                                        label: t,
+                                                        value: t
+                                                    }))}
+                                                />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                            </div>
+
+                            {/* Shift Summary */}
+                            <div className="px-5 py-4 bg-slate-50/70 dark:bg-slate-900/40 border-b border-slate-100 dark:border-slate-800">
+                                <div className="flex items-center justify-between flex-wrap gap-3">
+
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-wider text-slate-500 font-bold">
+                                            Working Hours
+                                        </p>
+
+                                        <h3 className="font-black text-slate-900 dark:text-white">
+                                            {form.openingTime} - {form.closingTime}
+                                        </h3>
+                                    </div>
+
+                                    <div className="px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900/30">
+                                        <span className="text-xs font-bold text-[#B8860B] dark:text-[#D4A373]">
+                                            {(form.workingDays || []).length} Active Days
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Working Days */}
+                            <div className="p-5">
+
+                                <p className="text-xs font-black uppercase tracking-wider text-slate-500 mb-4">
+                                    Working Days
+                                </p>
+
+                                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+
                                     {DAYS.map(day => {
-                                        const isActive = (form.workingDays || []).includes(day.full);
+                                        const isActive =
+                                            (form.workingDays || []).includes(day.full);
+
                                         return (
-                                            <div
+                                            <button
                                                 key={day.full}
-                                                role="button"
+                                                type="button"
                                                 onClick={() => handleDayToggle(day.full)}
-                                                className={`py-3 rounded-full flex flex-col items-center gap-1.5 transition-all cursor-pointer border shadow-sm ${isActive ? 'bg-teal-50 dark:bg-teal-950/40 border-teal-200 dark:border-teal-800/30' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
+                                                className={`
+                            relative overflow-hidden
+                            h-20 rounded-2xl border
+                            transition-all duration-300
+                            group
+                            ${isActive
+                                                        ? "bg-gradient-to-br from-[#D4A373] to-[#B8860B] border-transparent shadow-lg shadow-[#D4A373]/20 scale-[1.02]"
+                                                        : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-[#D4A373]"
+                                                    }
+                        `}
                                             >
-                                                <span className={`text-[10px] font-black uppercase tracking-wider ${isActive ? 'text-teal-600 dark:text-teal-400' : 'text-slate-500'}`}>{day.label}</span>
-                                                <div className={`w-1 h-1 rounded-full ${isActive ? 'bg-teal-600 dark:bg-teal-400' : 'bg-slate-300'}`} />
-                                            </div>
+                                                <div className="flex flex-col items-center justify-center h-full gap-2">
+
+                                                    <span
+                                                        className={`
+                                    text-sm font-black uppercase
+                                    ${isActive
+                                                                ? "text-white"
+                                                                : "text-slate-700 dark:text-slate-300"
+                                                            }
+                                `}
+                                                    >
+                                                        {day.label}
+                                                    </span>
+
+                                                    <div
+                                                        className={`
+                                    w-2 h-2 rounded-full
+                                    ${isActive
+                                                                ? "bg-white"
+                                                                : "bg-slate-300"
+                                                            }
+                                `}
+                                                    />
+                                                </div>
+                                            </button>
                                         );
                                     })}
                                 </div>

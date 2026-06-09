@@ -30,6 +30,14 @@ import { useNavigate } from 'react-router-dom';
 import { API_BASE_URL, default as api } from '../../services/api';
 import { createPortal } from 'react-dom';
 
+const formatLocalDate = (date) => {
+    if (!date) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+};
+
 export default function NewBookingPage() {
     const navigate = useNavigate();
     const { 
@@ -77,9 +85,80 @@ export default function NewBookingPage() {
     const [activeMembership, setActiveMembership] = useState(null);
     const [fetchingMembership, setFetchingMembership] = useState(false);
 
+    const [currentMonth, setCurrentMonth] = useState(new Date());
+
+    const calendarDays = useMemo(() => {
+        const year = currentMonth.getFullYear();
+        const month = currentMonth.getMonth();
+        const firstDayOfMonth = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const days = [];
+        for (let i = 0; i < firstDayOfMonth; i++) {
+            days.push(null);
+        }
+        for (let i = 1; i <= daysInMonth; i++) {
+            days.push(new Date(year, month, i));
+        }
+        return days;
+    }, [currentMonth]);
+
+    const handleMonthChange = (direction) => {
+        setCurrentMonth(prev => {
+            const next = new Date(prev);
+            next.setMonth(prev.getMonth() + direction);
+            return next;
+        });
+    };
+
+    const getOutletSlots = () => {
+        if (!selectedOutlet) return [];
+        const openTime = selectedOutlet.openingTime || '09:00 AM';
+        const closeTime = selectedOutlet.closingTime || '09:00 PM';
+
+        const parseToMinutes = (tStr) => {
+            const match = tStr.match(/^(\d+):(\d+)\s*(AM|PM)?$/i);
+            if (!match) return 540;
+            let h = parseInt(match[1]);
+            const m = parseInt(match[2]);
+            const p = match[3];
+            if (p) {
+                if (p.toUpperCase() === 'PM' && h < 12) h += 12;
+                if (p.toUpperCase() === 'AM' && h === 12) h = 0;
+            }
+            return h * 60 + m;
+        };
+
+        const startMins = parseToMinutes(openTime);
+        const endMins = parseToMinutes(closeTime);
+        const slots = [];
+        
+        for (let current = startMins; current <= endMins - 30; current += 30) {
+            const h = Math.floor(current / 60);
+            const m = current % 60;
+            slots.push(`${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`);
+        }
+        
+        const now = new Date();
+        const nowStr = now.getFullYear() + '-' + 
+                      String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                      String(now.getDate()).padStart(2, '0');
+        
+        if (selection.date === nowStr) {
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            return slots.filter(slot => {
+                const [sh, sm] = slot.split(':').map(Number);
+                return (sh * 60 + sm) > currentMinutes;
+            });
+        }
+        
+        return slots;
+    };
+
     const [couponCode, setCouponCode] = useState('');
     const [promoDiscount, setPromoDiscount] = useState(0);
     const [isPromoApplied, setIsPromoApplied] = useState(false);
+    const [advancePayment, setAdvancePayment] = useState(0);
 
     // Reset promo if customer changes
     useEffect(() => {
@@ -300,30 +379,41 @@ export default function NewBookingPage() {
         }
 
         const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
-        const gstRate = selectedService.gst !== undefined ? selectedService.gst : (platformSettings?.serviceGst || 18);
+        const gstRate = (selectedService.gst !== undefined && selectedService.gst !== null) ? selectedService.gst : (platformSettings?.serviceGst || 18);
         
         const netAfterMembership = original - discount;
         const netAfterPromo = Math.max(0, netAfterMembership - promoDiscount);
 
-        let subtotal = 0; // Taxable subtotal (Excl. GST)
+        let subtotal = 0; 
         let tax = 0;
         let total = 0;
+        let cgst = 0;
+        let sgst = 0;
 
         if (isInclusive) {
+            total = Number(netAfterPromo.toFixed(2));
             subtotal = Number((netAfterPromo / (1 + (gstRate / 100))).toFixed(2));
             tax = Number((netAfterPromo - subtotal).toFixed(2));
-            total = Number(netAfterPromo.toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
         } else {
             subtotal = Number(netAfterPromo.toFixed(2));
             tax = Number((subtotal * (gstRate / 100)).toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
             total = Number((subtotal + tax).toFixed(2));
         }
 
-        const cgst = Number((tax / 2).toFixed(2));
-        const sgst = Number((tax - cgst).toFixed(2));
-
         return { original, discount, promoDiscount, subtotal, tax, total, gstRate, isInclusive, cgst, sgst };
     }, [selectedService, activeMembership, platformSettings, promoDiscount]);
+
+    useEffect(() => {
+        if (priceCalculation.total) {
+            setAdvancePayment(Math.round(priceCalculation.total * 0.4));
+        } else {
+            setAdvancePayment(0);
+        }
+    }, [priceCalculation.total]);
 
     // Reset pagination on search
     useEffect(() => {
@@ -380,7 +470,8 @@ export default function NewBookingPage() {
                 discountAmount: priceCalculation.discount,
                 promoDiscount: priceCalculation.promoDiscount,
                 couponCode: isPromoApplied ? couponCode : undefined,
-                source: 'admin'
+                source: 'admin',
+                advancePaid: Number(advancePayment)
             });
 
             toast.success('Booking created successfully');
@@ -527,8 +618,11 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-border pb-8">
                             <div className="text-left">
-                                <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
-                                    <ChevronLeft className="w-3 h-3" /> Back to Outlet
+                                <button 
+                                    onClick={prevStep} 
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all rounded-xl mb-4 italic shadow-md group"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Back to Outlet
                                 </button>
                                 <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 02: Select Service</h2>
                                 <p className="text-[11px] text-text-muted italic mt-1">Available services at {selectedOutlet?.name}</p>
@@ -597,8 +691,11 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-border pb-8">
                             <div className="text-left">
-                                <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
-                                    <ChevronLeft className="w-3 h-3" /> Back to Service
+                                <button 
+                                    onClick={prevStep} 
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all rounded-xl mb-4 italic shadow-md group"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Back to Service
                                 </button>
                                 <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 03: Select Staff</h2>
                                 <p className="text-[11px] text-text-muted italic mt-1">Specialists for {selectedService?.name}</p>
@@ -666,16 +763,19 @@ export default function NewBookingPage() {
                             )}
                         </div>
 
-                        {selection.staffId.length > 0 && (
-                            <div className="flex justify-end pt-10">
-                                <button 
-                                    onClick={nextStep}
-                                    className="px-12 py-5 bg-text text-white text-xs font-black uppercase tracking-[0.4em] hover:bg-primary transition-all shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] rounded-2xl flex items-center gap-4 group italic"
-                                >
-                                    Continue to Schedule <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
-                                </button>
-                            </div>
-                        )}
+                        <div className="flex justify-end pt-10">
+                            <button 
+                                onClick={() => {
+                                    if (!selection.staffId || selection.staffId.length === 0) {
+                                        setSelection(prev => ({ ...prev, staffId: 'any' }));
+                                    }
+                                    nextStep();
+                                }}
+                                className="px-12 py-5 bg-text text-white text-xs font-black uppercase tracking-[0.4em] hover:bg-primary transition-all shadow-[0_0_15px_rgba(var(--color-primary),0.3)] hover:shadow-[0_0_20px_rgba(var(--color-primary),0.5)] rounded-2xl flex items-center gap-4 group italic"
+                            >
+                                Continue to Schedule <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -684,8 +784,11 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-border pb-8">
                             <div className="text-left">
-                                <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
-                                    <ChevronLeft className="w-3 h-3" /> Back to Staff
+                                <button 
+                                    onClick={prevStep} 
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all rounded-xl mb-4 italic shadow-md group"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Back to Staff
                                 </button>
                                 <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 04: Select Schedule</h2>
                                 <p className="text-[11px] text-text-muted italic mt-1">Pick date and time</p>
@@ -697,23 +800,50 @@ export default function NewBookingPage() {
                                 <div className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2 italic">
                                     <Calendar className="w-4 h-4 text-primary" /> Select Date
                                 </div>
-                                <div className="grid grid-cols-7 gap-2 bg-surface p-6 border border-border rounded-2xl shadow-sm">
-                                    {[...Array(14)].map((_, i) => {
-                                        const d = new Date();
-                                        d.setDate(d.getDate() + i);
-                                        const isSelected = selection.date === d.toISOString().split('T')[0];
-                                        return (
-                                            <button
-                                                key={i}
-                                                onClick={() => setSelection({...selection, date: d.toISOString().split('T')[0]})}
-                                                className={`flex flex-col items-center justify-center p-3 border transition-all rounded-2xl ${isSelected ? 'bg-primary border-primary dark:!bg-[#D4A373] dark:!border-[#D4A373] scale-110 shadow-lg ring-2 ring-primary/20' : 'bg-surface border-border hover:border-text text-text hover:shadow-md'}`}
-                                            >
-                                                <span className={`text-[8px] font-black uppercase ${isSelected ? 'text-white dark:!text-black opacity-80' : 'opacity-60 text-text'}`}>{d.toLocaleDateString([], { weekday: 'short' })}</span>
-                                                <span className={`text-lg font-black font-mono ${isSelected ? 'text-white dark:!text-black' : 'text-text'}`}>{d.getDate()}</span>
-                                                <span className={`text-[8px] font-black uppercase ${isSelected ? 'text-white dark:!text-black opacity-80' : 'opacity-60 text-text'}`}>{d.toLocaleDateString([], { month: 'short' })}</span>
-                                            </button>
-                                        );
-                                    })}
+                                <div className="bg-surface p-6 border border-border rounded-2xl shadow-sm space-y-4">
+                                    <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleMonthChange(-1)}
+                                            className="p-1.5 border border-border/60 rounded-lg text-text hover:bg-surface-alt transition-all"
+                                        >
+                                            <ChevronLeft className="w-4 h-4" />
+                                        </button>
+                                        <span className="text-xs font-black uppercase tracking-wider font-mono">
+                                            {currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })}
+                                        </span>
+                                        <button 
+                                            type="button"
+                                            onClick={() => handleMonthChange(1)}
+                                            className="p-1.5 border border-border/60 rounded-lg text-text hover:bg-surface-alt transition-all"
+                                        >
+                                            <ChevronRight className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                    <div className="grid grid-cols-7 gap-1 text-center">
+                                        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                                            <span key={d} className="text-[8px] font-black text-text-muted uppercase tracking-wider">{d}</span>
+                                        ))}
+                                        {calendarDays.map((d, idx) => {
+                                            if (!d) return <div key={`empty-${idx}`} className="aspect-square" />;
+                                            const dateStr = formatLocalDate(d);
+                                            const isSelected = selection.date === dateStr;
+                                            const today = new Date();
+                                            today.setHours(0,0,0,0);
+                                            const isPast = d < today;
+                                            return (
+                                                <button
+                                                    key={dateStr}
+                                                    type="button"
+                                                    disabled={isPast}
+                                                    onClick={() => setSelection({...selection, date: dateStr})}
+                                                    className={`aspect-square w-full flex flex-col items-center justify-center rounded-xl border text-[10px] font-black font-mono transition-all ${isPast ? 'opacity-20 cursor-not-allowed border-transparent' : isSelected ? 'bg-[#D4A373] border-[#D4A373] text-black scale-105 shadow-md' : 'bg-surface border-border/40 hover:border-text text-text'}`}
+                                                >
+                                                    {d.getDate()}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
 
@@ -727,9 +857,10 @@ export default function NewBookingPage() {
                                         
                                         if (fetchingSlots) return <p className="col-span-full text-[10px] text-primary uppercase text-center py-10 font-black italic animate-pulse">Calculating available slots...</p>;
 
-                                        // If "Any Staff", show default slots (could be improved later to aggregate all staff)
-                                        if (selection.staffId === 'any') {
-                                            return ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30', '18:00'].map(t => (
+                                        if (selection.staffId === 'any' || !selection.staffId || selection.staffId.length === 0) {
+                                            const slots = getOutletSlots();
+                                            if (slots.length === 0) return <p className="col-span-full text-[10px] text-rose-500 uppercase text-center py-10 font-black italic">No slots available (Check outlet timing)</p>;
+                                            return slots.map(t => (
                                                 <button key={t} onClick={() => setSelection({...selection, time: t})} className={`p-4 text-xs font-black font-mono border transition-all rounded-xl ${selection.time === t ? 'bg-primary border-primary dark:!bg-[#D4A373] dark:!border-[#D4A373] text-white dark:!text-black shadow-md ring-2 ring-primary/20' : 'bg-surface-alt border-border hover:border-text text-text-muted hover:text-text hover:shadow-sm'}`}>{t}</button>
                                             ));
                                         }
@@ -767,8 +898,11 @@ export default function NewBookingPage() {
                     <div className="space-y-8">
                         <div className="flex flex-col md:flex-row justify-between items-end gap-6 border-b border-border pb-8">
                             <div className="text-left">
-                                <button onClick={prevStep} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 mb-4 hover:underline italic">
-                                    <ChevronLeft className="w-3 h-3" /> Back to Schedule
+                                <button 
+                                    onClick={prevStep} 
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest hover:bg-primary transition-all rounded-xl mb-4 italic shadow-md group"
+                                >
+                                    <ChevronLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" /> Back to Schedule
                                 </button>
                                 <h2 className="text-xl font-bold text-text uppercase tracking-tight">Step 05: Select Customer</h2>
                                 <p className="text-[11px] text-text-muted italic mt-1">Choose buyer for this appointment</p>
@@ -933,6 +1067,18 @@ export default function NewBookingPage() {
                                         )}
                                     </div>
 
+                                    {/* Advance Payment Input */}
+                                    <div className="space-y-1.5 text-left">
+                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Advance Pay (Editable)</label>
+                                        <input
+                                            type="number"
+                                            placeholder="ENTER ADVANCE AMOUNT"
+                                            value={advancePayment}
+                                            onChange={(e) => setAdvancePayment(Number(e.target.value))}
+                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black text-text outline-none rounded-xl focus:border-[#B8860B] transition-colors"
+                                        />
+                                    </div>
+
                                     <div className="space-y-3 pt-4 border-t border-dashed border-border">
                                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
                                             <span>Service Price (MRP)</span>
@@ -968,12 +1114,30 @@ export default function NewBookingPage() {
                                             <span>{priceCalculation.isInclusive ? '' : '+ '}₹{priceCalculation.sgst}</span>
                                         </div>
 
-                                        <div className="pt-3 border-t border-border flex items-end justify-between">
-                                            <div>
-                                                <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">
-                                                    Final Total ({priceCalculation.isInclusive ? 'Incl. GST' : 'Excl. GST'})
-                                                </p>
-                                                <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                        <div className="pt-3 border-t border-border space-y-3">
+                                            <div className="flex items-end justify-between">
+                                                <div>
+                                                    <p className="text-[8px] font-black text-emerald-600 uppercase tracking-[0.3em] font-mono italic">
+                                                        Final Total ({priceCalculation.isInclusive ? 'Incl. GST' : 'Excl. GST'})
+                                                    </p>
+                                                    <p className="text-4xl font-black text-emerald-600 tracking-tighter font-mono italic">₹{priceCalculation.total}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="bg-slate-50 dark:bg-slate-900/50 p-4 border border-border/60 space-y-2 rounded-xl">
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                                    <span>Total Amount</span>
+                                                    <span className="font-mono">₹{priceCalculation.total}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#B8860B] font-bold">
+                                                    <span>Advance Paid</span>
+                                                    <span className="font-mono">₹{Number(advancePayment) || 0}</span>
+                                                </div>
+                                                <div className="h-[1px] bg-border/40 my-1" />
+                                                <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
+                                                    <span>Remaining Payment</span>
+                                                    <span className="font-mono text-sm">₹{Math.max(0, priceCalculation.total - (Number(advancePayment) || 0))}</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -981,19 +1145,19 @@ export default function NewBookingPage() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-6">
+                        <div className="flex flex-col sm:flex-row gap-4 justify-between items-center w-full">
                             <button 
                                 onClick={prevStep}
-                                className="flex-1 py-6 bg-surface border-2 border-border text-[11px] font-black text-text-muted uppercase tracking-[0.4em] hover:bg-surface-alt transition-all rounded-2xl italic"
+                                className="w-full sm:w-36 py-2.5 bg-surface border-2 border-border text-[11px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all rounded-2xl italic"
                             >
                                 Back
                             </button>
                             <button 
                                 onClick={handleFinalBooking}
                                 disabled={loading}
-                                className="flex-[2] py-6 bg-text text-white text-[11px] font-black uppercase tracking-[0.4em] rounded-2xl hover:bg-primary transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group italic"
+                                className="w-full sm:w-56 py-2.5 bg-text text-white text-[11px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-primary transition-all shadow-2xl shadow-primary/20 flex items-center justify-center gap-4 group italic"
                             >
-                                {loading ? 'Processing...' : 'Confirm Booking'} <Zap className="w-5 h-5 group-hover:scale-125 transition-all text-primary" />
+                                {loading ? 'Processing...' : 'Confirm Booking'} <Zap className="w-4 h-4 group-hover:scale-125 transition-all text-primary" />
                             </button>
                         </div>
                     </div>
@@ -1064,7 +1228,7 @@ export default function NewBookingPage() {
                                             <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Birth Date</label>
                                             <input
                                                 type="date"
-                                                max={new Date().toISOString().split('T')[0]}
+                                                max={formatLocalDate(new Date())}
                                                 value={clientForm.dob}
                                                 onChange={(e) => setClientForm({...clientForm, dob: e.target.value})}
                                                 className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl focus:border-[#B8860B] transition-colors"
@@ -1074,7 +1238,7 @@ export default function NewBookingPage() {
                                             <label className="text-[10px] font-black !text-slate-500 dark:!text-slate-400 uppercase tracking-wider">Anniversary</label>
                                             <input
                                                 type="date"
-                                                max={new Date().toISOString().split('T')[0]}
+                                                max={formatLocalDate(new Date())}
                                                 value={clientForm.anniversary}
                                                 onChange={(e) => setClientForm({...clientForm, anniversary: e.target.value})}
                                                 className="w-full bg-surface-alt border border-border p-3 text-xs font-black !text-slate-900 dark:!text-white outline-none rounded-xl focus:border-[#B8860B] transition-colors"

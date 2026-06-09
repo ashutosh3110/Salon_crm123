@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Phone, Sparkles, AlertCircle, Store, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -87,7 +88,7 @@ export default function AuthPage() {
         setLoading(true);
         try {
             const result = await login(signinForm.email, signinForm.password);
-            
+
             // SECURITY: Block SuperAdmin from this portal
             if (result.user.role === 'superadmin') {
                 setError('Restricted: Superadmins must use the master portal.');
@@ -112,9 +113,20 @@ export default function AuthPage() {
         setLoading(true);
 
         try {
+            const checkRes = await api.get(`/auth/check-email?email=${encodeURIComponent(signupForm.email)}`, { skipToast: true });
+            if (checkRes.data.exists) {
+                setError(checkRes.data.message || 'This email address is already registered on the platform. Please use a different email address.');
+                setLoading(false);
+                return;
+            }
+        } catch (err) {
+            // Ignore check errors
+        }
+
+        try {
             const params = new URLSearchParams(location.search);
             const planParam = params.get('plan');
-            
+
             let currentPlan = selectedPlan;
 
             await register({
@@ -145,6 +157,26 @@ export default function AuthPage() {
 
     return (
         <div className="min-h-screen new-theme selection:bg-[#B4912B]/30" style={{ fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+            <Helmet>
+                {view === 'signin' ? (
+                    <>
+                        <title>Login — Wapixo Salon Management</title>
+                        <meta name="description" content="Login to your Wapixo salon management dashboard. Access bookings, billing, staff management, and more." />
+                        <link rel="canonical" href="https://wapixo.com/login" />
+                        <meta property="og:title" content="Login — Wapixo" />
+                        <meta property="og:url" content="https://wapixo.com/login" />
+                    </>
+                ) : (
+                    <>
+                        <title>Register Your Salon — Start Free | Wapixo</title>
+                        <meta name="description" content="Register your salon on Wapixo for free. Get POS billing, appointment booking, staff management, WhatsApp automation & more. India's best salon software." />
+                        <link rel="canonical" href="https://wapixo.com/register" />
+                        <meta property="og:title" content="Register Your Salon Free — Wapixo" />
+                        <meta property="og:description" content="Start managing your salon smarter. Free signup — no credit card required." />
+                        <meta property="og:url" content="https://wapixo.com/register" />
+                    </>
+                )}
+            </Helmet>
             <WapixoNavbar />
 
             {/* Background elements */}
@@ -171,7 +203,7 @@ export default function AuthPage() {
                         style={{ background: theme === 'dark' ? 'rgba(15,15,15,0.5)' : 'rgba(255,255,255,0.5)', borderColor: 'var(--wapixo-border)' }}
                     >
                         <div className="absolute inset-0 bg-gradient-to-br from-[#B4912B]/5 via-transparent to-[#B4912B]/5" />
-                        
+
                         <div className="relative z-10 space-y-8">
                             <AnimatePresence mode="wait">
                                 <motion.div
@@ -260,10 +292,10 @@ export default function AuthPage() {
                                                         <label className="text-[9px] font-black uppercase tracking-[0.2em]" style={{ color: 'var(--wapixo-text-muted)' }}>Password</label>
                                                         <Link to="/forgot-password" size="sm" className="text-[9px] font-black uppercase tracking-widest hover:text-[#B4912B] transition-colors" style={{ color: 'var(--wapixo-text-muted)' }}>Recover</Link>
                                                     </div>
-                                                    <PasswordField 
-                                                        name="password" 
-                                                        value={signinForm.password} 
-                                                        onChange={handleSigninChange} 
+                                                    <PasswordField
+                                                        name="password"
+                                                        value={signinForm.password}
+                                                        onChange={handleSigninChange}
                                                         required
                                                         placeholder="••••••••"
                                                         containerClassName="border-b-2 transition-all duration-300"
@@ -359,7 +391,7 @@ export default function AuthPage() {
                                                         Your application is currently being reviewed by our Superadmin. Once approved, you will receive an onboarding email with your credentials.
                                                     </p>
                                                 </div>
-                                                <button 
+                                                <button
                                                     onClick={() => toggleView('signin')}
                                                     className="px-12 py-4 bg-[#B4912B] text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#B4912B]/10 active:scale-95"
                                                 >

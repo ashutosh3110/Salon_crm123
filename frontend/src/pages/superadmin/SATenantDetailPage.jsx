@@ -286,7 +286,7 @@ export default function SATenantDetailPage() {
                             <button
                                 key={t.id}
                                 onClick={() => setTab(t.id)}
-                                className={`relative px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${isActive ? 'text-white' : 'text-text-muted hover:text-text hover:bg-surface'}`}
+                                className={`relative px-6 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shrink-0 ${isActive ? 'text-white-force' : 'text-text-muted hover:text-text hover:bg-surface'}`}
                             >
                                 {isActive && (
                                     <motion.div 
@@ -295,8 +295,8 @@ export default function SATenantDetailPage() {
                                         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                                     />
                                 )}
-                                <t.icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-white' : 'text-text-muted group-hover:text-text'}`} />
-                                <span className="relative z-10">{t.label}</span>
+                                <t.icon className={`w-3.5 h-3.5 relative z-10 ${isActive ? 'text-white-force' : 'text-text-muted group-hover:text-text'}`} />
+                                <span className={`relative z-10 ${isActive ? 'text-white-force' : ''}`}>{t.label}</span>
                             </button>
                         );
                     })}

@@ -47,10 +47,11 @@ exports.createSalon = async (req, res) => {
         const hashedPassword = await bcrypt.hash(adminPassword, salt);
         console.log('Hashed Password Generated:', hashedPassword);
 
-        // 1. Check if salon already exists
-        const existingSalon = await Salon.findOne({ email });
-        if (existingSalon) {
-            return res.status(400).json({ success: false, message: 'Salon with this email already exists' });
+        // 1. Check if email already exists globally
+        const { checkGlobalEmailUnique } = require('../Utils/emailValidation');
+        const isEmailUnique = await checkGlobalEmailUnique(email);
+        if (!isEmailUnique) {
+            return res.status(400).json({ success: false, message: 'This email address is already registered on the platform. Please use a different email address.' });
         }
 
         // Fetch default features and limits from the plan (default: free)
@@ -590,10 +591,11 @@ exports.registerSalon = async (req, res) => {
         console.log('Public Salon Registration:', { name, email });
         const adminPassword = password || Math.floor(100000 + Math.random() * 900000).toString();
         
-        // 1. Check if salon already exists
-        const existingSalon = await Salon.findOne({ email });
-        if (existingSalon) {
-            return res.status(400).json({ success: false, message: 'Salon with this email already exists' });
+        // 1. Check if email already exists globally
+        const { checkGlobalEmailUnique } = require('../Utils/emailValidation');
+        const isEmailUnique = await checkGlobalEmailUnique(email);
+        if (!isEmailUnique) {
+            return res.status(400).json({ success: false, message: 'This email address is already registered on the platform. Please use a different email address.' });
         }
 
         // Hash password
@@ -703,6 +705,50 @@ exports.registerSalon = async (req, res) => {
     }
 };
 
+// @desc    Impersonate salon admin (SuperAdmin only — no password needed)
+// @route   POST /api/salons/:id/impersonate
+// @access  Private/SuperAdmin
+exports.impersonateSalon = async (req, res) => {
+    try {
+        const salon = await Salon.findById(req.params.id);
+        if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
+
+        const jwt = require('jsonwebtoken');
+        const salonId = salon._id;
+        const permissions = ['*'];
+
+        // Generate a short-lived token (8 hours) for impersonation
+        const token = jwt.sign(
+            { id: salon._id, role: 'admin', salonId: salonId, permissions, impersonatedBy: req.user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '8h' }
+        );
+
+        res.json({
+            success: true,
+            message: `Impersonating ${salon.name}`,
+            data: {
+                accessToken: token,
+                user: {
+                    id: salon._id,
+                    name: salon.ownerName,
+                    email: salon.email,
+                    role: 'admin',
+                    salonId: salonId,
+                    permissions,
+                    status: salon.status,
+                    subscriptionPlan: salon.subscriptionPlan,
+                    salonIsActive: salon.isActive,
+                    impersonatedBy: req.user._id
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Impersonate error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 // @desc    Resend credentials (Reset password to 123456 and email)
 // @route   POST /api/salons/:id/resend-credentials
 // @access  Private/SuperAdmin
@@ -744,6 +790,60 @@ exports.resendCredentials = async (req, res) => {
         res.json({ success: true, message: `Credentials sent to ${salon.email}` });
     } catch (err) {
         console.error('Resend credentials error:', err);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Change salon admin password (SuperAdmin only)
+// @route   POST /api/salons/:id/change-password
+// @access  Private/SuperAdmin
+exports.changeAdminPassword = async (req, res) => {
+    try {
+        const salon = await Salon.findById(req.params.id);
+        if (!salon) return res.status(404).json({ success: false, message: 'Salon not found' });
+
+        const { newPassword, sendEmail: shouldSendEmail } = req.body;
+
+        if (!newPassword || newPassword.length < 6) {
+            return res.status(400).json({ success: false, message: 'Password must be at least 6 characters.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        salon.password = hashedPassword;
+        await salon.save();
+
+        // Optionally send email notification
+        if (shouldSendEmail) {
+            try {
+                const html = `
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+                        <h2 style="color: #B4912B; text-align: center;">Password Changed</h2>
+                        <p>Hello <strong>${salon.ownerName}</strong>,</p>
+                        <p>Your account password for <strong>${salon.name}</strong> has been updated by the administrator.</p>
+                        <div style="background-color: #fdfbf7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #B4912B;">
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>Email:</strong> ${salon.email}</p>
+                            <p style="margin: 5px 0; font-size: 14px;"><strong>New Password:</strong> <span style="font-family: monospace; font-size: 18px; letter-spacing: 2px; color: #B4912B; font-weight: bold;">${newPassword}</span></p>
+                        </div>
+                        <p style="font-size: 13px; color: #666; background: #fff3cd; padding: 10px; border-radius: 5px;"><strong>Security Tip:</strong> Please log in and change your password immediately from profile settings.</p>
+                        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+                        <p style="font-size: 12px; color: #777; text-align: center;">Team ${process.env.EMAIL_FROM_NAME}</p>
+                    </div>
+                `;
+                await sendEmail({
+                    email: salon.email,
+                    subject: `Password Updated - ${process.env.EMAIL_FROM_NAME}`,
+                    html
+                });
+            } catch (emailErr) {
+                console.error('Password change email failed:', emailErr);
+            }
+        }
+
+        res.json({ success: true, message: `Password updated successfully for ${salon.name}.${shouldSendEmail ? ' Email notification sent.' : ''}` });
+    } catch (err) {
+        console.error('Change admin password error:', err);
         res.status(500).json({ success: false, message: 'Server Error' });
     }
 };

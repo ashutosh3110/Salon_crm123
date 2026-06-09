@@ -127,7 +127,8 @@ export default function ServiceForm({ onSave, onCancel, categories = [], initial
             submissionData.set('price', parseFloat(formData.price));
             submissionData.set('loyaltyPoints', parseInt(formData.loyaltyPoints) || 0);
             submissionData.set('isInclusiveTax', formData.isInclusiveTax);
-            submissionData.set('gst', parseFloat(formData.gst) || 0);
+            const parsedGst = parseFloat(formData.gst);
+            submissionData.set('gst', !isNaN(parsedGst) ? parsedGst : (platformSettings?.serviceGst ?? 18));
             submissionData.set('commissionValue', parseFloat(formData.commissionValue) || 0);
             submissionData.set('isRepeated', formData.isRepeated);
             submissionData.set('reminderDays', parseInt(formData.reminderDays) || 30);

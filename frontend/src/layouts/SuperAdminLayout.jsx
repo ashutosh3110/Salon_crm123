@@ -23,6 +23,8 @@ export default function SuperAdminLayout() {
                     font-family: 'Inter', sans-serif !important;
                     background-color: #faf9f9 !important;
                     color: #000000 !important;
+                    --primary: #B4912B !important;
+                    --primary-foreground: #ffffff !important;
                 }
                 
                 .sa-panel *,
@@ -475,8 +477,8 @@ export default function SuperAdminLayout() {
                 .dark .sa-panel a.bg-primary,
                 .dark .sa-panel .bg-primary,
                 .dark .sa-panel button[type="submit"],
-                .dark .sa-panel button[class*="bg-primary"],
-                .dark .sa-panel .inline-flex[class*="bg-primary"],
+                .dark .sa-panel button[class~="bg-primary"],
+                .dark .sa-panel .inline-flex[class~="bg-primary"],
                 .dark .sa-panel button:has(svg.lucide-plus) {
                     background: #B4912B !important;
                     color: #ffffff !important;
@@ -486,8 +488,8 @@ export default function SuperAdminLayout() {
                 .dark .sa-panel a.bg-primary:hover,
                 .dark .sa-panel .bg-primary:hover,
                 .dark .sa-panel button[type="submit"]:hover,
-                .dark .sa-panel button[class*="bg-primary"]:hover,
-                .dark .sa-panel .inline-flex[class*="bg-primary"]:hover,
+                .dark .sa-panel button[class~="bg-primary"]:hover,
+                .dark .sa-panel .inline-flex[class~="bg-primary"]:hover,
                 .dark .sa-panel button:has(svg.lucide-plus):hover {
                     background: #C5A23C !important;
                     border-color: #C5A23C !important;
@@ -501,8 +503,8 @@ export default function SuperAdminLayout() {
                 .dark .sa-panel button:has(svg.lucide-eye):not(aside *),
                 .dark .sa-panel button:has(svg.lucide-edit):not(aside *),
                 .dark .sa-panel button:has(svg.lucide-trash):not(aside *),
-                .dark .sa-panel button:has(svg.lucide-plus):not(.bg-primary):not([class*="bg-primary"]):not(aside *),
-                .dark .sa-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class*="bg-primary"]) {
+                .dark .sa-panel button:has(svg.lucide-plus):not(.bg-primary):not([class~="bg-primary"]):not(aside *),
+                .dark .sa-panel [class*="border-border"] button:not(aside *):not(.bg-primary):not([class~="bg-primary"]) {
                     background-color: #1e293b !important;
                     border-color: rgba(255, 255, 255, 0.12) !important;
                     color: #cbd5e1 !important;
@@ -883,6 +885,25 @@ export default function SuperAdminLayout() {
                 html .sa-panel .rounded-full:has(svg),
                 html .sa-panel div[class*="w-"][class*="h-"]:has(svg) {
                     border-radius: 12px !important;
+                }
+
+                /* Remove focus outline and borders from recharts elements */
+                .recharts-wrapper,
+                .recharts-surface,
+                .recharts-wrapper:focus,
+                .recharts-surface:focus,
+                .recharts-wrapper:active,
+                .recharts-surface:active,
+                .recharts-wrapper *:focus,
+                .recharts-wrapper *:focus-visible,
+                .recharts-wrapper *:focus-within,
+                svg:focus,
+                svg:focus-visible,
+                svg *:focus,
+                svg *:focus-visible {
+                    outline: none !important;
+                    border: none !important;
+                    box-shadow: none !important;
                 }
 
             `}</style>
