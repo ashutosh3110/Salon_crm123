@@ -219,12 +219,16 @@
   }
 
   .text-white-force,
-  html:not(.dark) .admin-panel .text-white-force {
+  html:not(.dark) .admin-panel .text-white-force,
+  html:not(.dark) .new-theme .text-white-force,
+  html:not(.dark) .new-theme .text-white-force * {
     color: #ffffff !important;
   }
 
   .text-white-muted-force,
-  html:not(.dark) .admin-panel .text-white-muted-force {
+  html:not(.dark) .admin-panel .text-white-muted-force,
+  html:not(.dark) .new-theme .text-white-muted-force,
+  html:not(.dark) .new-theme .text-white-muted-force * {
     color: rgba(255, 255, 255, 0.7) !important;
   }
 

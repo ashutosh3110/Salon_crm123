@@ -81,7 +81,7 @@ export default function ChairSection() {
                     Experience Wapixo
                 </motion.p>
 
-                <h2 style={{
+                <h2 className="text-white-force" style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 200,
                     fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
@@ -93,7 +93,7 @@ export default function ChairSection() {
                     The Throne of Excellence.
                 </h2>
 
-                <p style={{
+                <p className="text-white-muted-force" style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 300,
                     fontSize: 'clamp(1rem, 2vw, 1.4rem)',
@@ -136,6 +136,7 @@ export default function ChairSection() {
 
                     <Link to="/login" style={{ textDecoration: 'none' }}>
                         <motion.button
+                            className="text-white-force"
                             whileHover={{ scale: 1.04, backgroundColor: 'rgba(180, 145, 43, 0.1)', borderColor: 'var(--wapixo-primary)' }}
                             whileTap={{ scale: 0.96 }}
                             style={{

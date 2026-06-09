@@ -230,65 +230,73 @@ export default function WapixoTestimonials({ data }) {
                             style={{
                                 maxWidth: '600px',
                                 margin: '0 auto',
-                                background: 'rgba(255,255,255,0.02)',
-                                border: '1px solid rgba(255,255,255,0.1)',
+                                background: theme === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(255, 255, 255, 0.95)',
+                                border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid var(--wapixo-primary)',
+                                boxShadow: theme === 'dark' ? 'none' : '0 0 25px rgba(180, 145, 43, 0.3), inset 0 0 15px rgba(180, 145, 43, 0.1)',
                                 borderRadius: '12px',
                                 padding: '3rem',
                                 textAlign: 'left',
-                                position: 'relative'
+                                position: 'relative',
+                                backdropFilter: 'blur(10px)'
                             }}
                         >
                             <button
                                 onClick={() => setShowForm(false)}
-                                style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'transparent', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer' }}
+                                style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', background: 'transparent', border: 'none', color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'var(--wapixo-primary)', cursor: 'pointer', transition: 'all 0.3s' }}
+                                onMouseEnter={(e) => {
+                                    if (theme !== 'dark') e.currentTarget.style.filter = 'drop-shadow(0 0 5px rgba(180,145,43,0.5))';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.filter = 'none';
+                                }}
                             >
                                 <X size={20} />
                             </button>
 
                             {submitted ? (
                                 <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', itemsCenter: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-                                        <Star size={32} color="#10b981" fill="#10b981" />
+                                    <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: theme === 'dark' ? 'none' : '0 0 20px rgba(16, 185, 129, 0.4)' }}>
+                                        <Star size={32} color="#10b981" fill="#10b981" style={{ filter: theme === 'dark' ? 'none' : 'drop-shadow(0 0 5px rgba(16, 185, 129, 0.6))' }} />
                                     </div>
-                                    <h3 style={{ color: '#ffffff', fontSize: '1.5rem', fontWeight: 200, marginBottom: '0.5rem' }}>Thank You.</h3>
-                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', fontWeight: 300 }}>Your story will inspire excellence.</p>
+                                    <h3 style={{ color: theme === 'dark' ? '#ffffff' : 'var(--wapixo-text)', fontSize: '1.5rem', fontWeight: 200, marginBottom: '0.5rem' }}>Thank You.</h3>
+                                    <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.5)' : 'var(--wapixo-text-muted)', fontSize: '0.9rem', fontWeight: 300 }}>Your story will inspire excellence.</p>
                                 </div>
                             ) : (
-                                <form onSubmit={handleSubmit} style={{ spaceY: '1.5rem' }}>
-                                    <div style={{ marginBottom: '2.5rem' }}>
-                                        <h3 style={{ color: '#ffffff', fontSize: '1.75rem', fontWeight: 200, margin: '0 0 0.5rem 0' }}>Write Your Story.</h3>
-                                        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', fontWeight: 300 }}>Share your Wapixo experience with the community.</p>
+                                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <h3 style={{ color: theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)', fontSize: '1.75rem', fontWeight: 200, margin: '0 0 0.5rem 0', textShadow: theme === 'dark' ? 'none' : '0 0 10px rgba(180,145,43,0.3)' }}>Write Your Story.</h3>
+                                        <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.4)' : 'var(--wapixo-text-muted)', fontSize: '0.8rem', fontWeight: 300 }}>Share your Wapixo experience with the community.</p>
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                                         <div style={{ position: 'relative' }}>
-                                            <User size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: 'rgba(255,255,255,0.2)' }} />
+                                            <User size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'var(--wapixo-primary)' }} />
                                             <input
                                                 required
                                                 placeholder="Your Name"
-                                                style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }}
+                                                style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
                                             />
                                         </div>
                                         <div style={{ position: 'relative' }}>
-                                            <Building size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: 'rgba(255,255,255,0.2)' }} />
+                                            <Building size={14} style={{ position: 'absolute', left: '1rem', top: '1.1rem', color: theme === 'dark' ? 'rgba(255,255,255,0.2)' : 'var(--wapixo-primary)' }} />
                                             <input
                                                 required
                                                 placeholder="Salon / Role"
-                                                style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: '#ffffff', fontSize: '0.9rem', outline: 'none' }}
+                                                style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem 1rem 1rem 2.5rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
                                             />
                                         </div>
                                     </div>
 
-                                    <div style={{ marginBottom: '1.5rem' }}>
-                                        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>Rate Your Experience</p>
+                                    <div>
+                                        <p style={{ color: theme === 'dark' ? 'rgba(255,255,255,0.3)' : 'var(--wapixo-primary)', fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem', textShadow: theme === 'dark' ? 'none' : '0 0 5px rgba(180,145,43,0.2)' }}>Rate Your Experience</p>
                                         <div style={{ display: 'flex', gap: '8px' }}>
                                             {[1, 2, 3, 4, 5].map((s) => (
                                                 <Star
                                                     key={s}
                                                     size={20}
-                                                    fill={s <= (hoverRating || rating) ? '#ffffff' : 'transparent'}
-                                                    color={s <= (hoverRating || rating) ? '#ffffff' : 'rgba(255,255,255,0.1)'}
-                                                    style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                                    fill={s <= (hoverRating || rating) ? (theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)') : 'transparent'}
+                                                    color={s <= (hoverRating || rating) ? (theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)') : (theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(180,145,43,0.3)')}
+                                                    style={{ cursor: 'pointer', transition: 'all 0.2s', filter: s <= (hoverRating || rating) && theme !== 'dark' ? 'drop-shadow(0 0 5px rgba(180,145,43,0.6))' : 'none' }}
                                                     onMouseEnter={() => setHoverRating(s)}
                                                     onMouseLeave={() => setHoverRating(0)}
                                                     onClick={() => setRating(s)}
@@ -297,12 +305,12 @@ export default function WapixoTestimonials({ data }) {
                                         </div>
                                     </div>
 
-                                    <div style={{ marginBottom: '2.5rem' }}>
+                                    <div>
                                         <textarea
                                             required
                                             placeholder="Tell us how Wapixo transformed your business..."
                                             rows={4}
-                                            style={{ width: '100%', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem', color: '#ffffff', fontSize: '0.9rem', outline: 'none', resize: 'none' }}
+                                            style={{ width: '100%', background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(180, 145, 43, 0.03)', border: theme === 'dark' ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(180, 145, 43, 0.3)', borderRadius: '8px', padding: '1rem', color: 'var(--wapixo-text)', fontSize: '0.9rem', outline: 'none', resize: 'none', transition: 'box-shadow 0.3s', boxShadow: theme === 'dark' ? 'none' : 'inset 0 0 5px rgba(180,145,43,0.1)' }}
                                         />
                                     </div>
 
@@ -311,8 +319,8 @@ export default function WapixoTestimonials({ data }) {
                                         disabled={isSubmitting}
                                         style={{
                                             width: '100%',
-                                            background: '#ffffff',
-                                            color: '#000000',
+                                            background: theme === 'dark' ? '#ffffff' : 'var(--wapixo-primary)',
+                                            color: theme === 'dark' ? '#000000' : '#ffffff',
                                             border: 'none',
                                             padding: '1.1rem',
                                             borderRadius: '8px',
@@ -326,7 +334,15 @@ export default function WapixoTestimonials({ data }) {
                                             justifyContent: 'center',
                                             gap: '0.75rem',
                                             opacity: isSubmitting ? 0.7 : 1,
-                                            transition: 'all 0.3s'
+                                            transition: 'all 0.3s',
+                                            boxShadow: theme === 'dark' ? 'none' : '0 0 20px rgba(180, 145, 43, 0.6)',
+                                            marginTop: '1rem'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 0 30px rgba(180, 145, 43, 0.8)';
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if (theme !== 'dark' && !isSubmitting) e.currentTarget.style.boxShadow = '0 0 20px rgba(180, 145, 43, 0.6)';
                                         }}
                                     >
                                         {isSubmitting ? 'Transmitting...' : (
