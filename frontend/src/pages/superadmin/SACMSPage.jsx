@@ -6,7 +6,7 @@ import {
     Shield, FileText, Smartphone, Zap, Heart, Target,
     Package, BarChart2, CheckCircle2, AlertCircle, Info,
     Eye, Edit3, Globe, Smartphone as MobileIcon, Search,
-    Monitor, RefreshCw, HelpCircle, Plus, Trash2, Star
+    Monitor, RefreshCw, HelpCircle, Plus, Trash2, Star, Link
 } from 'lucide-react';
 
 // Import Landing Components for Live Preview
@@ -85,7 +85,15 @@ const INITIAL_CMS_DATA = {
     landing_faqs: [
         { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all features for 14 days. No credit card is required to start.' },
         { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. Wapixo is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
-    ]
+    ],
+    app_links: {
+        admin_app: '',
+        staff_app: '',
+        customer_app: '',
+        admin_ios: '',
+        staff_ios: '',
+        customer_ios: '',
+    }
 };
 
 const CMS_TABS = [
@@ -96,6 +104,7 @@ const CMS_TABS = [
     { id: 'contact', label: 'Contact Page', icon: MessageSquare },
     { id: 'faqs', label: 'Platform FAQs', icon: HelpCircle },
     { id: 'reviews', label: 'Reviews', icon: Star },
+    { id: 'app_links', label: 'App Links', icon: Link },
 ];
 
 
@@ -567,6 +576,106 @@ export default function SACMSPage() {
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {activeTab === 'app_links' && (
+                        <section className="space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
+                                    <Link size={18} />
+                                </div>
+                                <div>
+                                    <h2 className="text-lg font-bold tracking-tight">App Download Links</h2>
+                                    <p className="text-[11px] text-text-muted mt-1 uppercase tracking-wider">Landing page ke App Showcase section mein buttons ke URLs set karein</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white p-8 border border-border space-y-6">
+                                {/* Android Apps */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+                                        <MobileIcon size={16} className="text-primary" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Android / Play Store Links</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Admin App URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://play.google.com/store/apps/..."
+                                                value={data.app_links?.admin_app || ''}
+                                                onChange={(e) => updateField('app_links', 'admin_app', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Staff App URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://play.google.com/store/apps/..."
+                                                value={data.app_links?.staff_app || ''}
+                                                onChange={(e) => updateField('app_links', 'staff_app', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Customer App URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://play.google.com/store/apps/..."
+                                                value={data.app_links?.customer_app || ''}
+                                                onChange={(e) => updateField('app_links', 'customer_app', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* iOS Apps */}
+                                <div>
+                                    <div className="flex items-center gap-2 mb-4 pb-3 border-b border-border">
+                                        <svg className="text-primary" width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z" /></svg>
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">iOS / App Store Links</span>
+                                    </div>
+                                    <div className="grid grid-cols-1 gap-4">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Admin iOS URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://apps.apple.com/app/..."
+                                                value={data.app_links?.admin_ios || ''}
+                                                onChange={(e) => updateField('app_links', 'admin_ios', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Staff iOS URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://apps.apple.com/app/..."
+                                                value={data.app_links?.staff_ios || ''}
+                                                onChange={(e) => updateField('app_links', 'staff_ios', e.target.value)}
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Customer iOS URL</label>
+                                            <input
+                                                className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                                placeholder="https://apps.apple.com/app/..."
+                                                value={data.app_links?.customer_ios || ''}
+                                                onChange={(e) => updateField('app_links', 'customer_ios', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 border-t border-border">
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="px-6 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20"
+                                    >
+                                        {saving ? 'Saving...' : <><Save size={14} /> Save App Links</>}
+                                    </button>
+                                </div>
                             </div>
                         </section>
                     )}
