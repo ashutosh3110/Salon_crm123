@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { XCircle, CheckCircle2, ArrowRight } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 
-const comparisons = [
+const DEFAULT_COMPARISONS = [
     {
         id: 1,
         problem: 'Fragmented Operations',
@@ -28,21 +28,28 @@ const comparisons = [
     {
         id: 4,
         problem: 'Growth Guesswork',
-        problemDesc: 'Scaling without data is gambling. Most owners don’t know their true profit-per-service.',
+        problemDesc: 'Scaling without data is gambling. Most owners don\'t know their true profit-per-service.',
         solution: 'Actionable Intelligence',
         solutionDesc: 'Deep-dive analytics that reveal exactly which services and staff drive your growth strategy.',
     },
 ];
 
-export default function WapixoSolutions() {
+export default function WapixoSolutions({ data, header = {} }) {
     const { theme } = useTheme();
     const [isMobile, setIsMobile] = useState(false);
+
+    // Use CMS data if available, else fallback to defaults
+    const comparisons = (Array.isArray(data) && data.length > 0) ? data : DEFAULT_COMPARISONS;
+    const overline  = header.overline  || 'The Transition';
+    const headline  = header.headline  || 'From Chaos to Command.';
+
     useEffect(() => {
         const check = () => setIsMobile(window.innerWidth < 768);
         check();
         window.addEventListener('resize', check);
         return () => window.removeEventListener('resize', check);
     }, []);
+
 
     return (
         <section style={{
@@ -82,7 +89,7 @@ export default function WapixoSolutions() {
                         viewport={{ once: true }}
                         style={{ color: 'var(--wapixo-primary)', fontSize: '0.65rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
                     >
-                        The Transition
+                        {overline}
                     </motion.p>
                     <motion.h2
                         initial={{ opacity: 0, y: 20 }}
@@ -91,7 +98,7 @@ export default function WapixoSolutions() {
                         transition={{ delay: 0.1 }}
                         style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
                     >
-                        From Chaos to Command.
+                        {headline}
                     </motion.h2>
                 </div>
 

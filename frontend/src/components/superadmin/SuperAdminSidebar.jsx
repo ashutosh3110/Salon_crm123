@@ -53,6 +53,12 @@ const menuItems = [
         badgeColor: 'bg-primary/10 text-primary',
     },
     {
+        label: 'Website Editor',
+        icon: Layout,
+        path: '/superadmin/cms',
+        badge: null,
+    },
+    {
         label: 'Salon Enquiries',
         icon: MessageSquare,
         path: '/superadmin/inquiries',

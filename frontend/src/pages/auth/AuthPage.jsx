@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Mail, Lock, Phone, Sparkles, AlertCircle, Store, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -156,6 +157,26 @@ export default function AuthPage() {
 
     return (
         <div className="min-h-screen new-theme selection:bg-[#B4912B]/30" style={{ fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+            <Helmet>
+                {view === 'signin' ? (
+                    <>
+                        <title>Login — Wapixo Salon Management</title>
+                        <meta name="description" content="Login to your Wapixo salon management dashboard. Access bookings, billing, staff management, and more." />
+                        <link rel="canonical" href="https://wapixo.com/login" />
+                        <meta property="og:title" content="Login — Wapixo" />
+                        <meta property="og:url" content="https://wapixo.com/login" />
+                    </>
+                ) : (
+                    <>
+                        <title>Register Your Salon — Start Free | Wapixo</title>
+                        <meta name="description" content="Register your salon on Wapixo for free. Get POS billing, appointment booking, staff management, WhatsApp automation & more. India's best salon software." />
+                        <link rel="canonical" href="https://wapixo.com/register" />
+                        <meta property="og:title" content="Register Your Salon Free — Wapixo" />
+                        <meta property="og:description" content="Start managing your salon smarter. Free signup — no credit card required." />
+                        <meta property="og:url" content="https://wapixo.com/register" />
+                    </>
+                )}
+            </Helmet>
             <WapixoNavbar />
 
             {/* Background elements */}

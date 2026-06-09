@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Send, MessageSquare, Sparkles } from 'lucide-react';
 import api from '../../services/api';
@@ -9,6 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 
 export default function WapixoContactPage() {
     const { theme } = useTheme();
+    const [cmsContact, setCmsContact] = useState({});
     const [formState, setFormState] = useState({
         name: '',
         email: '',
@@ -21,10 +23,23 @@ export default function WapixoContactPage() {
 
     useEffect(() => {
         document.body.style.backgroundColor = 'var(--wapixo-bg)';
+        // Fetch CMS contact data
+        api.get('/cms').then(res => {
+            const sections = res.data?.data || res.data || {};
+            if (sections.contact_page) setCmsContact(sections.contact_page);
+        }).catch(() => {});
         return () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
+
+    // CMS-driven contact info with fallbacks
+    const contactTitle    = cmsContact.title    || "Let's Build Your Masterpiece.";
+    const contactEmail    = cmsContact.email    || 'hello@wapixo.io';
+    const contactPhone    = cmsContact.phone    || '+91 98765 43210';
+    const contactAddress  = cmsContact.address  || 'DLF Cyber City, Phase III, Gurgaon, India';
+    const responseNote    = cmsContact.response_note || 'We typically respond to new salon inquiries within 24 business hours. Our experts are ready to audit your current workflow.';
+
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -49,6 +64,14 @@ export default function WapixoContactPage() {
     return (
         <SmoothScroll>
             <div className="new-theme" style={{ minHeight: '100vh', position: 'relative', fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+                <Helmet>
+                    <title>Contact Wapixo — Get a Demo | Salon Management Software</title>
+                    <meta name="description" content="Contact Wapixo for a free demo of India's best salon management software. Get POS billing, bookings, staff management & WhatsApp automation for your salon." />
+                    <link rel="canonical" href="https://wapixo.com/contact" />
+                    <meta property="og:title" content="Contact Wapixo — Salon Management Demo" />
+                    <meta property="og:description" content="Get a free personalized demo of Wapixo salon software. Manage your salon smarter." />
+                    <meta property="og:url" content="https://wapixo.com/contact" />
+                </Helmet>
                 <WapixoNavbar />
 
                 {/* Hero / Header Section */}
@@ -72,7 +95,7 @@ export default function WapixoContactPage() {
                             transition={{ delay: 0.1 }}
                             style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0, color: 'var(--wapixo-text)' }}
                         >
-                            Let's Build Your<br />Masterpiece.
+                            {contactTitle}
                         </motion.h1>
                     </div>
                 </div>
@@ -93,19 +116,19 @@ export default function WapixoContactPage() {
                                 <ContactMethod
                                     icon={Mail}
                                     label="Email for Proposals"
-                                    value="hello@wapixo.io"
+                                    value={contactEmail}
                                     desc="Always open for new collaborations."
                                 />
                                 <ContactMethod
                                     icon={Phone}
                                     label="Support Hotline"
-                                    value="+91 98765 43210"
+                                    value={contactPhone}
                                     desc="Mon-Fri, 9am - 7pm IST"
                                 />
                                 <ContactMethod
                                     icon={MapPin}
                                     label="Headquarters"
-                                    value="DLF Cyber City, Phase III, Gurgaon, India"
+                                    value={contactAddress}
                                     desc="Our surgical command center."
                                 />
                             </div>
@@ -118,7 +141,7 @@ export default function WapixoContactPage() {
                                 <span style={{ fontSize: '0.8rem', color: 'var(--wapixo-primary)', textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700 }}>Fast Response</span>
                             </div>
                             <p style={{ fontSize: '0.9rem', color: 'var(--wapixo-text-muted)', lineHeight: 1.6, margin: 0, fontWeight: 400 }}>
-                                We typically respond to new salon inquiries within 24 business hours. Our experts are ready to audit your current workflow.
+                                {responseNote}
                             </p>
                         </div>
                     </motion.div>

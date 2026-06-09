@@ -13,8 +13,9 @@ export default function CookiePolicy() {
         const fetchCMS = async () => {
             try {
                 const response = await api.get('/cms');
-                if (response.data && response.data.legal_cookies) {
-                    setCmsData(response.data.legal_cookies);
+                const sections = response.data?.data || response.data || {};
+                if (sections.legal_cookies) {
+                    setCmsData(sections.legal_cookies);
                 }
             } catch (error) {
                 console.error('Error fetching CMS:', error);

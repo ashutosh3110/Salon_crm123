@@ -7,8 +7,12 @@ const footerLinks = {
     Legal: ['Privacy', 'Terms', 'Cookies'],
 };
 
-export default function WapixoFooter() {
+export default function WapixoFooter({ data = {} }) {
     const { theme } = useTheme();
+    const tagline   = data.tagline          || 'Powering smart businesses with intelligent salon management.';
+    const copyright = data.copyright_suffix || 'All rights reserved.';
+    const powering  = data.powering_text    || 'POWERING SMART BUSINESSES';
+
     return (
         <footer id="contact" className="border-t border-[var(--wapixo-border)] py-12 md:py-24 px-6 md:px-16 lg:px-24" style={{ background: 'var(--wapixo-bg)' }}>
             <div className="max-w-6xl mx-auto">
@@ -24,7 +28,7 @@ export default function WapixoFooter() {
                             />
                         </Link>
                         <p className="font-['Inter'] font-light text-[0.82rem] text-[var(--wapixo-text-muted)] leading-relaxed mt-4">
-                            Powering smart businesses with intelligent salon management.
+                            {tagline}
                         </p>
                     </div>
 
@@ -54,10 +58,10 @@ export default function WapixoFooter() {
 
                 <div className="border-t border-[var(--wapixo-border)] pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
                     <p className="font-['Inter'] font-light text-[0.75rem] text-[var(--wapixo-text-muted)] opacity-50">
-                        © {new Date().getFullYear()} Wapixo. All rights reserved.
+                        © {new Date().getFullYear()} Wapixo. {copyright}
                     </p>
                     <p className="font-['Inter'] font-extralight text-[0.7rem] text-[var(--wapixo-text-muted)] opacity-30 tracking-[0.2em] uppercase">
-                        POWERING SMART BUSINESSES
+                        {powering}
                     </p>
                 </div>
             </div>

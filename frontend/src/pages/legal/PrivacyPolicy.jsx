@@ -13,8 +13,9 @@ export default function PrivacyPolicy() {
         const fetchCMS = async () => {
             try {
                 const response = await api.get('/cms');
-                if (response.data && response.data.legal_privacy) {
-                    setCmsData(response.data.legal_privacy);
+                const sections = response.data?.data || response.data || {};
+                if (sections.legal_privacy) {
+                    setCmsData(sections.legal_privacy);
                 }
             } catch (error) {
                 console.error('Error fetching CMS:', error);

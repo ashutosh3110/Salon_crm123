@@ -13,8 +13,9 @@ export default function TermsOfService() {
         const fetchCMS = async () => {
             try {
                 const response = await api.get('/cms');
-                if (response.data && response.data.legal_terms) {
-                    setCmsData(response.data.legal_terms);
+                const sections = response.data?.data || response.data || {};
+                if (sections.legal_terms) {
+                    setCmsData(sections.legal_terms);
                 }
             } catch (error) {
                 console.error('Error fetching CMS:', error);
