@@ -63,6 +63,16 @@ const features = [
 export default function AppShowcase({ data }) {
     const { theme } = useTheme();
     const [activeIndex, setActiveIndex] = useState(0);
+    const [appLinks, setAppLinks] = useState({});
+
+    // Fetch app links from CMS
+    useEffect(() => {
+        api.get('/cms').then(res => {
+            if (res.data?.data?.app_links) {
+                setAppLinks(res.data.data.app_links);
+            }
+        }).catch(() => {});
+    }, []);
 
     const sectionBg = theme === 'dark'
         ? 'radial-gradient(circle at 20% 50%, #0d0d0d, #050505)'
@@ -261,18 +271,19 @@ export default function AppShowcase({ data }) {
 
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginTop: '1.5rem', maxWidth: '500px' }}>
                             {[
-                                { name: 'Admin App', icon: <Smartphone size={16} /> },
-                                { name: 'Staff App', icon: <Smartphone size={16} /> },
-                                { name: 'Customer App', icon: <Smartphone size={16} /> },
-                                { name: 'Admin iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg> },
-                                { name: 'Staff iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg> },
-                                { name: 'Customer iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg> },
+                                { name: 'Admin App', icon: <Smartphone size={16} />, url: appLinks.admin_app },
+                                { name: 'Staff App', icon: <Smartphone size={16} />, url: appLinks.staff_app },
+                                { name: 'Customer App', icon: <Smartphone size={16} />, url: appLinks.customer_app },
+                                { name: 'Admin iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg>, url: appLinks.admin_ios },
+                                { name: 'Staff iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg>, url: appLinks.staff_ios },
+                                { name: 'Customer iOS', icon: <svg width={16} height={16} viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"></path></svg>, url: appLinks.customer_ios },
                             ].map((btn, idx) => (
                                 <motion.button
                                     key={idx}
                                     className="app-download-btn"
                                     whileHover={{ scale: 1.03, boxShadow: '0 8px 20px rgba(180,145,43,0.2)' }}
                                     whileTap={{ scale: 0.97 }}
+                                    onClick={() => btn.url && window.open(btn.url, '_blank', 'noopener,noreferrer')}
                                     style={{
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
                                         background: theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#fdf9f4',
@@ -280,11 +291,14 @@ export default function AppShowcase({ data }) {
                                         border: '1px solid rgba(180,145,43,0.3)',
                                         borderRadius: '8px', padding: '0.8rem 1rem',
                                         fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: '0.75rem',
-                                        cursor: 'pointer', letterSpacing: '0.03em', transition: 'all 0.3s ease',
+                                        cursor: btn.url ? 'pointer' : 'default', letterSpacing: '0.03em', transition: 'all 0.3s ease',
+                                        opacity: btn.url ? 1 : 0.6,
                                     }}
                                     onMouseEnter={(e) => {
-                                        e.currentTarget.style.background = '#B4912B';
-                                        e.currentTarget.style.color = '#fff';
+                                        if (btn.url) {
+                                            e.currentTarget.style.background = '#B4912B';
+                                            e.currentTarget.style.color = '#fff';
+                                        }
                                     }}
                                     onMouseLeave={(e) => {
                                         e.currentTarget.style.background = theme === 'dark' ? 'rgba(255,255,255,0.03)' : '#fdf9f4';

@@ -2482,24 +2482,16 @@ export default function POSBillingPage() {
                                         <span className="text-[28px] font-black leading-none text-slate-900 dark:text-white tracking-tight">₹{totals.total.toFixed(2)}</span>
                                     </div>
                                     {bookingAdvancePaid > 0 && (
-                                        <div className="flex items-center justify-between text-[10px] font-bold text-amber-600 dark:text-amber-400 mt-2">
+                                        <div className="flex items-center justify-between text-sm font-black text-amber-600 dark:text-amber-400 mt-2">
                                             <span>Advance Paid</span>
                                             <span>− ₹{bookingAdvancePaid.toFixed(2)}</span>
                                         </div>
                                     )}
-                                    <div className="flex items-center justify-between text-[10px] font-bold text-blue-600 dark:text-blue-400 mt-1.5">
+                                    <div className="flex items-center justify-between text-sm font-black text-blue-600 dark:text-blue-400 mt-1.5">
                                         <span>Paid Now</span>
                                         <span>− ₹{payments.reduce((s, p) => s + p.amount, 0).toFixed(2)}</span>
                                     </div>
-                                    {(() => {
-                                        const remainingBalance = Math.max(0, totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0));
-                                        return (
-                                            <div className="flex justify-between text-xs font-black text-emerald-600 dark:text-emerald-400 mt-2.5 bg-emerald-50 dark:bg-emerald-500/5 p-2 rounded-lg border border-emerald-200 dark:border-emerald-500/20">
-                                                <span className="uppercase tracking-widest">Remaining Payment</span>
-                                                <span>₹{remainingBalance.toFixed(2)}</span>
-                                            </div>
-                                        );
-                                    })()}
+
                                     {totals.total - bookingAdvancePaid - totals.redeemWallet - payments.reduce((s, p) => s + p.amount, 0) > 0.5 && (
                                         <div className="flex justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mt-2 bg-rose-50 dark:bg-rose-500/5 p-2 rounded-lg border border-rose-200 dark:border-rose-500/20 animate-pulse">
                                             <span className="uppercase tracking-widest">Balance Due</span>
