@@ -10,6 +10,7 @@ import {
 import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
@@ -27,6 +28,11 @@ Font.register({
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 700 },
     ],
 });
+
+const maskPhone = (phone) => {
+    if (!phone) return '-';
+    return phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1XXXXXX$3');
+};
 
 const pdfStyles = StyleSheet.create({
     page: {
@@ -438,11 +444,6 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
     const cashPaid = invoice.payments?.filter(p => p.method === 'cash').reduce((sum, p) => sum + p.amount, 0) || 0;
     const onlinePaid = invoice.payments?.filter(p => ['online', 'card', 'upi'].includes(p.method)).reduce((sum, p) => sum + p.amount, 0) || 0;
 
-    const maskPhone = (phone) => {
-        if (!phone) return '-';
-        return phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1XXXXXX$3');
-    };
-
     return (
         <Document>
             <Page size="A4" style={{ padding: 40, fontFamily: 'Roboto', fontSize: 10, color: '#1a1a1a' }}>
@@ -664,6 +665,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
 export default function POSInvoicesPage() {
     const navigate = useNavigate();
     const { salon, outlets, activeOutletId, setActiveOutletId } = useBusiness();
+    const { user } = useAuth();
     const [invoices, setInvoices] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -1249,7 +1251,9 @@ export default function POSInvoicesPage() {
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-slate-800 dark:text-slate-200 text-xs">{inv.customerId?.name || 'Guest'}</div>
                                                 {inv.customerId?.phone && (
-                                                    <div className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mt-0.5">{inv.customerId.phone}</div>
+                                                    <div className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 mt-0.5">
+                                                        {user?.role === 'admin' || user?.role === 'superadmin' ? inv.customerId.phone : maskPhone(inv.customerId.phone)}
+                                                    </div>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4">
@@ -1349,7 +1353,9 @@ export default function POSInvoicesPage() {
                                     <p className="text-[8px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Customer</p>
                                     <p className="text-xs font-black text-slate-800 dark:text-slate-250">{selectedInvoice.customerId?.name || 'Guest'}</p>
                                     {selectedInvoice.customerId?.phone && (
-                                        <p className="text-[9px] font-bold text-[#B4912B] mt-0.5">{selectedInvoice.customerId.phone}</p>
+                                        <p className="text-[9px] font-bold text-[#B4912B] mt-0.5">
+                                            {user?.role === 'admin' || user?.role === 'superadmin' ? selectedInvoice.customerId.phone : maskPhone(selectedInvoice.customerId.phone)}
+                                        </p>
                                     )}
                                 </div>
                                 <div className="bg-slate-50 dark:bg-slate-950/20 border border-slate-200 dark:border-slate-800 rounded-xl p-3">

@@ -2017,7 +2017,7 @@ export default function POSBillingPage() {
                 {/* ══════════════════════════════════════════════
                     RIGHT PANEL — BILLING SUMMARY
                     ══════════════════════════════════════════════ */}
-                <div className="w-full lg:w-[420px] h-full flex flex-col bg-[#f8fafc] border-l border-slate-200 dark:border-slate-800 dark:bg-slate-950 overflow-hidden">
+                <div className={`w-full lg:w-[420px] h-full flex-col bg-[#f8fafc] border-l border-slate-200 dark:border-slate-800 dark:bg-slate-950 overflow-hidden ${mobileView === 'cart' ? 'flex' : 'hidden'} lg:flex`}>
 
                     {serviceMode === 'bookings' || serviceMode === 'orders' ? (
                         /* ══ ENTERPRISE BILLING SUMMARY — pre-paid bookings/orders ══ */
@@ -3118,6 +3118,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     const [qActiveMembership, setQActiveMembership] = useState(null);
     const [qPaymentDate, setQPaymentDate] = useState(getTodayDateString());
     const [qSearchItem, setQSearchItem] = useState('');
+    const [qMobileView, setQMobileView] = useState('items');
 
     useEffect(() => {
         if (invoiceToEdit) {
@@ -3828,10 +3829,43 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     html.dark .qi-wallet-pill svg { color: #a7f3d0 !important; }
                 `}</style>
 
+                {/* Mobile Tab Switcher & Header */}
+                <div className="flex flex-col lg:hidden border-b border-slate-200 bg-white dark:bg-[#0A0F1E] shrink-0">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-white/5">
+                        <h2 className="text-sm font-black uppercase tracking-widest text-slate-800 dark:text-slate-100">Quick Invoice</h2>
+                        <button onClick={onClose} className="p-1 text-slate-400 hover:text-rose-500 transition-colors">
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="flex">
+                        <button
+                            onClick={() => setQMobileView('items')}
+                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all relative ${qMobileView === 'items' ? 'text-[#C69A20]' : 'text-slate-400 dark:text-slate-500'}`}
+                        >
+                            <Package className="w-4 h-4" />
+                            Items
+                            {qMobileView === 'items' && <motion.div layoutId="qi-mobile-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A20]" />}
+                        </button>
+                        <button
+                            onClick={() => setQMobileView('cart')}
+                            className={`flex-1 py-3 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all relative ${qMobileView === 'cart' ? 'text-[#C69A20]' : 'text-slate-400 dark:text-slate-500'}`}
+                        >
+                            <ShoppingCart className="w-4 h-4" />
+                            Cart
+                            {qCart.length > 0 && (
+                                <span className="bg-[#C69A20] text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-black">
+                                    {qCart.length}
+                                </span>
+                            )}
+                            {qMobileView === 'cart' && <motion.div layoutId="qi-mobile-tab" className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C69A20]" />}
+                        </button>
+                    </div>
+                </div>
+
                 <div className="flex-1 min-h-0 flex flex-col lg:flex-row overflow-hidden">
 
                     {/* ══════════════ LEFT COLUMN (always light) ══════════════ */}
-                    <div className="qi-left flex-1 min-h-0 flex flex-col overflow-hidden border-r border-slate-200">
+                    <div className={`qi-left flex-1 min-h-0 flex-col overflow-hidden border-r border-slate-200 ${qMobileView === 'items' ? 'flex' : 'hidden'} lg:flex`}>
 
                         {/* TOP BAR: Outlet + Client */}
                         <div className="qi-topbar grid grid-cols-1 md:grid-cols-2 gap-4 px-5 pt-4 pb-3 border-b border-slate-100 shrink-0">
@@ -4312,7 +4346,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
 
                     {/* ══════════════ RIGHT COLUMN (light theme) ══════════════ */}
-                    <div className="qi-right w-full lg:w-[460px] flex flex-col overflow-hidden min-h-[300px] lg:h-full bg-slate-50 border-l border-slate-200">
+                    <div className={`qi-right w-full lg:w-[460px] flex-col overflow-hidden lg:h-full bg-slate-50 border-l border-slate-200 ${qMobileView === 'cart' ? 'flex' : 'hidden'} lg:flex`}>
 
                         {/* Cart Header */}
                         <div className="flex items-center justify-between px-5 py-3.5 shrink-0 border-b border-slate-200 bg-white">
