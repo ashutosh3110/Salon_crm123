@@ -10,7 +10,7 @@ export default function ScissorsMorph({ data }) {
 
         const handleCanPlay = () => {
             video.playbackRate = 1.5;
-            video.play().catch(() => {});
+            video.play().catch(() => { });
         };
 
         video.addEventListener('canplay', handleCanPlay);
@@ -47,11 +47,25 @@ export default function ScissorsMorph({ data }) {
                     <p className="text-sm font-semibold tracking-[0.4em] text-[#B4912B] uppercase mb-6">
                         {data?.overline || 'Crafted for Artists'}
                     </p>
-                    <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white text-white-force font-serif leading-tight">
+                    <h2 style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 200,
+                        fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
+                        letterSpacing: '-0.035em',
+                        lineHeight: 1.05,
+                        margin: '0 0 1.25rem 0',
+                    }} className="text-white text-white-force">
                         {data?.title || 'Precision Tools for'} <br />
-                        <span className="italic">{data?.subtitle || 'The Modern Artist.'}</span>
+                        <span style={{ fontWeight: 500 }}>{data?.subtitle || 'The Modern Artist.'}</span>
                     </h2>
-                    <p className="mt-8 text-lg md:text-xl text-white/60 text-white-muted-force font-light max-w-2xl mx-auto">
+                    <p style={{
+                        fontFamily: "'Inter', sans-serif",
+                        fontWeight: 300,
+                        fontSize: '1rem',
+                        margin: '0 auto 2.25rem auto',
+                        maxWidth: '420px',
+                        lineHeight: 1.7,
+                    }} className="text-white/60 text-white-muted-force">
                         {data?.desc || "Elevate your craft with the industry's most refined equipment. Performance meet elegance in every cut and style."}
                     </p>
                 </motion.div>

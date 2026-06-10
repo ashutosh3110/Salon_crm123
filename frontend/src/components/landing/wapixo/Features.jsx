@@ -99,24 +99,22 @@ export default function Features({ data, statsData }) {
                 </p>
                 <h2 style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 300,
-                    fontSize: 'clamp(2rem, 5vw, 4rem)',
+                    fontWeight: 200,
+                    fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
                     color: 'var(--wapixo-text)',
-                    letterSpacing: '-0.02em',
-                    lineHeight: 1.1,
-                    margin: 0,
+                    letterSpacing: '-0.035em',
+                    lineHeight: 1.05,
+                    margin: '0 0 1.25rem 0',
                 }}>
                     Precision Tools for<br />the Modern Artist.
                 </h2>
                 <p style={{
                     fontFamily: "'Inter', sans-serif",
-                    fontWeight: 400,
-                    fontSize: 'clamp(0.85rem, 1.5vw, 1.05rem)',
+                    fontWeight: 300,
+                    fontSize: '1rem',
                     color: 'var(--wapixo-text-muted)',
-                    marginTop: '1.5rem',
-                    maxWidth: '500px',
-                    marginLeft: 'auto',
-                    marginRight: 'auto',
+                    margin: '0 auto 2.25rem auto',
+                    maxWidth: '420px',
                     lineHeight: 1.7,
                 }}>
                     Streamlined booking. Advanced analytics. Elegant client management.<br />Designed for the elite.

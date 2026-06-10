@@ -96,7 +96,7 @@ export default function WapixoSolutions({ data, header = {} }) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}
+                        style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)', color: 'var(--wapixo-text)', letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 1.25rem 0' }}
                     >
                         {headline}
                     </motion.h2>

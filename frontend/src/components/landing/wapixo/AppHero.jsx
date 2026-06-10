@@ -27,7 +27,7 @@ export default function AppHero() {
             minHeight: 'auto',
             width: '100%',
             background: isDark ? 'var(--wapixo-bg)' : '#fdf9f4',
-            paddingTop: '40px', 
+            paddingTop: '40px',
             paddingBottom: '40px',
             position: 'relative',
             zIndex: 10
@@ -51,7 +51,7 @@ export default function AppHero() {
                 margin: '0 auto',
                 padding: '0 2rem'
             }}>
-                <motion.div 
+                <motion.div
                     initial={{ y: -30, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
@@ -62,13 +62,13 @@ export default function AppHero() {
                         border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'}`,
                         borderRadius: '40px',
                         overflow: 'hidden',
-                        boxShadow: isDark 
-                            ? '0 60px 120px -30px rgba(0,0,0,0.6)' 
+                        boxShadow: isDark
+                            ? '0 60px 120px -30px rgba(0,0,0,0.6)'
                             : '0 60px 120px -30px rgba(180, 145, 43, 0.1)',
                     }}
                 >
                     {/* The "Dropdown" Trigger Bar */}
-                    <div 
+                    <div
                         onClick={() => setIsExpanded(!isExpanded)}
                         style={{
                             padding: '1.75rem 2.5rem',
@@ -82,8 +82,8 @@ export default function AppHero() {
                         }}
                     >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                            <motion.div 
-                                animate={{ 
+                            <motion.div
+                                animate={{
                                     scale: isExpanded ? 1.1 : 1,
                                     boxShadow: isExpanded ? '0 0 20px rgba(180, 145, 43, 0.4)' : 'none'
                                 }}
@@ -102,18 +102,18 @@ export default function AppHero() {
                                 <Smartphone size={26} />
                             </motion.div>
                             <div>
-                                <h2 style={{ 
-                                    margin: 0, 
-                                    fontSize: '1.4rem', 
-                                    fontWeight: 500, 
+                                <h2 style={{
+                                    margin: 0,
+                                    fontSize: '1.4rem',
+                                    fontWeight: 500,
                                     color: 'var(--wapixo-text)',
                                     letterSpacing: '-0.03em'
                                 }}>
                                     Launch the Customer Experience
                                 </h2>
-                                <p style={{ 
-                                    margin: '4px 0 0 0', 
-                                    fontSize: '0.9rem', 
+                                <p style={{
+                                    margin: '4px 0 0 0',
+                                    fontSize: '0.9rem',
                                     color: 'var(--wapixo-text-muted)',
                                     opacity: 0.8
                                 }}>
@@ -121,15 +121,15 @@ export default function AppHero() {
                                 </p>
                             </div>
                         </div>
-                        
+
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             {!isExpanded && (
-                                <span style={{ 
-                                    fontSize: '0.8rem', 
-                                    fontWeight: 600, 
-                                    color: 'var(--wapixo-primary)', 
-                                    textTransform: 'uppercase', 
-                                    letterSpacing: '0.1em' 
+                                <span style={{
+                                    fontSize: '0.8rem',
+                                    fontWeight: 600,
+                                    color: 'var(--wapixo-primary)',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.1em'
                                 }} className="hidden-mobile">
                                     Click to Explore
                                 </span>
@@ -163,13 +163,13 @@ export default function AppHero() {
                                 style={{ overflow: 'hidden' }}
                             >
                                 <div style={{ padding: '1rem 3rem 4rem 3rem' }}>
-                                    <div style={{ 
-                                        display: 'grid', 
-                                        gridTemplateColumns: '1.1fr 1fr', 
-                                        gap: '5rem', 
+                                    <div style={{
+                                        display: 'grid',
+                                        gridTemplateColumns: '1.1fr 1fr',
+                                        gap: '5rem',
                                         alignItems: 'center'
                                     }} className="app-hero-grid">
-                                        
+
                                         {/* Main Content Area */}
                                         <div style={{ textAlign: 'left' }}>
                                             <motion.div
@@ -190,7 +190,7 @@ export default function AppHero() {
                                                         Redefined.
                                                     </em>
                                                 </h1>
-                                                
+
                                                 <p style={{
                                                     fontSize: '1.15rem',
                                                     color: 'var(--wapixo-text-muted)',
@@ -199,29 +199,29 @@ export default function AppHero() {
                                                     marginBottom: '3rem',
                                                     maxWidth: '520px'
                                                 }}>
-                                                    Elevate your self-care routine with the ultimate salon companion. 
-                                                    From artisanal cuts to luxury treatments, the world of beauty is now 
+                                                    Elevate your self-care routine with the ultimate salon companion.
+                                                    From artisanal cuts to luxury treatments, the world of beauty is now
                                                     just a tap away.
                                                 </p>
 
-                                                <div style={{ 
-                                                    display: 'grid', 
-                                                    gridTemplateColumns: '1fr', 
-                                                    gap: '1.5rem', 
-                                                    marginBottom: '3.5rem' 
+                                                <div style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: '1fr',
+                                                    gap: '1.5rem',
+                                                    marginBottom: '3.5rem'
                                                 }}>
                                                     {features.map((f, i) => (
-                                                        <motion.div 
-                                                            key={i} 
+                                                        <motion.div
+                                                            key={i}
                                                             initial={{ opacity: 0, y: 10 }}
                                                             animate={{ opacity: 1, y: 0 }}
                                                             transition={{ delay: 0.4 + (i * 0.1) }}
                                                             style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}
                                                         >
-                                                            <div style={{ 
+                                                            <div style={{
                                                                 width: '44px',
                                                                 height: '44px',
-                                                                borderRadius: '12px', 
+                                                                borderRadius: '12px',
                                                                 background: `${isDark ? 'rgba(180,145,43,0.1)' : 'rgba(180,145,43,0.08)'}`,
                                                                 color: 'var(--wapixo-primary)',
                                                                 display: 'flex',
@@ -263,7 +263,7 @@ export default function AppHero() {
                                                         <Download size={22} />
                                                         Download App
                                                     </motion.button>
-                                                    
+
                                                     <button style={{
                                                         background: 'none',
                                                         border: '1px solid var(--wapixo-border)',
@@ -278,8 +278,8 @@ export default function AppHero() {
                                                         gap: '8px',
                                                         transition: 'all 0.3s ease'
                                                     }}
-                                                    onMouseEnter={(e) => e.target.style.borderColor = 'var(--wapixo-primary)'}
-                                                    onMouseLeave={(e) => e.target.style.borderColor = 'var(--wapixo-border)'}
+                                                        onMouseEnter={(e) => e.target.style.borderColor = 'var(--wapixo-primary)'}
+                                                        onMouseLeave={(e) => e.target.style.borderColor = 'var(--wapixo-border)'}
                                                     >
                                                         Watch Demo
                                                         <ArrowRight size={18} />
@@ -290,7 +290,7 @@ export default function AppHero() {
 
                                         {/* Visual Mockup Area */}
                                         <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', perspective: '1200px' }}>
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ opacity: 0, rotateY: 20, scale: 0.9 }}
                                                 animate={{ opacity: 1, rotateY: 0, scale: 1 }}
                                                 transition={{ duration: 1, delay: 0.3 }}
@@ -302,17 +302,17 @@ export default function AppHero() {
                                                     border: `10px solid ${isDark ? '#222' : '#1a1a1a'}`,
                                                     position: 'relative',
                                                     overflow: 'hidden',
-                                                    boxShadow: isDark 
-                                                        ? '0 60px 100px -20px rgba(0,0,0,0.8)' 
+                                                    boxShadow: isDark
+                                                        ? '0 60px 100px -20px rgba(0,0,0,0.8)'
                                                         : '0 60px 100px -20px rgba(0,0,0,0.2)',
                                                 }}
                                             >
-                                                <img 
-                                                    src="/image1.png" 
-                                                    alt="App Interface" 
+                                                <img
+                                                    src="/image1.png"
+                                                    alt="App Interface"
                                                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 />
-                                                
+
                                                 {/* UI Overlays */}
                                                 <div style={{
                                                     position: 'absolute',
@@ -326,9 +326,9 @@ export default function AppHero() {
                                                     zIndex: 10
                                                 }} />
                                             </motion.div>
-                                            
+
                                             {/* Floating Info Badge */}
-                                            <motion.div 
+                                            <motion.div
                                                 animate={{ y: [-15, 15, -15] }}
                                                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
                                                 style={{

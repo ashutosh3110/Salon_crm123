@@ -271,7 +271,7 @@
   html:not(.dark) .new-theme footer#contact p,
   html:not(.dark) .new-theme footer#contact a,
   html:not(.dark) .new-theme footer#contact span {
-    color: #9ca3af !important;
+    color: #ffffff !important;
   }
   html:not(.dark) .new-theme footer#contact p.footer-heading,
   html:not(.dark) .new-theme footer#contact a:hover {

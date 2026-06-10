@@ -115,12 +115,13 @@ export default function WapixoPricing() {
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
                         style={{
-                            fontSize: 'clamp(2rem, 5vw, 3.5rem)',
+                            fontFamily: "'Inter', sans-serif",
                             fontWeight: 200,
+                            fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
                             color: 'var(--wapixo-text)',
-                            letterSpacing: '-0.02em',
-                            lineHeight: 1.1,
-                            margin: 0,
+                            letterSpacing: '-0.035em',
+                            lineHeight: 1.05,
+                            margin: '0 0 1.25rem 0',
                         }}
                     >
                         Simple. Transparent. Precision.
@@ -131,12 +132,13 @@ export default function WapixoPricing() {
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
                         style={{
-                            marginTop: '1rem',
-                            color: 'var(--wapixo-text-muted)',
-                            fontSize: '0.95rem',
+                            fontFamily: "'Inter', sans-serif",
                             fontWeight: 300,
-                            maxWidth: '480px',
-                            margin: '1rem auto 0',
+                            fontSize: '1rem',
+                            color: 'var(--wapixo-text-muted)',
+                            margin: '0 auto 2.25rem auto',
+                            maxWidth: '420px',
+                            lineHeight: 1.7,
                         }}
                     >
                         Choose the plan that fits your salon. Upgrade anytime, cancel anytime.

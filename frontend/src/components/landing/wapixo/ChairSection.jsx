@@ -90,11 +90,11 @@ export default function ChairSection({ data }) {
                 <h2 className="text-white-force" style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 200,
-                    fontSize: 'clamp(2.2rem, 6vw, 5.5rem)',
+                    fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
                     color: '#ffffff',
-                    letterSpacing: '-0.02em',
+                    letterSpacing: '-0.035em',
                     lineHeight: 1.05,
-                    margin: '0 0 1rem 0',
+                    margin: '0 0 1.25rem 0',
                 }}>
                     {headline}
                 </h2>
@@ -102,10 +102,11 @@ export default function ChairSection({ data }) {
                 <p className="text-white-muted-force" style={{
                     fontFamily: "'Inter', sans-serif",
                     fontWeight: 300,
-                    fontSize: 'clamp(1rem, 2vw, 1.4rem)',
+                    fontSize: '1rem',
                     color: 'rgba(255,255,255,0.55)',
-                    margin: '0 0 3rem 0',
-                    letterSpacing: '0.02em',
+                    margin: '0 auto 2.25rem auto',
+                    maxWidth: '420px',
+                    lineHeight: 1.7,
                 }}>
                     {subtitle}
                 </p>

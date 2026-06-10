@@ -14,7 +14,7 @@ export default function WapixoFooter({ data = {} }) {
     const powering  = data.powering_text    || 'POWERING SMART BUSINESSES';
 
     return (
-        <footer id="contact" className="py-12 md:py-24 px-6 md:px-16 lg:px-24" style={{ 
+        <footer id="contact" className="py-12 md:py-24 px-6 md:px-16 lg:px-24 text-white" style={{
             background: theme === 'dark' ? 'var(--wapixo-bg)' : '#0a0a0a',
             borderTop: '1px solid var(--wapixo-border)',
             '--wapixo-border': theme === 'dark' ? 'var(--wapixo-border)' : 'rgba(255, 255, 255, 0.1)',
@@ -63,10 +63,10 @@ export default function WapixoFooter({ data = {} }) {
                 </div>
 
                 <div className="border-t border-[var(--wapixo-border)] pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
-                    <p className="font-['Inter'] font-light text-[0.75rem] opacity-50">
+                    <p className="font-['Inter'] font-light text-[0.75rem] opacity-80">
                         © {new Date().getFullYear()} Wapixo. {copyright}
                     </p>
-                    <p className="font-['Inter'] font-extralight text-[0.7rem] opacity-30 tracking-[0.2em] uppercase">
+                    <p className="font-['Inter'] font-extralight text-[0.7rem] opacity-80 tracking-[0.2em] uppercase">
                         {powering}
                     </p>
                 </div>

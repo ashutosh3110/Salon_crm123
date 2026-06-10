@@ -72,7 +72,7 @@ export default function AppShowcase({ data }) {
             if (res.data?.data?.app_links) {
                 setAppLinks(res.data.data.app_links);
             }
-        }).catch(() => {});
+        }).catch(() => { });
     }, []);
 
     const sectionBg = theme === 'dark'
@@ -84,7 +84,7 @@ export default function AppShowcase({ data }) {
     const headlinePart1 = data?.headline_part1 || 'Book. Discover.';
     const headlinePart2 = data?.headline_part2 || 'Enjoy.';
     const desc = data?.desc || 'Give your clients the luxury experience they deserve — premium bookings, curated services, and exclusive membership plans, all in one elegant app.';
-    
+
     const imageUrl1 = data?.image_url_1 ? getImageUrl(data.image_url_1) : '/image1.png';
     const imageUrl2 = data?.image_url_2 ? getImageUrl(data.image_url_2) : '/image1.png';
     const imageUrl3 = data?.image_url_3 ? getImageUrl(data.image_url_3) : '/image1.png';
@@ -211,25 +211,25 @@ export default function AppShowcase({ data }) {
                         </p>
 
                         <h2 style={{
-                            fontFamily: "'Libre Baskerville', serif",
-                            fontWeight: 400,
-                            fontSize: 'clamp(2rem, 4vw, 3.5rem)',
+                            fontFamily: "'Inter', sans-serif",
+                            fontWeight: 200,
+                            fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)',
                             color: 'var(--wapixo-text)',
-                            lineHeight: 1.1,
-                            letterSpacing: '-0.02em',
+                            lineHeight: 1.05,
+                            letterSpacing: '-0.035em',
                             marginBottom: '1.25rem',
                         }}>
                             {headlinePart1} <br />
-                            <em>{headlinePart2}</em>
+                            <span style={{ fontWeight: 500 }}>{headlinePart2}</span>
                         </h2>
 
                         <p style={{
                             fontFamily: "'Inter', sans-serif",
-                            fontSize: '1.05rem',
+                            fontSize: '1rem',
                             fontWeight: 300,
                             color: 'var(--wapixo-text-muted)',
-                            lineHeight: 1.75,
-                            maxWidth: '440px',
+                            lineHeight: 1.7,
+                            maxWidth: '420px',
                             marginBottom: '2.5rem',
                         }}>
                             {desc}

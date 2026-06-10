@@ -36,7 +36,7 @@ export default function WapixoBlog() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '60px' }}>
                 <div>
                     <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4em' }}>The Journal</span>
-                    <h2 style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 200, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', marginTop: '1rem' }}>Latest Insights.</h2>
+                    <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)', color: 'var(--wapixo-text)', letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 1.25rem 0' }}>Latest Insights.</h2>
                 </div>
                 <button 
                     onClick={() => navigate('/blog')}
