@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Calendar, Scissors, Crown, Star, Download, Smartphone } from 'lucide-react';
 import { getImageUrl } from '../../../utils/imageUtils';
+import api from '../../../services/api';
 
 /* ─── Reusable Phone Frame ─────────────────────────────────────── */
 function PhoneFrame({ style, className = '', imgSrc }) {

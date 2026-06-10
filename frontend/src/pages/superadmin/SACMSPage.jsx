@@ -94,7 +94,6 @@ const INITIAL_CMS_DATA = {
         { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all features for 14 days. No credit card is required to start.' },
         { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. Wapixo is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
     ],
-<<<<<<< HEAD
     landing_faq_cta: {
         text: 'Still have questions? Our experts are here to guide you.',
         button_text: 'Contact Support'
@@ -120,7 +119,7 @@ const INITIAL_CMS_DATA = {
         subtitle: 'Comfort meets Control.',
         primary_cta: 'Experience Wapixo',
         secondary_cta: 'Sign In'
-=======
+    },
     app_links: {
         admin_app: '',
         staff_app: '',
@@ -128,7 +127,6 @@ const INITIAL_CMS_DATA = {
         admin_ios: '',
         staff_ios: '',
         customer_ios: '',
->>>>>>> b88dff7a9622a3b8bb06bf092c4a63f8f8901359
     }
 };
 
