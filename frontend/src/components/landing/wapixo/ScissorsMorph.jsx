@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ScissorsMorph() {
+export default function ScissorsMorph({ data }) {
     const videoRef = useRef(null);
 
     useEffect(() => {
@@ -45,15 +45,14 @@ export default function ScissorsMorph() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                     <p className="text-sm font-semibold tracking-[0.4em] text-[#B4912B] uppercase mb-6">
-                        Crafted for Artists
+                        {data?.overline || 'Crafted for Artists'}
                     </p>
                     <h2 className="text-4xl md:text-6xl lg:text-7xl font-light text-white text-white-force font-serif leading-tight">
-                        Precision Tools for <br />
-                        <span className="italic">The Modern Artist.</span>
+                        {data?.title || 'Precision Tools for'} <br />
+                        <span className="italic">{data?.subtitle || 'The Modern Artist.'}</span>
                     </h2>
                     <p className="mt-8 text-lg md:text-xl text-white/60 text-white-muted-force font-light max-w-2xl mx-auto">
-                        Elevate your craft with the industry's most refined equipment. 
-                        Performance meet elegance in every cut and style.
+                        {data?.desc || "Elevate your craft with the industry's most refined equipment. Performance meet elegance in every cut and style."}
                     </p>
                 </motion.div>
 

@@ -67,9 +67,9 @@ export default function LandingPage() {
                 <div className="new-theme" style={{ minHeight: '100vh', position: 'relative' }}>
                     <WapixoNavbar />
                     <AnimatedHero data={cmsData?.landing_hero} />
-                    <AppShowcase />
-                    <Features data={cmsData?.landing_features} />
-                    <ScissorsMorph />
+                    <AppShowcase data={cmsData?.landing_app_showcase} />
+                    <Features data={cmsData?.landing_features} statsData={cmsData?.landing_stats} />
+                    <ScissorsMorph data={cmsData?.landing_scissors_morph} />
                     <WapixoSolutions
                         data={cmsData?.landing_solutions}
                         header={cmsData?.landing_solutions_header}
@@ -77,8 +77,8 @@ export default function LandingPage() {
                     <WapixoPricing />
                     <WapixoBlog />
                     <WapixoTestimonials data={testimonials} />
-                    <WapixoFAQ data={cmsData?.landing_faqs} />
-                    <ChairSection />
+                    <WapixoFAQ data={cmsData?.landing_faqs} ctaData={cmsData?.landing_faq_cta} />
+                    <ChairSection data={cmsData?.landing_chair_section} />
                     <WapixoFooter data={cmsData?.site_footer} />
                 </div>
             </SmoothScroll>

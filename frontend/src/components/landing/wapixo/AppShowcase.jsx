@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
 import { Calendar, Scissors, Crown, Star, Download, Smartphone } from 'lucide-react';
+import { getImageUrl } from '../../../utils/imageUtils';
 
 /* ─── Reusable Phone Frame ─────────────────────────────────────── */
 function PhoneFrame({ style, className = '', imgSrc }) {
@@ -59,13 +60,24 @@ const features = [
 ];
 
 /* ─── Main Component ─────────────────────────────────────────── */
-export default function AppShowcase() {
+export default function AppShowcase({ data }) {
     const { theme } = useTheme();
     const [activeIndex, setActiveIndex] = useState(0);
 
     const sectionBg = theme === 'dark'
         ? 'radial-gradient(circle at 20% 50%, #0d0d0d, #050505)'
         : 'radial-gradient(circle at 20% 50%, #fdf9f4, #ffffff)';
+
+    // Fallbacks
+    const overline = data?.overline || 'Customer Mobile App';
+    const headlinePart1 = data?.headline_part1 || 'Book. Discover.';
+    const headlinePart2 = data?.headline_part2 || 'Enjoy.';
+    const desc = data?.desc || 'Give your clients the luxury experience they deserve — premium bookings, curated services, and exclusive membership plans, all in one elegant app.';
+    
+    const imageUrl1 = data?.image_url_1 ? getImageUrl(data.image_url_1) : '/image1.png';
+    const imageUrl2 = data?.image_url_2 ? getImageUrl(data.image_url_2) : '/image1.png';
+    const imageUrl3 = data?.image_url_3 ? getImageUrl(data.image_url_3) : '/image1.png';
+    const images = [imageUrl1, imageUrl2, imageUrl3];
 
     // Cycle images every 4 seconds
     useEffect(() => {
@@ -145,7 +157,7 @@ export default function AppShowcase() {
                                         }}
                                     >
                                         <PhoneFrame
-                                            imgSrc="/image1.png"
+                                            imgSrc={images[i]}
                                             style={isActive ? {
                                                 width: '240px',
                                                 border: '9px solid #111',
@@ -184,7 +196,7 @@ export default function AppShowcase() {
                             textTransform: 'uppercase',
                             marginBottom: '1rem',
                         }}>
-                            Customer Mobile App
+                            {overline}
                         </p>
 
                         <h2 style={{
@@ -196,8 +208,8 @@ export default function AppShowcase() {
                             letterSpacing: '-0.02em',
                             marginBottom: '1.25rem',
                         }}>
-                            Book. Discover. <br />
-                            <em>Enjoy.</em>
+                            {headlinePart1} <br />
+                            <em>{headlinePart2}</em>
                         </h2>
 
                         <p style={{
@@ -209,8 +221,7 @@ export default function AppShowcase() {
                             maxWidth: '440px',
                             marginBottom: '2.5rem',
                         }}>
-                            Give your clients the luxury experience they deserve — premium bookings,
-                            curated services, and exclusive membership plans, all in one elegant app.
+                            {desc}
                         </p>
 
                         <ul style={{

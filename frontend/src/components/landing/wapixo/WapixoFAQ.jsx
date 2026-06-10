@@ -89,11 +89,14 @@ const FAQItem = ({ faq, isOpen, toggle }) => {
     );
 };
 
-export default function WapixoFAQ({ data }) {
+export default function WapixoFAQ({ data, ctaData }) {
     const { theme } = useTheme();
     const [openId, setOpenId] = useState(data?.[0]?.id || 1);
 
     const displayFaqs = (data && data.length > 0) ? data : faqs;
+    
+    const ctaText = ctaData?.text || 'Still have questions? Our experts are here to guide you.';
+    const ctaButtonText = ctaData?.button_text || 'Contact Support';
 
     return (
         <section style={{
@@ -158,7 +161,7 @@ export default function WapixoFAQ({ data }) {
                     }}
                 >
                     <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 400 }}>
-                        Still have questions? Our experts are here to guide you.
+                        {ctaText}
                     </p>
                     <button style={{
                         background: 'var(--wapixo-primary)',
@@ -183,7 +186,7 @@ export default function WapixoFAQ({ data }) {
                             e.currentTarget.style.boxShadow = '0 4px 15px rgba(180, 145, 43, 0.2)';
                         }}
                     >
-                        Contact Support
+                        {ctaButtonText}
                     </button>
                 </motion.div>
             </div>

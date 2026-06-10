@@ -16,6 +16,9 @@ import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonia
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
+import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
+import ChairSection from '../../components/landing/wapixo/ChairSection';
+import AppShowcase from '../../components/landing/wapixo/AppShowcase';
 import { getImageUrl } from '../../utils/imageUtils';
 
 /* ─── CMS Section/Field Mock Data ────────────────────────────────────── */
@@ -31,6 +34,11 @@ const INITIAL_CMS_DATA = {
         stat1_value: '500+', stat1_label: 'Salons',
         stat2_value: '50K+', stat2_label: 'Bookings',
         stat3_value: '99.9%', stat3_label: 'Uptime',
+    },
+    landing_stats: {
+        stat1_value: '10K+', stat1_label: 'Salons Worldwide',
+        stat2_value: '98%', stat2_label: 'Client Retention',
+        stat3_value: '3x', stat3_label: 'Revenue Growth'
     },
     landing_solutions_header: {
         overline: 'The Transition',
@@ -85,7 +93,33 @@ const INITIAL_CMS_DATA = {
     landing_faqs: [
         { id: 1, question: 'How does the 14-day free trial work?', answer: 'You get full access to all features for 14 days. No credit card is required to start.' },
         { id: 2, question: 'Can I manage multiple salon locations?', answer: 'Absolutely. Wapixo is built for scale. Whether you have 2 or 200 outlets, you can manage them all.' }
-    ]
+    ],
+    landing_faq_cta: {
+        text: 'Still have questions? Our experts are here to guide you.',
+        button_text: 'Contact Support'
+    },
+    landing_app_showcase: {
+        overline: 'Customer Mobile App',
+        headline_part1: 'Book. Discover.',
+        headline_part2: 'Enjoy.',
+        desc: 'Give your clients the luxury experience they deserve — premium bookings, curated services, and exclusive membership plans, all in one elegant app.',
+        image_url_1: '/image1.png',
+        image_url_2: '/image1.png',
+        image_url_3: '/image1.png'
+    },
+    landing_scissors_morph: {
+        overline: 'Crafted for Artists',
+        title: 'Precision Tools for',
+        subtitle: 'The Modern Artist.',
+        desc: "Elevate your craft with the industry's most refined equipment. Performance meet elegance in every cut and style."
+    },
+    landing_chair_section: {
+        overline: 'Experience Wapixo',
+        headline: 'The Throne of Excellence.',
+        subtitle: 'Comfort meets Control.',
+        primary_cta: 'Experience Wapixo',
+        secondary_cta: 'Sign In'
+    }
 };
 
 const CMS_TABS = [
@@ -161,7 +195,7 @@ export default function SACMSPage() {
         setSaving(true);
         try {
             // Save all sections that are part of INITIAL_CMS_DATA
-            const promises = Object.keys(INITIAL_CMS_DATA).map((section) => 
+            const promises = Object.keys(INITIAL_CMS_DATA).map((section) =>
                 api.patch(`/cms/${section}`, { content: data[section] })
             );
             await Promise.all(promises);
@@ -178,30 +212,76 @@ export default function SACMSPage() {
         setData(prev => ({
             ...prev,
             [page]: {
-                ...prev[page],
+                ...(prev[page] || {}),
                 [field]: value
             }
         }));
     };
 
-    const renderInput = (page, field, label, type = 'text') => (
-        <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">{label}</label>
-            {type === 'textarea' ? (
-                <textarea
-                    className="w-full bg-surface border border-border p-3 text-sm focus:border-[#B4912B] outline-none transition-colors min-h-[100px]"
-                    value={data[page][field]}
-                    onChange={(e) => updateField(page, field, e.target.value)}
-                />
-            ) : (
-                <input
-                    className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
-                    value={data[page][field]}
-                    onChange={(e) => updateField(page, field, e.target.value)}
-                />
-            )}
-        </div>
-    );
+    const handleImageUpload = async (e, page, field) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            const formData = new FormData();
+            formData.append('image', file);
+            const { data: res } = await api.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (res.success && res.url) {
+                updateField(page, field, res.url);
+                showToast("Image uploaded successfully");
+            } else {
+                showToast("Failed to upload image");
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            showToast("Failed to upload image");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const renderInput = (page, field, label, type = 'text') => {
+        const value = data[page]?.[field] ?? INITIAL_CMS_DATA[page]?.[field] ?? '';
+        return (
+            <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">{label}</label>
+                {type === 'textarea' ? (
+                    <textarea
+                        className="w-full bg-surface border border-border p-3 text-sm focus:border-[#B4912B] outline-none transition-colors min-h-[100px]"
+                        value={value}
+                        onChange={(e) => updateField(page, field, e.target.value)}
+                    />
+                ) : type === 'image' ? (
+                    <div className="relative group cursor-pointer" onClick={(e) => e.currentTarget.querySelector('input[type="file"]').click()}>
+                        <input
+                            className="w-full bg-surface border border-border pl-3 pr-10 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                            value={value}
+                            readOnly
+                            placeholder="Click to upload image..."
+                        />
+                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-text-muted group-hover:text-primary transition-colors">
+                            <ImageIcon size={16} />
+                        </div>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => handleImageUpload(e, page, field)}
+                        />
+                    </div>
+                ) : (
+                    <input
+                        className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                        value={value}
+                        onChange={(e) => updateField(page, field, e.target.value)}
+                    />
+                )}
+            </div>
+        );
+    };
 
     return (
         <div className="space-y-6 pb-20 sa-panel">
@@ -228,7 +308,7 @@ export default function SACMSPage() {
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="px-6 py-2.5 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20"
+                        className="px-6 py-2.5 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-[#B4912B]/20"
                     >
                         {saving ? 'Saving...' : <><Save size={14} /> Save Global Changes</>}
                     </button>
@@ -284,7 +364,7 @@ export default function SACMSPage() {
                                     </div>
                                     {renderInput('landing_hero', 'trust_line', 'Trust Line (below CTAs)')}
                                     <div className="pt-4 border-t border-border">
-                                        <div className="text-[10px] font-black text-text-muted uppercase mb-3">Stats (3 values)</div>
+                                        <div className="text-[10px] font-black text-text-muted uppercase mb-3">Hero Stats (3 values)</div>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div className="space-y-2">
                                                 {renderInput('landing_hero', 'stat1_value', 'Stat 1 Value')}
@@ -297,6 +377,41 @@ export default function SACMSPage() {
                                             <div className="space-y-2">
                                                 {renderInput('landing_hero', 'stat3_value', 'Stat 3 Value')}
                                                 {renderInput('landing_hero', 'stat3_label', 'Stat 3 Label')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Capabilities Stats */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-indigo-50 flex items-center justify-center text-primary">
+                                        <BarChart2 size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Capabilities Stats</h2>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    <div className="grid grid-cols-3 gap-6">
+                                        <div className="space-y-4 p-4 border border-border/50 bg-surface/30">
+                                            <div className="text-[10px] font-black text-primary uppercase">Stat 1</div>
+                                            <div className="space-y-3">
+                                                {renderInput('landing_stats', 'stat1_value', 'Value (e.g. 10K+)')}
+                                                {renderInput('landing_stats', 'stat1_label', 'Label')}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4 p-4 border border-border/50 bg-surface/30">
+                                            <div className="text-[10px] font-black text-primary uppercase">Stat 2</div>
+                                            <div className="space-y-3">
+                                                {renderInput('landing_stats', 'stat2_value', 'Value (e.g. 98%)')}
+                                                {renderInput('landing_stats', 'stat2_label', 'Label')}
+                                            </div>
+                                        </div>
+                                        <div className="space-y-4 p-4 border border-border/50 bg-surface/30">
+                                            <div className="text-[10px] font-black text-primary uppercase">Stat 3</div>
+                                            <div className="space-y-3">
+                                                {renderInput('landing_stats', 'stat3_value', 'Value (e.g. 3x)')}
+                                                {renderInput('landing_stats', 'stat3_label', 'Label')}
                                             </div>
                                         </div>
                                     </div>
@@ -325,7 +440,7 @@ export default function SACMSPage() {
                                         <button
                                             onClick={handleSave}
                                             disabled={saving}
-                                            className="px-4 py-2 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                            className="px-4 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
                                         >
                                             {saving ? 'Saving...' : <><Save size={14} /> Save Section</>}
                                         </button>
@@ -337,7 +452,7 @@ export default function SACMSPage() {
                                             <div key={feature.id} className="space-y-4 p-4 border border-border/50 bg-surface/30 relative group">
                                                 <button
                                                     onClick={() => setData(prev => ({ ...prev, landing_features: prev.landing_features.filter((_, i) => i !== idx) }))}
-                                                    className="absolute top-4 right-4 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    className="absolute top-4 right-4 text-text-muted hover:text-red-500 transition-colors"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>
@@ -368,6 +483,130 @@ export default function SACMSPage() {
                                 </div>
                             </section>
 
+                            {/* App Showcase Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-pink-50 flex items-center justify-center text-primary">
+                                        <Smartphone size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">App Showcase Section</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    {renderInput('landing_app_showcase', 'overline', 'Overline Text')}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_app_showcase', 'headline_part1', 'Headline (Line 1)')}
+                                        {renderInput('landing_app_showcase', 'headline_part2', 'Headline (Line 2 - Italic)')}
+                                    </div>
+                                    {renderInput('landing_app_showcase', 'desc', 'Description', 'textarea')}
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {renderInput('landing_app_showcase', 'image_url_1', 'Mobile Screen 1 URL', 'image')}
+                                        {renderInput('landing_app_showcase', 'image_url_2', 'Mobile Screen 2 URL', 'image')}
+                                        {renderInput('landing_app_showcase', 'image_url_3', 'Mobile Screen 3 URL', 'image')}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Scissors Morph Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-indigo-50 flex items-center justify-center text-primary">
+                                        <ImageIcon size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Scissors Morph Banner</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_scissors_morph', 'overline', 'Overline Text')}
+                                        {renderInput('landing_scissors_morph', 'title', 'Title (First Line)')}
+                                    </div>
+                                    {renderInput('landing_scissors_morph', 'subtitle', 'Subtitle (Italicized)')}
+                                    {renderInput('landing_scissors_morph', 'desc', 'Description', 'textarea')}
+                                </div>
+                            </section>
+
+                            {/* Chair Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-orange-50 flex items-center justify-center text-primary">
+                                        <Monitor size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Chair Section (Video Banner)</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    {renderInput('landing_chair_section', 'overline', 'Overline Text')}
+                                    {renderInput('landing_chair_section', 'headline', 'Main Headline')}
+                                    {renderInput('landing_chair_section', 'subtitle', 'Subtitle')}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_chair_section', 'primary_cta', 'Primary Button Text')}
+                                        {renderInput('landing_chair_section', 'secondary_cta', 'Secondary Button Text')}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* FAQ Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
+                                            <HelpCircle size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">Frequently Asked Questions</h2>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                const newFaq = { id: Date.now(), question: 'New Question', answer: 'Answer here...' };
+                                                setData(prev => ({ ...prev, landing_faqs: [...(prev.landing_faqs || []), newFaq] }));
+                                            }}
+                                            className="px-4 py-2 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-2 transition-all"
+                                        >
+                                            <Plus size={14} /> Add FAQ
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="px-4 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                        >
+                                            {saving ? 'Saving...' : <><Save size={14} /> Save Section</>}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    <div className="grid grid-cols-1 gap-6">
+                                        {(data.landing_faqs || []).map((faq, idx) => (
+                                            <div key={faq.id} className="space-y-4 p-4 border border-border/50 bg-surface/30 relative group">
+                                                <button
+                                                    onClick={() => setData(prev => ({ ...prev, landing_faqs: prev.landing_faqs.filter((_, i) => i !== idx) }))}
+                                                    className="absolute top-4 right-4 text-text-muted hover:text-red-500 transition-colors"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                                <div className="text-[10px] font-black text-primary uppercase">FAQ {String(idx + 1).padStart(2, '0')}</div>
+                                                <div className="space-y-3">
+                                                    <input
+                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-sm font-bold focus:border-[#B4912B] outline-none"
+                                                        value={faq.question}
+                                                        onChange={(e) => {
+                                                            const newFaqs = [...data.landing_faqs];
+                                                            newFaqs[idx].question = e.target.value;
+                                                            setData(prev => ({ ...prev, landing_faqs: newFaqs }));
+                                                        }}
+                                                    />
+                                                    <textarea
+                                                        className="w-full bg-transparent border-b border-border/60 py-1 text-[11px] focus:border-[#B4912B] outline-none min-h-[60px] resize-none"
+                                                        value={faq.answer}
+                                                        onChange={(e) => {
+                                                            const newFaqs = [...data.landing_faqs];
+                                                            newFaqs[idx].answer = e.target.value;
+                                                            setData(prev => ({ ...prev, landing_faqs: newFaqs }));
+                                                        }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
 
                         </div>
                     )}
@@ -517,12 +756,12 @@ export default function SACMSPage() {
                                     </div>
                                     <h2 className="text-lg font-bold tracking-tight">Landing Page FAQs</h2>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => {
                                         const newF = [...data.landing_faqs, { id: Date.now(), question: 'New Question?', answer: 'New Answer...' }];
                                         setData(prev => ({ ...prev, landing_faqs: newF }));
                                     }}
-                                    className="px-4 py-2 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 shadow-lg shadow-[#B4912B]/20"
+                                    className="px-4 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] transition-all flex items-center gap-2 shadow-lg shadow-[#B4912B]/20"
                                 >
                                     <Plus size={14} /> Add FAQ
                                 </button>
@@ -530,12 +769,12 @@ export default function SACMSPage() {
                             <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
                                 {data.landing_faqs.map((faq, idx) => (
                                     <div key={faq.id} className="p-6 border border-border bg-surface/30 relative group">
-                                        <button 
+                                        <button
                                             onClick={() => {
                                                 const newF = data.landing_faqs.filter((_, i) => i !== idx);
                                                 setData(prev => ({ ...prev, landing_faqs: newF }));
                                             }}
-                                            className="absolute top-4 right-4 text-text-muted hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                                            className="absolute top-4 right-4 text-text-muted hover:text-red-500 transition-colors"
                                         >
                                             <Trash2 size={16} />
                                         </button>
@@ -568,6 +807,15 @@ export default function SACMSPage() {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* FAQ CTA Configuration */}
+                            <div className="bg-white p-8 border border-border mt-6">
+                                <h3 className="text-sm font-bold tracking-tight mb-4 uppercase">CTA Section Configuration</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {renderInput('landing_faq_cta', 'text', 'CTA Text')}
+                                    {renderInput('landing_faq_cta', 'button_text', 'Button Text')}
+                                </div>
+                            </div>
                         </section>
                     )}
 
@@ -592,7 +840,7 @@ export default function SACMSPage() {
                                             <div key={review._id} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 border border-border/60 bg-white shadow-sm">
                                                 <div className="flex gap-4">
                                                     {review.image && (
-                                                        <img 
+                                                        <img
                                                             src={getImageUrl(review.image)}
                                                             alt={review.name}
                                                             className="w-12 h-12 rounded-full object-cover border border-border"
@@ -602,11 +850,10 @@ export default function SACMSPage() {
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <span className="font-bold text-sm text-text">{review.name}</span>
                                                             <span className="text-[10px] bg-surface px-2 py-0.5 rounded text-text-muted">{review.role}</span>
-                                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${
-                                                                review.status === 'approved' ? 'bg-green-100 text-green-700' :
+                                                            <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded ${review.status === 'approved' ? 'bg-green-100 text-green-700' :
                                                                 review.status === 'rejected' ? 'bg-red-100 text-red-700' :
-                                                                'bg-amber-100 text-amber-700'
-                                                            }`}>
+                                                                    'bg-amber-100 text-amber-700'
+                                                                }`}>
                                                                 {review.status}
                                                             </span>
                                                         </div>
@@ -618,10 +865,10 @@ export default function SACMSPage() {
                                                         <p className="text-sm text-text-muted">"{review.content}"</p>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="flex gap-2">
                                                     {review.status !== 'approved' && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleUpdateReviewStatus(review._id, 'approved')}
                                                             className="px-4 py-2 bg-green-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-green-600 transition-colors"
                                                         >
@@ -629,7 +876,7 @@ export default function SACMSPage() {
                                                         </button>
                                                     )}
                                                     {review.status !== 'rejected' && (
-                                                        <button 
+                                                        <button
                                                             onClick={() => handleUpdateReviewStatus(review._id, 'rejected')}
                                                             className="px-4 py-2 bg-red-500 text-white text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-colors"
                                                         >
@@ -659,16 +906,20 @@ export default function SACMSPage() {
                                     <span className="text-[8px] font-bold text-emerald-500 uppercase tracking-widest">Real-time Sync</span>
                                 </div>
                             </div>
-                            
+
                             {/* Preview Window Container */}
                             <div className="bg-white border border-border/20 rounded-sm overflow-hidden h-[600px] shadow-inner relative group">
                                 <div className="absolute top-0 left-0 overflow-y-auto custom-scrollbar scale-[0.5] origin-top-left w-[200%] h-[200%] pb-40">
                                     <div className="new-theme pointer-events-none min-h-full" style={{ background: 'var(--wapixo-bg, #ffffff)' }}>
-                                {/* ── LANDING TAB preview ── */}
+                                        {/* ── LANDING TAB preview ── */}
                                         {activeTab === 'landing' && (
                                             <div className="space-y-0 w-full">
-                                                {data.landing_hero && <AnimatedHero data={data.landing_hero} />}
-                                                {data.landing_features && <Features data={data.landing_features} />}
+                                                <AnimatedHero data={data.landing_hero} />
+                                                <AppShowcase data={data.landing_app_showcase} />
+                                                {data.landing_features && <Features data={data.landing_features} statsData={data.landing_stats} />}
+                                                <ScissorsMorph data={data.landing_scissors_morph} />
+                                                {data.landing_faqs && <WapixoFAQ data={data.landing_faqs} ctaData={data.landing_faq_cta} />}
+                                                <ChairSection data={data.landing_chair_section} />
                                                 {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
                                             </div>
                                         )}
@@ -716,7 +967,11 @@ export default function SACMSPage() {
                                         )}
                                         {/* ── FAQS TAB preview ── */}
                                         {activeTab === 'faqs' && data.landing_faqs && (
-                                            <WapixoFAQ data={data.landing_faqs} />
+                                            <WapixoFAQ data={data.landing_faqs} ctaData={data.landing_faq_cta} />
+                                        )}
+                                        {/* ── REVIEWS TAB preview ── */}
+                                        {activeTab === 'reviews' && data.landing_testimonials && (
+                                            <WapixoTestimonials data={data.landing_testimonials} />
                                         )}
                                     </div>
                                 </div>

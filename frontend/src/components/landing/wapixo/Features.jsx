@@ -47,18 +47,28 @@ const itemVariants = {
     visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: 'easeOut' } },
 };
 
-export default function Features({ data }) {
+export default function Features({ data, statsData }) {
     const { theme } = useTheme();
     // Merge static icons with dynamic content if data exists
     const defaultIcons = [Calendar, BarChart3, Users, Sparkles, Clock, Shield];
-    
-    const displayFeatures = data && data.length > 0 
+
+    const displayFeatures = data && data.length > 0
         ? data.map((item, i) => ({
             icon: defaultIcons[i % defaultIcons.length],
             title: item.title,
             desc: item.desc
-        })) 
+        }))
         : features;
+
+    const statsToDisplay = statsData ? [
+        { value: statsData.stat1_value || '10K+', label: statsData.stat1_label || 'Salons Worldwide' },
+        { value: statsData.stat2_value || '98%', label: statsData.stat2_label || 'Client Retention' },
+        { value: statsData.stat3_value || '3x', label: statsData.stat3_label || 'Revenue Growth' },
+    ] : [
+        { value: '10K+', label: 'Salons Worldwide' },
+        { value: '98%', label: 'Client Retention' },
+        { value: '3x', label: 'Revenue Growth' },
+    ];
 
     return (
         <section
@@ -204,11 +214,7 @@ export default function Features({ data }) {
                     flexWrap: 'wrap',
                 }}
             >
-                {[
-                    { value: '10K+', label: 'Salons Worldwide' },
-                    { value: '98%', label: 'Client Retention' },
-                    { value: '3x', label: 'Revenue Growth' },
-                ].map(({ value, label }) => (
+                {statsToDisplay.map(({ value, label }) => (
                     <div key={label} style={{ textAlign: 'center' }}>
                         <div style={{
                             fontFamily: "'Inter', sans-serif",

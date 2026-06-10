@@ -3,8 +3,14 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 
-export default function ChairSection() {
+export default function ChairSection({ data }) {
     const videoRef = useRef(null);
+
+    const overline = data?.overline || "Experience Wapixo";
+    const headline = data?.headline || "The Throne of Excellence.";
+    const subtitle = data?.subtitle || "Comfort meets Control.";
+    const primaryCta = data?.primary_cta || "Experience Wapixo";
+    const secondaryCta = data?.secondary_cta || "Sign In";
 
     useEffect(() => {
         if (videoRef.current) {
@@ -64,6 +70,7 @@ export default function ChairSection() {
                 }}
             >
                 <motion.p
+                    className="text-white-force"
                     initial={{ opacity: 0 }}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
@@ -72,13 +79,12 @@ export default function ChairSection() {
                         fontFamily: "'Inter', sans-serif",
                         fontWeight: 700,
                         fontSize: 'clamp(0.65rem, 1.2vw, 0.85rem)',
-                        color: 'var(--wapixo-primary)',
                         letterSpacing: '0.45em',
                         textTransform: 'uppercase',
                         margin: '0 0 1.5rem 0',
                     }}
                 >
-                    Experience Wapixo
+                    {overline}
                 </motion.p>
 
                 <h2 className="text-white-force" style={{
@@ -90,7 +96,7 @@ export default function ChairSection() {
                     lineHeight: 1.05,
                     margin: '0 0 1rem 0',
                 }}>
-                    The Throne of Excellence.
+                    {headline}
                 </h2>
 
                 <p className="text-white-muted-force" style={{
@@ -101,7 +107,7 @@ export default function ChairSection() {
                     margin: '0 0 3rem 0',
                     letterSpacing: '0.02em',
                 }}>
-                    Comfort meets Control.
+                    {subtitle}
                 </p>
 
                 <motion.div
@@ -129,7 +135,7 @@ export default function ChairSection() {
                                 boxShadow: '0 10px 20px rgba(180, 145, 43, 0.2)'
                             }}
                         >
-                            Experience Wapixo
+                            {primaryCta}
                             <ArrowRight size={16} />
                         </motion.button>
                     </Link>
@@ -153,7 +159,7 @@ export default function ChairSection() {
                                 transition: 'all 0.3s ease',
                             }}
                         >
-                            Sign In
+                            {secondaryCta}
                         </motion.button>
                     </Link>
                 </motion.div>

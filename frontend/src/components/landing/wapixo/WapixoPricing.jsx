@@ -503,7 +503,7 @@ export default function WapixoPricing() {
                                     {/* CTA Button */}
                                     <Link
                                         to="/register"
-                                        className="pricing-cta-btn"
+                                        className={`pricing-cta-btn ${isPopular ? 'text-white-force icon-white-outline-force' : ''}`}
                                         style={{
                                             display: 'flex',
                                             alignItems: 'center',
