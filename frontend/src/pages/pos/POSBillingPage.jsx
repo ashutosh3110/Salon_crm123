@@ -3730,12 +3730,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient, openStaffIdx, qFilteredStaff, qFocusedStaffIndex]);
 
     return (
-        <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-0 sm:p-2 overflow-hidden">
+        <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:p-4 overflow-hidden">
             <motion.div
                 initial={{ opacity: 0, scale: 0.97, y: 16 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full max-w-[99vw] h-full sm:h-[97vh] shadow-2xl flex flex-col sm:rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E]"
+                className="w-full max-w-[99vw] h-[calc(100dvh-max(2.5rem,env(safe-area-inset-bottom)))] sm:h-[95dvh] shadow-2xl flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E]"
                 style={{ fontFamily: 'inherit' }}
             >
                 <style>{`
