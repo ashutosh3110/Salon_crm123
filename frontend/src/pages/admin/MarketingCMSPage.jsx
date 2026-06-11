@@ -751,9 +751,9 @@ export default function MarketingCMSPage() {
 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl border border-border shadow-2xl relative overflow-hidden"
+                            className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl border border-border shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
                         >
-                            <div className="p-5">
+                            <div className="p-5 overflow-y-auto overflow-x-hidden">
                                 <div className="px-6 py-4 border-b border-border flex items-center justify-between mx-[-1.25rem] mt-[-1.25rem] mb-4 bg-slate-50 dark:bg-slate-800/40 rounded-t-2xl">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${
