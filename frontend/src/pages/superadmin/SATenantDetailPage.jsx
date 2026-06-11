@@ -54,6 +54,12 @@ export default function SATenantDetailPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [selectedTenant, setSelectedTenant] = useState(null);
     const [isStateDropdownOpen, setIsStateDropdownOpen] = useState(false);
+    const [plans, setPlans] = useState([]);
+    const [subForm, setSubForm] = useState({
+        subscriptionPlan: '',
+        subscriptionExpiry: ''
+    });
+    const [isGrantingSub, setIsGrantingSub] = useState(false);
     const [fiscalForm, setFiscalForm] = useState({
         state: '',
         stateCode: '',
@@ -79,7 +85,45 @@ export default function SATenantDetailPage() {
 
     useEffect(() => {
         fetchTenant();
+        fetchPlans();
     }, [id]);
+
+    useEffect(() => {
+        if (selectedTenant) {
+            setSubForm({
+                subscriptionPlan: selectedTenant.subscriptionPlan || '',
+                subscriptionExpiry: selectedTenant.subscriptionExpiry ? new Date(selectedTenant.subscriptionExpiry).toISOString().split('T')[0] : ''
+            });
+        }
+    }, [selectedTenant]);
+
+    const fetchPlans = async () => {
+        try {
+            const res = await api.get('/plans');
+            const data = res.data.data;
+            const list = Array.isArray(data) ? data : data.results || [];
+            setPlans(list);
+        } catch (error) {
+            console.error('Error fetching plans:', error);
+        }
+    };
+
+    const handleUpdateSubscription = async () => {
+        setIsGrantingSub(true);
+        try {
+            await api.put(`/salons/${id}`, {
+                subscriptionPlan: subForm.subscriptionPlan,
+                subscriptionExpiry: subForm.subscriptionExpiry || null
+            });
+            showToast('Subscription updated successfully');
+            fetchTenant();
+        } catch (error) {
+            console.error('Error updating subscription:', error);
+            showToast('Failed to update subscription', 'error');
+        } finally {
+            setIsGrantingSub(false);
+        }
+    };
 
     const fetchTenant = async () => {
         setLoading(true);
@@ -371,11 +415,75 @@ export default function SATenantDetailPage() {
                                 </div>
                                 
                                 {(!selectedTenant.subscriptionPlan || selectedTenant.subscriptionPlan.toLowerCase() === 'free' || selectedTenant.subscriptionPlan.toLowerCase() === 'none') ? (
-                                    <div className="text-center py-16 bg-surface rounded-2xl border border-dashed border-border">
-                                        <AlertTriangle className="w-12 h-12 text-orange-400 mx-auto mb-4 opacity-80" />
-                                        <h4 className="text-lg font-black text-text uppercase tracking-tight">No Active Subscription</h4>
-                                        <p className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-widest">This salon is currently on the free tier or trial period.</p>
-                                    </div>
+                                    <>
+                                        <div className="text-center py-16 bg-surface rounded-2xl border border-dashed border-border">
+                                            <AlertTriangle className="w-12 h-12 text-orange-400 mx-auto mb-4 opacity-80" />
+                                            <h4 className="text-lg font-black text-text uppercase tracking-tight">No Active Subscription</h4>
+                                            <p className="text-[10px] font-bold text-text-muted mt-2 uppercase tracking-widest">This salon is currently on the free tier or trial period.</p>
+                                        </div>
+
+                                        {/* Grant/Modify Subscription Form */}
+                                        <div className="p-8 rounded-2xl bg-surface border border-border space-y-6 mt-8">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-1 h-5 bg-[#B4912B] rounded-full" />
+                                                <h4 className="text-sm font-black text-text uppercase tracking-tight">Grant / Modify Subscription</h4>
+                                            </div>
+                                            <div className="grid sm:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Select Plan</label>
+                                                    <select
+                                                        value={subForm.subscriptionPlan}
+                                                        onChange={(e) => {
+                                                            const planName = e.target.value;
+                                                            const selectedPlan = plans.find(p => p.name === planName);
+                                                            let expiryDate = '';
+                                                            if (selectedPlan) {
+                                                                const d = new Date();
+                                                                if (selectedPlan.billingCycle === 'yearly') {
+                                                                    d.setFullYear(d.getFullYear() + 1);
+                                                                } else {
+                                                                    d.setMonth(d.getMonth() + 1);
+                                                                }
+                                                                expiryDate = d.toISOString().split('T')[0];
+                                                            }
+                                                            setSubForm({
+                                                                ...subForm,
+                                                                subscriptionPlan: planName,
+                                                                subscriptionExpiry: expiryDate
+                                                            });
+                                                        }}
+                                                        className="w-full h-12 px-4 rounded-xl border border-slate-300 shadow-sm text-xs font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-white"
+                                                    >
+                                                        <option value="">No Active Plan (Trial / Free)</option>
+                                                        <option value="none">None</option>
+                                                        {plans.map(p => (
+                                                            <option key={p._id} value={p.name}>{p.name.toUpperCase()} (₹{p.price}/{p.billingCycle})</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Expiration Date</label>
+                                                    <input
+                                                        type="date"
+                                                        value={subForm.subscriptionExpiry}
+                                                        onChange={(e) => setSubForm({ ...subForm, subscriptionExpiry: e.target.value })}
+                                                        className="w-full h-12 px-4 rounded-xl border border-slate-300 shadow-sm text-xs font-bold focus:border-[#B4912B] focus:ring-4 focus:ring-primary/5 outline-none transition-all bg-white"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="flex justify-end pt-2">
+                                                <motion.button
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    onClick={handleUpdateSubscription}
+                                                    disabled={isGrantingSub}
+                                                    className="px-6 py-3 rounded-xl !bg-gradient-to-r !from-[#B4912B] !to-[#D4AF37] !text-white text-[11px] font-black uppercase tracking-widest shadow-lg shadow-[#B4912B]/35 hover:!from-[#8B6F23] hover:!to-[#B4912B] transition-all disabled:opacity-50 whitespace-nowrap"
+                                                >
+                                                    {isGrantingSub ? 'Updating...' : 'Update Subscription'}
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </>
                                 ) : (
                                     <div className="grid md:grid-cols-3 gap-6">
                                         <div className="p-8 rounded-2xl bg-indigo-50 border border-indigo-100 space-y-4">

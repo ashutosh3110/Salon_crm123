@@ -2512,3 +2512,12 @@ svg[viewBox="0 0 100 40"] path,
 svg[viewBox="0 0 100 40"] circle {
   stroke: unset !important;
 }
+
+/* Custom override to force graph curve lines to be gold */
+.recharts-wrapper svg path.recharts-curve,
+.recharts-wrapper svg path.recharts-area-curve,
+.recharts-wrapper svg path.recharts-line-curve,
+.recharts-wrapper .recharts-curve,
+.recharts-curve {
+  stroke: #B4912B !important;
+}

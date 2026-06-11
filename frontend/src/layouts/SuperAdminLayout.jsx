@@ -730,8 +730,8 @@ export default function SuperAdminLayout() {
 
                 /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
                 /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes */
-                html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
-                html:not(.dark) .sa-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
+                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
+                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
                     color: #1e293b !important;
                     stroke: #1e293b !important;
                 }

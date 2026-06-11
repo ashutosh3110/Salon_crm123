@@ -64,7 +64,7 @@ const statusColors = {
 
 export default function StaffPage() {
     const { user } = useAuth();
-    const { staff, staffLoading, outlets, addStaff, updateStaff, deleteStaff, fetchStaff, roles, fetchRoles, platformSettings } = useBusiness();
+    const { staff, staffLoading, outlets, fetchOutlets, addStaff, updateStaff, deleteStaff, fetchStaff, roles, fetchRoles, platformSettings } = useBusiness();
     const { pendingExpertsCount } = useCMS();
     const navigate = useNavigate();
     const [filteredStaff, setFilteredStaff] = useState(staff);
@@ -73,7 +73,8 @@ export default function StaffPage() {
     useEffect(() => {
         fetchStaff();
         fetchRoles();
-    }, [fetchStaff, fetchRoles]);
+        fetchOutlets();
+    }, [fetchStaff, fetchRoles, fetchOutlets]);
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('all');
     const [outletFilter, setOutletFilter] = useState('all');

@@ -94,6 +94,11 @@ const bookingSchema = new mongoose.Schema({
     advancePaid: {
         type: Number,
         default: 0
+    },
+    advancePaymentMethod: {
+        type: String,
+        enum: ['cash', 'online', 'none'],
+        default: 'cash'
     }
 }, {
     timestamps: true

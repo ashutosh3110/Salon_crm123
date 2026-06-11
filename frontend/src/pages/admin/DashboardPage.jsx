@@ -542,7 +542,7 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Line Chart */}
-                        <div className="h-[200px] w-full min-w-0 overflow-hidden mb-5">
+                        <div className="h-[200px] w-full min-w-0 overflow-hidden mb-5 revenue-chart-container">
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                     <defs>
@@ -590,8 +590,8 @@ export default function DashboardPage() {
                                         strokeWidth={3}
                                         fillOpacity={1}
                                         fill="url(#colorRevenue)"
-                                        activeDot={{ r: 6, fill: '#A57C1E', stroke: 'none', strokeWidth: 0 }}
-                                        dot={{ r: 4, fill: '#A57C1E', stroke: 'none', strokeWidth: 0 }}
+                                        activeDot={{ r: 6, fill: '#000000', stroke: '#A57C1E', strokeWidth: 2 }}
+                                        dot={{ r: 4, fill: '#000000', stroke: '#A57C1E', strokeWidth: 1 }}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -629,8 +629,8 @@ export default function DashboardPage() {
                                             ₹{item.value.toLocaleString('en-IN')}
                                         </span>
                                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${isPositive
-                                                ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]'
-                                                : 'bg-rose-50 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400'
+                                            ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]'
+                                            : 'bg-rose-50 dark:bg-rose-950/15 text-rose-600 dark:text-rose-400'
                                             }`}>
                                             {pctText}
                                         </span>
@@ -966,7 +966,5 @@ export default function DashboardPage() {
                 </div>
             )}
         </div>
-    );
-}
     );
 }

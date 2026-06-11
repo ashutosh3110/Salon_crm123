@@ -526,7 +526,7 @@ export default function BookingDetailPage() {
 
                                                 <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold border-t border-dashed border-border/50 pt-2">
                                                     <p className="text-[10px] font-black uppercase tracking-widest">
-                                                        Advance Paid
+                                                        Advance Paid {booking.advancePaid > 0 && booking.advancePaymentMethod && `(${booking.advancePaymentMethod.toUpperCase()})`}
                                                     </p>
                                                     <p className="text-sm font-black italic font-mono">₹{(booking.advancePaid || 0).toFixed(2)}</p>
                                                 </div>

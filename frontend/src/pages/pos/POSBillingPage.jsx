@@ -3827,6 +3827,30 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                     html.dark .qi-wallet-pill { background-color: rgba(16,185,129,0.15) !important; border-color: rgba(16,185,129,0.4) !important; color: #a7f3d0 !important; }
                     html.dark .qi-wallet-pill input { color: #a7f3d0 !important; }
                     html.dark .qi-wallet-pill svg { color: #a7f3d0 !important; }
+
+                    @media (max-height: 640px) {
+                        .qi-kpi { display: none !important; }
+                        .qi-topbar { padding: 0.375rem 1rem !important; gap: 0.375rem !important; }
+                        .qi-topbar label { display: none !important; }
+                        .qi-outlet-btn, .qi-client-input { padding-top: 0.3rem !important; padding-bottom: 0.3rem !important; }
+                        .qi-tab-row button { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; }
+                        .qi-breadcrumb { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+                        .qi-strip { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+                        
+                        .qi-bottom-card { padding: 0.5rem !important; }
+                        .qi-bottom-card .mb-4 { margin-bottom: 0.375rem !important; }
+                        .qi-bottom-card button { padding-top: 0.4rem !important; padding-bottom: 0.4rem !important; margin-bottom: 0.375rem !important; }
+                        .qi-bottom-card .grid-cols-4 > div { padding-top: 0.3rem !important; padding-bottom: 0.3rem !important; }
+                    }
+
+                    @media (max-height: 350px) {
+                        .qi-searchbar { display: none !important; }
+                        .qi-breadcrumb { display: none !important; }
+                        .qi-topbar { padding: 0.25rem 0.5rem !important; gap: 0.25rem !important; }
+                        .qi-outlet-btn, .qi-client-input { padding-top: 0.2rem !important; padding-bottom: 0.2rem !important; }
+                        .qi-tab-row button { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+                        .qi-strip { padding-top: 0.15rem !important; padding-bottom: 0.15rem !important; }
+                    }
                 `}</style>
 
                 {/* Mobile Tab Switcher & Header */}
@@ -4027,7 +4051,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         </div>
 
                         {/* Search bar for services/products */}
-                        <div className="px-5 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 shrink-0">
+                        <div className="qi-searchbar px-5 py-2 border-b border-slate-100 bg-slate-50/50 flex items-center gap-2 shrink-0">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-black dark:text-white" />
                                 <input
