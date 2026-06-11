@@ -560,8 +560,8 @@ export default function StaffDashboardPage() {
                                             ₹{item.value.toLocaleString('en-IN')}
                                         </span>
                                         <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${isPositive
-                                                ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]'
-                                                : 'bg-rose-50 dark:bg-rose-955/15 text-rose-600 dark:text-rose-400'
+                                            ? 'bg-[#ECFDF5] dark:bg-[#059669]/10 text-[#059669] dark:text-[#34D399]'
+                                            : 'bg-rose-50 dark:bg-rose-955/15 text-rose-600 dark:text-rose-400'
                                             }`}>
                                             {pctText}
                                         </span>
@@ -645,5 +645,7 @@ export default function StaffDashboardPage() {
                 </div>
             </div>
         </div>
+    );
+}
     );
 }

@@ -273,10 +273,12 @@
   html:not(.dark) .new-theme footer#contact span {
     color: #ffffff !important;
   }
+
   html:not(.dark) .new-theme footer#contact p.footer-heading,
   html:not(.dark) .new-theme footer#contact a:hover {
     color: #ffffff !important;
   }
+
   html:not(.dark) .new-theme footer#contact .border-t,
   html:not(.dark) .new-theme footer#contact .border-b {
     border-color: rgba(255, 255, 255, 0.1) !important;
@@ -295,12 +297,16 @@
     box-sizing: border-box;
   }
 
-  input, textarea, select {
+  input,
+  textarea,
+  select {
     outline: none !important;
     box-shadow: none;
   }
 
-  input:focus, textarea:focus, select:focus {
+  input:focus,
+  textarea:focus,
+  select:focus {
     outline: none !important;
     box-shadow: none !important;
   }
@@ -2460,7 +2466,8 @@ svg *:focus-visible {
 .recharts-cartesian-axis-tick text {
   stroke: none !important;
   font-weight: 600 !important;
-  fill: #475569 !important; /* Elegant slate gray for light mode */
+  fill: #475569 !important;
+  /* Elegant slate gray for light mode */
 }
 
 /* Ensure bright, highly readable text color inside charts in dark mode */
@@ -2468,7 +2475,8 @@ html.dark .recharts-wrapper text,
 html.dark .recharts-text,
 html.dark .recharts-cartesian-axis-tick-value,
 html.dark .recharts-cartesian-axis-tick text {
-  fill: #cbd5e1 !important; /* Soft white/slate gray for dark mode */
+  fill: #cbd5e1 !important;
+  /* Soft white/slate gray for dark mode */
 }
 
 /* Prevent global SVG stroke rules from adding borders to chart shapes (bars, pie cells, tooltip cursors) */
