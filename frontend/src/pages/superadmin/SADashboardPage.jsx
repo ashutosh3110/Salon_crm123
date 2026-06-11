@@ -440,7 +440,7 @@ export default function SADashboardPage() {
                 {/* Monthly Revenue — AreaChart (spans 2 cols) */}
                 <div
                     onClick={() => navigate('/superadmin/billing')}
-                    className="lg:col-span-2 bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
+                    className="lg:col-span-2 bg-surface rounded-2xl border border-[#B4912B]/20 dark:border-[#B4912B]/15 shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/35 dark:hover:border-[#B4912B]/30 sa-chart-container mrr-chart"
                 >
                     <SectionHeader
                         title="Income Trends"
@@ -454,9 +454,9 @@ export default function SADashboardPage() {
                                     <stop offset="95%" stopColor="#B4912B" stopOpacity={0} />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false}
+                            <CartesianGrid strokeDasharray="3 3" stroke="#B4912B" strokeOpacity={0.07} vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false}
                                 tickFormatter={v => `₹${(v / 1000).toFixed(0)}k`} />
                             <Tooltip content={<CustomTooltip prefix="₹" />} />
                             <Legend wrapperStyle={{ fontSize: 11 }} formatter={(value) => <span className="text-slate-700 dark:text-slate-300 font-bold">{value}</span>} />
@@ -468,7 +468,7 @@ export default function SADashboardPage() {
                 {/* Plan Distribution — PieChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
+                    className="bg-surface rounded-2xl border border-[#B4912B]/20 dark:border-[#B4912B]/15 shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/35 dark:hover:border-[#B4912B]/30 sa-chart-container plan-chart"
                 >
                     <SectionHeader
                         title="Most Popular Plans"
@@ -504,7 +504,7 @@ export default function SADashboardPage() {
                 {/* New Registrations — BarChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
+                    className="bg-surface rounded-2xl border border-[#B4912B]/20 dark:border-[#B4912B]/15 shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/35 dark:hover:border-[#B4912B]/30 sa-chart-container growth-chart"
                 >
                     <SectionHeader
                         title="Salons Joined Recently"
@@ -518,9 +518,9 @@ export default function SADashboardPage() {
                                     <stop offset="100%" stopColor="#8B6F23" />
                                 </linearGradient>
                             </defs>
-                            <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                            <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                            <CartesianGrid strokeDasharray="3 3" stroke="#B4912B" strokeOpacity={0.07} vertical={false} />
+                            <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                            <YAxis tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false} />
                             <Tooltip content={<CustomTooltip suffix=" salons" />} />
                             <Bar dataKey="salons" name="New Salons" fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
                         </BarChart>
@@ -530,7 +530,7 @@ export default function SADashboardPage() {
                 {/* Churn Rate — LineChart */}
                 <div
                     onClick={() => navigate('/superadmin/tenants?status=expired')}
-                    className="bg-surface rounded-2xl border border-border shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/20"
+                    className="bg-surface rounded-2xl border border-[#B4912B]/20 dark:border-[#B4912B]/15 shadow-sm p-5 group hover:shadow-md transition-all cursor-pointer hover:border-[#B4912B]/35 dark:hover:border-[#B4912B]/30 sa-chart-container churn-chart"
                 >
                     <SectionHeader
                         title="Cancellations Rate"
@@ -549,9 +549,9 @@ export default function SADashboardPage() {
                                         <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
-                                <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false}
+                                <CartesianGrid strokeDasharray="3 3" stroke="#B4912B" strokeOpacity={0.07} vertical={false} />
+                                <XAxis dataKey="month" tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false} />
+                                <YAxis tick={{ fontSize: 10, fontWeight: 400, fill: '#64748b' }} axisLine={false} tickLine={false}
                                     tickFormatter={v => `${v}%`} domain={[0, 7]} />
                                 <Tooltip content={<CustomTooltip suffix="%" />} />
                                 <Line type="monotone" dataKey="rate" name="Churn Rate" stroke="#f59e0b" strokeWidth={2.5}

@@ -37,19 +37,22 @@ exports.getBanners = async (req, res) => {
         const cmsData = await Cms.find(query);
         // Merge all banners from found documents
         let banners = cmsData.reduce((acc, curr) => [...acc, ...(curr.content || [])], []);
-        
-        if (lat && lng) {
-            const globalSettings = await Setting.findOne();
-            const globalRadius = globalSettings?.bannerRadius || 20;
+        let filteredBanners = banners;
 
-            banners = banners.filter(b => {
+        if (lat && lng) {
+            filteredBanners = banners.filter(b => {
                 if (!b.location || !b.location.lat) return true; // Keep banners without location targeting
                 const dist = calculateDistance(parseFloat(lat), parseFloat(lng), b.location.lat, b.location.lng);
-                return dist <= globalRadius;
+                const bannerRadius = b.radius || 20;
+                return dist <= bannerRadius;
             });
         }
+
+        if (filteredBanners.length === 0) {
+            filteredBanners = banners.filter(b => b.isDefault);
+        }
         
-        res.json({ success: true, data: banners });
+        res.json({ success: true, data: filteredBanners });
     } catch (error) {
         console.error('getBanners error:', error);
         res.status(500).json({ success: false, message: 'Server error' });

@@ -352,6 +352,23 @@ export default function AppHomePage() {
     }, [activeOutlet]);
 
     useEffect(() => {
+        const savedCoords = localStorage.getItem('wapixo_user_coords');
+        if (!savedCoords && navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                    setUserLocation(coords);
+                    window.location.reload();
+                },
+                (err) => console.log('Location fetch error:', err)
+            );
+        } else if (savedCoords) {
+            setUserLocation(JSON.parse(savedCoords));
+        }
+    }, []);
+
+    useEffect(() => {
         setActiveOutletSlide(0);
     }, [activeOutlet?._id]);
 

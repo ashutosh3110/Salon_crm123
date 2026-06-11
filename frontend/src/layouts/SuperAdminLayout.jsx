@@ -730,10 +730,56 @@ export default function SuperAdminLayout() {
 
                 /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
                 /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes */
-                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
-                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
+                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]):not(.sa-chart-container *),
+                html:not(.dark) .sa-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]):not(.sa-chart-container *) * {
                     color: #1e293b !important;
                     stroke: #1e293b !important;
+                }
+
+                /* --- SUPERADMIN CHARTS: Specific overrides for lines, dots, ticks, and grids --- */
+                /* Mrr/Income chart line and dots */
+                html:not(.dark) .mrr-chart .recharts-curve,
+                html:not(.dark) .mrr-chart path.recharts-curve {
+                    stroke: #B4912B !important;
+                    stroke-width: 2.5px !important;
+                    fill: none !important;
+                }
+                html:not(.dark) .mrr-chart .recharts-area-area,
+                html:not(.dark) .mrr-chart path.recharts-area-area {
+                    stroke: none !important;
+                    fill: url(#revGrad) !important;
+                }
+                html:not(.dark) .mrr-chart .recharts-dot circle,
+                html:not(.dark) .mrr-chart .recharts-area-dot circle {
+                    fill: #B4912B !important;
+                    stroke: #ffffff !important;
+                }
+                /* Churn chart line */
+                html:not(.dark) .churn-chart .recharts-curve,
+                html:not(.dark) .churn-chart path.recharts-curve {
+                    stroke: #f59e0b !important;
+                    stroke-width: 2.5px !important;
+                    fill: none !important;
+                }
+                /* General ticks, text, and grids inside sa-chart-container */
+                .sa-chart-container .recharts-text,
+                .sa-chart-container .recharts-cartesian-axis-tick-value,
+                .sa-chart-container text,
+                .sa-chart-container tspan {
+                    fill: #94a3b8 !important;
+                    stroke: none !important;
+                    font-weight: 400 !important;
+                    font-size: 10px !important;
+                }
+                html:not(.dark) .sa-chart-container .recharts-cartesian-grid-horizontal line,
+                html:not(.dark) .sa-chart-container .recharts-cartesian-grid line {
+                    stroke: #B4912B !important;
+                    stroke-opacity: 0.1 !important;
+                }
+                html:not(.dark) .sa-chart-container .recharts-cartesian-axis-line {
+                    stroke: #B4912B !important;
+                    stroke-width: 1px !important;
+                    opacity: 0.25 !important;
                 }
 
                 /* Respect inline style colors or strokes, but ensure children paths inherit them properly */
