@@ -1222,7 +1222,7 @@ export default function AdminLayout() {
                 }
 
                 /* Fix dark mode: recharts text fill for axis ticks */
-                .admin-panel .recharts-text tspan {
+                .dark .admin-panel .recharts-text tspan {
                     fill: currentColor !important;
                 }
 
@@ -1241,11 +1241,64 @@ export default function AdminLayout() {
                 }
 
                  /* --- BULLETPROOF LIGHT MODE SVG COLOR & STROKE VISIBILITY SYSTEM --- */
-                /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes */
-                html:not(.dark) .admin-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]),
-                html:not(.dark) .admin-panel svg:not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]) * {
+                /* By default, force all SVG icons and their paths to be dark slate/black in light mode for 100% visibility, EXCEPT those with inline style colors/strokes or text/stroke classes, and charts */
+                html:not(.dark) .admin-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]):not(.revenue-chart-container *),
+                html:not(.dark) .admin-panel svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-"]):not([class*="stroke-"]):not(.revenue-chart-container *) * {
                     color: #1e293b !important;
                     stroke: #1e293b !important;
+                }
+
+                /* --- REVENUE CHART: Force golden line in BOTH light and dark mode --- */
+                /* This MUST come after the dark override above to win via CSS cascade */
+                html:not(.dark) .revenue-chart-container .recharts-surface,
+                html:not(.dark) .revenue-chart-container .recharts-surface * {
+                    color: unset !important;
+                    stroke: unset !important;
+                }
+                html:not(.dark) .revenue-chart-container .recharts-area-curve,
+                html:not(.dark) .revenue-chart-container path.recharts-area-curve,
+                html:not(.dark) .revenue-chart-container .recharts-curve,
+                html:not(.dark) .revenue-chart-container path.recharts-curve {
+                    stroke: #B4912B !important;
+                    stroke-width: 2.5px !important;
+                    fill: none !important;
+                }
+                html:not(.dark) .revenue-chart-container .recharts-area-area,
+                html:not(.dark) .revenue-chart-container path.recharts-area-area {
+                    stroke: none !important;
+                    fill: url(#colorRevenue) !important;
+                }
+                html:not(.dark) .revenue-chart-container .recharts-dot circle,
+                html:not(.dark) .revenue-chart-container .recharts-area-dot circle {
+                    fill: #B4912B !important;
+                    stroke: #ffffff !important;
+                }
+                html:not(.dark) .revenue-chart-container .recharts-cartesian-axis-line {
+                    stroke: #B4912B !important;
+                    stroke-width: 1px !important;
+                    opacity: 0.35 !important;
+                }
+                html:not(.dark) .revenue-chart-container .recharts-cartesian-grid-horizontal line,
+                html:not(.dark) .revenue-chart-container .recharts-cartesian-grid line {
+                    stroke: #B4912B !important;
+                    stroke-opacity: 0.12 !important;
+                }
+                .revenue-chart-container .recharts-text,
+                .revenue-chart-container .recharts-cartesian-axis-tick-value,
+                .revenue-chart-container text,
+                .revenue-chart-container tspan,
+                .finance-chart-container .recharts-text,
+                .finance-chart-container .recharts-cartesian-axis-tick-value,
+                .finance-chart-container text,
+                .finance-chart-container tspan,
+                .sales-chart-container .recharts-text,
+                .sales-chart-container .recharts-cartesian-axis-tick-value,
+                .sales-chart-container text,
+                .sales-chart-container tspan {
+                    fill: #94a3b8 !important;
+                    stroke: none !important;
+                    font-weight: 400 !important;
+                    font-size: 10px !important;
                 }
 
                 /* Respect inline style colors or strokes, but ensure children paths inherit them properly */

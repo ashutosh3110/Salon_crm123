@@ -332,8 +332,7 @@ export default function SalesReports({ outletId }) {
                                     </div>
                                 </div>
                             </div>
-                            
-                            <div className="h-[320px] w-full relative">
+                                                       <div className="h-[320px] w-full relative sales-chart-container">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <AreaChart data={trend}>
                                         <defs>
@@ -347,13 +346,13 @@ export default function SalesReports({ outletId }) {
                                             dataKey="name" 
                                             axisLine={false} 
                                             tickLine={false} 
-                                            tick={{fontSize: 9, fontWeight: 800, fill: 'var(--text-muted)'}}
+                                            tick={{fontSize: 10, fontWeight: 400, fill: 'var(--text-muted)'}}
                                             dy={8}
                                         />
                                         <YAxis 
                                             axisLine={false} 
                                             tickLine={false} 
-                                            tick={{fontSize: 9, fontWeight: 800, fill: 'var(--text-muted)'}}
+                                            tick={{fontSize: 10, fontWeight: 400, fill: 'var(--text-muted)'}}
                                             tickFormatter={(value) => `₹${value.toLocaleString('en-IN')}`}
                                         />
                                         <Tooltip 

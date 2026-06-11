@@ -2465,7 +2465,7 @@ svg *:focus-visible {
 .recharts-cartesian-axis-tick-value,
 .recharts-cartesian-axis-tick text {
   stroke: none !important;
-  font-weight: 600 !important;
+  font-weight: 400 !important;
   fill: #475569 !important;
   /* Elegant slate gray for light mode */
 }
@@ -2520,4 +2520,4 @@ svg[viewBox="0 0 100 40"] circle {
 .recharts-wrapper .recharts-curve,
 .recharts-curve {
   stroke: #B4912B !important;
-}
+}
