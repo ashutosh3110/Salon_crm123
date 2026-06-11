@@ -493,7 +493,7 @@ export function BusinessProvider({ children }) {
             
             // Get location if available
             let lat, lng;
-            const savedLoc = localStorage.getItem('user_location');
+            const savedLoc = localStorage.getItem('wapixo_user_coords');
             if (savedLoc) {
                 const parsed = JSON.parse(savedLoc);
                 lat = parsed.lat;
