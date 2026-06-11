@@ -591,7 +591,40 @@ const initCronJobs = () => {
         }
     });
 
-    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00), Membership Expiry (11:30), Bridal (08:30), Repeated Services (09:30), Inquiry Follow-up (10:30)');
+    // 8. Delete Expired Banners (Daily at 00:30)
+    cron.schedule('30 0 * * *', async () => {
+        console.log('Running daily expired banners cleanup...');
+        try {
+            const Cms = require('../Models/Cms');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            // Find all CMS documents for banners
+            const bannerDocs = await Cms.find({ section: 'banners' });
+            for (const doc of bannerDocs) {
+                if (doc.content && Array.isArray(doc.content)) {
+                    const originalLength = doc.content.length;
+                    doc.content = doc.content.filter(banner => {
+                        if (banner.expirationType === 'expire' && banner.expiryDate) {
+                            const expiryDate = new Date(banner.expiryDate);
+                            return expiryDate >= today; // Keep if not yet expired
+                        }
+                        return true; // Keep if never expires
+                    });
+
+                    if (doc.content.length !== originalLength) {
+                        doc.markModified('content');
+                        await doc.save();
+                        console.log(`[Banners-Cron] Deleted ${originalLength - doc.content.length} expired banners from tenant ${doc.tenantId || 'global'}`);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Error in expired banners cleanup cron:', err);
+        }
+    });
+
+    console.log('Cron Jobs Initialized: Subscription (00:00), Reminders (09:00), Celebrations (08:00), Payment Reminders (10:00), Membership Expiry (11:30), Bridal (08:30), Repeated Services (09:30), Inquiry Follow-up (10:30), Banner Expiry (00:30)');
 };
 
 module.exports = initCronJobs;
