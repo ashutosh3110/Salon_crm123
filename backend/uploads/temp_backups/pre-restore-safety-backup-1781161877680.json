@@ -1,0 +1,774 @@
+{
+  "User": [
+    {
+      "_id": "6a2a5f1685cf293bc0a9d088",
+      "name": "Super Admin",
+      "email": "superadmin@gmail.com",
+      "password": "$2a$10$XxLDLn0WOkd/Zp5BX7pI.Oj72j4H2xMoTbc8gEyhVyiALvT6dASn.",
+      "role": "superadmin",
+      "status": "active",
+      "isActive": true,
+      "fcmTokenWeb": [
+        "dTL3pkWKXsMsP5czqpmerM:APA91bHcGUTRE3kKXrRIsxLBpa7j2jzqPOifu0ObLxFEUH9-kWGYX-t1OCRI8Yrkgo1Sw6iPwDVEvASzUr6i8zlCfO_E-A0izghQen-R2MzjSmEJukFE7uY"
+      ],
+      "fcmTokenMobile": [],
+      "createdAt": "2026-06-11T07:09:10.381Z",
+      "updatedAt": "2026-06-11T07:10:56.105Z",
+      "__v": 0
+    }
+  ],
+  "Salon": [],
+  "Staff": [
+    {
+      "_id": "6a241c27bb2c55e2fa84a124",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "outletId": "6a241909bb2c55e2fa849f96",
+      "name": "Muhammad Rehan",
+      "email": "mohammadrehan00121@gmail.com",
+      "phone": "6766888768",
+      "password": "$2a$10$IigIpQJ9e.JWZztqH/5DOeYHf3r/7SNHjLGXpMoV0dni80XBTu4xq",
+      "role": "Stylish",
+      "roleId": "6a241b85bb2c55e2fa84a0da",
+      "dob": "2003-06-14",
+      "address": "Test\r\nTest",
+      "avatar": "/uploads/staff/staff-1780751399422-606899944.webp",
+      "status": "active",
+      "specializations": [],
+      "profileStatus": "Approved",
+      "isActive": true,
+      "availability": {
+        "mode": "same",
+        "days": {
+          "monday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a125"
+            }
+          ],
+          "tuesday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a126"
+            }
+          ],
+          "wednesday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a127"
+            }
+          ],
+          "thursday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a128"
+            }
+          ],
+          "friday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a129"
+            }
+          ],
+          "saturday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a12a"
+            }
+          ],
+          "sunday": [
+            {
+              "start": "09:00",
+              "end": "18:00",
+              "_id": "6a241c27bb2c55e2fa84a12b"
+            }
+          ]
+        },
+        "breaks": []
+      },
+      "hrProfile": {
+        "baseSalary": 10000,
+        "panNumber": "ABCDE1234F",
+        "bankDetails": {
+          "accountNumber": "89789789789",
+          "ifscCode": "SBIN0001234",
+          "bankName": "Test"
+        },
+        "salaryType": "Base",
+        "commissionPercentage": 0
+      },
+      "fcmTokenWeb": [],
+      "fcmTokenMobile": [],
+      "createdAt": "2026-06-06T13:09:59.493Z",
+      "updatedAt": "2026-06-06T13:10:17.408Z",
+      "__v": 0
+    }
+  ],
+  "Role": [
+    {
+      "_id": "6a241b85bb2c55e2fa84a0da",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Stylish",
+      "description": "kjbchsb",
+      "permissions": [],
+      "isDefault": false,
+      "createdAt": "2026-06-06T13:07:17.395Z",
+      "updatedAt": "2026-06-06T13:07:17.395Z",
+      "__v": 0
+    }
+  ],
+  "Customer": [
+    {
+      "_id": "6a241c68bb2c55e2fa84a1c2",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Muhammad Rehan",
+      "phone": "6268204871",
+      "email": "mohammadrehan00121@gmail.com",
+      "gender": "women",
+      "password": "123456",
+      "dob": "",
+      "anniversary": "",
+      "status": "active",
+      "loyaltyPoints": 1200,
+      "walletBalance": 0,
+      "dueAmount": 0,
+      "paymentReminderCount": 0,
+      "referralCode": "WAP-053564",
+      "category": "Regular",
+      "isVIP": false,
+      "totalSpend": 13143,
+      "totalVisits": 1,
+      "welcomeSent": false,
+      "birthdayWishSent": false,
+      "anniversaryWishSent": false,
+      "fcmTokenWeb": [
+        "cTYBSt24QEyE8cfwxXFT8u:APA91bEQZKcgI0mcPjU6H09m3dQ_28TM69ShQD5EVmRGoNX93NRF8DMSac5DKkzwQgwtr0VzW99bowbGK2yHVj-E5IYy_ALekx0opVWz9-DFyTxeIc9I7y8"
+      ],
+      "fcmTokenMobile": [],
+      "likedProducts": [],
+      "likedServices": [],
+      "createdAt": "2026-06-06T13:11:04.740Z",
+      "updatedAt": "2026-06-07T10:51:02.311Z",
+      "__v": 0,
+      "lastLogin": "2026-06-06T13:34:44.755Z",
+      "lastOutletId": "6a241909bb2c55e2fa849f96",
+      "lastVisit": "2026-06-06T13:36:50.221Z"
+    }
+  ],
+  "Product": [
+    {
+      "_id": "6a241f08dc01d4cef411715a",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "outletIds": [
+        "6a241909bb2c55e2fa849f96"
+      ],
+      "name": "Product 1",
+      "sku": "tny",
+      "barcode": "",
+      "brand": "th",
+      "description": "",
+      "categoryId": "6a241e80dc01d4cef4117132",
+      "costPrice": 0,
+      "sellingPrice": 2000,
+      "loyaltyPoints": 200,
+      "image": "uploads/general/general-1780752131517-349453553.webp",
+      "stock": 17,
+      "stockByOutlet": {
+        "main": 20,
+        "6a241909bb2c55e2fa849f96": 0
+      },
+      "minStock": 5,
+      "gstPercent": 18,
+      "isInclusiveTax": true,
+      "mfgDate": "2026-06-04T00:00:00.000Z",
+      "expiryDate": "2027-02-06T00:00:00.000Z",
+      "hsnCode": "hj",
+      "supplier": "Sagar",
+      "status": "active",
+      "isShopProduct": true,
+      "appCategory": "",
+      "appImage": "uploads/general/general-1780752131517-349453553.webp",
+      "shopDescription": "jmyh",
+      "rating": 4.5,
+      "likes": 0,
+      "likedBy": [],
+      "createdAt": "2026-06-06T13:22:16.683Z",
+      "updatedAt": "2026-06-06T13:36:50.497Z",
+      "__v": 0
+    }
+  ],
+  "Outlet": [
+    {
+      "_id": "6a241909bb2c55e2fa849f96",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Rehan Hair-Indore",
+      "phone": "6268204871",
+      "email": "mohammadrehan00121@gmail.com",
+      "address": {
+        "street": "Wing-B, Lal Bahadur Shastri Marg, Kismat Nagar, Kurla West, Mumbai, Maharashtra 400070, India",
+        "city": "Konkan Division",
+        "state": "Maharashtra",
+        "pincode": "400070"
+      },
+      "location": {
+        "type": "Point",
+        "coordinates": [
+          72.87788775463106,
+          19.07711472639855
+        ]
+      },
+      "images": [
+        "/uploads/outlets/outlets-1780750601421-474034073.webp"
+      ],
+      "isActive": true,
+      "showServicePrice": true,
+      "chairs": [
+        {
+          "id": 1,
+          "name": "Chair 1",
+          "_id": "6a241909bb2c55e2fa849f97"
+        },
+        {
+          "id": 2,
+          "name": "Chair 2",
+          "_id": "6a241909bb2c55e2fa849f98"
+        },
+        {
+          "id": 3,
+          "name": "Chair 3",
+          "_id": "6a241909bb2c55e2fa849f99"
+        },
+        {
+          "id": 4,
+          "name": "Chair 4",
+          "_id": "6a241909bb2c55e2fa849f9a"
+        }
+      ],
+      "beds": [
+        {
+          "id": 1,
+          "name": "Bed 1",
+          "_id": "6a241909bb2c55e2fa849f9b"
+        },
+        {
+          "id": 2,
+          "name": "Bed 2",
+          "_id": "6a241909bb2c55e2fa849f9c"
+        },
+        {
+          "id": 3,
+          "name": "Bed 3",
+          "_id": "6a241909bb2c55e2fa849f9d"
+        },
+        {
+          "id": 4,
+          "name": "Bed 4",
+          "_id": "6a241909bb2c55e2fa849f9e"
+        },
+        {
+          "id": 5,
+          "name": "Bed 5",
+          "_id": "6a241909bb2c55e2fa849f9f"
+        }
+      ],
+      "config": {
+        "bookingSms": true,
+        "enableDelivery": true,
+        "deliveryCharge": 0,
+        "freeDeliveryAbove": 0
+      },
+      "likes": 0,
+      "likedBy": [],
+      "createdAt": "2026-06-06T12:56:41.618Z",
+      "updatedAt": "2026-06-06T12:57:11.395Z",
+      "__v": 0
+    }
+  ],
+  "Otp": [],
+  "LoyaltyTransaction": [
+    {
+      "_id": "6a242272305d59c652568586",
+      "customerId": "6a241c68bb2c55e2fa84a1c2",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "type": "EARN",
+      "amount": 1200,
+      "description": "Earned from POS Invoice #INV-CA46-1780753010451",
+      "source": "MANUAL",
+      "createdAt": "2026-06-06T13:36:50.221Z",
+      "updatedAt": "2026-06-06T13:36:50.221Z",
+      "__v": 0
+    }
+  ],
+  "Plan": [
+    {
+      "_id": "6a24134b7d6b9f76187285fc",
+      "name": "Pro Plan",
+      "description": "This is test",
+      "price": 99,
+      "monthlyPrice": 0,
+      "yearlyPrice": 0,
+      "billingCycle": "monthly",
+      "popular": false,
+      "limits": {
+        "staffLimit": 10,
+        "outletLimit": 10,
+        "whatsappLimit": 0
+      },
+      "isActive": true,
+      "createdAt": "2026-06-06T12:32:11.659Z",
+      "updatedAt": "2026-06-06T12:32:11.659Z",
+      "__v": 0
+    }
+  ],
+  "Service": [
+    {
+      "_id": "6a241b4cbb2c55e2fa84a0a5",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Service A",
+      "category": "category A",
+      "description": "ewgrdh",
+      "duration": 20,
+      "price": 1000,
+      "loyaltyPoints": 100,
+      "image": "/uploads/services/services-1780751180402-119607087.webp",
+      "gst": 5,
+      "isInclusiveTax": true,
+      "commissionApplicable": true,
+      "commissionType": "fixed",
+      "commissionValue": 10,
+      "outletIds": [
+        "6a241909bb2c55e2fa849f96"
+      ],
+      "status": "active",
+      "gender": "men",
+      "resourceType": "chair",
+      "isRepeated": true,
+      "reminderDays": 30,
+      "likes": 0,
+      "likedBy": [],
+      "createdAt": "2026-06-06T13:06:20.743Z",
+      "updatedAt": "2026-06-06T13:06:20.743Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a241b76bb2c55e2fa84a0ab",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Service 2",
+      "category": "Category b",
+      "description": "ebf",
+      "duration": 100,
+      "price": 2000,
+      "loyaltyPoints": 100,
+      "image": "/uploads/services/services-1780751222701-237322536.webp",
+      "gst": 5,
+      "isInclusiveTax": false,
+      "commissionApplicable": true,
+      "commissionType": "percent",
+      "commissionValue": 10,
+      "outletIds": [
+        "6a241909bb2c55e2fa849f96"
+      ],
+      "status": "active",
+      "gender": "men",
+      "resourceType": "chair",
+      "isRepeated": false,
+      "reminderDays": 30,
+      "likes": 0,
+      "likedBy": [],
+      "createdAt": "2026-06-06T13:07:02.725Z",
+      "updatedAt": "2026-06-06T13:07:02.725Z",
+      "__v": 0
+    }
+  ],
+  "Category": [
+    {
+      "_id": "6a241aecbb2c55e2fa84a08f",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "category A",
+      "gender": "both",
+      "image": "/uploads/categories/categories-1780751084006-446319097.webp",
+      "status": "active",
+      "createdAt": "2026-06-06T13:04:44.023Z",
+      "updatedAt": "2026-06-06T13:04:44.023Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a241afbbb2c55e2fa84a095",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Category b",
+      "gender": "women",
+      "image": "/uploads/categories/categories-1780751099786-606250830.webp",
+      "status": "active",
+      "createdAt": "2026-06-06T13:04:59.810Z",
+      "updatedAt": "2026-06-06T13:04:59.810Z",
+      "__v": 0
+    }
+  ],
+  "Feedback": [],
+  "Setting": [
+    {
+      "_id": "6a23c72588e414937683e266",
+      "siteName": "Salon CRM",
+      "siteTagline": "Modern Salon Management",
+      "contactEmail": "support@saloncrm.com",
+      "contactPhone": "+91 9999999999",
+      "address": "123 Salon St, Mumbai, India",
+      "socialLinks": {
+        "facebook": "",
+        "instagram": "",
+        "twitter": "",
+        "linkedin": ""
+      },
+      "currency": "INR",
+      "currencySymbol": "₹",
+      "logoUrl": "",
+      "faviconUrl": "",
+      "supportFaqs": [],
+      "loyaltySettings": {
+        "active": true,
+        "pointsRate": 100,
+        "redeemValue": 1,
+        "minRedeemPoints": 0
+      },
+      "referralSettings": {
+        "enabled": true,
+        "referralPoints": 200,
+        "referredPoints": 100
+      },
+      "maxImageSize": 5,
+      "maxImageSizeUnit": "MB",
+      "defaultTrialDays": 14,
+      "serviceGst": 5,
+      "productGst": 18,
+      "supplierGst": 18,
+      "whatsappPricing": {
+        "pricePerMessage": 0.5,
+        "minPurchaseQty": 1000
+      },
+      "createdAt": "2026-06-06T07:07:17.625Z",
+      "updatedAt": "2026-06-06T07:07:17.625Z",
+      "__v": 0
+    }
+  ],
+  "MembershipPlan": [],
+  "ProductCategory": [
+    {
+      "_id": "6a241e80dc01d4cef4117132",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Category A",
+      "image": "uploads/general/general-1780751997694-560758473.webp",
+      "status": "active",
+      "createdAt": "2026-06-06T13:20:00.439Z",
+      "updatedAt": "2026-06-06T13:20:00.439Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a241ec3dc01d4cef411713c",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "gdb",
+      "image": "uploads/general/general-1780752011218-36299957.webp",
+      "status": "active",
+      "createdAt": "2026-06-06T13:21:07.302Z",
+      "updatedAt": "2026-06-06T13:21:07.302Z",
+      "__v": 0
+    }
+  ],
+  "Cms": [],
+  "Cart": [],
+  "Booking": [],
+  "WalletTransaction": [],
+  "Notification": [],
+  "Invoice": [
+    {
+      "_id": "6a242272305d59c65256857d",
+      "invoiceNumber": "INV-CA46-1780753010451",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "outletId": "6a241909bb2c55e2fa849f96",
+      "customerId": "6a241c68bb2c55e2fa84a1c2",
+      "items": [
+        {
+          "type": "service",
+          "itemId": "6a241b76bb2c55e2fa84a0ab",
+          "name": "Service 2",
+          "price": 2000,
+          "quantity": 3,
+          "stylistIds": [
+            "6a241c27bb2c55e2fa84a124"
+          ],
+          "isInclusiveTax": false,
+          "gstPercent": 5,
+          "membershipDiscountType": "fixed",
+          "membershipDiscountValue": 1800,
+          "_id": "6a241b76bb2c55e2fa84a0ab"
+        },
+        {
+          "type": "service",
+          "itemId": "6a241b4cbb2c55e2fa84a0a5",
+          "name": "Service A",
+          "price": 1000,
+          "quantity": 3,
+          "stylistIds": [
+            "6a241c27bb2c55e2fa84a124"
+          ],
+          "isInclusiveTax": true,
+          "gstPercent": 5,
+          "membershipDiscountType": "fixed",
+          "membershipDiscountValue": 77,
+          "_id": "6a241b4cbb2c55e2fa84a0a5"
+        },
+        {
+          "type": "product",
+          "itemId": "6a241f08dc01d4cef411715a",
+          "name": "Product 1",
+          "price": 2000,
+          "quantity": 5,
+          "stylistIds": [],
+          "isInclusiveTax": true,
+          "gstPercent": 18,
+          "membershipDiscountType": "percentage",
+          "membershipDiscountValue": 20,
+          "_id": "6a241f08dc01d4cef411715a"
+        }
+      ],
+      "subtotal": 19000,
+      "discount": 290,
+      "membershipDiscount": 3877,
+      "promoDiscount": 290,
+      "tax": 210,
+      "gstPercent": 5,
+      "serviceGstPercent": 5,
+      "productGstPercent": 18,
+      "includingGst": false,
+      "baseAmount": 13763.47,
+      "gstAmount": 1569.53,
+      "cgst": 784.76,
+      "sgst": 784.76,
+      "total": 15043,
+      "paymentMethod": "cash",
+      "paymentStatus": "paid",
+      "loyaltyPointsEarned": 1200,
+      "loyaltyPointsRedeemed": 0,
+      "walletRedeemed": 0,
+      "payments": [
+        {
+          "method": "cash",
+          "amount": 12000,
+          "_id": "6a242683305d59c652568735",
+          "date": "2026-06-06T13:54:11.390Z"
+        },
+        {
+          "method": "online",
+          "amount": 1143,
+          "_id": "6a242683305d59c652568736",
+          "date": "2026-06-06T13:54:11.390Z"
+        }
+      ],
+      "dueAmount": 0,
+      "previousDueCollected": 0,
+      "status": "active",
+      "createdAt": "2026-06-06T13:36:50.221Z",
+      "updatedAt": "2026-06-06T13:54:11.395Z",
+      "__v": 2
+    }
+  ],
+  "Inquiry": [
+    {
+      "_id": "6a24139d7d6b9f761872864e",
+      "name": "Hvdhv",
+      "email": "test@gmail.com",
+      "phone": "7867868686",
+      "salonName": "kbjb",
+      "message": "876vjhbhjb",
+      "visitType": "Walk-in",
+      "status": "contacted",
+      "createdAt": "2026-06-06T12:33:33.453Z",
+      "updatedAt": "2026-06-06T12:35:35.265Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a241d58dc01d4cef4116ee6",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "outletId": "6a241909bb2c55e2fa849f96",
+      "name": "REHAN",
+      "email": "",
+      "phone": "868686768687",
+      "interestedService": "6a241b4cbb2c55e2fa84a0a5",
+      "serviceInterest": "Service A",
+      "visitType": "Walk-in",
+      "source": "Walk-in",
+      "notes": "VRV",
+      "followUpDate": "2026-06-09T13:15:04.422Z",
+      "status": "follow-up",
+      "createdAt": "2026-06-06T13:15:04.607Z",
+      "updatedAt": "2026-06-06T13:16:04.514Z",
+      "__v": 0
+    }
+  ],
+  "Payment": [
+    {
+      "_id": "6a241762bb2c55e2fa849bdf",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "planId": "6a24134b7d6b9f76187285fc",
+      "orderId": "order_SyLqzV970dUMc1",
+      "amount": 99,
+      "currency": "INR",
+      "status": "captured",
+      "billingCycle": "monthly",
+      "createdAt": "2026-06-06T12:49:38.542Z",
+      "updatedAt": "2026-06-06T12:50:01.379Z",
+      "__v": 0,
+      "paymentId": "pay_SyLr4kL4DjAbz0",
+      "signature": "4a76b6c2a5f1307cbe41d082aa2b52d341b64847d3711461223d3b149815144d"
+    }
+  ],
+  "Ticket": [],
+  "Blog": [
+    {
+      "_id": "6a24135b7d6b9f761872863b",
+      "title": "fbvfefffffffffff",
+      "content": "wegvrgrg",
+      "image": "uploads\\general\\general-1780749184190-411518938.jpg",
+      "status": "published",
+      "isFeatured": false,
+      "author": "Wapixo HQ",
+      "reads": 0,
+      "seoDescription": "",
+      "createdAt": "2026-06-06T12:32:27.953Z",
+      "updatedAt": "2026-06-06T12:33:04.241Z",
+      "slug": "fbvf",
+      "__v": 0
+    }
+  ],
+  "CustomerMembership": [],
+  "Break": [],
+  "Promotion": [],
+  "Order": [],
+  "Consultation": [],
+  "StockTransaction": [],
+  "SupplierInvoice": [],
+  "Supplier": [
+    {
+      "_id": "6a241e64dc01d4cef4117127",
+      "salonId": "6a24148480b6aafd2e59ca46",
+      "name": "Sagar",
+      "contactPerson": "Rehan Multani",
+      "phone": "+916268204871",
+      "email": "mrmmultani@gmail.com",
+      "address": "Indore MP\nAzad Nagar",
+      "gstNumber": "",
+      "category": "Products",
+      "status": "active",
+      "openingBalance": 0,
+      "currentBalance": 0,
+      "createdAt": "2026-06-06T13:19:32.780Z",
+      "updatedAt": "2026-06-06T13:19:32.780Z",
+      "__v": 0
+    }
+  ],
+  "FinanceTransaction": [],
+  "StockTransfer": [],
+  "Attendance": [],
+  "Payroll": [],
+  "Shift": [],
+  "LeaveRequest": [],
+  "SalaryAdvance": [],
+  "Expense": [],
+  "PettyCash": [],
+  "EndOfDay": [],
+  "Campaign": [],
+  "Faq": [],
+  "BackupLog": [
+    {
+      "_id": "6a2a5de94f0bc3c768a0985f",
+      "filename": "pre-restore-safety-backup-1781161449088.json",
+      "size": 20918,
+      "status": "success",
+      "performedBy": "6a23c71d88e414937683e25c",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:04:09.141Z",
+      "updatedAt": "2026-06-11T07:04:09.141Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5e2643e8a975573d9954",
+      "filename": "pre-restore-safety-backup-1781161510859.json",
+      "size": 24086,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:05:10.907Z",
+      "updatedAt": "2026-06-11T07:05:10.907Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5e2d4c9db13d8b6603db",
+      "filename": "pre-restore-safety-backup-1781161517472.json",
+      "size": 24497,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:05:17.540Z",
+      "updatedAt": "2026-06-11T07:05:17.540Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5e84d6fa22ba8da23a92",
+      "filename": "pre-restore-safety-backup-1781161604232.json",
+      "size": 24908,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:06:44.275Z",
+      "updatedAt": "2026-06-11T07:06:44.275Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5e92e2cc8207edad98df",
+      "filename": "pre-restore-safety-backup-1781161618785.json",
+      "size": 25319,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:06:58.888Z",
+      "updatedAt": "2026-06-11T07:06:58.888Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5e9a2a389d39f9f9071d",
+      "filename": "pre-restore-safety-backup-1781161625970.json",
+      "size": 25730,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:07:06.174Z",
+      "updatedAt": "2026-06-11T07:07:06.174Z",
+      "__v": 0
+    },
+    {
+      "_id": "6a2a5f0c289158921ae8549f",
+      "filename": "pre-restore-safety-backup-1781161740066.json",
+      "size": 26141,
+      "status": "success",
+      "performedBy": "69fdc9461a21bf41d0747f6e",
+      "ipAddress": "::1",
+      "errorMessage": "Auto Safety Backup Before Restore",
+      "createdAt": "2026-06-11T07:09:00.100Z",
+      "updatedAt": "2026-06-11T07:09:00.100Z",
+      "__v": 0
+    }
+  ],
+  "ReminderHub": [],
+  "Testimonial": [],
+  "WhatsAppCreditTransaction": []
+}

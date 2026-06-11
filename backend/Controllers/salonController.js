@@ -286,6 +286,18 @@ exports.updateSalon = async (req, res) => {
             }
         }
 
+        // Update subscription limits & features if subscriptionPlan changes
+        let planUpdated = false;
+        if (req.body.subscriptionPlan && req.body.subscriptionPlan !== salon.subscriptionPlan) {
+            const planName = req.body.subscriptionPlan;
+            const plan = await Plan.findOne({ name: { $regex: new RegExp(`^${planName}$`, 'i') } });
+            if (plan) {
+                req.body.features = plan.features || {};
+                req.body.limits = plan.limits || { staffLimit: 3, outletLimit: 1, whatsappLimit: 50 };
+                planUpdated = true;
+            }
+        }
+
         // If status is changing to active, send activation email
         if (req.body.status === 'active' && salon.status !== 'active') {
             try {
@@ -423,6 +435,25 @@ exports.updateSalon = async (req, res) => {
             new: true,
             runValidators: true
         });
+
+        // Send WhatsApp notification if subscription plan was updated
+        if (planUpdated) {
+            try {
+                const planName = salon.subscriptionPlan;
+                const startDate = new Date(salon.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                const endDate = salon.subscriptionExpiry 
+                    ? new Date(salon.subscriptionExpiry).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+                    : 'Lifetime Access';
+                
+                const waMessage = `Greetings from Wapixo!\n\nDear Owner, your salon *${salon.name}* has been successfully subscribed to the *${planName.toUpperCase()}* plan.\n\n*Subscription Details:*\n• Salon Name: ${salon.name}\n• Plan Name: ${planName.toUpperCase()}\n• Activation Date: ${startDate}\n• Expiration Date: ${endDate}\n\nThank you for choosing Wapixo!`;
+                
+                if (salon.phone) {
+                    await sendWapixoMessage(salon.phone, waMessage);
+                }
+            } catch (waErr) {
+                console.error('WhatsApp notification for subscription failed:', waErr.message);
+            }
+        }
 
         res.json({ success: true, data: salon });
     } catch (err) {

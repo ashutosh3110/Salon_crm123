@@ -159,6 +159,7 @@ export default function NewBookingPage() {
     const [promoDiscount, setPromoDiscount] = useState(0);
     const [isPromoApplied, setIsPromoApplied] = useState(false);
     const [advancePayment, setAdvancePayment] = useState(0);
+    const [advancePaymentMethod, setAdvancePaymentMethod] = useState('cash');
 
     // Reset promo if customer changes
     useEffect(() => {
@@ -471,7 +472,8 @@ export default function NewBookingPage() {
                 promoDiscount: priceCalculation.promoDiscount,
                 couponCode: isPromoApplied ? couponCode : undefined,
                 source: 'admin',
-                advancePaid: Number(advancePayment)
+                advancePaid: Number(advancePayment),
+                advancePaymentMethod
             });
 
             toast.success('Booking created successfully');
@@ -1068,15 +1070,47 @@ export default function NewBookingPage() {
                                     </div>
 
                                     {/* Advance Payment Input */}
-                                    <div className="space-y-1.5 text-left">
-                                        <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Advance Pay (Editable)</label>
-                                        <input
-                                            type="number"
-                                            placeholder="ENTER ADVANCE AMOUNT"
-                                            value={advancePayment}
-                                            onChange={(e) => setAdvancePayment(Number(e.target.value))}
-                                            className="w-full bg-surface-alt border border-border p-3 text-xs font-black text-text outline-none rounded-xl focus:border-[#B8860B] transition-colors"
-                                        />
+                                    <div className="space-y-3 text-left">
+                                        <div className="space-y-1.5">
+                                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Advance Pay (Editable)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="ENTER ADVANCE AMOUNT"
+                                                value={advancePayment}
+                                                onChange={(e) => setAdvancePayment(Number(e.target.value))}
+                                                className="w-full bg-surface-alt border border-border p-3 text-xs font-black text-text outline-none rounded-xl focus:border-[#B8860B] transition-colors"
+                                            />
+                                        </div>
+
+                                        {Number(advancePayment) > 0 && (
+                                            <div className="space-y-1.5">
+                                                <label className="text-[10px] font-bold text-text-muted uppercase tracking-wider block">Advance Payment Method</label>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setAdvancePaymentMethod('cash')}
+                                                        className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all ${
+                                                            advancePaymentMethod === 'cash'
+                                                                ? 'bg-[#B8860B] text-white border-[#B8860B]'
+                                                                : 'bg-surface-alt text-text-muted border-border hover:border-text'
+                                                        }`}
+                                                    >
+                                                        Cash
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setAdvancePaymentMethod('online')}
+                                                        className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-wider rounded-xl border transition-all ${
+                                                            advancePaymentMethod === 'online'
+                                                                ? 'bg-[#B8860B] text-white border-[#B8860B]'
+                                                                : 'bg-surface-alt text-text-muted border-border hover:border-text'
+                                                        }`}
+                                                    >
+                                                        Online
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="space-y-3 pt-4 border-t border-dashed border-border">

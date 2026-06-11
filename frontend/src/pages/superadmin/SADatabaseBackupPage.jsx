@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
-import { Database, Download, RefreshCw, Calendar, FileText, CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { Database, Download, Upload, RefreshCw, Calendar, FileText, CheckCircle, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import api from '../../services/api';
 
 export default function SADatabaseBackupPage() {
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [backingUp, setBackingUp] = useState(false);
+    const [restoring, setRestoring] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
     const [toast, setToast] = useState(null);
 
     const showToast = (msg, type = 'success') => {
@@ -36,7 +39,7 @@ export default function SADatabaseBackupPage() {
         showToast('Initiating database backup generation...', 'info');
         try {
             // Trigger backup endpoint with responseType blob to handle file stream download
-            const response = await api.post('/super-admin/database/backup', null, {
+            const response = await api.get('/super-admin/database/backup/json', {
                 responseType: 'blob'
             });
 
@@ -47,7 +50,7 @@ export default function SADatabaseBackupPage() {
             
             // Extract filename from headers if possible or generate one
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            link.setAttribute('download', `backup-${timestamp}.archive.gz`);
+            link.setAttribute('download', `backup-${timestamp}.json`);
             
             document.body.appendChild(link);
             link.click();
@@ -63,6 +66,53 @@ export default function SADatabaseBackupPage() {
             fetchHistory(); // Still fetch history to show any logged failure
         } finally {
             setBackingUp(false);
+        }
+    };
+
+    const handleRestoreClick = () => {
+        if (!selectedFile) {
+            showToast('Please select a backup file first.', 'error');
+            return;
+        }
+        setShowRestoreConfirm(true);
+    };
+
+    const handleConfirmRestore = async () => {
+        setShowRestoreConfirm(false);
+        setRestoring(true);
+        showToast('Restoring database from backup...', 'info');
+
+        try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const backupData = JSON.parse(e.target.result);
+                    const response = await api.post('/super-admin/database/restore', backupData);
+                    if (response.data?.success) {
+                        showToast('Database restored! Redirecting to login...', 'success');
+                        setSelectedFile(null);
+                        const fileInput = document.getElementById('restore-file-input');
+                        if (fileInput) fileInput.value = '';
+                        
+                        setTimeout(() => {
+                            localStorage.clear();
+                            window.location.href = '/superadmin/login';
+                        }, 2500);
+                    } else {
+                        showToast(response.data?.message || 'Restore failed.', 'error');
+                    }
+                } catch (parseErr) {
+                    console.error(parseErr);
+                    showToast('Invalid JSON file format.', 'error');
+                } finally {
+                    setRestoring(false);
+                }
+            };
+            reader.readAsText(selectedFile);
+        } catch (err) {
+            console.error('Restore failed:', err);
+            showToast('Failed to restore database.', 'error');
+            setRestoring(false);
         }
     };
 
@@ -178,6 +228,50 @@ export default function SADatabaseBackupPage() {
                             </p>
                         </div>
                     </div>
+
+                    {/* Restore Backup Card */}
+                    <div className="bg-white rounded-2xl border border-border shadow-sm overflow-hidden p-6 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-500 flex items-center justify-center shrink-0">
+                                <Upload className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-text text-sm">Restore Database</h3>
+                                <p className="text-[11px] text-text-muted mt-0.5">Restore system data from a JSON snapshot</p>
+                            </div>
+                        </div>
+
+                        <div className="border-t border-border pt-4 space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black text-text-muted uppercase tracking-wider block">Choose Backup File</label>
+                                <input
+                                    id="restore-file-input"
+                                    type="file"
+                                    accept=".json"
+                                    onChange={(e) => setSelectedFile(e.target.files[0])}
+                                    className="w-full text-xs text-text-secondary file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-600 hover:file:bg-indigo-100"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handleRestoreClick}
+                                disabled={restoring || !selectedFile}
+                                className="w-full flex items-center justify-center gap-2.5 py-3 px-5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {restoring ? (
+                                    <>
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span>Restoring Database...</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <RefreshCw className="w-4 h-4" />
+                                        <span>Restore Backup</span>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {/* Backup History Listing */}
@@ -271,6 +365,47 @@ export default function SADatabaseBackupPage() {
                 </div>
 
             </div>
+
+            {/* Confirmation Dialog Modal */}
+            {showRestoreConfirm && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4">
+                    <div className="bg-white border border-border rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
+                                <AlertTriangle className="w-6 h-6 animate-bounce" />
+                            </div>
+                            <h3 className="text-lg font-black text-text uppercase tracking-tight">Warning!</h3>
+                        </div>
+
+                        <div className="space-y-3">
+                            <p className="text-sm text-text-secondary leading-relaxed font-semibold">
+                                Current database ka sara data permanently delete ho jayega.
+                            </p>
+                            <p className="text-xs text-text-muted leading-relaxed">
+                                System will automatically create a safety backup before applying the restore.
+                            </p>
+                            <p className="text-sm font-black text-red-600 uppercase tracking-wider">
+                                Are you sure?
+                            </p>
+                        </div>
+
+                        <div className="flex items-center justify-end gap-3 pt-2">
+                            <button
+                                onClick={() => setShowRestoreConfirm(false)}
+                                className="px-4 py-2 text-xs font-bold text-text-muted hover:text-text uppercase tracking-wider transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleConfirmRestore}
+                                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-red-500/25 hover:bg-red-700 active:scale-95 transition-all"
+                            >
+                                Restore
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

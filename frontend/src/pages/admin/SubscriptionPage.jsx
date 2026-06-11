@@ -500,11 +500,11 @@ export default function SubscriptionPage() {
                             <div className="mt-5">
                                 <button
                                     onClick={() => handleUpgrade(plan)}
-                                    disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent) || upgrading === plan.id}
+                                    disabled={isCurrent || (effectiveSalon?.isActive && currentPlan && !isCurrent) || upgrading === plan.id}
                                     className={`w-full py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${isCurrent
                                             ? 'bg-[#8b5cf6] text-white border border-[#8b5cf6]'
-                                            : (effectiveSalon?.isActive && currentPlan?.price > 0 && !isCurrent)
-                                                ? `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder} opacity-50 cursor-not-allowed`
+                                            : (effectiveSalon?.isActive && currentPlan && !isCurrent)
+                                                ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-50'
                                                 : upgrading === plan.id
                                                     ? 'bg-slate-100 text-slate-500 cursor-wait'
                                                     : `${style.btnActiveBg} ${style.btnActiveText} ${style.btnActiveBorder}`
@@ -512,11 +512,11 @@ export default function SubscriptionPage() {
                                 >
                                     {isCurrent
                                         ? 'Current Plan'
-                                        : (effectiveSalon?.isActive && currentPlan && currentPlan.price > 0 && !isCurrent)
-                                            ? 'Subscription Active'
+                                        : (effectiveSalon?.isActive && currentPlan && !isCurrent)
+                                            ? 'Disabled'
                                             : upgrading === plan.id
                                                 ? 'Processing...'
-                                                : 'Subscription Active'}
+                                                : 'Choose Plan'}
                                 </button>
                             </div>
                         </div>
