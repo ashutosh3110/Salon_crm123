@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 import { getImageUrl } from '../../utils/imageUtils';
+import { useJsApiLoader, Autocomplete, GoogleMap, Marker } from '@react-google-maps/api';
 import {
     Layout,
     Image as ImageIcon,
@@ -139,6 +140,43 @@ export default function MarketingCMSPage() {
     const [activeTab, setActiveTab] = useState(isSuperAdmin ? 'banners' : 'experts');
     const [isModalOpen, setIsModalOpen] = useState(false);
 
+    const { isLoaded } = useJsApiLoader({
+        id: 'google-map-script',
+        googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "AIzaSyBRHvhhxVDQyYkOryyo2IA19GuDFqsYD30",
+        libraries: ['places']
+    });
+    const [autocomplete, setAutocomplete] = useState(null);
+    const onLoadAutocomplete = (ac) => setAutocomplete(ac);
+    const onPlaceChanged = () => {
+        if (autocomplete !== null) {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                const fullAddress = place.formatted_address || '';
+                let city = '';
+                
+                if (place.address_components) {
+                    const cityComponent = place.address_components.find(c => 
+                        c.types.includes('locality') || c.types.includes('administrative_area_level_2')
+                    );
+                    if (cityComponent) city = cityComponent.long_name;
+                }
+                
+                if (!city && place.name) {
+                    city = place.name;
+                }
+
+                setFormData(prev => ({
+                    ...prev,
+                    city,
+                    fullAddress,
+                    location: { lat, lng }
+                }));
+            }
+        }
+    };
+
     useEffect(() => {
         if (isModalOpen) {
             document.body.style.overflow = 'hidden';
@@ -174,8 +212,10 @@ export default function MarketingCMSPage() {
         expiry: '',
         validityText: '',
         btnText: 'Apply',
-        outletId: '',
-        image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+        image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
+        city: '',
+        fullAddress: '',
+        location: null
     });
 
     const resetForm = () => {
@@ -188,8 +228,10 @@ export default function MarketingCMSPage() {
             expiry: '',
             validityText: '',
             btnText: 'Apply',
-            outletId: '',
-            image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+            image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
+            city: '',
+            fullAddress: '',
+            location: null
         });
         setEditingId(null);
     };
@@ -247,8 +289,10 @@ export default function MarketingCMSPage() {
             expiry: item.expiry || '',
             validityText: item.validityText || '',
             btnText: item.btnText || 'Apply',
-            outletId: item.outletId || '',
-            image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop'
+            image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
+            city: item.city || '',
+            fullAddress: item.fullAddress || '',
+            location: item.location || null
         });
         setEditingId(item.id);
         setIsModalOpen(true);
@@ -744,16 +788,39 @@ initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                                     />
                                                 </div>
                                                 <div className="space-y-1.5 relative">
-                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target Outlet</label>
-                                                    <CustomSelect
-                                                        value={formData.outletId}
-                                                        onChange={(val) => setFormData({ ...formData, outletId: val })}
-                                                        placeholder="All Outlets"
-                                                        options={[
-                                                            { value: 'all', label: 'All Outlets' },
-                                                            ...outlets.map(o => ({ value: o._id || o.id, label: o.name }))
-                                                        ]}
-                                                    />
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Target City / Location (Optional)</label>
+                                                    {isLoaded ? (
+                                                        <>
+                                                            <Autocomplete onLoad={onLoadAutocomplete} onPlaceChanged={onPlaceChanged}>
+                                                                <input
+                                                                    type="text"
+                                                                    value={formData.fullAddress || formData.city}
+                                                                    onChange={(e) => setFormData({ ...formData, fullAddress: e.target.value, city: e.target.value, location: e.target.value === '' ? null : formData.location })}
+                                                                    placeholder="Search a city or address..."
+                                                                    className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30 text-text"
+                                                                />
+                                                            </Autocomplete>
+                                                            {formData.location && (
+                                                                <div className="mt-3 w-full h-40 rounded-xl overflow-hidden border border-border shadow-inner">
+                                                                    <GoogleMap
+                                                                        mapContainerStyle={{ width: '100%', height: '100%' }}
+                                                                        center={formData.location}
+                                                                        zoom={14}
+                                                                        options={{ disableDefaultUI: true, zoomControl: true }}
+                                                                    >
+                                                                        <Marker position={formData.location} />
+                                                                    </GoogleMap>
+                                                                </div>
+                                                            )}
+                                                        </>
+                                                    ) : (
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Loading map..."
+                                                            disabled
+                                                            className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold opacity-50 text-text"
+                                                        />
+                                                    )}
                                                 </div>
                                             </div>
                                             <div className="space-y-1.5">
