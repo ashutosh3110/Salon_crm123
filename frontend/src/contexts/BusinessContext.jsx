@@ -498,6 +498,9 @@ export function BusinessProvider({ children }) {
                 const parsed = JSON.parse(savedLoc);
                 lat = parsed.lat;
                 lng = parsed.lng;
+                console.log('User Current Location (Frontend):', { lat, lng });
+            } else {
+                console.log('User Current Location (Frontend): Not Found in localStorage');
             }
 
             let url = `/salons/${sid}/initial-data?`;
