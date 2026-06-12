@@ -19,6 +19,7 @@ import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
 import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
 import ChairSection from '../../components/landing/wapixo/ChairSection';
 import AppShowcase from '../../components/landing/wapixo/AppShowcase';
+import GlobalCustomers from '../../components/landing/wapixo/GlobalCustomers';
 import { getImageUrl } from '../../utils/imageUtils';
 
 /* ─── CMS Section/Field Mock Data ────────────────────────────────────── */
@@ -137,6 +138,16 @@ const INITIAL_CMS_DATA = {
         admin_ios: '',
         staff_ios: '',
         customer_ios: '',
+    },
+    landing_global_customers: {
+        heading: 'Meet our global customers',
+        subtitle: "Trusted by 3000+ salon/spa's worldwide",
+        logos: [
+            '/hair_styling_promo.png',
+            '/hair_styling_promo.png',
+            '/hair_styling_promo.png',
+            '/hair_styling_promo.png'
+        ]
     }
 };
 
@@ -157,6 +168,13 @@ export default function SACMSPage() {
     const [activeTab, setActiveTab] = useState('landing');
     const [data, setData] = useState(INITIAL_CMS_DATA);
     const [saving, setSaving] = useState(false);
+
+    const resolveLogoUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+        if (url.startsWith('/') && !url.includes('uploads')) return url;
+        return getImageUrl(url);
+    };
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
     const [allReviews, setAllReviews] = useState([]);
@@ -584,6 +602,118 @@ export default function SACMSPage() {
                                     <div className="grid grid-cols-2 gap-6">
                                         {renderInput('landing_chair_section', 'primary_cta', 'Primary Button Text')}
                                         {renderInput('landing_chair_section', 'secondary_cta', 'Secondary Button Text')}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Global Customers Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-blue-50 flex items-center justify-center text-primary">
+                                            <Globe size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">Global Customers Section</h2>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <button
+                                            onClick={() => {
+                                                const currentLogos = data.landing_global_customers?.logos || [];
+                                                setData(prev => ({
+                                                    ...prev,
+                                                    landing_global_customers: {
+                                                        ...(prev.landing_global_customers || {}),
+                                                        logos: [...currentLogos, '/hair_styling_promo.png']
+                                                    }
+                                                }));
+                                            }}
+                                            className="px-4 py-2 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-white flex items-center gap-2 transition-all"
+                                        >
+                                            <Plus size={14} /> Add Logo
+                                        </button>
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={saving}
+                                            className="px-4 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                        >
+                                            {saving ? 'Saving...' : <><Save size={14} /> Save Section</>}
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    {renderInput('landing_global_customers', 'heading', 'Section Title')}
+                                    {renderInput('landing_global_customers', 'subtitle', 'Subtitle')}
+                                    
+                                    <div className="pt-4 border-t border-border">
+                                        <div className="text-[10px] font-black text-text-muted uppercase mb-4">Brand Logos</div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            {(data.landing_global_customers?.logos || []).map((logo, idx) => (
+                                                <div key={idx} className="relative p-4 border border-border bg-surface/30 flex flex-col gap-3 items-center group">
+                                                    <button
+                                                        onClick={() => {
+                                                            const currentLogos = data.landing_global_customers?.logos || [];
+                                                            setData(prev => ({
+                                                                ...prev,
+                                                                landing_global_customers: {
+                                                                    ...(prev.landing_global_customers || {}),
+                                                                    logos: currentLogos.filter((_, i) => i !== idx)
+                                                                }
+                                                            }));
+                                                        }}
+                                                        className="absolute top-2 right-2 text-text-muted hover:text-red-500 transition-colors"
+                                                    >
+                                                        <Trash2 size={14} />
+                                                    </button>
+                                                    
+                                                    <div className="h-16 flex items-center justify-center bg-white border border-border/60 p-2 w-full">
+                                                        <img src={resolveLogoUrl(logo)} alt={`Logo ${idx}`} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+                                                    </div>
+
+                                                    <button
+                                                        onClick={(e) => e.currentTarget.nextSibling.click()}
+                                                        className="w-full bg-white border border-border py-1.5 text-[9px] font-black uppercase tracking-wider text-center hover:bg-surface transition-colors"
+                                                    >
+                                                        Upload Logo
+                                                    </button>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        onChange={async (e) => {
+                                                            const file = e.target.files[0];
+                                                            if (!file) return;
+                                                            try {
+                                                                setSaving(true);
+                                                                const formData = new FormData();
+                                                                formData.append('image', file);
+                                                                const { data: res } = await api.post('/uploads', formData, {
+                                                                    headers: { 'Content-Type': 'multipart/form-data' }
+                                                                });
+                                                                if (res.success && res.url) {
+                                                                    const currentLogos = [...(data.landing_global_customers?.logos || [])];
+                                                                    currentLogos[idx] = res.url;
+                                                                    setData(prev => ({
+                                                                        ...prev,
+                                                                        landing_global_customers: {
+                                                                            ...(prev.landing_global_customers || {}),
+                                                                            logos: currentLogos
+                                                                        }
+                                                                    }));
+                                                                    showToast("Logo uploaded successfully");
+                                                                } else {
+                                                                    showToast("Failed to upload logo");
+                                                                }
+                                                            } catch (err) {
+                                                                console.error(err);
+                                                                showToast("Upload failed");
+                                                            } finally {
+                                                                setSaving(false);
+                                                            }
+                                                        }}
+                                                    />
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -1064,6 +1194,7 @@ export default function SACMSPage() {
                                                 {data.landing_features && <Features data={data.landing_features} statsData={data.landing_stats} />}
                                                 <ScissorsMorph data={data.landing_scissors_morph} />
                                                 {data.landing_faqs && <WapixoFAQ data={data.landing_faqs} ctaData={data.landing_faq_cta} />}
+                                                <GlobalCustomers data={data.landing_global_customers} />
                                                 <ChairSection data={data.landing_chair_section} />
                                                 {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
                                             </div>

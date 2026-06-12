@@ -356,14 +356,18 @@ export default function AnimatedHero({ data = {} }) {
             <style>{`
                 @media (min-width: 1025px) {
                     .desktop-divider { display: block !important; }
+                    .hero-container {
+                        padding-top: 3.5rem !important;
+                        padding-bottom: 2rem !important;
+                    }
                 }
                 @media (max-width: 1024px) {
                     .hero-container {
                         grid-template-columns: 1fr !important;
-                        gap: 3rem !important;
+                        gap: 2.5rem !important;
                         text-align: center;
-                        padding-top: 2rem;
-                        padding-bottom: 2rem;
+                        padding-top: 0.5rem !important;
+                        padding-bottom: 1.5rem !important;
                     }
                     .hero-container > div:first-child {
                         display: flex;
@@ -388,8 +392,8 @@ export default function AnimatedHero({ data = {} }) {
                     section {
                         min-height: auto !important;
                         height: auto !important;
-                        padding-top: 4rem;
-                        padding-bottom: 4rem;
+                        padding-top: 1rem !important;
+                        padding-bottom: 3rem !important;
                     }
                 }
                 @media (max-width: 480px) {

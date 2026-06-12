@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 const footerLinks = {
-    Product: ['Features', 'Pricing', 'Changelog'],
-    Company: ['About', 'Blog', 'Careers'],
+    Product: ['Features', 'Pricing'],
+    Company: ['About', 'Blog'],
     Legal: ['Privacy', 'Terms', 'Cookies'],
 };
 

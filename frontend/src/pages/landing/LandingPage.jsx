@@ -16,6 +16,7 @@ import WapixoBlog from '../../components/landing/wapixo/WapixoBlog';
 import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
 import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
 import ChairSection from '../../components/landing/wapixo/ChairSection';
+import GlobalCustomers from '../../components/landing/wapixo/GlobalCustomers';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 
 
@@ -80,6 +81,7 @@ export default function LandingPage() {
                     <WapixoBlog />
                     <WapixoTestimonials data={testimonials} />
                     <WapixoFAQ data={cmsData?.landing_faqs} ctaData={cmsData?.landing_faq_cta} />
+                    <GlobalCustomers data={cmsData?.landing_global_customers} />
                     <ChairSection data={cmsData?.landing_chair_section} />
                     <WapixoFooter data={cmsData?.site_footer} />
                 </div>

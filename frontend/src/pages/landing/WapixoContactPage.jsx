@@ -27,18 +27,18 @@ export default function WapixoContactPage() {
         api.get('/cms').then(res => {
             const sections = res.data?.data || res.data || {};
             if (sections.contact_page) setCmsContact(sections.contact_page);
-        }).catch(() => {});
+        }).catch(() => { });
         return () => {
             document.body.style.backgroundColor = '';
         };
     }, []);
 
     // CMS-driven contact info with fallbacks
-    const contactTitle    = cmsContact.title    || "Let's Build Your Masterpiece.";
-    const contactEmail    = cmsContact.email    || 'hello@wapixo.io';
-    const contactPhone    = cmsContact.phone    || '+91 98765 43210';
-    const contactAddress  = cmsContact.address  || 'DLF Cyber City, Phase III, Gurgaon, India';
-    const responseNote    = cmsContact.response_note || 'We typically respond to new salon inquiries within 24 business hours. Our experts are ready to audit your current workflow.';
+    const contactTitle = cmsContact.title || "Let's Build Your Masterpiece.";
+    const contactEmail = cmsContact.email || 'hello@wapixo.io';
+    const contactPhone = cmsContact.phone || '+91 98765 43210';
+    const contactAddress = cmsContact.address || 'DLF Cyber City, Phase III, Gurgaon, India';
+    const responseNote = cmsContact.response_note || 'We typically respond to new salon inquiries within 24 business hours. Our experts are ready to audit your current workflow.';
 
 
     const handleSubmit = async (e) => {
@@ -75,7 +75,7 @@ export default function WapixoContactPage() {
                 <WapixoNavbar />
 
                 {/* Hero / Header Section */}
-                <div style={{ paddingTop: '160px', paddingBottom: '80px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ paddingTop: '90px', paddingBottom: '20px', position: 'relative', overflow: 'hidden' }}>
                     <div style={{ position: 'absolute', inset: 0, opacity: theme === 'dark' ? 0.2 : 0.05, pointerEvents: 'none' }}>
                         <div style={{ position: 'absolute', top: '-10%', left: '20%', width: '400px', height: '400px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(120px)' }} />
                         <div style={{ position: 'absolute', bottom: '-10%', right: '20%', width: '500px', height: '500px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(140px)' }} />
@@ -85,7 +85,7 @@ export default function WapixoContactPage() {
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1.5rem' }}
+                            style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.45em', marginBottom: '1rem' }}
                         >
                             Connection
                         </motion.p>
@@ -93,7 +93,7 @@ export default function WapixoContactPage() {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            style={{ fontSize: 'clamp(2.5rem, 6vw, 5rem)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0, color: 'var(--wapixo-text)' }}
+                            style={{ fontSize: 'clamp(2.5rem, 6vw, 4.5rem)', fontWeight: 300, letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0, color: 'var(--wapixo-text)' }}
                         >
                             {contactTitle}
                         </motion.h1>
@@ -101,7 +101,7 @@ export default function WapixoContactPage() {
                 </div>
 
                 {/* Main Content Sections */}
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 2rem) 120px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'clamp(2rem, 5vw, 4rem)' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 2rem) 60px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 'clamp(2rem, 5vw, 4rem)' }}>
 
                     {/* Left: Contact Info */}
                     <motion.div

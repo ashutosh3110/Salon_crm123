@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { Link } from 'react-router-dom';
 
 const faqs = [
     {
@@ -163,31 +164,33 @@ export default function WapixoFAQ({ data, ctaData }) {
                     <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem', fontWeight: 400 }}>
                         {ctaText}
                     </p>
-                    <button style={{
-                        background: 'var(--wapixo-primary)',
-                        border: 'none',
-                        color: '#ffffff',
-                        padding: '0.85rem 2.5rem',
-                        borderRadius: '100px',
-                        fontSize: '0.8rem',
-                        fontWeight: 600,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.15em',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease',
-                        boxShadow: '0 4px 15px rgba(180, 145, 43, 0.2)'
-                    }}
-                        onMouseOver={(e) => {
-                            e.currentTarget.style.transform = 'translateY(-2px)';
-                            e.currentTarget.style.boxShadow = '0 8px 25px rgba(180, 145, 43, 0.3)';
+                    <Link to="/contact" style={{ textDecoration: 'none' }}>
+                        <button style={{
+                            background: 'var(--wapixo-primary)',
+                            border: 'none',
+                            color: '#ffffff',
+                            padding: '0.85rem 2.5rem',
+                            borderRadius: '100px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.15em',
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            boxShadow: '0 4px 15px rgba(180, 145, 43, 0.2)'
                         }}
-                        onMouseOut={(e) => {
-                            e.currentTarget.style.transform = 'translateY(0)';
-                            e.currentTarget.style.boxShadow = '0 4px 15px rgba(180, 145, 43, 0.2)';
-                        }}
-                    >
-                        {ctaButtonText}
-                    </button>
+                            onMouseOver={(e) => {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 8px 25px rgba(180, 145, 43, 0.3)';
+                            }}
+                            onMouseOut={(e) => {
+                                e.currentTarget.style.transform = 'translateY(0)';
+                                e.currentTarget.style.boxShadow = '0 4px 15px rgba(180, 145, 43, 0.2)';
+                            }}
+                        >
+                            {ctaButtonText}
+                        </button>
+                    </Link>
                 </motion.div>
             </div>
         </section>
