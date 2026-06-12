@@ -170,8 +170,7 @@ export default function SASettingsPage() {
         whatsappPricing: {
             pricePerMessage: 0.50,
             minPurchaseQty: 1000
-        },
-        bannerRadius: 20
+        }
     });
     const setPlat = (k, v) => setPlatform(p => ({ ...p, [k]: v }));
     const setWhatsapp = (k, v) => setPlatform(p => ({ ...p, whatsappPricing: { ...p.whatsappPricing, [k]: v } }));
@@ -650,18 +649,10 @@ export default function SASettingsPage() {
                                         placeholder="14"
                                         suffix={<span className="text-[10px] font-bold text-text-muted mr-3">Days</span>}
                                     />
-                                    <Field 
-                                        label="App Banner Radius" 
-                                        value={platform.bannerRadius} 
-                                        onChange={e => setPlat('bannerRadius', e.target.value)} 
-                                        type="number"
-                                        placeholder="20"
-                                        suffix={<span className="text-[10px] font-bold text-text-muted mr-3">km</span>}
-                                    />
                                 </div>
                                 <div className="flex items-end mt-4">
                                     <p className="text-[10px] text-text-muted leading-relaxed">
-                                        Controls the default trial duration, image upload size limits, and the visibility range for location-based banners.
+                                        Controls the default trial duration and image upload size limits.
                                     </p>
                                 </div>
                             </div>

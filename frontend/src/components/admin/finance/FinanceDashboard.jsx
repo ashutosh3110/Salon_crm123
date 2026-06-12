@@ -148,7 +148,16 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                                 </div>
                             </div>
                         </div>
-                        <div className="flex-1 w-full text-left min-h-[280px]">
+                        <div className="flex-1 w-full text-left min-h-[280px] finance-chart-container">
+                            <style>{`
+                                .finance-chart-container .recharts-text,
+                                .finance-chart-container .recharts-cartesian-axis-tick-value,
+                                .finance-chart-container text,
+                                .finance-chart-container tspan {
+                                    font-weight: 400 !important;
+                                    font-size: 10px !important;
+                                }
+                            `}</style>
                             {trend.length === 0 ? (
                                 <p className="text-sm text-text-muted font-bold p-8">No invoice/expense data in range yet.</p>
                             ) : (
@@ -159,7 +168,7 @@ export default function FinanceDashboard({ data, loading, error, onRetry }) {
                                             dataKey="name"
                                             axisLine={false}
                                             tickLine={false}
-                                            tick={{ fontSize: 9, fontWeight: 900, fill: 'var(--text-muted)' }}
+                                            tick={{ fontSize: 10, fontWeight: 400, fill: 'var(--text-muted)' }}
                                         />
                                         <YAxis hide />
                                         <Tooltip content={<CustomTooltip />} />

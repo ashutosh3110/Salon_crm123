@@ -215,7 +215,11 @@ export default function MarketingCMSPage() {
         image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
         city: '',
         fullAddress: '',
-        location: null
+        location: null,
+        radius: 20,
+        expirationType: 'never',
+        expiryDate: '',
+        isDefault: false
     });
 
     const resetForm = () => {
@@ -231,7 +235,11 @@ export default function MarketingCMSPage() {
             image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
             city: '',
             fullAddress: '',
-            location: null
+            location: null,
+            radius: 20,
+            expirationType: 'never',
+            expiryDate: '',
+            isDefault: false
         });
         setEditingId(null);
     };
@@ -292,7 +300,11 @@ export default function MarketingCMSPage() {
             image: item.image || 'https://images.unsplash.com/photo-1562322140-8baeececf3df?q=80&w=2069&auto=format&fit=crop',
             city: item.city || '',
             fullAddress: item.fullAddress || '',
-            location: item.location || null
+            location: item.location || null,
+            radius: item.radius || 20,
+            expirationType: item.expirationType || 'never',
+            expiryDate: item.expiryDate || '',
+            isDefault: item.isDefault || false
         });
         setEditingId(item.id);
         setIsModalOpen(true);
@@ -739,9 +751,9 @@ export default function MarketingCMSPage() {
 initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl border border-border shadow-2xl relative overflow-hidden"
+                            className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl border border-border shadow-2xl relative overflow-hidden flex flex-col max-h-[90vh]"
                         >
-                            <div className="p-5">
+                            <div className="p-5 overflow-y-auto overflow-x-hidden">
                                 <div className="px-6 py-4 border-b border-border flex items-center justify-between mx-[-1.25rem] mt-[-1.25rem] mb-4 bg-slate-50 dark:bg-slate-800/40 rounded-t-2xl">
                                     <div className="flex items-center gap-3">
                                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm shrink-0 ${
@@ -823,18 +835,69 @@ initial={{ opacity: 0, scale: 0.95, y: 20 }}
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Gender Segment</label>
-                                                <CustomSelect
-                                                    value={formData.gender}
-                                                    onChange={(val) => setFormData({ ...formData, gender: val })}
-                                                    placeholder="All Sectors"
-                                                    options={[
-                                                        { value: 'all', label: 'All Sectors' },
-                                                        { value: 'men', label: "Men's Sector" },
-                                                        { value: 'women', label: "Women's Sector" }
-                                                    ]}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Gender Segment</label>
+                                                    <CustomSelect
+                                                        value={formData.gender}
+                                                        onChange={(val) => setFormData({ ...formData, gender: val })}
+                                                        placeholder="All Sectors"
+                                                        options={[
+                                                            { value: 'all', label: 'All Sectors' },
+                                                            { value: 'men', label: "Men's Sector" },
+                                                            { value: 'women', label: "Women's Sector" }
+                                                        ]}
+                                                    />
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Banner Radius (km)</label>
+                                                    <input
+                                                        type="number"
+                                                        value={formData.radius}
+                                                        onChange={(e) => setFormData({ ...formData, radius: Number(e.target.value) })}
+                                                        placeholder="20"
+                                                        className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:opacity-30 text-text"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="space-y-1.5">
+                                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Expiration</label>
+                                                    <CustomSelect
+                                                        value={formData.expirationType}
+                                                        onChange={(val) => setFormData({ ...formData, expirationType: val, expiryDate: val === 'never' ? '' : formData.expiryDate })}
+                                                        placeholder="Never Expire"
+                                                        options={[
+                                                            { value: 'never', label: 'Never Expire' },
+                                                            { value: 'expire', label: 'Set Expiry Date' }
+                                                        ]}
+                                                    />
+                                                </div>
+                                                {formData.expirationType === 'expire' && (
+                                                    <div className="space-y-1.5">
+                                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest pl-1">Expiry Date</label>
+                                                        <input
+                                                            type="date"
+                                                            value={formData.expiryDate}
+                                                            onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                                                            className="w-full px-4 py-2.5 bg-white dark:bg-[#121826] border border-border rounded-lg text-sm font-bold focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all text-text"
+                                                        />
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center gap-2 mt-2 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl border border-border">
+                                                <input
+                                                    type="checkbox"
+                                                    id="isDefaultBanner"
+                                                    checked={formData.isDefault}
+                                                    onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
+                                                    className="w-4 h-4 text-primary rounded border-border focus:ring-primary"
                                                 />
+                                                <label htmlFor="isDefaultBanner" className="text-[11px] font-bold text-text cursor-pointer">
+                                                    Set as Default Banner (Shown when no location banners match)
+                                                </label>
                                             </div>
                                             <div className="space-y-1.5">
                                                 <div className="flex justify-between items-end mb-1">

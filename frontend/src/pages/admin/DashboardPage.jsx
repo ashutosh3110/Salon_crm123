@@ -460,7 +460,7 @@ export default function DashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div className="lg:col-span-2 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden flex flex-col justify-between">
+                <div className="lg:col-span-2 !bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden flex flex-col justify-between">
                     <div>
                         {/* Header: Title + Custom Dropdown Toggle */}
                         <div className="flex items-center justify-between mb-4">
@@ -524,7 +524,7 @@ export default function DashboardPage() {
                             </div>
                         </div>                        {/* Summary Row */}
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-slate-100/80 dark:border-slate-800 rounded-xl p-3.5 min-w-[160px] text-left">
+                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#B4912B]/15 dark:border-[#B4912B]/10 rounded-xl p-3.5 min-w-[160px] text-left">
                                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                                     Total Revenue
                                 </span>
@@ -543,26 +543,61 @@ export default function DashboardPage() {
 
                         {/* Line Chart */}
                         <div className="h-[200px] w-full min-w-0 overflow-hidden mb-5 revenue-chart-container">
+                            <style>{`
+                                .revenue-chart-container .recharts-area-area {
+                                    stroke: none !important;
+                                }
+                                .revenue-chart-container .recharts-curve,
+                                .revenue-chart-container .recharts-area-line,
+                                .revenue-chart-container .recharts-area-curve,
+                                .revenue-chart-container path.recharts-curve {
+                                    stroke: #B4912B !important;
+                                    stroke-width: 2.5px !important;
+                                }
+                                .revenue-chart-container .recharts-cartesian-axis-line {
+                                    stroke: #B4912B !important;
+                                    stroke-width: 1px !important;
+                                    opacity: 0.35 !important;
+                                }
+                                .revenue-chart-container .recharts-cartesian-grid-horizontal line {
+                                    stroke: #B4912B !important;
+                                    stroke-opacity: 0.12 !important;
+                                }
+                                .revenue-chart-container .recharts-dot,
+                                .revenue-chart-container .recharts-area-dot {
+                                    fill: #B4912B !important;
+                                    stroke: #ffffff !important;
+                                }
+                                .revenue-chart-container .recharts-text,
+                                .revenue-chart-container .recharts-cartesian-axis-tick-value,
+                                .revenue-chart-container text,
+                                .revenue-chart-container tspan {
+                                    font-weight: 400 !important;
+                                    font-size: 10px !important;
+                                    fill: #94a3b8 !important;
+                                }
+                            `}</style>
                             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                                     <defs>
                                         <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#A57C1E" stopOpacity={0.15} />
-                                            <stop offset="95%" stopColor="#A57C1E" stopOpacity={0} />
+                                            <stop offset="5%" stopColor="#B4912B" stopOpacity={0.18} />
+                                            <stop offset="95%" stopColor="#B4912B" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
 
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#B4912B" strokeOpacity={0.07} vertical={false} />
                                     <XAxis
                                         dataKey="name"
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fontSize: 11, fontWeight: 100, fill: '#94a3b8' }}
+                                        tick={{ fontSize: 10, fontWeight: 400, fill: '#94a3b8' }}
                                         tickMargin={10}
                                     />
                                     <YAxis
                                         axisLine={false}
                                         tickLine={false}
-                                        tick={{ fontSize: 11, fontWeight: 100, fill: '#94a3b8' }}
+                                        tick={{ fontSize: 10, fontWeight: 400, fill: '#94a3b8' }}
                                         tickFormatter={(val) => `₹${val}`}
                                         tickMargin={10}
                                     />
@@ -570,7 +605,7 @@ export default function DashboardPage() {
                                         content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                                 return (
-                                                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-lg text-left">
+                                                    <div className="bg-white dark:bg-slate-800 border border-[#B4912B]/25 dark:border-[#B4912B]/20 rounded-xl p-3 shadow-lg text-left">
                                                         <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
                                                             {payload[0].payload.name}
                                                         </p>
@@ -586,12 +621,12 @@ export default function DashboardPage() {
                                     <Area
                                         type="monotone"
                                         dataKey="revenue"
-                                        stroke="#A57C1E"
-                                        strokeWidth={3}
+                                        stroke="#B4912B"
+                                        strokeWidth={2.5}
                                         fillOpacity={1}
                                         fill="url(#colorRevenue)"
-                                        activeDot={{ r: 6, fill: '#000000', stroke: '#A57C1E', strokeWidth: 2 }}
-                                        dot={{ r: 4, fill: '#000000', stroke: '#A57C1E', strokeWidth: 1 }}
+                                        activeDot={{ r: 5, fill: '#B4912B', stroke: '#fff', strokeWidth: 2 }}
+                                        dot={{ r: 3.5, fill: '#B4912B', stroke: '#fff', strokeWidth: 1.5 }}
                                     />
                                 </AreaChart>
                             </ResponsiveContainer>
@@ -620,7 +655,7 @@ export default function DashboardPage() {
                             const isPositive = !pctText.startsWith('-');
 
                             return (
-                                <div key={idx} className="bg-slate-50/50 dark:bg-slate-800/20 border border-slate-100/60 dark:border-slate-800 rounded-xl p-3 text-left">
+                                <div key={idx} className="bg-slate-50/50 dark:bg-slate-800/20 border border-[#B4912B]/15 dark:border-[#B4912B]/10 rounded-xl p-3 text-left">
                                     <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block mb-1">
                                         {item.label}
                                     </span>
@@ -643,7 +678,7 @@ export default function DashboardPage() {
                 {/* Right Stack: Service Split & Recent Activity */}
                 <div className="lg:col-span-1 flex flex-col gap-4">
                     {/* Service Split Card */}
-                    <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden text-left">
+                    <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden text-left">
                         <h2 className="text-base font-bold text-slate-855 dark:text-slate-100 tracking-tight mb-3">Service Split</h2>
                         <div className="flex items-center justify-center gap-8 flex-wrap sm:flex-nowrap mt-2">
                             {/* Donut Chart */}
@@ -693,7 +728,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Recent Activity Card */}
-                    <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md transition-all !overflow-hidden text-left">
+                    <div className="!bg-white dark:!bg-slate-900 p-5 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] group hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden text-left">
                         <div className="flex items-center justify-between mb-3">
                             <h2 className="text-base font-bold text-slate-855 dark:text-slate-100 tracking-tight">Recent Activity</h2>
                             <Link to="/admin/bookings" className="text-xs font-bold text-[#B4912B] hover:underline whitespace-nowrap">

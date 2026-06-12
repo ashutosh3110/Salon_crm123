@@ -86,10 +86,6 @@ const settingSchema = new mongoose.Schema({
     whatsappPricing: {
         pricePerMessage: { type: Number, default: 0.50 },
         minPurchaseQty: { type: Number, default: 1000 }
-    },
-    bannerRadius: {
-        type: Number,
-        default: 20
     }
 }, {
     timestamps: true
