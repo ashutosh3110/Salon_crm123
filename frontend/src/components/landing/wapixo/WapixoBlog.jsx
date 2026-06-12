@@ -32,8 +32,8 @@ export default function WapixoBlog() {
     if (!Array.isArray(posts) || posts.length === 0) return null;
 
     return (
-        <section style={{ padding: '100px 1.5rem', maxWidth: '1200px', margin: '0 auto', background: 'var(--wapixo-bg)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '60px' }}>
+        <section style={{ padding: 'clamp(40px, 6vw, 80px) 1.5rem', maxWidth: '1200px', margin: '0 auto', background: 'var(--wapixo-bg)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '40px' }} className="blog-header-row">
                 <div>
                     <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.4em' }}>The Journal</span>
                     <h2 style={{ fontFamily: "'Inter', sans-serif", fontWeight: 200, fontSize: 'clamp(2.8rem, 5.5vw, 4.5rem)', color: 'var(--wapixo-text)', letterSpacing: '-0.035em', lineHeight: 1.05, margin: '0 0 1.25rem 0' }}>Latest Insights.</h2>
@@ -46,7 +46,7 @@ export default function WapixoBlog() {
                 </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '40px' }}>
+            <div className="blog-grid-container" style={{ gap: '40px' }}>
                 {posts.map((post, idx) => (
                     <motion.div
                         key={post._id}
@@ -56,7 +56,7 @@ export default function WapixoBlog() {
                         transition={{ delay: idx * 0.1, duration: 0.8 }}
                         onClick={() => navigate(`/blog/${post.slug}`)}
                         style={{ cursor: 'pointer' }}
-                        className="group"
+                        className="group blog-card"
                     >
                          <div style={{ aspectRatio: '16/10', overflow: 'hidden', border: '1px solid var(--wapixo-border)', marginBottom: '1.5rem' }}>
                             <img 
@@ -78,6 +78,46 @@ export default function WapixoBlog() {
                     </motion.div>
                 ))}
             </div>
+
+            <style>{`
+                .blog-grid-container {
+                    display: flex !important;
+                    overflow-x: auto !important;
+                    scroll-snap-type: x mandatory !important;
+                    padding: 10px 5px 30px !important;
+                    gap: 1.5rem !important;
+                    scrollbar-width: none;
+                    -ms-overflow-style: none;
+                }
+                .blog-grid-container::-webkit-scrollbar {
+                    display: none;
+                }
+                .blog-card {
+                    flex: 0 0 85% !important;
+                    scroll-snap-align: center;
+                    min-width: 280px;
+                }
+                @media (min-width: 768px) {
+                    .blog-grid-container {
+                        display: grid !important;
+                        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+                        gap: 40px !important;
+                        overflow-x: visible !important;
+                        padding: 0 !important;
+                    }
+                    .blog-card {
+                        flex: none !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .blog-header-row {
+                        flex-direction: column !important;
+                        align-items: flex-start !important;
+                        gap: 1rem !important;
+                        margin-bottom: 30px !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

@@ -9,7 +9,7 @@ import api from '../../../services/api';
 function PhoneFrame({ style, className = '', imgSrc }) {
     return (
         <div
-            className={`relative overflow-hidden ${className}`}
+            className={`relative overflow-hidden phone-frame-device ${className}`}
             style={{
                 width: '220px',
                 aspectRatio: '9 / 19.5',
@@ -21,15 +21,21 @@ function PhoneFrame({ style, className = '', imgSrc }) {
             }}
         >
             {/* Dynamic Island */}
-            <div style={{
-                position: 'absolute', inset: 0, top: 0, left: 0, right: 0, zIndex: 10,
-                height: '28px', background: '#1a1a1a',
-                display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '5px',
-                borderRadius: '2.2rem 2.2rem 0 0',
-            }}>
-                <div style={{
-                    width: '68px', height: '14px', background: '#000', borderRadius: '9999px',
-                }} />
+            <div 
+                className="phone-island"
+                style={{
+                    position: 'absolute', inset: 0, top: 0, left: 0, right: 0, zIndex: 10,
+                    height: '28px', background: '#1a1a1a',
+                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: '5px',
+                    borderRadius: '2.2rem 2.2rem 0 0',
+                }}
+            >
+                <div 
+                    className="phone-island-inner"
+                    style={{
+                        width: '68px', height: '14px', background: '#000', borderRadius: '9999px',
+                    }} 
+                />
             </div>
 
             {/* Screen image */}
@@ -65,6 +71,7 @@ export default function AppShowcase({ data }) {
     const { theme } = useTheme();
     const [activeIndex, setActiveIndex] = useState(0);
     const [appLinks, setAppLinks] = useState({});
+    const [phoneOffset, setPhoneOffset] = useState(150);
 
     // Fetch app links from CMS
     useEffect(() => {
@@ -73,6 +80,22 @@ export default function AppShowcase({ data }) {
                 setAppLinks(res.data.data.app_links);
             }
         }).catch(() => { });
+    }, []);
+
+    // Responsive phone offset detection
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth < 480) {
+                setPhoneOffset(60);
+            } else if (window.innerWidth < 768) {
+                setPhoneOffset(90);
+            } else {
+                setPhoneOffset(150);
+            }
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const sectionBg = theme === 'dark'
@@ -113,7 +136,7 @@ export default function AppShowcase({ data }) {
             };
         } else if (relPos === 1) { // Right Back
             return {
-                x: 150,
+                x: phoneOffset,
                 scale: 0.75,
                 zIndex: 5,
                 opacity: 0.8,
@@ -121,7 +144,7 @@ export default function AppShowcase({ data }) {
             };
         } else { // Left Back
             return {
-                x: -150,
+                x: -phoneOffset,
                 scale: 0.75,
                 zIndex: 1,
                 opacity: 0.8,
@@ -133,13 +156,13 @@ export default function AppShowcase({ data }) {
     return (
         <section
             style={{ background: sectionBg, overflow: 'hidden', position: 'relative' }}
-            className="py-24 sm:py-32"
+            className="py-12 sm:py-24 lg:py-32"
         >
             <div className="mx-auto max-w-7xl px-6 lg:px-8">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-20 lg:gap-x-8 items-center">
 
                     {/* ── LEFT: Phones (Soft, State-Driven Carousel) ── */}
-                    <div className="relative flex justify-center items-center"
+                    <div className="relative flex justify-center items-center phone-showcase-container"
                         style={{ height: '600px', perspective: '1500px' }}>
 
                         {[0, 1, 2].map((i) => {
@@ -169,6 +192,7 @@ export default function AppShowcase({ data }) {
                                     >
                                         <PhoneFrame
                                             imgSrc={images[i]}
+                                            className={isActive ? 'active-phone-frame' : ''}
                                             style={isActive ? {
                                                 width: '240px',
                                                 border: '9px solid #111',
@@ -270,7 +294,7 @@ export default function AppShowcase({ data }) {
                             ))}
                         </ul>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.75rem', marginTop: '1.5rem', maxWidth: '500px' }}>
+                        <div style={{ display: 'grid', gap: '0.75rem', marginTop: '1.5rem', maxWidth: '500px' }} className="app-download-grid">
                             {[
                                 { name: 'Admin App', icon: <Smartphone size={16} />, url: appLinks.admin_app },
                                 { name: 'Staff App', icon: <Smartphone size={16} />, url: appLinks.staff_app },
@@ -315,6 +339,78 @@ export default function AppShowcase({ data }) {
 
                 </div>
             </div>
+
+            <style>{`
+                .app-download-grid {
+                    grid-template-columns: repeat(3, 1fr) !important;
+                }
+                .app-download-btn {
+                    padding: 0.8rem 0.5rem !important;
+                    font-size: 0.75rem !important;
+                }
+                .phone-frame-device {
+                    width: 220px !important;
+                }
+                .active-phone-frame {
+                    width: 240px !important;
+                }
+                @media (max-width: 768px) {
+                    .phone-showcase-container {
+                        height: 420px !important;
+                    }
+                    .phone-frame-device {
+                        width: 140px !important;
+                        border-width: 5px !important;
+                        border-radius: 1.8rem !important;
+                    }
+                    .active-phone-frame {
+                        width: 160px !important;
+                        border-width: 6px !important;
+                        border-radius: 2rem !important;
+                    }
+                    .phone-island {
+                        height: 18px !important;
+                        padding-bottom: 3px !important;
+                    }
+                    .phone-island-inner {
+                        width: 44px !important;
+                        height: 9px !important;
+                    }
+                    .app-download-btn {
+                        padding: 0.6rem 0.25rem !important;
+                        font-size: 0.65rem !important;
+                        gap: 0.25rem !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .phone-showcase-container {
+                        height: 320px !important;
+                    }
+                    .phone-frame-device {
+                        width: 105px !important;
+                        border-width: 4px !important;
+                        border-radius: 1.4rem !important;
+                    }
+                    .active-phone-frame {
+                        width: 120px !important;
+                        border-width: 4.5px !important;
+                        border-radius: 1.6rem !important;
+                    }
+                    .phone-island {
+                        height: 14px !important;
+                        padding-bottom: 2px !important;
+                    }
+                    .phone-island-inner {
+                        width: 32px !important;
+                        height: 6px !important;
+                    }
+                    .app-download-btn {
+                        padding: 0.5rem 0.15rem !important;
+                        font-size: 0.55rem !important;
+                        gap: 0.15rem !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

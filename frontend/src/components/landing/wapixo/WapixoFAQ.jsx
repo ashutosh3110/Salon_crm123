@@ -101,7 +101,7 @@ export default function WapixoFAQ({ data, ctaData }) {
     return (
         <section style={{
             background: 'var(--wapixo-bg)',
-            padding: '40px 1.5rem 60px',
+            padding: 'clamp(30px, 6vw, 60px) 1.5rem clamp(30px, 6vw, 60px)',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"

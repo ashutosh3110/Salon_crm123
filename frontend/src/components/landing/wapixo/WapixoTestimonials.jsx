@@ -9,23 +9,14 @@ import landingData from '../../../data/landingMockData.json';
 
 const testimonials = landingData.testimonials.map((t, i) => ({ ...t, id: i + 1 }));
 
-
 export default function WapixoTestimonials({ data }) {
     const { theme } = useTheme();
-    const [isMobile, setIsMobile] = useState(false);
     const displayTestimonials = data && data.length > 0 ? data : testimonials;
     const [showForm, setShowForm] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [rating, setRating] = useState(5);
     const [hoverRating, setHoverRating] = useState(0);
-
-    useState(() => {
-        const check = () => setIsMobile(window.innerWidth < 768);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -50,11 +41,10 @@ export default function WapixoTestimonials({ data }) {
             setIsSubmitting(false);
         }
     };
-
     return (
         <section style={{
             background: 'var(--wapixo-bg)',
-            padding: '60px 1.5rem 60px',
+            padding: 'clamp(40px, 5vw, 60px) 1.5rem',
             position: 'relative',
             overflow: 'hidden',
             fontFamily: "'Inter', sans-serif"

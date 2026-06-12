@@ -120,16 +120,15 @@ export default function Features({ data, statsData }) {
                     Streamlined booking. Advanced analytics. Elegant client management.<br />Designed for the elite.
                 </p>
             </motion.div>
-
             {/* Feature grid */}
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 whileInView="visible"
                 viewport={{ once: true, margin: '-80px' }}
+                className="features-grid-container"
                 style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
                     gap: '1px',
                     maxWidth: '1100px',
                     margin: '0 auto',
@@ -237,6 +236,42 @@ export default function Features({ data, statsData }) {
                     </div>
                 ))}
             </motion.div>
+
+            <style>{`
+                .features-grid-container {
+                    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+                }
+                @media (max-width: 768px) {
+                    .features-grid-container {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                    }
+                    .features-grid-container > div {
+                        padding: 1.25rem 1rem !important;
+                    }
+                    .features-grid-container h3 {
+                        font-size: 0.95rem !important;
+                    }
+                    .features-grid-container p {
+                        font-size: 0.75rem !important;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .features-grid-container {
+                        grid-template-columns: repeat(2, 1fr) !important;
+                    }
+                    .features-grid-container > div {
+                        padding: 1rem 0.6rem !important;
+                    }
+                    .features-grid-container h3 {
+                        font-size: 0.82rem !important;
+                        margin-bottom: 0.5rem !important;
+                    }
+                    .features-grid-container p {
+                        font-size: 0.68rem !important;
+                        line-height: 1.5 !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

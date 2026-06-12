@@ -36,20 +36,11 @@ const DEFAULT_COMPARISONS = [
 
 export default function WapixoSolutions({ data, header = {} }) {
     const { theme } = useTheme();
-    const [isMobile, setIsMobile] = useState(false);
 
     // Use CMS data if available, else fallback to defaults
     const comparisons = (Array.isArray(data) && data.length > 0) ? data : DEFAULT_COMPARISONS;
     const overline  = header.overline  || 'The Transition';
     const headline  = header.headline  || 'From Chaos to Command.';
-
-    useEffect(() => {
-        const check = () => setIsMobile(window.innerWidth < 768);
-        check();
-        window.addEventListener('resize', check);
-        return () => window.removeEventListener('resize', check);
-    }, []);
-
 
     return (
         <section style={{
@@ -111,9 +102,9 @@ export default function WapixoSolutions({ data, header = {} }) {
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true, margin: "-100px" }}
                             transition={{ duration: 0.8, delay: idx * 0.1 }}
+                            className="solutions-grid-item"
                             style={{
                                 display: 'grid',
-                                gridTemplateColumns: isMobile ? '1fr' : '1fr 100px 1.2fr',
                                 gap: '2.5rem',
                                 alignItems: 'center',
                                 paddingBottom: '2.5rem',
@@ -130,23 +121,22 @@ export default function WapixoSolutions({ data, header = {} }) {
                                 <p style={{ color: 'var(--wapixo-text-muted)', fontSize: '0.9rem', lineHeight: 1.7, fontWeight: 400 }}>{item.problemDesc}</p>
                             </div>
 
-                            {/* Center Arrow — Hidden on Mobile */}
-                            {!isMobile && (
-                                <motion.div
-                                    animate={{
-                                        x: [0, 15, 0],
-                                        opacity: [0.2, 0.6, 0.2]
-                                    }}
-                                    transition={{
-                                        duration: 2.5,
-                                        repeat: Infinity,
-                                        ease: "easeInOut"
-                                    }}
-                                    style={{ display: 'flex', justifyContent: 'center' }}
-                                >
-                                    <ArrowRight size={48} strokeWidth={0.5} color="var(--wapixo-primary)" style={{ opacity: 0.8 }} />
-                                </motion.div>
-                            )}
+                            {/* Center Arrow */}
+                            <motion.div
+                                className="solutions-center-arrow"
+                                animate={{
+                                    x: [0, 15, 0],
+                                    opacity: [0.2, 0.6, 0.2]
+                                }}
+                                transition={{
+                                    duration: 2.5,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                style={{ display: 'flex', justifyContent: 'center' }}
+                            >
+                                <ArrowRight size={48} strokeWidth={0.5} color="var(--wapixo-primary)" style={{ opacity: 0.8 }} />
+                            </motion.div>
 
                             {/* Solution Side */}
                              <motion.div
@@ -194,6 +184,23 @@ export default function WapixoSolutions({ data, header = {} }) {
                     ))}
                 </div>
             </div>
+
+            <style>{`
+                .solutions-grid-item {
+                    grid-template-columns: 1fr 100px 1.2fr;
+                }
+                .solutions-center-arrow {
+                    display: flex !important;
+                }
+                @media (max-width: 767px) {
+                    .solutions-grid-item {
+                        grid-template-columns: 1fr !important;
+                    }
+                    .solutions-center-arrow {
+                        display: none !important;
+                    }
+                }
+            `}</style>
         </section>
     );
 }

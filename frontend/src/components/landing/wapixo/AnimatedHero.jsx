@@ -152,7 +152,7 @@ export default function AnimatedHero({ data = {} }) {
                     </div>
 
                     {/* Stats Row */}
-                    <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', marginBottom: '2rem' }}>
+                    <div style={{ display: 'flex', gap: '2.5rem', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap' }} className="hero-stats-row">
                         {stats.map((stat, i) => (
                             <div key={stat.label} style={{ display: 'flex', alignItems: 'center', gap: '2.5rem' }}>
                                 <div>
@@ -164,7 +164,7 @@ export default function AnimatedHero({ data = {} }) {
                                     </div>
                                 </div>
                                 {i !== stats.length - 1 && (
-                                    <div style={{ height: '24px', width: '1px', background: 'var(--wapixo-border)', opacity: 0.4 }} />
+                                    <div style={{ height: '24px', width: '1px', background: 'var(--wapixo-border)', opacity: 0.4 }} className="stats-divider" />
                                 )}
                             </div>
                         ))}
@@ -360,26 +360,42 @@ export default function AnimatedHero({ data = {} }) {
                 @media (max-width: 1024px) {
                     .hero-container {
                         grid-template-columns: 1fr !important;
-                        gap: 4rem !important;
+                        gap: 3rem !important;
                         text-align: center;
-                        padding-top: 4rem;
-                        padding-bottom: 4rem;
+                        padding-top: 2rem;
+                        padding-bottom: 2rem;
                     }
                     .hero-container > div:first-child {
                         display: flex;
                         flex-direction: column;
                         align-items: center;
                     }
+                    .hero-stats-row {
+                        justify-content: center !important;
+                        gap: 1.5rem !important;
+                    }
+                    .stats-divider {
+                        display: none !important;
+                    }
                 }
                 @media (max-width: 768px) {
                     .hero-widget {
-                        display: none !important;
+                        display: flex !important;
+                        width: 100% !important;
+                        max-width: 380px !important;
+                        margin: 0 auto !important;
                     }
                     section {
                         min-height: auto !important;
                         height: auto !important;
-                        padding-top: 8rem;
-                        padding-bottom: 6rem;
+                        padding-top: 4rem;
+                        padding-bottom: 4rem;
+                    }
+                }
+                @media (max-width: 480px) {
+                    .hero-widget {
+                        transform: scale(0.9);
+                        margin-top: -1rem !important;
                     }
                 }
             `}</style>

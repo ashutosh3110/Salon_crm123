@@ -14,7 +14,7 @@ export default function WapixoNavbar() {
     // Close menu on resize to desktop
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth >= 768) setIsMenuOpen(false);
+            if (window.innerWidth >= 1024) setIsMenuOpen(false);
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
@@ -65,9 +65,9 @@ export default function WapixoNavbar() {
                         src={theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png"}
                         alt="Wapixo Logo"
                         style={{
-                            height: 'clamp(120px, 35vw, 180px)',
+                            height: 'clamp(80px, 18vw, 130px)',
                             width: 'auto',
-                            maxWidth: '70vw',
+                            maxWidth: '60vw',
                             objectFit: 'contain',
                             transform: 'translateY(2px)',
                             filter: isDark ? 'drop-shadow(0 0 15px rgba(0,0,0,0.7))' : 'none',
@@ -79,7 +79,7 @@ export default function WapixoNavbar() {
                 {/* Desktop Nav Links — centered */}
                 <div style={{
                     display: 'flex',
-                    gap: '3rem',
+                    gap: '2.5rem',
                     alignItems: 'center',
                     position: 'absolute',
                     left: '50%',
@@ -89,23 +89,11 @@ export default function WapixoNavbar() {
                 >
                     {navItems.map((item) => (
                         item === 'Contact' || item === 'Blog' ? (
-                            <Link
-                                key={item}
-                                to={`/${item.toLowerCase()}`}
-                                style={linkStyle}
-                                onMouseEnter={(e) => (e.target.style.color = 'var(--wapixo-text)')}
-                                onMouseLeave={(e) => (e.target.style.color = 'var(--wapixo-text-muted)')}
-                            >
+                            <Link key={item} to={`/${item.toLowerCase()}`} style={linkStyle}>
                                 {item}
                             </Link>
                         ) : (
-                            <a
-                                key={item}
-                                href={`/#${item.toLowerCase()}`}
-                                style={linkStyle}
-                                onMouseEnter={(e) => (e.target.style.color = 'var(--wapixo-text)')}
-                                onMouseLeave={(e) => (e.target.style.color = 'var(--wapixo-text-muted)')}
-                            >
+                            <a key={item} href={`/#${item.toLowerCase()}`} style={linkStyle}>
                                 {item}
                             </a>
                         )
@@ -295,11 +283,11 @@ export default function WapixoNavbar() {
 
             {/* Responsive CSS */}
             <style>{`
-                @media (min-width: 768px) {
+                @media (min-width: 1024px) {
                     .hidden-mobile-nav { display: flex !important; }
                     .show-mobile-nav { display: none !important; }
                 }
-                @media (max-width: 767px) {
+                @media (max-width: 1023px) {
                     .hidden-mobile-nav { display: none !important; }
                     .show-mobile-nav { display: flex !important; }
                 }

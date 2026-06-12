@@ -107,6 +107,16 @@ const INITIAL_CMS_DATA = {
         image_url_2: '/image1.png',
         image_url_3: '/image1.png'
     },
+    landing_multi_device_showcase: {
+        overline: 'Unified Ecosystem',
+        headline_part1: 'One platform.',
+        headline_part2: 'All devices.',
+        desc: 'Manage bookings, view live dashboard analytics, update catalog styles, and run your client membership programs seamlessly from desktop, tablet, and mobile.',
+        monitor_image_url: '/image1.png',
+        laptop_image_url: '/image1.png',
+        tablet_image_url: '/image1.png',
+        phone_image_url: '/image1.png'
+    },
     landing_scissors_morph: {
         overline: 'Crafted for Artists',
         title: 'Precision Tools for',
@@ -511,6 +521,32 @@ export default function SACMSPage() {
                                         {renderInput('landing_app_showcase', 'image_url_1', 'Mobile Screen 1 URL', 'image')}
                                         {renderInput('landing_app_showcase', 'image_url_2', 'Mobile Screen 2 URL', 'image')}
                                         {renderInput('landing_app_showcase', 'image_url_3', 'Mobile Screen 3 URL', 'image')}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Multi-Device Showcase Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-purple-50 flex items-center justify-center text-primary">
+                                        <Monitor size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Multi-Device Showcase Section</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    {renderInput('landing_multi_device_showcase', 'overline', 'Overline Text')}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_multi_device_showcase', 'headline_part1', 'Headline (Line 1)')}
+                                        {renderInput('landing_multi_device_showcase', 'headline_part2', 'Headline (Line 2 - Bold)')}
+                                    </div>
+                                    {renderInput('landing_multi_device_showcase', 'desc', 'Description / Subtitle', 'textarea')}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-border">
+                                        {renderInput('landing_multi_device_showcase', 'monitor_image_url', 'Monitor Mockup Image (Preview)', 'image')}
+                                        {renderInput('landing_multi_device_showcase', 'laptop_image_url', 'Laptop Mockup Image (Preview)', 'image')}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {renderInput('landing_multi_device_showcase', 'tablet_image_url', 'Tablet Mockup Image (Preview)', 'image')}
+                                        {renderInput('landing_multi_device_showcase', 'phone_image_url', 'Smartphone Mockup Image (Preview)', 'image')}
                                     </div>
                                 </div>
                             </section>

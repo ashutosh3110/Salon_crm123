@@ -71,7 +71,7 @@ export default function WapixoPricing() {
             id="pricing"
             style={{
                 background: 'var(--wapixo-bg)',
-                padding: '80px 1.5rem 100px',
+                padding: 'clamp(40px, 6vw, 80px) 1.5rem',
                 position: 'relative',
                 overflow: 'hidden',
                 fontFamily: "'Inter', sans-serif",
@@ -480,26 +480,26 @@ export default function WapixoPricing() {
                                                 </li>
                                             ))
                                             : plan.features && typeof plan.features === 'object'
-                                            ? Object.entries(plan.features)
-                                                .filter(([, v]) => v === true)
-                                                .map(([key]) => (
-                                                    <li
-                                                        key={key}
-                                                        style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            gap: '0.6rem',
-                                                            marginBottom: '0.45rem',
-                                                            fontSize: '0.78rem',
-                                                            color: 'var(--wapixo-text-muted)',
-                                                            fontWeight: 400,
-                                                        }}
-                                                    >
-                                                        <Check size={12} color="var(--wapixo-primary)" />
-                                                        {featureLabels[key] || key}
-                                                    </li>
-                                                ))
-                                            : null}
+                                                ? Object.entries(plan.features)
+                                                    .filter(([, v]) => v === true)
+                                                    .map(([key]) => (
+                                                        <li
+                                                            key={key}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '0.6rem',
+                                                                marginBottom: '0.45rem',
+                                                                fontSize: '0.78rem',
+                                                                color: 'var(--wapixo-text-muted)',
+                                                                fontWeight: 400,
+                                                            }}
+                                                        >
+                                                            <Check size={12} color="var(--wapixo-primary)" />
+                                                            {featureLabels[key] || key}
+                                                        </li>
+                                                    ))
+                                                : null}
                                     </ul>
 
                                     {/* CTA Button */}
