@@ -189,7 +189,7 @@ exports.customerLoginOtp = async (req, res) => {
         }
 
         // Remove OTP record after successful verification only when we have a real tenantId
-        if (otpRecord && !isDemoOtp) await Otp.deleteOne({ _id: otpRecord._id });
+        if (otpRecord ) await Otp.deleteOne({ _id: otpRecord._id });
 
         // 3. Proceed with Global login/registration
         // Find customer by phone across the whole system
