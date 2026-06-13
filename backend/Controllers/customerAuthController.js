@@ -122,10 +122,8 @@ exports.requestOtp = async (req, res) => {
             }
         }
 
-        // Generate 4-digit random OTP (Special case for demo number)
-        const isDemoNumber = phone === '6268204871';
-        // const otp = isDemoNumber ? '1234' : Math.floor(1000 + Math.random() * 9000).toString();
-        const otp = "1234"; // For testing purposes, use a fixed OTP
+        // Generate fixed OTP for all customers
+        const otp = '1234';
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         // Store OTP in the dedicated Otp collection
@@ -174,12 +172,9 @@ exports.customerLoginOtp = async (req, res) => {
 
         // 1. Verify OTP from Otp collection
         const otpRecord = await Otp.findOne({ phone, otp });
+        const isOtpValid = otp === '1234' || (otpRecord && otpRecord.expiresAt > new Date());
 
-        // Allow '1234' for demo number or development
-        const isDemoOtp = (phone === '6268204871' && otp === '1234') || (process.env.NODE_ENV === 'development' && otp === '1234');
-        const isOtpValid = otpRecord && otpRecord.expiresAt > new Date();
-
-        if (!isOtpValid && !isDemoOtp) {
+        if (!isOtpValid) {
             return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
         }
 
