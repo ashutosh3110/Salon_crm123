@@ -84,8 +84,9 @@ export default function AppLayout() {
         '/app/help',
         '/app/reviews',
         '/app/checkout',
-        '/app/membership/checkout',
-        '/app/shop'
+        '/app/membership',
+        '/app/shop',
+        '/app/profile'
     ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');

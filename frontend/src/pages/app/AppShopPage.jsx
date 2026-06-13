@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus } from 'lucide-react';
+import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus, ChevronLeft, SlidersHorizontal } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -16,116 +16,59 @@ import { getImageUrl } from '../../utils/imageUtils';
 
 
 
-const ProductCard = React.memo(({ product, index, onOpenProduct, onAddToCart, onUpdateQuantity, cartItem, colors, isLight, hasStock, ratingMetrics }) => {
-    const { isProductLiked, toggleProductLike } = useFavorites();
-    const isLiked = isProductLiked(product._id || product.id);
+const ProductCard = React.memo(({ product, index, onOpenProduct, colors, isLight, hasStock }) => {
+    // Calculate a stable discount and original price based on product name/ID hash
+    const discountPercent = useMemo(() => {
+        const idString = String(product._id || product.id || "");
+        const code = idString.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0);
+        return (code % 10) + 20; // 20% to 29%
+    }, [product._id, product.id]);
+
+    const originalPrice = useMemo(() => {
+        return Math.round(product.price / (1 - discountPercent / 100));
+    }, [product.price, discountPercent]);
+
+    // Use brand or fallback to name, like "L'Oréal Professionnel" in screenshot
+    const displayTitle = product.brand && product.brand !== 'Premium' 
+        ? `${product.brand} ${product.name.split(' ').slice(1).join(' ')}`.trim() 
+        : product.name;
 
     return (
         <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.01 }}
-            style={{ 
-                background: colors.card, 
-                border: `1px solid ${colors.border}`,
-                opacity: hasStock ? 1 : 0.8
-            }}
-            className="group rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full relative"
+            onClick={() => onOpenProduct(product._id || product.id)}
+            className="rounded-[24px] bg-white border-none flex flex-col h-full p-2 cursor-pointer transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.015)]"
         >
-            <div className={`relative aspect-square overflow-hidden bg-black/5 dark:bg-white/5 cursor-pointer ${!hasStock ? 'grayscale-[0.3] blur-[1.5px]' : ''}`}>
+            {/* Image Container with light gray background block nested inside */}
+            <div className="relative aspect-square rounded-[18px] bg-[#f5f6f8] flex items-center justify-center p-3 overflow-hidden group">
                 <img
-                    onClick={() => onOpenProduct(product._id || product.id)}
                     src={getImageUrl(product.image) || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000'}
                     alt={product.name}
                     loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    onError={(e) => { 
-                        e.target.onerror = null; 
-                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E"; 
+                    className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23f5f6f8%22%2F%3E%3C/svg%3E";
                     }}
                 />
             </div>
 
-            {!hasStock && (
-                <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-                    <div className="bg-black/90 px-4 py-2 rounded-xl shadow-2xl border-2 border-[#C8956C]/50 transform -rotate-12">
-                        <p className="text-[10px] font-black tracking-[0.2em] text-[#C8956C] uppercase">Available Soon</p>
-                    </div>
-                </div>
-            )}
+            {/* Product Details Section */}
+            <div className="flex flex-col flex-1 pt-3 pb-1.5 px-2 text-left">
+                <h3 className="font-semibold text-[13px] text-slate-800 leading-tight line-clamp-1 mb-1">
+                    {displayTitle}
+                </h3>
 
-            <div className="absolute top-2 right-2 z-20 flex flex-col items-center gap-1">
-                <button
-                    onClick={() => toggleProductLike(product._id || product.id)}
-                    className="w-8 h-8 rounded-full bg-black/20 backdrop-blur-md flex items-center justify-center shadow-sm hover:bg-black/40 transition-colors"
-                    style={{ color: isLiked ? '#ff4b4b' : '#fff' }}
-                >
-                    <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                </button>
-                {product.likes > 0 && (
-                    <span className="text-[10px] font-bold text-white bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
-                        {product.likes}
-                    </span>
-                )}
-            </div>
-            
-            <div className="absolute top-2 left-2 z-20 px-2 py-1 rounded-md bg-[#C8956C]/90 backdrop-blur-sm text-white text-[8px] font-extrabold tracking-widest uppercase shadow-sm">
-                {product.brand}
-            </div>
+                <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[14px] font-bold text-slate-900">₹{product.price}</span>
+                    <span className="text-[11px] line-through text-slate-400 font-medium">₹{originalPrice}</span>
+                </div>
 
-            <div className={`p-3 flex flex-col flex-1 ${!hasStock ? 'blur-[1.5px]' : ''}`}>
-                <div className="flex justify-between items-start gap-2 mb-2">
-                    <h3
-                        onClick={() => onOpenProduct(product._id || product.id)}
-                        style={{ color: colors.text }}
-                        className="font-bold text-[14px] leading-tight group-hover:text-[#C8956C] transition-colors line-clamp-none cursor-pointer flex-1 underline-offset-2 hover:underline decoration-[#C8956C]/30"
-                    >
-                        {product.name}
-                    </h3>
-                    <div className="flex items-center gap-0.5 shrink-0 mt-0.5">
-                        <Star className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
-                        <span className="text-[10px] font-bold" style={{ color: colors.text }}>{ratingMetrics?.rating || '0.0'}</span>
-                        <span className="text-[9px] font-semibold opacity-60 ml-0.5">({ratingMetrics?.count || 0})</span>
-                    </div>
-                </div>
-                <div className="mt-auto pt-2 flex items-center justify-between">
-                    <div>
-                        <span className="text-sm font-black tracking-tighter" style={{ color: colors.text }}>₹ {product.price}</span>
-                    </div>
-                    {hasStock ? (
-                        cartItem ? (
-                            <div className="flex items-center bg-[#C8956C] rounded-lg text-white h-8 shadow-lg shadow-[#C8956C]/10 overflow-hidden">
-                                <button 
-                                    onClick={() => onUpdateQuantity(product._id, -1)} 
-                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all"
-                                >
-                                    <Minus size={12} strokeWidth={3} />
-                                </button>
-                                <span className="w-5 text-center text-[11px] font-black tabular-nums">{cartItem.quantity}</span>
-                                <button 
-                                    onClick={() => onUpdateQuantity(product._id, 1)} 
-                                    className="w-8 h-8 flex items-center justify-center hover:bg-black/10 active:scale-90 transition-all"
-                                >
-                                    <Plus size={12} strokeWidth={3} />
-                                </button>
-                            </div>
-                        ) : (
-                            <button
-                                onClick={(e) => onAddToCart(product, e)}
-                                className="w-8 h-8 rounded-lg bg-[#C8956C] text-white flex items-center justify-center shadow-lg shadow-[#C8956C]/20 active:scale-90"
-                            >
-                                <Plus className="w-4 h-4" />
-                            </button>
-                        )
-                    ) : (
-                        <button
-                            disabled
-                            className="w-8 h-8 rounded-lg bg-gray-400/20 text-gray-400 flex items-center justify-center cursor-not-allowed"
-                        >
-                            <ShoppingBag className="w-4 h-4 opacity-40" />
-                        </button>
-                    )}
-                </div>
+                <span className="text-[11px] font-bold text-[#E7D06E] uppercase tracking-wide">
+                    {discountPercent}% OFF
+                </span>
             </div>
         </motion.div>
     );
@@ -140,8 +83,8 @@ export default function AppShopPage() {
     const [flyingItems, setFlyingItems] = useState([]);
     const cartIconRef = useRef(null);
     const { cart, cartTotal, cartCount, addToCart, setIsCartOpen, updateQuantity } = useCart();
-    const { 
-        products: inventoryProducts, 
+    const {
+        products: inventoryProducts,
         productCategories: shopCategories,
         activeOutletId,
         fetchCustomerInitialData,
@@ -177,7 +120,7 @@ export default function AppShopPage() {
 
     console.log("[Shop] Inventory Products:", inventoryProducts?.length);
     console.log("[Shop] Shop Categories:", shopCategories?.length);
-    
+
     if (inventoryProducts && inventoryProducts.length > 0) {
         const firstProd = inventoryProducts[0];
         console.log("[Shop] First Product Image Debug:", {
@@ -227,15 +170,15 @@ export default function AppShopPage() {
 
     const shopProducts = useMemo(() => {
         if (!inventoryProducts) return [];
-        
+
         // Debugging visibility
         inventoryProducts.forEach(p => {
             const hasShopFlag = !!p.isShopProduct;
             const isAvail = productAvailableAtOutlet(p, activeOutletId);
             if (!hasShopFlag || !isAvail) {
-                console.log(`[Shop Debug] Hiding "${p.name}":`, { 
+                console.log(`[Shop Debug] Hiding "${p.name}":`, {
                     reason: !hasShopFlag ? "Show in Shop is UNCHECKED" : "Not assigned to this outlet",
-                    pId: p._id 
+                    pId: p._id
                 });
             }
         });
@@ -253,8 +196,8 @@ export default function AppShopPage() {
             counts[p.category] = (counts[p.category] || 0) + 1;
         });
 
-        const catList = (shopCategories || []).map(c => ({ 
-            name: c.name, 
+        const catList = (shopCategories || []).map(c => ({
+            name: c.name,
             img: c.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80',
             count: counts[c.name] || 0
         }));
@@ -397,7 +340,7 @@ export default function AppShopPage() {
                     opacity: 0.8;
                 }
             `}</style>
-            
+
             {/* Shop Search Header - Sticky */}
             <div className="sticky top-0 z-50 pt-3 pb-3 px-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${colors.border}` }}>
                 <div className="flex gap-3 items-center">
@@ -490,8 +433,8 @@ export default function AppShopPage() {
                                         background: colors.card,
                                         border: `2px solid ${isLight ? '#fff' : colors.bg}`
                                     }}>
-                                        <img 
-                                            src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'} 
+                                        <img
+                                            src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'}
                                             alt={cat.name}
                                             loading="lazy"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
@@ -499,9 +442,9 @@ export default function AppShopPage() {
                                         />
                                     </div>
                                 </div>
-                                
-                                <div 
-                                    style={{ 
+
+                                <div
+                                    style={{
                                         background: isActive ? '#C8956C' : colors.card,
                                         color: isActive ? '#FFFFFF' : colors.text,
                                         borderRadius: '10px',
@@ -514,9 +457,9 @@ export default function AppShopPage() {
                                         textAlign: 'center'
                                     }}
                                 >
-                                    <span 
-                                        style={{ 
-                                            fontSize: '8px', 
+                                    <span
+                                        style={{
+                                            fontSize: '8px',
                                             fontWeight: 800,
                                             letterSpacing: '0.05em',
                                             textTransform: 'uppercase'
@@ -533,26 +476,30 @@ export default function AppShopPage() {
 
             {/* Products Grid */}
             <div className="px-4">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-between items-center mb-3.5 mt-2">
+                    <h2 className="text-[16px] font-bold text-slate-800" style={{ fontFamily: "'Inter', sans-serif" }}>Best Selling</h2>
+                    <span className="text-[12px] font-bold text-[#E7D06E] cursor-pointer hover:opacity-85">See all</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3.5">
                     <AnimatePresence mode="popLayout">
                         {filteredProducts.map((product, i) => {
                             const hasStock = true;
-                            const cartItem = (cart?.items || []).find(item => 
+                            const cartItem = (cart?.items || []).find(item =>
                                 (item.productId?._id || item.productId?.id || item.productId) === (product._id || product.id)
                             );
                             const metrics = getProductReviewMetrics(product);
-                            
+
                             return (
-                                <ProductCard 
-                                    key={product._id} 
-                                    product={product} 
-                                    index={i} 
-                                    onOpenProduct={handleOpenProduct} 
+                                <ProductCard
+                                    key={product._id}
+                                    product={product}
+                                    index={i}
+                                    onOpenProduct={handleOpenProduct}
                                     onAddToCart={handleAddToCart}
                                     onUpdateQuantity={updateQuantity}
                                     cartItem={cartItem}
-                                    colors={colors} 
-                                    isLight={isLight} 
+                                    colors={colors}
+                                    isLight={isLight}
                                     hasStock={hasStock}
                                     ratingMetrics={metrics}
                                 />

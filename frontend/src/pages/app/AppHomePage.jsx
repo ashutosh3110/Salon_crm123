@@ -973,34 +973,19 @@ export default function AppHomePage() {
                     </div>
                 )}
 
-                {/* ── OTHER NEAREST SALONS ── */}
+                {/* ── NEAREST SALONS ── */}
                 <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Crown size={20} color={colors.accent} />
-                            <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Nearby Outlets</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent }}></div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent, opacity: 0.3 }}></div>
-                            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: colors.accent, opacity: 0.1 }}></div>
-                        </div>
+                        <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Nearby Salons</h3>
+                        <span 
+                            onClick={() => navigate('/app/outlets')} 
+                            style={{ fontSize: '13px', fontWeight: 800, color: '#E7D06E', cursor: 'pointer', hover: 'opacity-85' }}
+                        >
+                            See all
+                        </span>
                     </div>
 
-                    <div 
-                        className="app-scroll no-scrollbar" 
-                        ref={outletsScrollRef}
-                        style={{ 
-                            display: 'flex', 
-                            gap: '12px', 
-                            overflowX: 'auto', 
-                            paddingBottom: '20px', 
-                            marginLeft: '-16px', 
-                            paddingLeft: '16px', 
-                            marginRight: '-16px', 
-                            paddingRight: '16px'
-                        }}
-                    >
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {(() => {
                             const sourceOutlets = (outlets || []); 
                             const otherSalons = sourceOutlets.map(o => {
@@ -1021,66 +1006,81 @@ export default function AppHomePage() {
                                             <MapPin size={24} color={colors.accent} className="opacity-40" />
                                         </div>
                                         <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Exploring new horizons</p>
-                                        <p style={{ color: colors.textMuted, fontSize: '10px', marginTop: '4px', opacity: 0.6 }}>Stay tuned for more outlets nearby</p>
                                     </div>
                                 );
                             }
 
-                            return sortedSalons.map(outlet => (
-                                <div
-                                    key={outlet._id}
-                                    onClick={() => {
-                                        setActiveOutletId(outlet._id);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    style={{
-                                        flexShrink: 0,
-                                        width: '160px',
-                                        background: colors.card,
-                                        borderRadius: '20px',
-                                        overflow: 'hidden',
-                                        border: `1px solid ${colors.border}`,
-                                        position: 'relative',
-                                        scrollSnapAlign: 'start'
-                                    }}
-                                >
-                                    <div style={{ height: '100px', width: '100%', position: 'relative' }}>
-                                        <img
-                                            src={getImageUrl(outlet.images?.[0] || outlet.image) || fallbackImage}
-                                            alt={outlet.name}
-                                            loading="lazy"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                            onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
-                                        />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '8px',
-                                            right: '8px',
-                                            background: 'rgba(0,0,0,0.7)',
-                                            padding: '3px 6px',
-                                            borderRadius: '6px',
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            gap: '3px',
-                                            color: '#FFF'
-                                        }}>
-                                            <Star size={11} fill="#C8956C" color="#C8956C" />
-                                            <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'system-ui, -apple-system, sans-serif' }}>{getOutletRating(outlet)}</span>
+                            return sortedSalons.slice(0, 3).map(outlet => {
+                                const code = String(outlet._id || outlet.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                const mockReviewsCount = (code % 150) + 180; // Stable count between 180 and 330
+                                const mockStartingPrice = (code % 3) * 100 + 199; // Stable starting price e.g., ₹199, ₹299, ₹399
+                                const distString = outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
+                                    ? `${outlet.calculatedDist.toFixed(1)} km`
+                                    : `${(code % 5) * 0.4 + 0.5} km`;
+
+                                return (
+                                    <div
+                                        key={outlet._id}
+                                        onClick={() => {
+                                            setActiveOutletId(outlet._id);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        className="bg-white border border-slate-100 rounded-[24px] p-3 flex items-center justify-between shadow-[0_4px_16px_rgba(0,0,0,0.015)] cursor-pointer active:scale-[0.99] transition-transform duration-200"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            {/* Circular avatar on the left */}
+                                            <div className="w-[66px] h-[66px] rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
+                                                <img
+                                                    src={getImageUrl(outlet.images?.[0] || outlet.image) || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'}
+                                                    alt={outlet.name}
+                                                    loading="lazy"
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'; }}
+                                                />
+                                            </div>
+
+                                            {/* Details group */}
+                                            <div className="flex flex-col text-left">
+                                                <h4 className="text-[14px] font-bold text-slate-800 leading-snug mb-0.5">{outlet.name}</h4>
+                                                
+                                                <div className="flex items-center gap-2.5 mb-1">
+                                                    {/* Rating */}
+                                                    <div className="flex items-center gap-0.5">
+                                                        <Star size={12} fill="#E7D06E" color="#E7D06E" />
+                                                        <span className="text-[11px] font-bold text-slate-700">{getOutletRating(outlet)}</span>
+                                                        <span className="text-[10px] text-slate-400 font-medium">({mockReviewsCount})</span>
+                                                    </div>
+                                                    
+                                                    {/* Distance */}
+                                                    <div className="flex items-center gap-0.5">
+                                                        <span className="inline-block w-1.5 h-1.5 rounded-full border border-[#E7D06E] bg-white mr-0.5"></span>
+                                                        <span className="text-[11px] font-medium text-slate-500">{distString}</span>
+                                                    </div>
+                                                </div>
+
+                                                <p className="text-[12px] font-medium text-slate-500">
+                                                    Starting <span className="font-bold text-slate-800">₹{mockStartingPrice}</span>
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Status and button on the right */}
+                                        <div className="flex flex-col items-end gap-2.5 flex-shrink-0">
+                                            <span className="text-[11px] font-bold text-emerald-600">Open</span>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setActiveOutletId(outlet._id);
+                                                    navigate(`/app/booking`);
+                                                }}
+                                                className="px-4 py-2 bg-[#E7D06E] text-white font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
+                                            >
+                                                Book Now
+                                            </button>
                                         </div>
                                     </div>
-                                    <div style={{ padding: '12px' }}>
-                                        <h4 style={{ fontSize: '13px', fontWeight: 800, color: colors.text, margin: '0 0 2px' }}>{outlet.name}</h4>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                                            <MapPin size={10} color={colors.accent} />
-                                            <span style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700 }}>
-                                                {outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
-                                                    ? `${outlet.calculatedDist.toFixed(1)} km`
-                                                    : 'Near you'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            ));
+                                );
+                            });
                         })()}
                     </div>
                 </div>

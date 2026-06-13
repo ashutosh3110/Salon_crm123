@@ -3,6 +3,8 @@ import { createContext, useContext, useState, useEffect } from 'react';
 const CustomerThemeContext = createContext(null);
 
 export function CustomerThemeProvider({ children }) {
+    // Commented out dark mode states
+    /*
     const [theme, setTheme] = useState(() => {
         return localStorage.getItem('customer_theme') || 'dark'; // Default to dark for premium feel
     });
@@ -14,8 +16,10 @@ export function CustomerThemeProvider({ children }) {
     const toggleTheme = () => {
         setTheme(prev => prev === 'light' ? 'dark' : 'light');
     };
-
-    const isLight = theme === 'light';
+    */
+    const theme = 'light';
+    const toggleTheme = () => {};
+    const isLight = true;
 
     const colors = {
         background: isLight ? '#FCF9F6' : '#0F0F0F', // Standardized key

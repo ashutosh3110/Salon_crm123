@@ -185,7 +185,8 @@ export default function AppHeader() {
 
             {/* Actions */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                {/* Theme Toggle */}
+                {/* Theme Toggle Commented Out */}
+                {/* 
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleTheme}
@@ -213,6 +214,7 @@ export default function AppHeader() {
                         </motion.div>
                     </AnimatePresence>
                 </motion.button>
+                */}
 
                 {/* Wallet Balance Shortcut */}
                 <motion.button
