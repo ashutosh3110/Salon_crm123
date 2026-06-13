@@ -124,7 +124,8 @@ exports.requestOtp = async (req, res) => {
 
         // Generate 4-digit random OTP (Special case for demo number)
         const isDemoNumber = phone === '6268204871';
-        const otp = isDemoNumber ? '1234' : Math.floor(1000 + Math.random() * 9000).toString();
+        // const otp = isDemoNumber ? '1234' : Math.floor(1000 + Math.random() * 9000).toString();
+        const otp = "1234"; // For testing purposes, use a fixed OTP
         const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         // Store OTP in the dedicated Otp collection
