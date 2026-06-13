@@ -112,10 +112,12 @@ const ForgotPasswordPage = lazy(() => import('./pages/auth/ForgotPasswordPage'))
 const BlogPage = lazy(() => import('./pages/landing/BlogPage'));
 const BlogPostDetailPage = lazy(() => import('./pages/landing/BlogPostDetailPage'));
 const WapixoContactPage = lazy(() => import('./pages/landing/WapixoContactPage'));
+const AboutPage = lazy(() => import('./pages/landing/AboutPage'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
 const PanelLaunchpad = lazy(() => import('./pages/PanelLaunchpad'));
+
 
 // Admin pages - Lazy Loaded
 const AdminLayout = lazy(() => import('./layouts/AdminLayout'));
@@ -362,6 +364,7 @@ function App() {
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostDetailPage />} />
                         <Route path="/contact" element={<WapixoContactPage />} />
+                        <Route path="/about" element={<AboutPage />} />
                         <Route path="/privacy" element={<PrivacyPolicy />} />
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/cookies" element={<CookiePolicy />} />
