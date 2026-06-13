@@ -288,24 +288,30 @@ function ScrollToHash() {
   useEffect(() => {
     if (state?.noScroll) return;
 
-    const scrollToTop = () => {
-      if (hash) {
-        const element = document.getElementById(hash.replace('#', ''));
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-        // Also target common scroll containers just in case
-        const main = document.querySelector('main');
-        if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-      }
-    };
+    if (hash) {
+      // Start at the top of the page under the loading screen
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      const main = document.querySelector('main');
+      if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
 
-    // Use multiple triggers to ensure it works across different browser rendering timings
-    scrollToTop();
-    const timer = setTimeout(scrollToTop, 100);
-    return () => clearTimeout(timer);
+      // Smoothly scroll to the target section after the loader fades out (1.4 seconds)
+      const timer = setTimeout(() => {
+        if (window.lenis) {
+          window.lenis.scrollTo(hash, { duration: 1.5 });
+        } else {
+          const element = document.getElementById(hash.replace('#', ''));
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth' });
+          }
+        }
+      }, 1400);
+
+      return () => clearTimeout(timer);
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      const main = document.querySelector('main');
+      if (main) main.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   }, [hash, pathname, state]);
 
   return null;

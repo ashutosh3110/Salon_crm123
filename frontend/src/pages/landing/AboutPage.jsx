@@ -75,7 +75,7 @@ export default function AboutPage() {
                 <WapixoNavbar />
 
                 {/* Cinematic Header/Hero */}
-                <div style={{ paddingTop: '120px', paddingBottom: '60px', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ paddingTop: '24px', paddingBottom: '10px', position: 'relative', overflow: 'hidden' }}>
                     {/* Background glow */}
                     <div style={{ position: 'absolute', inset: 0, opacity: theme === 'dark' ? 0.15 : 0.04, pointerEvents: 'none' }}>
                         <div style={{ position: 'absolute', top: '-20%', left: '10%', width: '600px', height: '600px', background: 'var(--wapixo-primary)', borderRadius: '50%', filter: 'blur(150px)' }} />
@@ -93,7 +93,7 @@ export default function AboutPage() {
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.45em',
                                 display: 'block',
-                                marginBottom: '1.5rem'
+                                marginBottom: '0.75rem'
                             }}
                         >
                             {badgeText}
@@ -107,7 +107,7 @@ export default function AboutPage() {
                                 fontWeight: 200,
                                 letterSpacing: '-0.03em',
                                 lineHeight: 1.1,
-                                margin: '0 auto 2rem',
+                                margin: '0 auto 1rem',
                                 maxWidth: '900px',
                                 color: 'var(--wapixo-text)'
                             }}
@@ -122,7 +122,7 @@ export default function AboutPage() {
                                 width: '80px',
                                 height: '1px',
                                 background: 'var(--wapixo-primary)',
-                                margin: '0 auto 2.5rem',
+                                margin: '0 auto 1.5rem',
                                 transformOrigin: 'center'
                             }}
                         />
@@ -130,7 +130,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Our Story / Intro Section */}
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 100px' }}>
+                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 30px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', alignItems: 'center' }}>
                         {/* Text Block */}
                         <motion.div
@@ -216,36 +216,20 @@ export default function AboutPage() {
                                 }} />
                             </div>
 
-                            {/* Floating details overlay */}
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '-20px',
-                                right: '-10px',
-                                background: 'var(--wapixo-bg-alt)',
-                                border: '1px solid var(--wapixo-border)',
-                                padding: '1rem 1.5rem',
-                                borderRadius: '2px',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.75rem',
-                                boxShadow: '0 20px 40px rgba(0,0,0,0.15)'
-                            }}>
-                                <Sparkles size={16} color="var(--wapixo-primary)" />
-                                <span style={{ fontSize: '0.8rem', fontWeight: 600, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Built with Care</span>
-                            </div>
+
                         </motion.div>
                     </div>
                 </div>
 
                 {/* Core Values Section */}
-                <div style={{ background: 'var(--wapixo-bg-alt)', borderTop: '1px solid var(--wapixo-border)', borderBottom: '1px solid var(--wapixo-border)', padding: '100px 0' }}>
+                <div style={{ background: 'var(--wapixo-bg-alt)', borderTop: '1px solid var(--wapixo-border)', borderBottom: '1px solid var(--wapixo-border)', padding: '40px 0 60px' }}>
                     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem' }}>
-                        <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+                        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
                             <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.25em' }}>Foundations</span>
                             <h2 style={{ fontSize: '2.2rem', fontWeight: 300, marginTop: '0.5rem', letterSpacing: '-0.02em' }}>Our Core Pillars</h2>
                         </div>
 
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
+                        <div className="pillars-grid">
                             {valuesList.map((value, idx) => {
                                 const Icon = ICON_MAP[value.title] || Zap;
                                 const isActive = activeCards[value.title];
@@ -269,7 +253,7 @@ export default function AboutPage() {
                                             overflow: 'hidden',
                                             cursor: isMobile ? 'pointer' : 'default',
                                         }}
-                                        className="group"
+                                        className="group pillar-card"
                                     >
                                         {/* Background Image Reveal */}
                                         <div style={{
@@ -355,7 +339,7 @@ export default function AboutPage() {
                 </div>
 
                 {/* Vision / Quote Section */}
-                <div style={{ maxWidth: '900px', margin: '0 auto', padding: '100px 2rem', textAlign: 'center' }}>
+                <div style={{ maxWidth: '900px', margin: '0 auto', padding: '30px 2rem 60px', textAlign: 'center' }}>
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
@@ -377,6 +361,43 @@ export default function AboutPage() {
 
             {/* Custom hover effects for non-mobile using pure CSS */}
             <style>{`
+                .pillars-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, 1fr);
+                    gap: 2rem;
+                }
+                @media (max-width: 1024px) {
+                    .pillars-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 1.25rem;
+                    }
+                }
+                @media (max-width: 640px) {
+                    .pillars-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                        gap: 0.75rem;
+                    }
+                    .pillar-card {
+                        padding: 1rem !important;
+                        min-height: 155px !important;
+                    }
+                    .pillar-card .value-title-text {
+                        font-size: 0.95rem !important;
+                    }
+                    .pillar-card .value-desc-text {
+                        font-size: 0.75rem !important;
+                        line-height: 1.4 !important;
+                    }
+                    .pillar-card .value-icon-box {
+                        margin-bottom: 0.75rem !important;
+                        width: 36px !important;
+                        height: 36px !important;
+                    }
+                    .pillar-card .value-icon-box svg {
+                        width: 16px !important;
+                        height: 16px !important;
+                    }
+                }
                 @media (min-width: 1024px) {
                     .group:hover .value-bg-image-container {
                         opacity: 1 !important;
@@ -385,7 +406,7 @@ export default function AboutPage() {
                         background: var(--wapixo-primary) !important;
                     }
                     .group:hover .value-icon {
-                        color: white !important;
+                        stroke: white !important;
                     }
                     .group:hover .value-title-text {
                         color: white !important;

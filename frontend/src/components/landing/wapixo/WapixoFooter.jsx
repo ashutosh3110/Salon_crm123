@@ -46,16 +46,28 @@ export default function WapixoFooter({ data = {} }) {
                                     {group}
                                 </p>
                                 <div className="space-y-3">
-                                    {items.map((item) => (
-                                        <div key={item}>
-                                             <Link
-                                                to={`/${item.toLowerCase()}`}
-                                                className="font-['Inter'] font-normal text-[0.85rem] transition-colors decoration-none"
-                                            >
-                                                {item}
-                                            </Link>
-                                        </div>
-                                    ))}
+                                     {items.map((item) => {
+                                         const isAnchor = item === 'Features' || item === 'Pricing';
+                                         return (
+                                             <div key={item}>
+                                                 {isAnchor ? (
+                                                     <a
+                                                         href={`/#${item.toLowerCase()}`}
+                                                         className="font-['Inter'] font-normal text-[0.85rem] transition-colors decoration-none text-white opacity-85 hover:opacity-100"
+                                                     >
+                                                         {item}
+                                                     </a>
+                                                 ) : (
+                                                     <Link
+                                                         to={`/${item.toLowerCase()}`}
+                                                         className="font-['Inter'] font-normal text-[0.85rem] transition-colors decoration-none text-white opacity-85 hover:opacity-100"
+                                                     >
+                                                         {item}
+                                                     </Link>
+                                                 )}
+                                             </div>
+                                         );
+                                     })}
                                 </div>
                             </div>
                         ))}
