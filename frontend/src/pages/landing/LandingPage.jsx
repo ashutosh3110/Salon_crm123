@@ -19,6 +19,7 @@ import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
 import ChairSection from '../../components/landing/wapixo/ChairSection';
 import GlobalCustomers from '../../components/landing/wapixo/GlobalCustomers';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
+import InquiryBanner from '../../components/landing/wapixo/InquiryBanner';
 
 
 export default function LandingPage() {
@@ -86,6 +87,7 @@ export default function LandingPage() {
                     <GlobalCustomers data={cmsData?.landing_global_customers} />
                     <ChairSection data={cmsData?.landing_chair_section} />
                     <WapixoFooter data={cmsData?.site_footer} />
+                    <InquiryBanner data={cmsData?.inquiry_banner} />
                 </div>
             </SmoothScroll>
         </>

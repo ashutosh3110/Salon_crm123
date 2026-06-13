@@ -164,12 +164,21 @@ const INITIAL_CMS_DATA = {
         vision_quote: 'We aren\'t just building tools. We are designing the digital engine that enables beauty creators and salon owners to amplify their craft and deliver unmatched experiences.',
         vision_author: 'The Wapixo Team',
         vision_location: 'Mumbai, India'
+    },
+    inquiry_banner: {
+        badge_text: 'SPECIAL INQUIRY',
+        title: 'Need Custom Salon CRM?',
+        desc: 'Get a custom walkthrough and check features designed exclusively to scale your salon business.',
+        button_text: 'Send Inquiry',
+        image_url: '/banner.jpeg',
+        delay_seconds: 5
     }
 };
 
 const CMS_TABS = [
     { id: 'landing', label: 'Hero & Content', icon: Layout },
     { id: 'about', label: 'About Page', icon: Info },
+    { id: 'inquiry_banner', label: 'Inquiry Banner', icon: FileText },
     { id: 'solutions', label: 'Solutions', icon: Zap },
     { id: 'footer', label: 'Footer', icon: Globe },
     { id: 'legal', label: 'Legal Pages', icon: Shield },
@@ -840,6 +849,44 @@ export default function SACMSPage() {
                         </div>
                     )}
 
+                    {activeTab === 'inquiry_banner' && (
+                        <div className="space-y-12">
+                            <section className="space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-amber-50 flex items-center justify-center text-primary">
+                                            <FileText size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">Timed Inquiry Banner</h2>
+                                    </div>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="px-5 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                    >
+                                        {saving ? 'Saving...' : <><Save size={14} /> Save Section Changes</>}
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    {renderInput('inquiry_banner', 'badge_text', 'Badge Text (e.g. SPECIAL INQUIRY)')}
+                                    {renderInput('inquiry_banner', 'title', 'Banner Title')}
+                                    {renderInput('inquiry_banner', 'desc', 'Banner Description', 'textarea')}
+                                    {renderInput('inquiry_banner', 'button_text', 'Button Text')}
+                                    {renderInput('inquiry_banner', 'image_url', 'Banner Image', 'image')}
+                                    <div className="space-y-1.5">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-wider">Delay (in seconds)</label>
+                                        <input
+                                            type="number"
+                                            className="w-full bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors"
+                                            value={data.inquiry_banner?.delay_seconds ?? INITIAL_CMS_DATA.inquiry_banner.delay_seconds}
+                                            onChange={(e) => updateField('inquiry_banner', 'delay_seconds', parseInt(e.target.value) || 5)}
+                                        />
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    )}
+
                     {activeTab === 'about' && (
                         <div className="space-y-12">
                             {/* Intro Section */}
@@ -923,22 +970,22 @@ export default function SACMSPage() {
                                                     <div className="space-y-1">
                                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-wider">Image</label>
                                                         <div className="flex gap-2 items-center cursor-pointer" onClick={(e) => e.currentTarget.querySelector('input[type="file"]').click()}>
-                                                             <input
-                                                                 className="flex-1 bg-white border border-border px-3 py-1.5 text-xs focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
-                                                                 value={value.image}
-                                                                 readOnly
-                                                                 placeholder="Click to upload image..."
-                                                             />
-                                                             <div className="p-2 border border-border bg-white text-text-muted hover:text-primary transition-colors shrink-0 flex items-center justify-center">
-                                                                 <ImageIcon size={14} />
-                                                             </div>
-                                                             <input
-                                                                 type="file"
-                                                                 accept="image/*"
-                                                                 className="hidden"
-                                                                 onChange={(e) => handleAboutValueImageUpload(e, idx)}
-                                                             />
-                                                         </div>
+                                                            <input
+                                                                className="flex-1 bg-white border border-border px-3 py-1.5 text-xs focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                                                                value={value.image}
+                                                                readOnly
+                                                                placeholder="Click to upload image..."
+                                                            />
+                                                            <div className="p-2 border border-border bg-white text-text-muted hover:text-primary transition-colors shrink-0 flex items-center justify-center">
+                                                                <ImageIcon size={14} />
+                                                            </div>
+                                                            <input
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="hidden"
+                                                                onChange={(e) => handleAboutValueImageUpload(e, idx)}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -1377,6 +1424,77 @@ export default function SACMSPage() {
                                                 <GlobalCustomers data={data.landing_global_customers} />
                                                 <ChairSection data={data.landing_chair_section} />
                                                 {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
+                                            </div>
+                                        )}
+                                        {/* ── INQUIRY BANNER TAB preview ── */}
+                                        {activeTab === 'inquiry_banner' && (
+                                            <div className="p-8 flex items-center justify-center min-h-[400px]" style={{ background: '#f5f5f5' }}>
+                                                <div style={{
+                                                    width: '320px',
+                                                    background: '#fff',
+                                                    border: '1px solid var(--wapixo-border, #e5e5e5)',
+                                                    borderRadius: '16px',
+                                                    overflow: 'hidden',
+                                                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+                                                    fontFamily: "'Inter', sans-serif"
+                                                }}>
+                                                    <div style={{ height: '140px', overflow: 'hidden', position: 'relative' }}>
+                                                        <img
+                                                            src={resolveLogoUrl(data.inquiry_banner?.image_url || INITIAL_CMS_DATA.inquiry_banner.image_url)}
+                                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                            alt="Banner Preview"
+                                                        />
+                                                        {data.inquiry_banner?.badge_text && (
+                                                            <div style={{
+                                                                position: 'absolute',
+                                                                top: '12px',
+                                                                left: '12px',
+                                                                background: 'rgba(180, 145, 43, 0.9)',
+                                                                color: 'white',
+                                                                padding: '4px 10px',
+                                                                borderRadius: '20px',
+                                                                fontSize: '0.65rem',
+                                                                fontWeight: 700
+                                                            }}>
+                                                                {data.inquiry_banner.badge_text}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div style={{ padding: '16px 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '12px', textAlign: 'left' }}>
+                                                        <h4 style={{ 
+                                                            margin: 0, 
+                                                            fontSize: '0.95rem', 
+                                                            fontWeight: 600, 
+                                                            color: 'var(--wapixo-text, #111)',
+                                                            fontFamily: "'Inter', sans-serif"
+                                                        }}>
+                                                            {data.inquiry_banner?.title}
+                                                        </h4>
+                                                        <p style={{ 
+                                                            margin: 0, 
+                                                            fontSize: '0.78rem', 
+                                                            color: 'var(--wapixo-text-muted, #666)', 
+                                                            lineHeight: '1.4',
+                                                            fontFamily: "'Inter', sans-serif",
+                                                            fontWeight: 300
+                                                        }}>
+                                                            {data.inquiry_banner?.desc}
+                                                        </p>
+                                                        <button style={{
+                                                            width: '100%',
+                                                            padding: '10px',
+                                                            background: '#B4912B',
+                                                            color: 'white',
+                                                            border: 'none',
+                                                            borderRadius: '8px',
+                                                            fontSize: '0.8rem',
+                                                            fontWeight: 600,
+                                                            cursor: 'pointer'
+                                                        }}>
+                                                            {data.inquiry_banner?.button_text}
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         )}
                                         {/* ── ABOUT TAB preview ── */}

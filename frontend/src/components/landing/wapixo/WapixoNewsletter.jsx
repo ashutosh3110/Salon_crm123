@@ -41,13 +41,13 @@ export default function WapixoNewsletter() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     style={{
-                        fontFamily: "'Playfair Display', 'Georgia', serif",
-                        fontStyle: 'italic',
-                        fontSize: 'clamp(1.5rem, 3.2vw, 2.2rem)',
-                        fontWeight: 400,
-                        color: 'var(--wapixo-primary)',
-                        marginBottom: '0.5rem',
-                        letterSpacing: '0.02em'
+                        fontFamily: "'Inter', sans-serif",
+                        fontSize: 'clamp(1.8rem, 3.5vw, 2.5rem)',
+                        fontWeight: 300,
+                        color: 'var(--wapixo-text)',
+                        marginBottom: '0.75rem',
+                        letterSpacing: '-0.025em',
+                        lineHeight: 1.2
                     }}
                 >
                     Join Our Newsletter
