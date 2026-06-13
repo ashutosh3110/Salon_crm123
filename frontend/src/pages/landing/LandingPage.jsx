@@ -13,6 +13,7 @@ import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
 import WapixoPricing from '../../components/landing/wapixo/WapixoPricing';
 import WapixoBlog from '../../components/landing/wapixo/WapixoBlog';
+import WapixoNewsletter from '../../components/landing/wapixo/WapixoNewsletter';
 import WapixoTestimonials from '../../components/landing/wapixo/WapixoTestimonials';
 import WapixoFAQ from '../../components/landing/wapixo/WapixoFAQ';
 import ChairSection from '../../components/landing/wapixo/ChairSection';
@@ -79,6 +80,7 @@ export default function LandingPage() {
                     />
                     <WapixoPricing />
                     <WapixoBlog />
+                    <WapixoNewsletter />
                     <WapixoTestimonials data={testimonials} />
                     <WapixoFAQ data={cmsData?.landing_faqs} ctaData={cmsData?.landing_faq_cta} />
                     <GlobalCustomers data={cmsData?.landing_global_customers} />

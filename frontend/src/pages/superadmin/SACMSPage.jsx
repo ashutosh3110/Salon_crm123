@@ -148,11 +148,28 @@ const INITIAL_CMS_DATA = {
             '/hair_styling_promo.png',
             '/hair_styling_promo.png'
         ]
+    },
+    about: {
+        badge: 'Why SalonCRM',
+        heading: 'Built by Salon Experts, For Salon Owners',
+        para1: 'We understand the unique challenges of running a salon business. From managing walk-ins to tracking product inventory, from retaining clients to growing revenue — SalonCRM handles it all so you can focus on what you do best: making people look amazing.',
+        para2: 'Trusted by 500+ salons across India, our platform processes over 50,000 appointments every month with 99.9% uptime.',
+        image: 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200',
+        values: [
+            { title: 'Lightning Fast', desc: 'Optimized for speed so your reception never waits. POS billing in under 10 seconds.', image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?auto=format&fit=crop&q=80&w=800' },
+            { title: 'Enterprise Security', desc: 'Bank-grade encryption, role-based access, and complete data isolation per salon.', image: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800' },
+            { title: 'Built for Salons', desc: 'Not a generic tool. Every feature is designed specifically for the beauty industry.', image: 'https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800' },
+            { title: 'Cloud Native', desc: 'Access from anywhere — desktop, tablet, or phone. No installations, no limits.', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=800' },
+        ],
+        vision_quote: 'We aren\'t just building tools. We are designing the digital engine that enables beauty creators and salon owners to amplify their craft and deliver unmatched experiences.',
+        vision_author: 'The Wapixo Team',
+        vision_location: 'Mumbai, India'
     }
 };
 
 const CMS_TABS = [
     { id: 'landing', label: 'Hero & Content', icon: Layout },
+    { id: 'about', label: 'About Page', icon: Info },
     { id: 'solutions', label: 'Solutions', icon: Zap },
     { id: 'footer', label: 'Footer', icon: Globe },
     { id: 'legal', label: 'Legal Pages', icon: Shield },
@@ -280,6 +297,43 @@ export default function SACMSPage() {
         }
     };
 
+    const handleAboutValueImageUpload = async (e, idx) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setSaving(true);
+            const formData = new FormData();
+            formData.append('image', file);
+            const { data: res } = await api.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (res.success && res.url) {
+                setData(prev => {
+                    const currentValues = [...(prev.about?.values || INITIAL_CMS_DATA.about.values)];
+                    if (currentValues[idx]) {
+                        currentValues[idx] = { ...currentValues[idx], image: res.url };
+                    }
+                    return {
+                        ...prev,
+                        about: {
+                            ...(prev.about || {}),
+                            values: currentValues
+                        }
+                    };
+                });
+                showToast("Value card image uploaded successfully");
+            } else {
+                showToast("Failed to upload image");
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            showToast("Failed to upload image");
+        } finally {
+            setSaving(false);
+        }
+    };
+
     const renderInput = (page, field, label, type = 'text') => {
         const value = data[page]?.[field] ?? INITIAL_CMS_DATA[page]?.[field] ?? '';
         return (
@@ -292,14 +346,14 @@ export default function SACMSPage() {
                         onChange={(e) => updateField(page, field, e.target.value)}
                     />
                 ) : type === 'image' ? (
-                    <div className="relative group cursor-pointer" onClick={(e) => e.currentTarget.querySelector('input[type="file"]').click()}>
+                    <div className="flex gap-2 items-center cursor-pointer" onClick={(e) => e.currentTarget.querySelector('input[type="file"]').click()}>
                         <input
-                            className="w-full bg-surface border border-border pl-3 pr-10 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                            className="flex-1 bg-surface border border-border px-3 py-2 text-sm focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
                             value={value}
                             readOnly
                             placeholder="Click to upload image..."
                         />
-                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-text-muted group-hover:text-primary transition-colors">
+                        <div className="p-2.5 border border-border bg-white text-text-muted hover:text-primary transition-colors shrink-0 flex items-center justify-center">
                             <ImageIcon size={16} />
                         </div>
                         <input
@@ -643,7 +697,7 @@ export default function SACMSPage() {
                                 <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
                                     {renderInput('landing_global_customers', 'heading', 'Section Title')}
                                     {renderInput('landing_global_customers', 'subtitle', 'Subtitle')}
-                                    
+
                                     <div className="pt-4 border-t border-border">
                                         <div className="text-[10px] font-black text-text-muted uppercase mb-4">Brand Logos</div>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -664,7 +718,7 @@ export default function SACMSPage() {
                                                     >
                                                         <Trash2 size={14} />
                                                     </button>
-                                                    
+
                                                     <div className="h-16 flex items-center justify-center bg-white border border-border/60 p-2 w-full">
                                                         <img src={resolveLogoUrl(logo)} alt={`Logo ${idx}`} className="max-h-full max-w-full object-contain mix-blend-multiply" />
                                                     </div>
@@ -783,6 +837,132 @@ export default function SACMSPage() {
                                 </div>
                             </section>
 
+                        </div>
+                    )}
+
+                    {activeTab === 'about' && (
+                        <div className="space-y-12">
+                            {/* Intro Section */}
+                            <section className="space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-[#FDF9F8] flex items-center justify-center text-primary">
+                                            <Info size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">About Intro Section</h2>
+                                    </div>
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="px-5 py-2 bg-[#B4912B] text-white icon-white-outline-force text-white-force text-[10px] font-black uppercase tracking-widest hover:bg-[#8B6F23] flex items-center gap-2 shadow-lg shadow-[#B4912B]/20 transition-all"
+                                    >
+                                        {saving ? 'Saving...' : <><Save size={14} /> Save Section Changes</>}
+                                    </button>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    {renderInput('about', 'badge', 'Overline Badge / Small Text')}
+                                    {renderInput('about', 'heading', 'Main Heading')}
+                                    {renderInput('about', 'para1', 'Paragraph 1', 'textarea')}
+                                    {renderInput('about', 'para2', 'Paragraph 2', 'textarea')}
+                                    {renderInput('about', 'image', 'Main Section Image', 'image')}
+                                </div>
+                            </section>
+
+                            {/* Core Pillars / Values Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-[#FDF9F8] flex items-center justify-center text-primary">
+                                            <Target size={18} />
+                                        </div>
+                                        <h2 className="text-lg font-bold tracking-tight">Core Pillars & Values (4 Cards)</h2>
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 gap-6 bg-white p-8 border border-border">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                        {(data.about?.values || INITIAL_CMS_DATA.about.values).map((value, idx) => (
+                                            <div key={idx} className="space-y-4 p-4 border border-border/50 bg-surface/30 relative group">
+                                                <div className="text-[10px] font-black text-primary uppercase">Pillar {idx + 1}</div>
+                                                <div className="space-y-3">
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider">Title</label>
+                                                        <input
+                                                            className="w-full bg-white border border-border px-3 py-1.5 text-xs font-bold focus:border-[#B4912B] outline-none"
+                                                            value={value.title}
+                                                            onChange={(e) => {
+                                                                const newValues = [...(data.about?.values || INITIAL_CMS_DATA.about.values)];
+                                                                newValues[idx] = { ...newValues[idx], title: e.target.value };
+                                                                setData(prev => ({
+                                                                    ...prev,
+                                                                    about: {
+                                                                        ...(prev.about || {}),
+                                                                        values: newValues
+                                                                    }
+                                                                }));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider">Description</label>
+                                                        <textarea
+                                                            className="w-full bg-white border border-border p-2 text-xs focus:border-[#B4912B] outline-none min-h-[60px] resize-none"
+                                                            value={value.desc}
+                                                            onChange={(e) => {
+                                                                const newValues = [...(data.about?.values || INITIAL_CMS_DATA.about.values)];
+                                                                newValues[idx] = { ...newValues[idx], desc: e.target.value };
+                                                                setData(prev => ({
+                                                                    ...prev,
+                                                                    about: {
+                                                                        ...(prev.about || {}),
+                                                                        values: newValues
+                                                                    }
+                                                                }));
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider">Image</label>
+                                                        <div className="flex gap-2 items-center cursor-pointer" onClick={(e) => e.currentTarget.querySelector('input[type="file"]').click()}>
+                                                             <input
+                                                                 className="flex-1 bg-white border border-border px-3 py-1.5 text-xs focus:border-[#B4912B] outline-none transition-colors cursor-pointer text-ellipsis overflow-hidden whitespace-nowrap"
+                                                                 value={value.image}
+                                                                 readOnly
+                                                                 placeholder="Click to upload image..."
+                                                             />
+                                                             <div className="p-2 border border-border bg-white text-text-muted hover:text-primary transition-colors shrink-0 flex items-center justify-center">
+                                                                 <ImageIcon size={14} />
+                                                             </div>
+                                                             <input
+                                                                 type="file"
+                                                                 accept="image/*"
+                                                                 className="hidden"
+                                                                 onChange={(e) => handleAboutValueImageUpload(e, idx)}
+                                                             />
+                                                         </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Quote / Vision Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-[#FDF9F8] flex items-center justify-center text-primary">
+                                        <Heart size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Vision / Quote Banner</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    {renderInput('about', 'vision_quote', 'Vision Quote Text', 'textarea')}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {renderInput('about', 'vision_author', 'Author / Team Name')}
+                                        {renderInput('about', 'vision_location', 'Location')}
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     )}
 
@@ -1197,6 +1377,51 @@ export default function SACMSPage() {
                                                 <GlobalCustomers data={data.landing_global_customers} />
                                                 <ChairSection data={data.landing_chair_section} />
                                                 {data.landing_testimonials && <WapixoTestimonials data={data.landing_testimonials} />}
+                                            </div>
+                                        )}
+                                        {/* ── ABOUT TAB preview ── */}
+                                        {activeTab === 'about' && data.about && (
+                                            <div className="p-8 space-y-12 w-full" style={{ background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)', fontFamily: "'Inter', sans-serif" }}>
+                                                <div style={{ textAlign: 'center' }}>
+                                                    <span style={{ color: 'var(--wapixo-primary)', fontSize: '0.6rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.3em' }}>
+                                                        {data.about.badge || 'About Us'}
+                                                    </span>
+                                                    <h2 style={{ fontSize: '2rem', fontWeight: 300, marginTop: '0.5rem', color: 'var(--wapixo-text)' }}>
+                                                        {data.about.heading || 'Our Story'}
+                                                    </h2>
+                                                </div>
+
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'center' }}>
+                                                    <div>
+                                                        <p style={{ fontSize: '0.85rem', color: 'var(--wapixo-text-muted)', lineHeight: 1.6 }}>{data.about.para1}</p>
+                                                        <p style={{ fontSize: '0.8rem', color: 'var(--wapixo-text-muted)', lineHeight: 1.6, marginTop: '1rem' }}>{data.about.para2}</p>
+                                                    </div>
+                                                    {data.about.image && (
+                                                        <div style={{ border: '1px solid var(--wapixo-border)', borderRadius: '2px', overflow: 'hidden', aspectRatio: '3/2' }}>
+                                                            <img src={resolveLogoUrl(data.about.image)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="About" />
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div>
+                                                    <h3 style={{ fontSize: '1rem', fontWeight: 400, textAlign: 'center', marginBottom: '1.5rem' }}>Our Core Pillars</h3>
+                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem' }}>
+                                                        {(data.about.values || []).map((val, idx) => (
+                                                            <div key={idx} style={{ background: 'var(--wapixo-bg-alt)', border: '1px solid var(--wapixo-border)', padding: '1rem' }}>
+                                                                <h4 style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--wapixo-text)', marginBottom: '0.5rem' }}>{val.title}</h4>
+                                                                <p style={{ fontSize: '0.7rem', color: 'var(--wapixo-text-muted)', lineHeight: 1.4 }}>{val.desc}</p>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {data.about.vision_quote && (
+                                                    <div style={{ textAlign: 'center', borderTop: '1px solid var(--wapixo-border)', paddingTop: '1.5rem' }}>
+                                                        <p style={{ fontSize: '0.9rem', fontStyle: 'italic', color: 'var(--wapixo-text-muted)' }}>“{data.about.vision_quote}”</p>
+                                                        <h5 style={{ fontSize: '0.75rem', fontWeight: 600, marginTop: '0.5rem', color: 'var(--wapixo-text)' }}>{data.about.vision_author}</h5>
+                                                        <p style={{ fontSize: '0.65rem', color: 'var(--wapixo-text-muted)' }}>{data.about.vision_location}</p>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                         {/* ── SOLUTIONS TAB preview ── */}

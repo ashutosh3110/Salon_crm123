@@ -106,7 +106,8 @@ export default function Features({ data, statsData }) {
                     lineHeight: 1.05,
                     margin: '0 0 1.25rem 0',
                 }}>
-                    Precision Tools for<br />the Modern Artist.
+                    Precision Tools for<br />
+                    <span style={{ fontWeight: 500 }}>the Modern Artist.</span>
                 </h2>
                 <p style={{
                     fontFamily: "'Inter', sans-serif",

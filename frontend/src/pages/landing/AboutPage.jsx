@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { motion } from 'framer-motion';
 import { Shield, Zap, Heart, Globe, Users, Trophy, Target, Sparkles } from 'lucide-react';
-import { useContent } from '../../hooks/useContent';
+import api from '../../services/api';
 import { useTheme } from '../../contexts/ThemeContext';
 import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import WapixoFooter from '../../components/landing/wapixo/WapixoFooter';
 import SmoothScroll from '../../components/landing/wapixo/SmoothScroll';
+import WapixoLoader from '../../components/landing/wapixo/WapixoLoader';
+import { getImageUrl } from '../../utils/imageUtils';
 
 const ICON_MAP = {
     'Lightning Fast': Zap,
@@ -17,7 +19,9 @@ const ICON_MAP = {
 
 export default function AboutPage() {
     const { theme } = useTheme();
-    const { about } = useContent();
+    const [cmsData, setCmsData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [loaded, setLoaded] = useState(false);
     const [activeCards, setActiveCards] = useState({});
     const [isMobile, setIsMobile] = useState(false);
 
@@ -28,6 +32,29 @@ export default function AboutPage() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    useEffect(() => {
+        fetchCMS();
+    }, []);
+
+    const fetchCMS = async () => {
+        try {
+            const res = await api.get('/cms');
+            const data = res.data?.data || res.data || {};
+            setCmsData(data);
+        } catch (error) {
+            console.error('Error fetching about page CMS data:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const resolveImageUrl = (url) => {
+        if (!url) return '';
+        if (url.startsWith('http') || url.startsWith('data:') || url.startsWith('blob:')) return url;
+        if (url.startsWith('/') && !url.includes('uploads')) return url;
+        return getImageUrl(url);
+    };
+
     const toggleCard = (title) => {
         if (!isMobile) return;
         setActiveCards(prev => ({
@@ -35,6 +62,8 @@ export default function AboutPage() {
             [title]: !prev[title]
         }));
     };
+
+    const about = cmsData?.about;
 
     // CMS data fallback values
     const badgeText = about?.badge || 'About Wapixo';
@@ -65,8 +94,10 @@ export default function AboutPage() {
     ];
 
     return (
-        <SmoothScroll>
-            <div className="new-theme" style={{ minHeight: '100vh', position: 'relative', fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
+        <>
+            <WapixoLoader onComplete={() => setLoaded(true)} />
+            <SmoothScroll>
+                <div className="new-theme" style={{ minHeight: '100vh', position: 'relative', fontFamily: "'Inter', sans-serif", background: 'var(--wapixo-bg)', color: 'var(--wapixo-text)' }}>
                 <Helmet>
                     <title>About Wapixo — Our Mission & Core Values | Salon CRM</title>
                     <meta name="description" content="Discover the story behind Wapixo. Learn how we build modern salon management technology to empower salon owners, managers, and stylists across India." />
@@ -131,7 +162,7 @@ export default function AboutPage() {
 
                 {/* Our Story / Intro Section */}
                 <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem 30px' }}>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '4rem', alignItems: 'center' }}>
+                    <div className="intro-grid">
                         {/* Text Block */}
                         <motion.div
                             initial={{ opacity: 0, x: -30 }}
@@ -195,11 +226,11 @@ export default function AboutPage() {
                                 borderRadius: '4px',
                                 overflow: 'hidden',
                                 border: '1px solid var(--wapixo-border)',
-                                aspectRatio: '4/3',
+                                aspectRatio: '3/2',
                                 background: 'var(--wapixo-bg-alt)'
                             }}>
                                 <img
-                                    src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200"
+                                    src={resolveImageUrl(about?.image || "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=1200")}
                                     alt="Salon operation"
                                     style={{
                                         width: '100%',
@@ -266,7 +297,7 @@ export default function AboutPage() {
                                         className="value-bg-image-container"
                                         >
                                             <img
-                                                src={value.image}
+                                                src={resolveImageUrl(value.image)}
                                                 alt={value.title}
                                                 style={{
                                                     width: '100%',
@@ -348,11 +379,15 @@ export default function AboutPage() {
                     >
                         <span style={{ color: 'var(--wapixo-primary)', fontSize: '2.5rem', fontFamily: 'serif', display: 'block', marginBottom: '1rem', height: '20px' }}>“</span>
                         <p style={{ fontSize: 'clamp(1.2rem, 3vw, 1.6rem)', fontWeight: 200, lineHeight: 1.6, fontStyle: 'italic', color: 'var(--wapixo-text-muted)', marginBottom: '2rem' }}>
-                            We aren't just building tools. We are designing the digital engine that enables beauty creators and salon owners to amplify their craft and deliver unmatched experiences.
+                            {about?.vision_quote || "We aren't just building tools. We are designing the digital engine that enables beauty creators and salon owners to amplify their craft and deliver unmatched experiences."}
                         </p>
                         <div style={{ width: '40px', height: '1px', background: 'var(--wapixo-primary)', margin: '0 auto 1.5rem', opacity: 0.6 }} />
-                        <h4 style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--wapixo-text)', margin: 0 }}>The Wapixo Team</h4>
-                        <p style={{ fontSize: '0.75rem', color: 'var(--wapixo-text-muted)', margin: '0.25rem 0 0' }}>Mumbai, India</p>
+                        <h4 style={{ fontSize: '0.9rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--wapixo-text)', margin: 0 }}>
+                            {about?.vision_author || "The Wapixo Team"}
+                        </h4>
+                        <p style={{ fontSize: '0.75rem', color: 'var(--wapixo-text-muted)', margin: '0.25rem 0 0' }}>
+                            {about?.vision_location || "Mumbai, India"}
+                        </p>
                     </motion.div>
                 </div>
 
@@ -361,6 +396,18 @@ export default function AboutPage() {
 
             {/* Custom hover effects for non-mobile using pure CSS */}
             <style>{`
+                .intro-grid {
+                    display: grid;
+                    grid-template-columns: 1fr 1.35fr;
+                    gap: 5rem;
+                    align-items: center;
+                }
+                @media (max-width: 1024px) {
+                    .intro-grid {
+                        grid-template-columns: 1fr;
+                        gap: 2.5rem;
+                    }
+                }
                 .pillars-grid {
                     display: grid;
                     grid-template-columns: repeat(4, 1fr);
@@ -419,6 +466,7 @@ export default function AboutPage() {
                     }
                 }
             `}</style>
-        </SmoothScroll>
+            </SmoothScroll>
+        </>
     );
 }
