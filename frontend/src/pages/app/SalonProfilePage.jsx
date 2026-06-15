@@ -165,7 +165,7 @@ export default function SalonProfilePage() {
     return (
         <div style={{
             minHeight: '100vh',
-            background: colors.background,
+            background: colors.bg || '#FFFFFF',
             color: colors.text,
             paddingBottom: '100px' // Space for sticky CTA
         }}>
@@ -368,7 +368,7 @@ export default function SalonProfilePage() {
                     style={{
                         width: '100%',
                         height: '48px',
-                        background: '#C8956C',
+                        background: colors.accent || '#E7D06E',
                         color: '#FFF',
                         borderRadius: '14px',
                         fontSize: '13px',
@@ -376,7 +376,7 @@ export default function SalonProfilePage() {
                         border: 'none',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em',
-                        boxShadow: '0 10px 25px rgba(200,149,108,0.2)'
+                        boxShadow: `0 10px 25px ${colors.accent}33`
                     }}
                 >
                     Book Appointment Now
@@ -388,7 +388,7 @@ export default function SalonProfilePage() {
                 position: 'sticky',
                 top: 0,
                 zIndex: 50,
-                background: colors.background,
+                background: colors.bg || '#FFFFFF',
                 padding: '0 20px',
                 borderBottom: `1px solid ${colors.border}`
             }}>
@@ -412,7 +412,7 @@ export default function SalonProfilePage() {
                             {activeTab === tab && (
                                 <motion.div
                                     layoutId="activeTab"
-                                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: '#C8956C', borderRadius: '4px' }}
+                                    style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '3px', background: colors.accent || '#E7D06E', borderRadius: '4px' }}
                                 />
                             )}
                         </button>
@@ -455,7 +455,7 @@ export default function SalonProfilePage() {
                                             <span style={{ fontSize: '13px', color: colors.textMuted }}>{service.duration} mins</span>
                                             <span style={{ width: '4px', height: '4px', borderRadius: '50%', background: colors.border }} />
                                             {outlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
-                                                <span style={{ fontSize: '14px', fontWeight: 800, color: '#C8956C' }}>₹{service.price}</span>
+                                                <span style={{ fontSize: '14px', fontWeight: 800, color: colors.accent }}>₹{service.price}</span>
                                             )}
                                         </div>
                                     </div>
@@ -463,7 +463,7 @@ export default function SalonProfilePage() {
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => navigate(`/app/book?outletId=${id}&serviceId=${service._id}`)}
                                         style={{
-                                            background: serviceIdFromQuery === service._id ? '#C8956C' : `${colors.accent}15`,
+                                            background: serviceIdFromQuery === service._id ? (colors.accent || '#E7D06E') : `${colors.accent}20`,
                                             color: serviceIdFromQuery === service._id ? '#FFF' : colors.accent,
                                             padding: '8px 16px',
                                             borderRadius: '12px',
@@ -606,7 +606,7 @@ export default function SalonProfilePage() {
                                         placeholder="Your Name (Optional)"
                                         style={{
                                             width: '100%',
-                                            background: colors.background,
+                                            background: colors.bg || '#F5F5F5',
                                             border: `1px solid ${colors.border}`,
                                             borderRadius: '12px',
                                             padding: '12px',
@@ -623,7 +623,7 @@ export default function SalonProfilePage() {
                                         rows={4}
                                         style={{
                                             width: '100%',
-                                            background: colors.background,
+                                            background: colors.bg || '#F5F5F5',
                                             border: `1px solid ${colors.border}`,
                                             borderRadius: '12px',
                                             padding: '12px',
@@ -671,7 +671,7 @@ export default function SalonProfilePage() {
                                     <div style={{ display: 'flex', gap: '12px' }}>
                                         <button
                                             onClick={() => { setIsWritingReview(false); setReviewRating(0); setReviewText(''); setReviewImages([]); }}
-                                            style={{ flex: 1, padding: '14px', background: colors.background, color: colors.text, borderRadius: '12px', fontSize: '13px', fontWeight: 800, border: `1px solid ${colors.border}`, cursor: 'pointer' }}
+                                            style={{ flex: 1, padding: '14px', background: colors.bg || '#F5F5F5', color: colors.text, borderRadius: '12px', fontSize: '13px', fontWeight: 800, border: `1px solid ${colors.border}`, cursor: 'pointer' }}
                                         >
                                             Cancel
                                         </button>

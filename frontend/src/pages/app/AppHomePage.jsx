@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight
 } from 'lucide-react';
 
 
@@ -944,7 +944,7 @@ export default function AppHomePage() {
                         </div>
                         
                         <div
-                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            onClick={() => navigate(`/app/salon/${activeOutlet._id || activeOutlet.id}`)}
                             style={{
                                 background: colors.card,
                                 borderRadius: '28px',
@@ -955,7 +955,7 @@ export default function AppHomePage() {
                                 cursor: 'pointer',
                                 transition: 'transform 0.2s ease'
                             }}
-                            className="active:scale-98"
+                            className="active:scale-[0.98]"
                         >
                             {/* Image Carousel (Slideshow) */}
                             <div style={{ position: 'relative', height: '220px', width: '100%', overflow: 'hidden' }}>
@@ -1118,7 +1118,7 @@ export default function AppHomePage() {
                                         </span>
                                     </div>
                                     <span style={{ fontSize: '11px', fontWeight: 800, color: colors.accent, display: 'flex', alignItems: 'center', gap: '2px' }}>
-                                        Active Outlet
+                                        View Profile <ChevronRight size={14} />
                                     </span>
                                 </div>
                             </div>

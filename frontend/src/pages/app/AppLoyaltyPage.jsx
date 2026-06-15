@@ -1,21 +1,16 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     ShieldCheck,
-    Star,
-    Sparkles,
     Coins,
     Crown,
     Calendar,
     ChevronRight,
     Camera,
-    TrendingUp,
-    History,
-    Gift,
-    ArrowLeft
+    Sparkles,
+    ChevronLeft
 } from 'lucide-react';
-import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -23,20 +18,20 @@ import api from '../../services/api';
 
 const AppLoyaltyPage = () => {
     const navigate = useNavigate();
-    const { theme } = useCustomerTheme();
+    const { colors: themeColors, isLight } = useCustomerTheme();
     const { customer } = useCustomerAuth();
-    const { balance, initializeWallet, refreshWallet } = useWallet();
-    const isLight = theme === 'light';
+    const { refreshWallet } = useWallet();
     const points = customer?.loyaltyPoints || 0;
 
-    const colors = {
-        bg: isLight ? '#FDFCFB' : '#080808',
-        card: isLight ? '#FFFFFF' : '#121212',
-        text: isLight ? '#121212' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.5)',
-        accent: '#C8956C',
-        border: isLight ? '#F0EBE6' : 'rgba(255,255,255,0.08)',
-    };
+    const colors = useMemo(() => ({
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        text: themeColors.text || '#1A1A1A',
+        textMuted: themeColors.textMuted || '#666',
+        border: themeColors.border || 'rgba(0,0,0,0.08)',
+        toggle: themeColors.input || '#F3F4F6',
+        accent: themeColors.accent || '#E7D06E',
+    }), [themeColors]);
 
     const [rule, setRule] = React.useState({
         pointsRate: 10, 
@@ -64,254 +59,206 @@ const AppLoyaltyPage = () => {
             }
         };
         loadLoyaltyData();
-        refreshWallet(); // Also refresh wallet to get latest points/balance
+        refreshWallet(); // Refresh wallet to sync latest points/balance
     }, [refreshWallet]);
 
-    // const points = Math.max(0, Number(balance || 0)); // Old logic was wrong
-    // Calculate how many points equal 1 rupee
     const ptsPerRupee = rule.pointsRate || 100;
     const redeemableValue = Math.floor(points / (ptsPerRupee || 1));
 
     const fadeUp = {
-        initial: { opacity: 0, y: 20 },
+        initial: { opacity: 0, y: 15 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] }
+        transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] }
     };
 
     return (
         <div style={{
-            minHeight: '100svh',
-            background: colors.bg,
+            minHeight: '100vh',
+            background: '#FFFFFF',
             color: colors.text,
-            fontFamily: "'Outfit', 'Inter', sans-serif"
-        }} className="pb-10">
+        }} className="pb-8 font-sans text-sm">
             {/* Header */}
-            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
-                <div className="flex items-center gap-3">
-                    <AppBackButton />
-                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>Loyalty Rewards</h1>
-                </div>
+            <div className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
                 <button 
-                    onClick={() => {
-                        console.log('Navigating to how-it-works');
-                        navigate('/app/loyalty-how-it-works');
-                    }}
-                    style={{ 
-                        fontSize: '11px', 
-                        fontWeight: 900, 
-                        color: colors.accent, 
-                        textTransform: 'uppercase', 
-                        letterSpacing: '0.05em',
-                        background: 'none',
-                        border: 'none',
-                        padding: '4px 8px'
-                    }}
+                    onClick={() => navigate(-1)} 
+                    className="w-9 h-9 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                 >
-                    How it works
+                    <ChevronLeft className="w-5.5 h-5.5" style={{ color: colors.text }} />
+                </button>
+                <h1 className="text-base font-bold text-center flex-1 pr-2" style={{ color: colors.text }}>Loyalty Rewards</h1>
+                <button 
+                    onClick={() => navigate('/app/loyalty-how-it-works')}
+                    className="text-[11px] font-bold transition-opacity hover:opacity-80 px-2 py-1 uppercase tracking-wide"
+                    style={{ color: colors.accent }}
+                >
+                    Info
                 </button>
             </div>
 
-            <div style={{ padding: '0 24px' }}>
-                {/* Profile Section */}
+            <div className="px-4 space-y-4">
+                {/* Profile Section (Compact) */}
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     style={{
-                        display: 'flex', alignItems: 'center', gap: '16px',
-                        background: 'rgba(255,255,255,0.02)',
-                        padding: '20px', borderRadius: '24px',
-                        marginBottom: '24px', border: `1px solid ${colors.border}`
+                        display: 'flex', alignItems: 'center', gap: '12px',
+                        background: colors.card,
+                        padding: '12px 16px', borderRadius: '16px',
+                        border: `1px solid ${colors.border}`
                     }}
                 >
                     <div style={{ position: 'relative' }}>
                         <div style={{ 
-                            width: 60, height: 60, borderRadius: '20px', 
-                            background: 'linear-gradient(135deg, #333 0%, #111 100%)',
+                            width: 44, height: 44, borderRadius: '12px', 
+                            background: 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            fontSize: '20px', fontWeight: 900, color: colors.accent,
+                            fontSize: '16px', fontWeight: 900, color: '#FFF',
                             border: `1px solid ${colors.border}`
                         }}>
                             {customer?.name?.charAt(0) || 'U'}
                         </div>
                         <div style={{
-                            position: 'absolute', bottom: -4, right: -4,
-                            width: 24, height: 24, borderRadius: '8px',
-                            background: colors.accent, border: `2px solid ${colors.bg}`,
+                            position: 'absolute', bottom: -2, right: -2,
+                            width: 18, height: 18, borderRadius: '6px',
+                            background: colors.accent, border: `1.5px solid ${colors.bg}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: '#FFF'
                         }}>
-                            <Camera size={12} />
+                            <Camera size={9} />
                         </div>
                     </div>
                     <div style={{ flex: 1 }}>
-                        <h2 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>{customer?.name || 'Valued Guest'}</h2>
-                        <p style={{ fontSize: '13px', color: colors.textMuted, margin: '2px 0 0' }}>{customer?.phone || 'Connect with us'}</p>
+                        <h2 className="text-sm font-extrabold" style={{ color: colors.text, margin: 0 }}>{customer?.name || 'Valued Guest'}</h2>
+                        <p style={{ fontSize: '11px', color: colors.textMuted, margin: '0px' }}>{customer?.phone || 'Connect with us'}</p>
                     </div>
                 </motion.div>
 
-                {/* Active Membership Card (Conditional) */}
+                {/* Active Membership Card (Compact) */}
                 {activeMembership && (
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
+                        initial={{ opacity: 0, scale: 0.97 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        transition={{ delay: 0.1 }}
+                        transition={{ delay: 0.05 }}
                         style={{
-                            background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
-                            borderRadius: '40px 10px 40px 10px',
-                            padding: '32px',
+                            background: activeMembership.planId?.gradient || 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)',
+                            borderRadius: '20px 8px 20px 8px',
+                            padding: '18px 20px',
                             color: '#FFF',
-                            marginBottom: '32px',
                             position: 'relative',
                             overflow: 'hidden',
-                            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
                             border: '1px solid rgba(255,255,255,0.1)'
                         }}
                     >
-                        <div style={{
-                            position: 'absolute', top: '-10%', right: '-10%',
-                            width: '200px', height: '200px',
-                            background: 'rgba(255,255,255,0.05)',
-                            filter: 'blur(40px)', borderRadius: '50%'
-                        }} />
-
                         <div style={{ position: 'relative', zIndex: 1 }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '40px' }}>
-                                <div style={{ 
-                                    width: 44, height: 44, borderRadius: '14px', 
-                                    background: 'rgba(255,255,255,0.1)', 
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.1)'
-                                }}>
-                                    <Crown size={22} color="#FFF" />
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <div style={{ 
+                                        width: 28, height: 28, borderRadius: '8px', 
+                                        background: 'rgba(255,255,255,0.15)', 
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        backdropFilter: 'blur(5px)'
+                                    }}>
+                                        <Crown size={15} color="#FFF" />
+                                    </div>
+                                    <span className="text-xs font-black tracking-wider uppercase text-white/90">
+                                        {activeMembership.planId?.name}
+                                    </span>
                                 </div>
-                                <div style={{ textAlign: 'right' }}>
-                                    <p style={{ fontSize: '10px', fontWeight: 900, color: 'rgba(255,255,255,0.5)', margin: 0, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Membership Status</p>
-                                    <p style={{ fontSize: '14px', fontWeight: 900, color: '#FFF', margin: 0 }}>ACTIVE</p>
-                                </div>
+                                <span className="text-[9px] font-black tracking-widest px-2 py-0.5 rounded bg-white/20">ACTIVE</span>
                             </div>
 
-                            <h3 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 8px', letterSpacing: '-0.02em', textTransform: 'uppercase' }}>
-                                {activeMembership.planId?.name}
-                            </h3>
-                            
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px', opacity: 0.7 }}>
-                                <Calendar size={14} />
-                                <p style={{ fontSize: '12px', fontWeight: 700, margin: 0 }}>
-                                    VALID THRU: {new Date(activeMembership.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                </p>
-                            </div>
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                <div>
-                                    <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 4px', fontWeight: 800, textTransform: 'uppercase' }}>Member ID</p>
-                                    <p style={{ fontSize: '14px', fontWeight: 800, margin: 0, letterSpacing: '0.05em' }}>WAP-{customer?._id?.slice(-6).toUpperCase() || 'XXXXXX'}</p>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', fontSize: '11px' }}>
+                                <div style={{ opacity: 0.9 }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 800 }}>Member ID</span>
+                                    <p className="font-bold m-0 tracking-wide">WAP-{customer?._id?.slice(-6).toUpperCase() || 'XXXXXX'}</p>
                                 </div>
-                                <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                    <ChevronRight size={18} />
+                                <div style={{ opacity: 0.9, textAlign: 'right' }}>
+                                    <span style={{ fontSize: '8px', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', fontWeight: 800 }}>Expires</span>
+                                    <p className="font-bold m-0">
+                                        {new Date(activeMembership.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                    </p>
                                 </div>
                             </div>
                         </div>
                     </motion.div>
                 )}
 
-                <p style={{ fontSize: '11px', fontWeight: 900, color: colors.textMuted, margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Rewards Balance</p>
-
-            {/* Ritual Points Card */}
-            <motion.div
-                variants={fadeUp}
-                initial="initial"
-                animate="animate"
-                style={{
-                    background: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
-                    borderRadius: '32px',
-                    padding: '32px',
-                    color: '#FFF',
-                    marginBottom: '24px',
-                    boxShadow: '0 25px 50px rgba(0,0,0,0.15)',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    border: '1px solid rgba(255,255,255,0.1)'
-                }}
-            >
-                {/* Decoration */}
-                <div style={{
-                    position: 'absolute', top: '-10%', right: '-5%',
-                    width: '180px', height: '180px',
-                    background: 'radial-gradient(circle, rgba(200,149,108,0.25) 0%, transparent 70%)',
-                    zIndex: 0
-                }} />
-
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <div style={{ background: 'rgba(200,149,108,0.2)', padding: '6px', borderRadius: '10px' }}>
-                            <ShieldCheck size={16} color={colors.accent} />
+                {/* Ritual Points Card (Compact) */}
+                <motion.div
+                    variants={fadeUp}
+                    initial="initial"
+                    animate="animate"
+                    style={{
+                        background: 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)',
+                        borderRadius: '24px',
+                        padding: '20px 24px',
+                        color: '#FFF',
+                        boxShadow: '0 12px 24px rgba(185, 133, 20, 0.15)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                    }}
+                >
+                    <div style={{ position: 'relative', zIndex: 1 }} className="space-y-4">
+                        <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Balance</div>
+                        
+                        <div className="flex justify-between items-end">
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
+                                    <h2 style={{ fontSize: '38px', fontWeight: 900, margin: 0, letterSpacing: '-0.02em', lineHeight: 1 }}>{points.toLocaleString()}</h2>
+                                    <span style={{ fontSize: '12px', fontWeight: 800, opacity: 0.8 }}>PTS</span>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <p style={{ fontSize: '8px', color: 'rgba(255,255,255,0.7)', margin: '0 0 2px', textTransform: 'uppercase', fontWeight: 800 }}>Redeemable Value</p>
+                                <p style={{ fontSize: '18px', fontWeight: 900, margin: 0, lineHeight: 1 }}>₹{redeemableValue.toLocaleString()}</p>
+                            </div>
                         </div>
-                        <span style={{ fontSize: '12px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.15em' }}>Loyalty Points</span>
                     </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', marginBottom: '40px' }}>
-                        <h2 style={{ fontSize: '56px', fontWeight: 900, margin: 0, letterSpacing: '-0.02em' }}>{points.toLocaleString()}</h2>
-                        <span style={{ fontSize: '18px', fontWeight: 600, opacity: 0.5, letterSpacing: '0.05em' }}>PTS</span>
-                    </div>
+                </motion.div>
 
-                    <div style={{ 
-                        background: 'rgba(255,255,255,0.03)', 
-                        backdropFilter: 'blur(10px)',
+                {/* Point Value Info Section (Compact) */}
+                <motion.div
+                    variants={fadeUp}
+                    initial="initial"
+                    animate="animate"
+                    transition={{ delay: 0.08 }}
+                >
+                    <div style={{
+                        background: colors.card,
+                        border: `1px solid ${colors.border}`,
                         borderRadius: '20px',
                         padding: '16px 20px',
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
+                        display: 'flex',
                         alignItems: 'center',
-                        border: '1px solid rgba(255,255,255,0.05)'
+                        gap: '16px',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.01)'
                     }}>
-                        <div>
-                            <p style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', margin: '0 0 2px', textTransform: 'uppercase', fontWeight: 900, letterSpacing: '0.05em' }}>Redeemable Value</p>
-                            <p style={{ fontSize: '20px', fontWeight: 900, margin: 0 }}>₹{redeemableValue.toLocaleString()}</p>
+                        <div style={{ 
+                            width: 38, height: 38, borderRadius: '10px', 
+                            background: isLight ? '#FFF8E6' : 'rgba(223, 172, 44, 0.1)', 
+                            color: colors.accent,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            shrink: 0
+                        }}>
+                            <Coins size={18} style={{ color: colors.accent }} />
                         </div>
-                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: colors.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 16px rgba(200,149,108,0.3)' }}>
-                            <Sparkles size={20} color="#FFF" />
+                        
+                        <div style={{ flex: 1 }}>
+                            <p style={{ fontSize: '9px', color: colors.textMuted, margin: '0 0 1px', textTransform: 'uppercase', fontWeight: 900, letterSpacing: '0.05em' }}>Point Value</p>
+                            <div style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>
+                                {ptsPerRupee} PTS = ₹1
+                            </div>
                         </div>
+                        <p style={{ fontSize: '11px', color: colors.textMuted, margin: 0, maxWidth: '140px', textAlign: 'right', fontWeight: 500, lineHeight: 1.2 }}>
+                            Earn & redeem on all services & products
+                        </p>
                     </div>
-                </div>
-            </motion.div>
-
-            {/* Point Value Info Section */}
-            <motion.div
-                variants={fadeUp}
-                initial="initial"
-                animate="animate"
-                transition={{ delay: 0.1 }}
-                style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '16px' }}
-            >
-                <div style={{
-                    background: colors.card,
-                    border: `1px solid ${colors.border}`,
-                    borderRadius: '28px',
-                    padding: '32px 24px',
-                    textAlign: 'center',
-                    boxShadow: '0 10px 30px rgba(0,0,0,0.02)'
-                }}>
-                    <div style={{ 
-                        width: 48, height: 48, borderRadius: '16px', 
-                        background: isLight ? '#FDF6F0' : 'rgba(200,149,108,0.1)', 
-                        color: colors.accent, margin: '0 auto 16px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center'
-                    }}>
-                        <Coins size={24} />
-                    </div>
-                    
-                    <p style={{ fontSize: '12px', color: colors.textMuted, margin: '0 0 8px', textTransform: 'uppercase', fontWeight: 900, letterSpacing: '0.1em' }}>Point Value</p>
-                    
-                    <div style={{ fontSize: '28px', fontWeight: 900, color: colors.text, marginBottom: '6px' }}>
-                        {ptsPerRupee} PTS = ₹1
-                    </div>
-                    
-                    <p style={{ fontSize: '13px', color: colors.textMuted, margin: 0, fontWeight: 500 }}>Earn and redeem on every service and product</p>
-                </div>
-            </motion.div>
+                </motion.div>
+            </div>
         </div>
-    </div>
-);
+    );
 };
 
 export default AppLoyaltyPage;

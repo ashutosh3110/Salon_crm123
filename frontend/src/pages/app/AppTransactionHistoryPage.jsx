@@ -1,33 +1,31 @@
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { 
     TrendingUp, TrendingDown, Clock, Search, 
-    Filter, Wallet, Gem, ShoppingBag, Calendar, ArrowRightLeft,
-    CheckCircle2, XCircle, AlertCircle
+    Wallet, Gem, ShoppingBag, Calendar, ArrowRightLeft,
+    AlertCircle, ChevronLeft
 } from 'lucide-react';
-import AppBackButton from '../../components/app/AppBackButton';
 import { useWallet } from '../../contexts/WalletContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 export default function AppTransactionHistoryPage() {
     const navigate = useNavigate();
     const { transactions, loading } = useWallet();
-    const { theme } = useCustomerTheme();
-    const isLight = theme === 'light';
+    const { colors: themeColors, isLight } = useCustomerTheme();
 
     const [activeTab, setActiveTab] = useState('all'); // all, credit, debit
     const [searchQuery, setSearchQuery] = useState('');
 
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        accent: '#C8956C',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        input: isLight ? '#F1F3F5' : '#141414',
-    };
+    const colors = useMemo(() => ({
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        text: themeColors.text || '#1A1A1A',
+        textMuted: themeColors.textMuted || '#666',
+        accent: themeColors.accent || '#E7D06E',
+        border: themeColors.border || 'rgba(0,0,0,0.07)',
+        input: '#F3F4F6',
+    }), [themeColors]);
 
     const filteredTransactions = useMemo(() => {
         return transactions.filter(tx => {
@@ -65,12 +63,17 @@ export default function AppTransactionHistoryPage() {
     const fadeUp = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0 } };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh', paddingBottom: '100px' }}>
+        <div style={{ background: '#FFFFFF', minHeight: '100vh', paddingBottom: '100px' }} className="font-sans">
             {/* Header */}
-            <div className="sticky top-0 z-30 px-4 pt-6 pb-4" style={{ background: colors.bg + 'CC', backdropFilter: 'blur(10px)' }}>
-                <div className="flex items-center gap-4 mb-6">
-                    <AppBackButton />
-                    <h1 className="text-xl font-black tracking-tight" style={{ color: colors.text }}>Transaction History</h1>
+            <div className="sticky top-0 z-30 px-4 py-4" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                <div className="flex items-center justify-between mb-4">
+                    <button 
+                        onClick={() => navigate(-1)} 
+                        className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
+                    >
+                        <ChevronLeft className="w-6 h-6" style={{ color: colors.text }} />
+                    </button>
+                    <h1 className="text-lg font-bold text-center flex-1 pr-10" style={{ color: colors.text }}>Transaction History</h1>
                 </div>
 
                 {/* Tabs */}
@@ -79,11 +82,11 @@ export default function AppTransactionHistoryPage() {
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab)}
-                            className="flex-1 py-2 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all"
+                            className="flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all"
                             style={{ 
                                 background: activeTab === tab ? colors.card : 'transparent',
                                 color: activeTab === tab ? colors.accent : colors.textMuted,
-                                boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.1)' : 'none'
+                                boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.03)' : 'none'
                             }}
                         >
                             {tab}
@@ -149,7 +152,6 @@ export default function AppTransactionHistoryPage() {
                                     </div>
                                     <div className="text-right">
                                         <p className="text-base font-black flex items-center justify-end gap-1" style={{ color: isDebit ? '#EF4444' : '#10B981' }}>
-                                            {isDebit ? <TrendingDown size={14} /> : <TrendingUp size={14} />}
                                             {isDebit ? '-' : '+'}₹{tx.amount.toLocaleString()}
                                         </p>
                                         <p className="text-[9px] font-bold uppercase opacity-30">via Wallet</p>
