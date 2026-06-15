@@ -262,15 +262,18 @@ exports.createBooking = async (req, res) => {
             if (canSend) {
                 const templateName = process.env.WHATSAPP_TEMPLATE_BOOKING_LINK || 'booking_confirmation';
                 const staffName = (populated.staffId && populated.staffId.length > 0) ? populated.staffId[0].name : 'Any Stylist';
+                const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Wapixo';
+                const contactPhone = populated.outletId?.phone || populated.salonId?.contactPhone || salonName;
                 const params = [
                     populated.clientId.name,
-                    populated.salonId.businessName || populated.salonId.name || 'Our Salon',
+                    salonName,
                     populated.outletId.name,
                     populated.outletId.city || populated.outletId.address?.city || 'Our Location',
                     staffName,
                     populated.serviceId.name,
                     dateStr,
-                    timeStr
+                    timeStr,
+                    salonName
                 ];
 
                 const result = await sendWhatsAppTemplate(
