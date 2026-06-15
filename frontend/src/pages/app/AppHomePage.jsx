@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { motion } from 'framer-motion';
 
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
@@ -12,6 +13,7 @@ import {
 
 
 import { useBusiness } from '../../contexts/BusinessContext';
+import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 import homeData from '../../data/appHomeData.json';
 import api from '../../services/api';
 import logoDarkMode from '/new wapixo logo .png';
@@ -318,6 +320,7 @@ export default function AppHomePage() {
         outlets,
         services: contextServices,
         products: contextProducts,
+        productCategories: shopCategories,
         feedbacks: contextReviews,
         banners: contextBanners,
         nearbyOutlets: contextNearby,
@@ -330,6 +333,39 @@ export default function AppHomePage() {
     } = useBusiness();
     const servicesScrollRef = useRef(null);
     const outletsScrollRef = useRef(null);
+
+    const shopCategoriesList = useMemo(() => {
+        const counts = {};
+        const shopProducts = (contextProducts || [])
+            .filter((p) => p.isShopProduct)
+            .map((p) => mapInventoryProductToShopProduct(p, shopCategories))
+            .filter(Boolean);
+
+        shopProducts.forEach(p => {
+            counts[p.category] = (counts[p.category] || 0) + 1;
+        });
+
+        const catList = (shopCategories || []).map(c => ({
+            name: c.name,
+            img: c.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80',
+            count: counts[c.name] || 0
+        }));
+
+        catList.sort((a, b) => b.count - a.count);
+
+        return [
+            { name: 'All', img: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80' },
+            ...catList.map(c => ({ name: c.name, img: c.img }))
+        ];
+    }, [shopCategories, contextProducts]);
+
+    const handleShopCategoryClick = (catName) => {
+        if (catName === 'All') {
+            navigate('/app/shop');
+        } else {
+            navigate(`/app/shop?category=${encodeURIComponent(catName)}`);
+        }
+    };
 
     const [selectedServiceCategory, setSelectedServiceCategory] = useState('');
     const [userLocation, setUserLocation] = useState(null);
@@ -781,6 +817,87 @@ export default function AppHomePage() {
                         )}
                     </div>
                 </div>
+
+                {/* ── SHOP CATEGORIES SECTION ── */}
+                {shopCategoriesList.length > 1 && (
+                    <div style={{ marginTop: '24px', marginBottom: '8px' }}>
+                        <div className="app-scroll no-scrollbar flex gap-4 overflow-x-auto px-4 pb-2">
+                            {shopCategoriesList.map(cat => {
+                                const isActive = cat.name === 'All';
+                                return (
+                                    <motion.div
+                                        key={cat.name}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => handleShopCategoryClick(cat.name)}
+                                        style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            flexShrink: 0,
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <div style={{
+                                            width: '64px',
+                                            height: '64px',
+                                            borderRadius: '50%',
+                                            padding: '2px',
+                                            background: isActive ? '#C8956C' : 'transparent',
+                                            border: isActive ? 'none' : `1px solid ${colors.border}`,
+                                            transition: 'all 0.3s ease',
+                                            position: 'relative',
+                                            zIndex: 2
+                                        }}>
+                                            <div style={{
+                                                width: '100%',
+                                                height: '100%',
+                                                borderRadius: '50%',
+                                                overflow: 'hidden',
+                                                background: colors.card,
+                                                border: `2px solid ${isLight ? '#fff' : colors.bg}`
+                                            }}>
+                                                <img
+                                                    src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'}
+                                                    alt={cat.name}
+                                                    loading="lazy"
+                                                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E"; }}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            style={{
+                                                background: isActive ? '#C8956C' : colors.card,
+                                                color: isActive ? '#FFFFFF' : colors.text,
+                                                borderRadius: '10px',
+                                                padding: '4px 10px',
+                                                boxShadow: isActive ? '0 4px 8px rgba(200,149,108,0.2)' : 'none',
+                                                border: isActive ? 'none' : `1px solid ${colors.border}`,
+                                                marginTop: '-12px',
+                                                zIndex: 3,
+                                                minWidth: '50px',
+                                                textAlign: 'center'
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    fontSize: '8px',
+                                                    fontWeight: 800,
+                                                    letterSpacing: '0.05em',
+                                                    textTransform: 'uppercase'
+                                                }}
+                                            >
+                                                {cat.name}
+                                            </span>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* ── SELECTED OUTLET ── */}
                 {activeOutlet && (

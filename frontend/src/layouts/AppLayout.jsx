@@ -35,7 +35,7 @@ export default function AppLayout() {
 
     useEffect(() => {
         if (authLoading || isInitializing) return;
-        
+
         if (!customer) {
             if (location.pathname !== '/app/login') {
                 const search = location.search;
@@ -55,12 +55,12 @@ export default function AppLayout() {
         // 3. Must have an active salon/outlet selected
         if (!activeOutletId || activeOutletId === 'null' || activeOutletId === 'undefined') {
             const publicPaths = [
-                '/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile', 
+                '/app/login', '/app/gender', '/app/nearby-outlets', '/app/profile',
                 '/app/wallet', '/app/notifications', '/app/services', '/app/bookings',
                 '/app/orders', '/app/transactions', '/app/shop', '/app/product', '/app/service'
             ];
             const isRestrictedPath = !publicPaths.some(p => location.pathname.startsWith(p)) && location.pathname !== '/app';
-            
+
             // Critical: Never redirect if we are still initializing data from localStorage/API
             if (isRestrictedPath && !isInitializing) {
                 navigate('/app/nearby-outlets', { replace: true });
@@ -69,13 +69,13 @@ export default function AppLayout() {
         }
 
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
-    
+
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
     const hideHeaderPaths = [
-        '/app/product', 
-        '/app/bookings', 
-        '/app/orders', 
-        '/app/services', 
+        '/app/product',
+        '/app/bookings',
+        '/app/orders',
+        '/app/services',
         '/app/favorites',
         '/app/wallet',
         '/app/transactions',
@@ -90,8 +90,10 @@ export default function AppLayout() {
     ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
+    const stepParam = searchParams.get('step');
+    const isBookingStep = location.pathname === '/app/booking' && ['1', '2', '3', '4', '5'].includes(stepParam);
     const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
-    const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
+    const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path)) || hasProductModal || isBookingStep;
 
     // Apply global body background based on theme
     useEffect(() => {
@@ -100,6 +102,13 @@ export default function AppLayout() {
         document.body.style.background = isLight
             ? 'linear-gradient(to bottom, #FFFFFF 0%, #FBFBFB 100%) fixed'
             : 'linear-gradient(to bottom, #1A1A1A 0%, #0F0F0F 100%) fixed';
+
+        // Ensure html element has correct theme class for customer app
+        if (isLight) {
+            document.documentElement.classList.remove('dark');
+        } else {
+            document.documentElement.classList.add('dark');
+        }
     }, [isLight]);
 
 
@@ -107,15 +116,15 @@ export default function AppLayout() {
 
     if (isInitializing) {
         return (
-            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden" 
-                 style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%)' }}>
+            <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center overflow-hidden"
+                style={{ background: 'linear-gradient(135deg, #1A1A1A 0%, #0F0F0F 100%)' }}>
                 {/* Animated Background Blobs - Optimized */}
                 <motion.div
                     animate={{ opacity: [0.15, 0.25, 0.15] }}
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full"
-                    style={{ 
-                        background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)', 
+                    style={{
+                        background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)',
                         filter: 'blur(60px)',
                         willChange: 'opacity'
                     }}
@@ -328,7 +337,7 @@ export default function AppLayout() {
 
                 {!shouldHideNav && <AppBottomNav />}
 
-                <CartDrawer 
+                <CartDrawer
                     isOpen={isCartOpen}
                     onClose={() => setIsCartOpen(false)}
                     cart={cart.items}

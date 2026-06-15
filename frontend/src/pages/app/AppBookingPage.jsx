@@ -20,10 +20,10 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
     const R = 6371; // Radius of earth in km
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c; // Distance in km
 };
@@ -45,10 +45,10 @@ export default function AppBookingPage() {
 
     const preSelectedServiceId = searchParams.get('serviceId');
     const outletId = searchParams.get('outletId');
-    const { 
-        activeOutlet, 
-        outlets, 
-        services: businessServices, 
+    const {
+        activeOutlet,
+        outlets,
+        services: businessServices,
         groupedServices,
         staff: businessStaff,
         fetchGroupedServices,
@@ -89,7 +89,7 @@ export default function AppBookingPage() {
     const initializeBookingData = useCallback(async () => {
         const urlId = searchParams.get('tenantId') || searchParams.get('salonId');
         const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id');
-        
+
         if (urlId && urlId !== activeSalonId) {
             setActiveSalonId(urlId);
             localStorage.setItem('active_salon_id', urlId);
@@ -121,7 +121,7 @@ export default function AppBookingPage() {
             }
 
             const results = await Promise.all(fetchPromises);
-            
+
             // Set membership if it was in the promises
             const memRes = results.find(r => r?.config?.url === '/loyalty/membership/active');
             if (memRes) {
@@ -199,7 +199,7 @@ export default function AppBookingPage() {
     useEffect(() => {
         const discoverAndSelect = async () => {
             if (!preSelectedServiceId || discoveryAttempted.current === preSelectedServiceId) return;
-            
+
             const targetId = String(preSelectedServiceId).trim();
 
             // 1. Try to find in existing list
@@ -213,13 +213,13 @@ export default function AppBookingPage() {
                     if (foundSvc) {
                         svc = foundSvc;
                         const discoveredSalonId = String(svc.salonId?._id || svc.salonId || '');
-                        
+
                         // If it belongs to a different salon or no salon is set, switch context
                         if (discoveredSalonId && String(discoveredSalonId) !== String(activeSalonId)) {
                             console.log("[AppBookingPage] Switching to discovered salon:", discoveredSalonId);
                             setActiveSalonId(discoveredSalonId);
                             localStorage.setItem('active_salon_id', discoveredSalonId);
-                            
+
                             // Mark as attempted to prevent re-entering this block for the same ID
                             discoveryAttempted.current = targetId;
 
@@ -237,7 +237,7 @@ export default function AppBookingPage() {
             if (svc) {
                 setSelectedServices([svc]);
                 discoveryAttempted.current = targetId; // Mark as done
-                
+
                 if (outletId && outlets?.length > 0) {
                     const found = outlets.find(o => String(o.id || o._id) === String(outletId));
                     if (found) setSelectedOutlet(found);
@@ -385,15 +385,15 @@ export default function AppBookingPage() {
             const effectiveTid = urlId || activeSalonId || localStorage.getItem('active_salon_id') || 'system';
             const oId = currentOutlet?._id || currentOutlet?.id || '';
             const cust = await customerLogin(detailPhone, code, effectiveTid, oId);
-            
+
             if (cust && (cust.name === 'Guest' || cust.name === 'Guest Customer' || !cust.name || cust.isNewUser)) {
                 await updateCustomer({ name: detailName.trim() });
             }
-            
+
             // Sync local state name and phone
             setDetailName(detailName.trim());
             setDetailPhone(detailPhone);
-            
+
             // Advance to next step based on context
             if (preSelectedServiceId) {
                 goTo(3);
@@ -468,7 +468,7 @@ export default function AppBookingPage() {
                 if (mem && !cancelled) {
                     try {
                         setActiveMembership(JSON.parse(mem));
-                    } catch (err) {}
+                    } catch (err) { }
                 }
             }
         };
@@ -556,14 +556,14 @@ export default function AppBookingPage() {
             setAvailableSlots([]);
             return;
         }
-        
+
         const fetchSlots = async () => {
             setLoadingAvailability(true);
             try {
                 // Use local date string instead of toISOString to avoid timezone shifts
                 const d = selectedDate.date;
                 const dateStr = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-                
+
                 const res = await api.get('/bookings/available-slots', {
                     params: {
                         staffId: selectedStaff._id || selectedStaff.id,
@@ -572,20 +572,20 @@ export default function AppBookingPage() {
                     }
                 });
                 const allSlots = res.data?.data || [];
-                
+
                 // Filter past slots if today is selected
                 const now = new Date();
                 const isToday = d.getFullYear() === now.getFullYear() &&
-                              d.getMonth() === now.getMonth() &&
-                              d.getDate() === now.getDate();
-                
+                    d.getMonth() === now.getMonth() &&
+                    d.getDate() === now.getDate();
+
                 if (isToday) {
                     const currentMinutes = now.getHours() * 60 + now.getMinutes();
                     // Show slots starting at least 15 mins from now
                     setAvailableSlots(allSlots.filter(slot => {
                         const [hours, minutes] = slot.split(':').map(Number);
                         const slotMinutes = hours * 60 + minutes;
-                        return slotMinutes > currentMinutes + 15; 
+                        return slotMinutes > currentMinutes + 15;
                     }));
                 } else {
                     setAvailableSlots(allSlots);
@@ -597,18 +597,18 @@ export default function AppBookingPage() {
                 setLoadingAvailability(false);
             }
         };
-        
+
         fetchSlots();
     }, [selectedDate, currentOutlet, selectedStaff, selectedServices]);
 
     const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#ffffff',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        toggle: isLight ? '#EDF0F2' : '#1A1A1A',
-        input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
+        bg: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#FFFFFF' : (isLight ? '#FCF9F6' : '#0F0F0F'),
+        card: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#FFFFFF' : (isLight ? '#FFFFFF' : '#1A1A1A'),
+        text: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#1A1A1A' : (isLight ? '#1A1A1A' : '#ffffff'),
+        textMuted: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#666' : (isLight ? '#666' : 'rgba(255,255,255,0.4)'),
+        border: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? 'rgba(0,0,0,0.1)' : (isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'),
+        toggle: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#EDF0F2' : (isLight ? '#EDF0F2' : '#1A1A1A'),
+        input: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : (isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)'),
     };
 
     if (isInitializing || authLoading) {
@@ -681,25 +681,25 @@ export default function AppBookingPage() {
 
     const outletStaff = useMemo(() => {
         if (!businessStaff) return [];
-        
+
         const targetSalonId = String(activeSalonId || salon?._id || '');
         const activeOid = String(currentOutlet?._id || currentOutlet?.id || '');
-        
+
         return (businessStaff || []).filter(s => {
             // Robust stylist check: Explicit flag OR role check (including 'Stylish' typo/variant)
             const isStylistRole = ['stylist', 'stylish', 'expert', 'beautician', 'hairdresser', 'barber'].includes(String(s.role || '').toLowerCase());
             const isStylist = s.isStylist !== false && (s.isStylist === true || isStylistRole);
-            
+
             if (!isStylist) return false;
 
             // Basic status checks: Only show active & approved experts
             if (s.status === 'inactive' || s.isActive === false) return false;
             if (s.profileStatus && s.profileStatus !== 'Approved') return false;
-            
+
             // Salon check - must match the active salon
             const sSalonId = String(s.salonId?._id || s.salonId || '');
             if (sSalonId && targetSalonId && sSalonId !== targetSalonId) return false;
-            
+
             // Outlet check
             const sOutletId = String(s.outletId?._id || s.outletId || '');
             if (activeOid && sOutletId && sOutletId !== activeOid) return false;
@@ -718,7 +718,7 @@ export default function AppBookingPage() {
         selectedServices.forEach(s => {
             const sGst = Number(s.gst !== undefined && s.gst !== null ? s.gst : (platformSettings?.serviceGst || 18));
             const isInclusive = s.isInclusiveTax === true || String(s.isInclusiveTax) === 'true';
-            
+
             if (isInclusive) {
                 isAnyInclusive = true;
             } else {
@@ -816,7 +816,7 @@ export default function AppBookingPage() {
     const goTo = (newStep) => {
         setDirection(newStep > step ? 1 : -1);
         setStep(newStep);
-        
+
         // Persist step and core IDs in URL
         const newParams = new URLSearchParams(searchParams);
         newParams.set('step', newStep);
@@ -892,7 +892,7 @@ export default function AppBookingPage() {
         // 1. Check Staff Specific Availability (Working Hours for that staff)
         const dayName = selectedDate.date.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
         const staffAvailability = staff.availability?.days?.[dayName] || [];
-        
+
         // Convert timeStr (e.g. "10:30") to minutes from midnight
         const [h, m] = timeStr.split(':').map(Number);
         const slotStartInMinutes = h * 60 + m;
@@ -912,7 +912,7 @@ export default function AppBookingPage() {
 
         // 2. Check overlap with existing bookings
         if (!availabilityData) return true;
-        
+
         const start = new Date(selectedDate.date);
         start.setHours(h, m, 0, 0);
         const end = new Date(start.getTime() + duration * 60000);
@@ -920,12 +920,12 @@ export default function AppBookingPage() {
         const isOverlap = availabilityData.bookings?.some(b => {
             const sid = b.staffId?._id || b.staffId?.id || b.staffId;
             if (String(sid) !== String(staff._id || staff.id)) return false;
-            
+
             const bStart = new Date(b.appointmentDate || b.start);
             const bEnd = new Date(new Date(bStart).getTime() + (b.duration || 30) * 60000);
-            
+
             if (isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return false;
-            
+
             return (start < bEnd && end > bStart);
         });
 
@@ -935,7 +935,7 @@ export default function AppBookingPage() {
     // Calculate dynamic time slots based on availableSlots state
     const timeSlots = useMemo(() => {
         if (!selectedDate || !currentOutlet) return [];
-        
+
         if (loadingAvailability) {
             return []; // Or show loading state
         }
@@ -950,24 +950,24 @@ export default function AppBookingPage() {
     const finalGroups = useMemo(() => {
         const q = serviceSearch.toLowerCase().trim();
         const activeOid = currentOutlet?._id || currentOutlet?.id;
-        
+
         let groups = (groupedServices || []).map(group => {
             const filteredGroupServices = group.services.filter(s => {
                 // Status check - be lenient (only block if explicitly inactive)
                 if (s.status === 'inactive') return false;
-                
+
                 // Outlet check: service must either be global or specifically mapped to current outlet
                 if (activeOid && s.outletIds && s.outletIds.length > 0) {
                     const isAvailableAtOutlet = s.outletIds.some(id => String(id) === String(activeOid));
                     if (!isAvailableAtOutlet) return false;
                 }
-                
+
                 // Gender match - be lenient (using appGender from useGender)
                 const sG = String(s.gender || 'both').toLowerCase();
                 const currentG = appGender ? appGender.toLowerCase() : null;
                 const genderMatch = sG === 'both' || !currentG || sG === currentG || !s.gender;
                 if (!genderMatch) return false;
-                
+
                 // Search match
                 if (q && !s.name.toLowerCase().includes(q) && !group.name.toLowerCase().includes(q)) return false;
 
@@ -984,18 +984,18 @@ export default function AppBookingPage() {
 
     const mergeDateAndTime = (dateObj, timeStr) => {
         if (!dateObj || !timeStr) return dateObj;
-        
+
         // Handle both "12:00" (24h) and "12:00 PM" (12h) formats
         const [time, modifier] = timeStr.split(' ');
         let [hours, minutes] = time.split(':').map(Number);
-        
+
         if (modifier) {
             // 12-hour format logic
             if (hours === 12) hours = 0;
             if (modifier.toUpperCase() === 'PM') hours += 12;
         }
         // If no modifier, assume 24-hour format and keep hours as is
-        
+
         const merged = new Date(dateObj);
         merged.setHours(hours, minutes, 0, 0);
         return merged;
@@ -1004,12 +1004,12 @@ export default function AppBookingPage() {
     const handleSubmit = async (e) => {
         if (e && e.preventDefault) e.preventDefault();
         if (e && e.stopPropagation) e.stopPropagation();
-        
+
         if (submittingRef.current) {
             console.warn('[AppBookingPage] Blocked double submission attempt');
             return;
         }
-        
+
         submittingRef.current = true;
         setSubmitting(true);
         try {
@@ -1024,7 +1024,7 @@ export default function AppBookingPage() {
             }
 
             const appointmentDateObj = mergeDateAndTime(selectedDate.date, selectedTime);
-            
+
             // Build Base Booking Data
             const baseBookingData = {
                 clientId: customerId,
@@ -1075,7 +1075,7 @@ export default function AppBookingPage() {
                     paymentMethod: 'salon',
                     paymentStatus: 'unpaid'
                 };
-                
+
                 const res = await api.post('/bookings', payload);
                 finalizeBookingSuccess(res.data.data || res.data);
             }
@@ -1119,8 +1119,8 @@ export default function AppBookingPage() {
     // Loading state with a full-screen loader
     if (isLoading || authLoading) {
         return (
-            <div style={{ 
-                background: colors.bg, 
+            <div style={{
+                background: colors.bg,
                 minHeight: '100svh',
                 display: 'flex',
                 flexDirection: 'column',
@@ -1265,19 +1265,36 @@ export default function AppBookingPage() {
 
 
 
+    const styleOverride = (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? {
+        '--app-bg': '#FFFFFF',
+        '--app-text': '#1A1A1A',
+        '--app-text-muted': '#666666',
+        '--app-border': 'rgba(0,0,0,0.1)',
+        '--app-accent': '#E7D06E',
+    } : {};
+
     return (
-        <div className="space-y-6 px-4 pb-32" style={{ background: colors.bg, minHeight: '100svh' }}>
+        <div className="space-y-6 px-4 pb-32" style={{ background: colors.bg, minHeight: '100svh', ...styleOverride }}>
             {/* Back Button */}
             <div className="pt-4 flex items-center justify-between">
-                <button onClick={handleBack} style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }} className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest hover:text-[#C8956C] transition-colors">
+                <button
+                    onClick={handleBack}
+                    style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }}
+                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? 'hover:text-[#E7D06E]' : 'hover:text-[#C8956C]'}`}
+                >
                     <ArrowLeft className="w-4 h-4" /> {((isPreselected && step === 3 && isCustomerAuthenticated) || step === 0) ? 'Cancel' : 'Back'}
                 </button>
-                <div className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#C8956C] font-mono" style={{ fontFamily: "'Poppins', sans-serif" }}>Step {virtualStep + 1}/{STEPS.length}</div>
+                <div
+                    className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono"
+                    style={{ color: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#E7D06E' : '#C8956C', fontFamily: "'Poppins', sans-serif" }}
+                >
+                    Step {virtualStep + 1}/{STEPS.length}
+                </div>
             </div>
 
             {/* Step Indicator */}
             <div className="py-2">
-                <StepIndicator currentStep={virtualStep} steps={STEPS} />
+                <StepIndicator currentStep={virtualStep} steps={STEPS} accentColor={(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#E7D06E' : '#C8956C'} />
             </div>
 
             {/* Step Content */}
@@ -1306,7 +1323,7 @@ export default function AppBookingPage() {
                                     </div>
                                     <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
                                         <p className="text-[10px] text-text-muted font-medium">Not your account?</p>
-                                        <button 
+                                        <button
                                             onClick={customerLogout}
                                             className="text-[10px] font-bold text-rose-500 uppercase tracking-widest hover:underline"
                                         >
@@ -1316,7 +1333,8 @@ export default function AppBookingPage() {
                                 </div>
                                 <button
                                     onClick={() => isPreselected ? goTo(3) : goTo(1)}
-                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl transition-all active:scale-[0.98]"
+                                    style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                    className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl transition-all active:scale-[0.98]"
                                 >
                                     Continue to {isPreselected ? 'Stylist' : 'Outlet'} <ArrowRight size={16} />
                                 </button>
@@ -1365,7 +1383,8 @@ export default function AppBookingPage() {
                                         <button
                                             onClick={handleSendOtp}
                                             disabled={otpLoading}
-                                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
+                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
                                         >
                                             {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'} <ArrowRight size={16} />
                                         </button>
@@ -1374,8 +1393,8 @@ export default function AppBookingPage() {
                                     <div className="space-y-6">
                                         <div className="p-4 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/10 text-center">
                                             <p className="text-xs font-semibold text-text-muted">OTP sent to +91 {detailPhone}</p>
-                                            <button 
-                                                onClick={() => setOtpSent(false)} 
+                                            <button
+                                                onClick={() => setOtpSent(false)}
                                                 className="text-[10px] font-black uppercase text-[#C8956C] tracking-wider mt-1 hover:underline"
                                             >
                                                 Change Number
@@ -1421,7 +1440,8 @@ export default function AppBookingPage() {
                                         <button
                                             onClick={handleVerifyOtp}
                                             disabled={otpLoading}
-                                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
+                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
                                         >
                                             {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'} <Check size={16} />
                                         </button>
@@ -1543,8 +1563,8 @@ export default function AppBookingPage() {
                                                             alt={o.name}
                                                             className="w-full h-full object-cover"
                                                             onError={(e) => {
-                                                                    e.target.onerror = null;
-                                                                    e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
+                                                                e.target.onerror = null;
+                                                                e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
                                                             }}
                                                         />
                                                     </div>
@@ -1563,7 +1583,8 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(2)}
                                 disabled={!selectedOutlet}
-                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-8"
+                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-8"
                             >
                                 Continue <ArrowRight size={16} />
                             </button>
@@ -1583,16 +1604,16 @@ export default function AppBookingPage() {
                         <div className="space-y-6 text-left">
                             <div className="flex flex-col gap-0">
                                 <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                    Select <span className="text-[#C8956C]">Services</span>
+                                    Select <span className="text-[#E7D06E]">Services</span>
                                 </h2>
                                 <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available at {selectedOutlet?.name}</p>
                             </div>
 
                             {/* Search bar */}
                             <div className="relative group">
-                                <div className="absolute inset-0 bg-[#C8956C]/5 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <div className={`relative flex items-center gap-3 border h-12 px-4 rounded-xl group-focus-within:border-[#C8956C]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
-                                    <Search size={16} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#C8956C] transition-colors`} />
+                                <div className="absolute inset-0 bg-[#E7D06E]/5 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className={`relative flex items-center gap-3 border h-12 px-4 rounded-xl group-focus-within:border-[#E7D06E]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
+                                    <Search size={16} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#E7D06E] transition-colors`} />
                                     <input
                                         type="text"
                                         placeholder="Search services..."
@@ -1612,7 +1633,7 @@ export default function AppBookingPage() {
                                 )}
                                 {finalGroups.map((group) => (
                                     <div key={group._id || group.name} className="space-y-3">
-                                        <h3 className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] pl-1 border-b border-[#C8956C]/10 pb-1">{group.name}</h3>
+                                        <h3 className="text-[10px] font-black text-[#C8956C] uppercase tracking-[0.2em] pl-1 border-b border-[#C8956C]/20 pb-1">{group.name}</h3>
                                         <div className="grid grid-cols-1 gap-3">
                                             {group.services.map((svc) => {
                                                 const isSelected = selectedServices.some(s => (s._id || s.id) === (svc._id || svc.id));
@@ -1621,19 +1642,19 @@ export default function AppBookingPage() {
                                                         key={svc._id || svc.id}
                                                         onClick={() => toggleService(svc)}
                                                         style={{
-                                                            background: isSelected ? 'rgba(200,149,108,0.06)' : colors.card,
-                                                            borderColor: isSelected ? '#C8956C' : colors.border
+                                                            background: isSelected ? 'rgba(231,208,110,0.1)' : colors.card,
+                                                            borderColor: isSelected ? '#E7D06E' : colors.border
                                                         }}
-                                                        className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all hover:border-[#C8956C]/40"
+                                                        className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all hover:border-[#E7D06E]/40"
                                                     >
                                                         <div className="text-left space-y-1">
-                                                            <p className="text-sm font-bold text-text">{svc.name}</p>
+                                                            <p className="text-sm font-bold" style={{ color: colors.text }}>{svc.name}</p>
                                                             <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest">
                                                                 {svc.duration} min · ₹{svc.price} {svc.isInclusiveTax ? 'incl. GST' : '+ GST'}
                                                             </p>
                                                         </div>
-                                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#C8956C] border-[#C8956C]' : 'border-border'}`}>
-                                                            {isSelected && <Check size={12} color="white" strokeWidth={4} />}
+                                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#E7D06E] border-[#E7D06E]' : 'border-border'}`}>
+                                                            {isSelected && <Check size={12} color="black" strokeWidth={4} />}
                                                         </div>
                                                     </div>
                                                 );
@@ -1645,9 +1666,9 @@ export default function AppBookingPage() {
 
                             {/* Floating Selection Bar */}
                             {selectedServices.length > 0 && (
-                                <div className="p-4 rounded-2xl bg-[#C8956C]/5 border border-[#C8956C]/20 flex items-center justify-between mt-2 shadow-sm">
+                                <div className="p-4 rounded-2xl bg-[#E7D06E]/10 border border-[#E7D06E]/30 flex items-center justify-between mt-2 shadow-sm">
                                     <div className="text-left">
-                                        <p className="text-[10px] font-black uppercase text-[#C8956C] tracking-widest">Selected Package</p>
+                                        <p className="text-[10px] font-black uppercase text-[#E7D06E] tracking-widest">Selected Package</p>
                                         <p className="text-sm font-bold text-text mt-0.5">{selectedServices.length} Service(s) · ₹{totalPrice}</p>
                                     </div>
                                     <button
@@ -1662,7 +1683,8 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(3)}
                                 disabled={selectedServices.length === 0}
-                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
+                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
                             >
                                 Continue <ArrowRight size={16} />
                             </button>
@@ -1682,7 +1704,7 @@ export default function AppBookingPage() {
                         <div className="space-y-6 text-left">
                             <div className="flex flex-col gap-0">
                                 <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                    Choose <span className="text-[#C8956C]">Expert</span>
+                                    Choose <span className="text-[#E7D06E]">Expert</span>
                                 </h2>
                                 <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available experts at {selectedOutlet?.name}</p>
                             </div>
@@ -1706,25 +1728,25 @@ export default function AppBookingPage() {
                                             key={sid || i}
                                             onClick={() => setSelectedStaff(s)}
                                             style={{
-                                                background: isSelected ? 'rgba(200,149,108,0.1)' : colors.card,
-                                                borderColor: isSelected ? '#C8956C' : colors.border
+                                                background: isSelected ? 'rgba(231,208,110,0.1)' : colors.card,
+                                                borderColor: isSelected ? '#E7D06E' : colors.border
                                             }}
-                                            className="w-full flex items-center gap-5 p-5 rounded-[24px] border-2 transition-all shadow-sm"
+                                            className="w-full flex items-center gap-3.5 p-3 px-4 rounded-2xl border-2 transition-all shadow-sm"
                                         >
-                                            <div className="w-16 h-16 rounded-2xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
+                                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 flex-shrink-0">
                                                 {s.image ? (
                                                     <img src={getImageUrl(s.image)} alt={s.name} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#C8956C] text-xl bg-[#C8956C]/5">
+                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#E7D06E] text-base bg-[#E7D06E]/5">
                                                         {s.name?.charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="text-left flex-1">
-                                                <p className="text-lg font-bold" style={{ color: colors.text }}>{s.name}</p>
-                                                <p className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mt-0.5">{s.role || 'Expert'}</p>
+                                                <p className="text-sm font-bold" style={{ color: colors.text }}>{s.name}</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#E7D06E] mt-0.5">{s.role || 'Expert'}</p>
                                             </div>
-                                            {isSelected && <Check size={24} className="text-[#C8956C] flex-shrink-0" />}
+                                            {isSelected && <Check size={18} className="text-[#E7D06E] flex-shrink-0" />}
                                         </motion.button>
                                     );
                                 })}
@@ -1733,7 +1755,8 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(4)}
                                 disabled={!selectedStaff}
-                                className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
+                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
                             >
                                 Continue <ArrowRight size={16} />
                             </button>
@@ -1751,23 +1774,23 @@ export default function AppBookingPage() {
                         className="space-y-6"
                     >
                         <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Select <span className="text-[#C8956C]">Timeline</span>
+                            Select <span className="text-[#E7D06E]">Timeline</span>
                         </h2>
 
                         <div className="flex items-center justify-between px-2">
                             <h3 className="text-[10px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>{currentMonthLabel}</h3>
                             <div className="flex items-center gap-2">
-                                <button 
+                                <button
                                     onClick={handlePrevMonth}
                                     style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                                    className="p-2 rounded-xl hover:text-[#C8956C] transition-colors"
+                                    className="p-2 rounded-xl hover:text-[#E7D06E] transition-colors"
                                 >
                                     <ChevronLeft size={14} />
                                 </button>
-                                <button 
+                                <button
                                     onClick={handleNextMonth}
                                     style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                                    className="p-2 rounded-xl hover:text-[#C8956C] transition-colors"
+                                    className="p-2 rounded-xl hover:text-[#E7D06E] transition-colors"
                                 >
                                     <ChevronRight size={14} />
                                 </button>
@@ -1788,22 +1811,22 @@ export default function AppBookingPage() {
                                         key={i}
                                         disabled={!canSelect}
                                         onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
-                                        style={{ 
-                                            background: isSelected ? '#C8956C' : 'transparent', 
-                                            color: isSelected ? '#fff' : colors.text,
+                                        style={{
+                                            background: isSelected ? '#E7D06E' : 'transparent',
+                                            color: isSelected ? '#000000' : colors.text,
                                             position: 'relative'
                                         }}
-                                        className={`h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all ${!canSelect ? 'opacity-20' : 'active:scale-95 hover:bg-[#C8956C]/10'}`}
+                                        className={`h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all ${!canSelect ? 'opacity-20' : 'active:scale-95 hover:bg-[#E7D06E]/10'}`}
                                     >
                                         {d.dayNum}
                                         {d.isToday && !isSelected && (
-                                            <div style={{ 
-                                                position: 'absolute', 
-                                                bottom: '4px', 
-                                                width: '3px', 
-                                                height: '3px', 
-                                                borderRadius: '50%', 
-                                                background: '#C8956C' 
+                                            <div style={{
+                                                position: 'absolute',
+                                                bottom: '4px',
+                                                width: '3px',
+                                                height: '3px',
+                                                borderRadius: '50%',
+                                                background: '#E7D06E'
                                             }} />
                                         )}
                                     </button>
@@ -1813,7 +1836,7 @@ export default function AppBookingPage() {
 
                         <div className="space-y-4 text-left">
                             <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-50" style={{ color: colors.text }}>Available Slots</p>
-                            
+
                             {selectedDate ? (
                                 <div className="grid grid-cols-3 gap-3 max-h-[200px] overflow-y-auto pr-1 no-scrollbar">
                                     {timeSlots.filter(slot => slot.available).map((slot, idx) => (
@@ -1821,11 +1844,11 @@ export default function AppBookingPage() {
                                             key={idx}
                                             onClick={() => setSelectedTime(slot.time)}
                                             style={{
-                                                background: selectedTime === slot.time ? '#C8956C' : colors.card,
-                                                borderColor: selectedTime === slot.time ? '#C8956C' : colors.border,
-                                                color: selectedTime === slot.time ? '#fff' : colors.text,
+                                                background: selectedTime === slot.time ? '#E7D06E' : colors.card,
+                                                borderColor: selectedTime === slot.time ? '#E7D06E' : colors.border,
+                                                color: selectedTime === slot.time ? '#000000' : colors.text,
                                             }}
-                                            className={`py-3 rounded-2xl border text-[11px] font-bold transition-all ${selectedTime === slot.time ? 'shadow-lg shadow-[#C8956C]/20' : ''}`}
+                                            className={`py-3 rounded-2xl border text-[11px] font-bold transition-all ${selectedTime === slot.time ? 'shadow-lg shadow-[#E7D06E]/20' : ''}`}
                                         >
                                             {slot.time}
                                         </button>
@@ -1851,7 +1874,8 @@ export default function AppBookingPage() {
                             >
                                 <button
                                     onClick={() => goTo(5)}
-                                    className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl hover:opacity-90 active:scale-[0.98] transition-all"
+                                    style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                    className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl active:scale-[0.98] transition-all"
                                 >
                                     Continue to Checkout <ArrowRight size={16} />
                                 </button>
@@ -1870,7 +1894,7 @@ export default function AppBookingPage() {
                         className="space-y-6"
                     >
                         <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Confirm & <span className="text-[#C8956C]">Book</span>
+                            Confirm & <span className="text-[#E7D06E]">Book</span>
                         </h2>
 
                         <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
@@ -1947,7 +1971,7 @@ export default function AppBookingPage() {
                                             color: colors.text
                                         }}
                                     />
-                                    {isPromoApplied ? (
+                                                                    {isPromoApplied ? (
                                         <button
                                             type="button"
                                             onClick={handleRemovePromo}
@@ -1960,7 +1984,8 @@ export default function AppBookingPage() {
                                             type="button"
                                             onClick={() => applyPromo()}
                                             disabled={!couponCode.trim()}
-                                            className="px-5 py-3 rounded-2xl bg-black dark:bg-white text-white dark:text-black text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-20 active:scale-95"
+                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            className="px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-20 active:scale-95"
                                         >
                                             Apply
                                         </button>
@@ -1980,18 +2005,18 @@ export default function AppBookingPage() {
                                     <button
                                         onClick={() => setPaymentMethod('salon')}
                                         className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                        style={{ 
-                                            borderColor: paymentMethod === 'salon' ? '#C8956C' : colors.border,
-                                            background: paymentMethod === 'salon' ? '#C8956C08' : 'transparent'
+                                        style={{
+                                            borderColor: paymentMethod === 'salon' ? '#E7D06E' : colors.border,
+                                            background: paymentMethod === 'salon' ? 'rgba(231, 208, 110, 0.1)' : 'transparent'
                                         }}
                                     >
                                         <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#C8956C' : colors.textMuted }}>Pay at Salon</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#E7D06E' : colors.textMuted }}>Pay at Salon</p>
                                             <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
                                         </div>
                                         {paymentMethod === 'salon' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={8} color="white" strokeWidth={4} />
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#E7D06E] flex items-center justify-center">
+                                                <Check size={8} color="black" strokeWidth={4} />
                                             </div>
                                         )}
                                     </button>
@@ -1999,18 +2024,18 @@ export default function AppBookingPage() {
                                     <button
                                         onClick={() => setPaymentMethod('wallet')}
                                         className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
-                                        style={{ 
-                                            borderColor: paymentMethod === 'wallet' ? '#C8956C' : colors.border,
-                                            background: paymentMethod === 'wallet' ? '#C8956C08' : 'transparent'
+                                        style={{
+                                            borderColor: paymentMethod === 'wallet' ? '#E7D06E' : colors.border,
+                                            background: paymentMethod === 'wallet' ? 'rgba(231, 208, 110, 0.1)' : 'transparent'
                                         }}
                                     >
                                         <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#C8956C' : colors.textMuted }}>Digital Wallet</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#E7D06E' : colors.textMuted }}>Digital Wallet</p>
                                             <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
                                         </div>
                                         {paymentMethod === 'wallet' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#C8956C] flex items-center justify-center">
-                                                <Check size={8} color="white" strokeWidth={4} />
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#E7D06E] flex items-center justify-center">
+                                                <Check size={8} color="black" strokeWidth={4} />
                                             </div>
                                         )}
                                     </button>
@@ -2057,7 +2082,7 @@ export default function AppBookingPage() {
                                 </div>
                                 <div className="flex justify-between text-2xl pt-2">
                                     <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#C8956C] px-1">₹{finalPrice.toFixed(2)}</span>
+                                    <span className="text-[#E7D06E] px-1">₹{finalPrice.toFixed(2)}</span>
                                 </div>
                                 {loyaltySettings?.active && (
                                     <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
@@ -2074,7 +2099,8 @@ export default function AppBookingPage() {
                         <button
                             onClick={handleSubmit}
                             disabled={submitting}
-                            className="w-full py-5 rounded-[20px] bg-black text-white text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl hover:opacity-90 active:scale-95 transition-all mt-4"
+                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                            className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl hover:opacity-90 active:scale-95 transition-all mt-4"
                         >
                             {submitting ? (
                                 <>

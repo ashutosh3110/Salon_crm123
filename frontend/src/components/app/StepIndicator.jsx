@@ -4,7 +4,7 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 
 const defaultSteps = ['Service', 'Date & Time', 'Stylist', 'Confirm'];
 
-export default function StepIndicator({ currentStep = 0, steps = defaultSteps }) {
+export default function StepIndicator({ currentStep = 0, steps = defaultSteps, accentColor = '#C8956C' }) {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
@@ -12,7 +12,7 @@ export default function StepIndicator({ currentStep = 0, steps = defaultSteps })
         inactive: isLight ? '#E5E7EB' : '#242424',
         textInactive: isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.15)',
         textMuted: isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.3)',
-        accent: '#C8956C',
+        accent: accentColor,
         line: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)'
     };
 
@@ -49,8 +49,8 @@ export default function StepIndicator({ currentStep = 0, steps = defaultSteps })
                                 {isActive && (
                                     <motion.div
                                         layoutId="stepRing"
-                                        className="absolute inset-0 rounded-full border-2 border-[#C8956C]"
-                                        style={{ margin: -3 }}
+                                        className="absolute inset-0 rounded-full border-2"
+                                        style={{ margin: -3, borderColor: colors.accent }}
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                     />
                                 )}
