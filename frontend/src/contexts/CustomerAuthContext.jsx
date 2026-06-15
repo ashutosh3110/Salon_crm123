@@ -55,6 +55,8 @@ export function CustomerAuthProvider({ children }) {
             loyaltyPoints: client.loyaltyPoints || 0,
             referralCode: client.referralCode || '',
             tenantId: client.tenantId,
+            salonId: client.salonId || client.tenantId,
+            lastOutletId: client.lastOutletId || outletId,
             role: 'customer',
             isNewUser: client.isNewUser ?? true,
         };

@@ -470,6 +470,29 @@ exports.updateStatus = async (req, res) => {
             } catch (error) {
                 console.error('Error awarding loyalty points:', error);
             }
+
+            // Create Automated Service Reminder if service is repeated
+            try {
+                const service = await Service.findById(booking.serviceId);
+                if (service && service.isRepeated) {
+                    const reminderDays = service.reminderDays || 30;
+                    const dueDate = new Date(booking.appointmentDate || new Date());
+                    dueDate.setDate(dueDate.getDate() + reminderDays);
+                    
+                    const ServiceReminder = require('../Models/ServiceReminder');
+                    await ServiceReminder.create({
+                        customerId: booking.clientId,
+                        serviceId: booking.serviceId,
+                        bookingId: booking._id,
+                        salonId: booking.salonId,
+                        outletId: booking.outletId,
+                        dueDate: dueDate,
+                        status: 'pending'
+                    });
+                }
+            } catch (err) {
+                console.error('Error creating service reminder:', err);
+            }
         }
 
         // Send Unified Notifications (Firebase & WhatsApp)

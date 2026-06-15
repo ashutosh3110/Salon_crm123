@@ -152,6 +152,7 @@ const ConsultationsPage = lazy(() => import('./pages/admin/ConsultationsPage'));
 const PromotionsPage = lazy(() => import('./pages/admin/PromotionsPage'));
 const InvoicesPage = lazy(() => import('./pages/admin/InvoicesPage'));
 const SettingsPage = lazy(() => import('./pages/admin/SettingsPage'));
+const ServiceRemindersPage = lazy(() => import('./pages/admin/ServiceRemindersPage'));
 const FinancePage = lazy(() => import('./pages/admin/FinancePage'));
 const SuppliersPage = lazy(() => import('./pages/admin/SuppliersPage'));
 const HRPage = lazy(() => import('./pages/admin/HRPage'));
@@ -446,6 +447,9 @@ function App() {
                             </Route>
                             <Route element={<ProtectedRoute feature="crm" permission="crm_birthday_anniversary" />}>
                                 <Route path="/admin/crm/birthday-anniversary-reminders" element={<CustomersPage tab="birthday-anniversary-reminders" />} />
+                            </Route>
+                            <Route element={<ProtectedRoute feature="crm" permission="crm_service_reminders" />}>
+                                <Route path="/admin/crm/service-reminders" element={<ServiceRemindersPage />} />
                             </Route>
                             
                             {/* POS Reminders */}

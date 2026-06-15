@@ -469,56 +469,56 @@ const initCronJobs = () => {
     cron.schedule('30 9 * * *', async () => {
         console.log('Running daily repeated services reminders...');
         try {
-            const repeatServices = await Service.find({ isRepeated: true });
-            
-            for (const service of repeatServices) {
-                const reminderDays = service.reminderDays || 30;
-                
-                const targetDate = new Date();
-                targetDate.setDate(targetDate.getDate() - reminderDays);
-                const startOfTarget = new Date(targetDate.setHours(0, 0, 0, 0));
-                const endOfTarget = new Date(targetDate.setHours(23, 59, 59, 999));
-                
-                const bookings = await Booking.find({
-                    serviceId: service._id,
-                    status: 'completed',
-                    appointmentDate: { $gte: startOfTarget, $lte: endOfTarget }
-                }).populate('clientId salonId outletId');
-                
-                for (const b of bookings) {
-                    if (b.clientId && b.clientId.phone) {
-                        // Check if customer has booked this service again AFTER this booking
-                        const newerBooking = await Booking.findOne({
-                            clientId: b.clientId._id,
-                            serviceId: service._id,
-                            appointmentDate: { $gt: b.appointmentDate }
-                        });
-                        
-                        if (newerBooking) {
-                            console.log(`[RepeatService-Cron] Skipping reminder for ${b.clientId.name} - already has newer booking/visit.`);
-                            continue;
+            const today = new Date();
+            const ServiceReminder = require('../Models/ServiceReminder');
+            const reminders = await ServiceReminder.find({
+                status: 'pending',
+                dueDate: { $lte: today }
+            }).populate('customerId', 'name phone').populate('serviceId', 'name').populate('salonId', 'name businessName').populate('outletId');
+
+            for (const r of reminders) {
+                if (r.customerId && r.customerId.phone) {
+                    const salonName = r.salonId?.businessName || r.salonId?.name || 'Wapixo';
+                    const serviceName = r.serviceId?.name || 'Service';
+                    const phone = r.customerId.phone;
+                    const contact = r.outletId?.phone || 'Contact Us';
+                    
+                    const canSend = await checkAndDeductWhatsAppCredit(r.outletId?._id || r.salonId?._id);
+                    if (canSend) {
+                        try {
+                            await sendWapixoTemplate(phone, 'booking_service_remainder', [
+                                r.customerId.name,
+                                "It's time for your next service!",
+                                serviceName,
+                                r.outletId?.name || salonName,
+                                today.toLocaleDateString(),
+                                "Any time today",
+                                contact,
+                                salonName
+                            ]);
+                            r.status = 'sent';
+                            r.sentAt = new Date();
+                            console.log(`[RepeatService-Cron] Sent repeat service reminder to ${r.customerId.name} (${phone}) for ${serviceName}`);
+                        } catch (sendErr) {
+                            r.status = 'failed';
+                            r.failureReason = sendErr.message || 'WhatsApp sending failed';
+                            console.error(`[RepeatService-Cron] Failed to send to ${phone}:`, sendErr);
                         }
-                        
-                        const salonName = b.salonId?.businessName || b.salonId?.name || 'Our Salon';
-                        const canSend = await checkAndDeductWhatsAppCredit(b.outletId?._id || b.salonId?._id);
-                        
-                        if (canSend) {
-                            const phone = b.clientId.phone.replace(/\D/g, '');
-                            const message = `Hi ${b.clientId.name}, it's time for your repeat ${service.name} at ${salonName}! We recommend taking this service every ${reminderDays} days. Book your next slot now: ${process.env.FRONTEND_URL || 'https://wapixo.in'}/c/${b.salonId?._id}`;
-                            await sendWhatsAppMessage(phone, message);
-                            console.log(`[RepeatService-Cron] Sent repeat service reminder to ${b.clientId.name} (${phone}) for ${service.name}`);
-                        }
-                        
-                        // Send Push Notification
-                        await sendNotification({
-                            customerId: b.clientId._id,
-                            salonId: b.salonId?._id,
-                            title: 'Time for your next service! 💅✨',
-                            message: `Hi ${b.clientId.name}, it's time for your repeat ${service.name}. Book your slot now!`,
-                            type: 'booking',
-                            actionUrl: '/app/booking'
-                        });
+                    } else {
+                        r.status = 'failed';
+                        r.failureReason = 'Insufficient WhatsApp credits';
                     }
+                    await r.save();
+
+                    // Send Push Notification
+                    await sendNotification({
+                        customerId: r.customerId._id,
+                        salonId: r.salonId?._id,
+                        title: 'Time for your next service! 💅✨',
+                        message: `Hi ${r.customerId.name}, it's time for your repeat ${serviceName}. Book your slot now!`,
+                        type: 'booking',
+                        actionUrl: '/app/booking'
+                    });
                 }
             }
         } catch (err) {

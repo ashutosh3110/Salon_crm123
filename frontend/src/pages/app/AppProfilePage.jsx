@@ -15,7 +15,9 @@ import toast from 'react-hot-toast';
 
 export default function AppProfilePage() {
     const { customer, updateCustomer, customerLogout, refreshProfile } = useCustomerAuth();
-    const { balance } = useWallet();
+    const { balance, outletBalances = [] } = useWallet();
+    const totalOutletBalance = outletBalances.reduce((sum, ow) => sum + (ow.balance || 0), 0);
+    const totalBalance = (balance || 0) + totalOutletBalance;
     const navigate = useNavigate();
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -472,7 +474,7 @@ export default function AppProfilePage() {
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Bookings</div>
                     </div>
                     <div onClick={() => navigate('/app/wallet')} style={{ cursor: 'pointer', borderLeft: '1px solid rgba(0, 0, 0, 0.08)', borderRight: '1px solid rgba(0, 0, 0, 0.08)' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>₹{balance}</div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>₹{totalBalance}</div>
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Wallet</div>
                     </div>
                     <div onClick={() => navigate('/app/profile')} style={{ cursor: 'pointer' }}>
@@ -480,6 +482,26 @@ export default function AppProfilePage() {
                         <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Points</div>
                     </div>
                 </div>
+                
+                {/* Promo Balance Banner */}
+                {outletBalances && outletBalances.some(ow => ow.balance > 0) && (
+                    <div className="mx-4 mb-4 mt-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 animate-pulse relative z-10" onClick={() => navigate('/app/wallet')}>
+                        {outletBalances.filter(ow => ow.balance > 0).map(ow => {
+                            const outletObj = outlets?.find(o => (o._id || o.id) === ow.outletId);
+                            const outletName = outletObj ? outletObj.name : 'Salon Outlet';
+                            const expiryText = ow.expiryDate ? `Valid till ${new Date(ow.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'No Expiry';
+                            return (
+                                <div key={ow.outletId || Math.random()} className="flex justify-between items-center text-emerald-800 dark:text-emerald-300">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] font-black uppercase tracking-wider">Promo: {outletName}</span>
+                                        <span className="text-[9px] font-semibold opacity-80">{expiryText}</span>
+                                    </div>
+                                    <span className="text-sm font-black">₹{ow.balance}</span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
 
             {/* Profile editing block */}

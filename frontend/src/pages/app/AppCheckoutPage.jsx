@@ -15,8 +15,17 @@ export default function AppCheckoutPage() {
     const { colors, isLight } = useCustomerTheme();
     const { cart, cartTotal, clearCart } = useCart();
     const { customer } = useCustomerAuth();
-    const { balance, refreshWallet } = useWallet();
+    const { balance: globalBalance, outletBalances, refreshWallet } = useWallet();
     const { loyaltySettings, activeOutlet, platformSettings, fetchPlatformSettings } = useBusiness();
+
+    const currentOutletBalance = useMemo(() => {
+        if (!activeOutlet?._id && !activeOutlet?.id) return 0;
+        const outletId = activeOutlet._id || activeOutlet.id;
+        const ob = outletBalances?.find(w => w.outletId === outletId);
+        return ob ? ob.balance : 0;
+    }, [outletBalances, activeOutlet]);
+
+    const totalUsableBalance = currentOutletBalance + (globalBalance || 0);
 
     useEffect(() => {
         if (!platformSettings) {
@@ -184,8 +193,8 @@ export default function AppCheckoutPage() {
         setLoading(true);
         try {
             // Check balance if using wallet
-            if (paymentMethod === 'wallet' && balance < cartTotal) {
-                alert('Insufficient wallet balance. Please add money or choose another method.');
+            if (paymentMethod === 'wallet' && totalUsableBalance < finalTotal) {
+                alert('Insufficient wallet balance (Outlet + Global). Please add money or choose another method.');
                 setLoading(false);
                 return;
             }
@@ -575,7 +584,7 @@ export default function AppCheckoutPage() {
                         <div className="space-y-3">
                             {[
                                 { id: 'cod', name: 'Pay at Salon', icon: Truck, subtitle: 'In-store payment' },
-                                { id: 'wallet', name: 'Digital Wallet', icon: Wallet, subtitle: `Balance: ₹${balance?.toFixed(2) || '0.00'}` }
+                                { id: 'wallet', name: 'Digital Wallet', icon: Wallet, subtitle: `Balance: ₹${totalUsableBalance.toFixed(2)}` }
                             ].map((method) => (
                                 <button
                                     key={method.id}

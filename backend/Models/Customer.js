@@ -50,6 +50,16 @@ const customerSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    outletWallets: [{
+        outletId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Outlet'
+        },
+        balance: {
+            type: Number,
+            default: 0
+        }
+    }],
     dueAmount: {
         type: Number,
         default: 0

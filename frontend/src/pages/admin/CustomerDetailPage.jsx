@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ArrowLeft,
+    ArrowRight,
     Calendar,
     ShoppingBag,
     Star,
@@ -54,6 +55,11 @@ export default function CustomerDetailPage() {
 
     // Selected order for detailed view drawer
     const [selectedOrder, setSelectedOrder] = useState(null);
+
+    // Wallet Transfer State
+    const [showTransferModal, setShowTransferModal] = useState(false);
+    const [transferForm, setTransferForm] = useState({ fromOutletId: '', toOutletId: '', amount: '' });
+    const [transferring, setTransferring] = useState(false);
 
     // Load outlets if not fetched
     useEffect(() => {
@@ -182,6 +188,36 @@ export default function CustomerDetailPage() {
             console.error('Update profile error:', err);
         } finally {
             setSaving(false);
+        }
+    };
+
+    const handleTransferSubmit = async (e) => {
+        e.preventDefault();
+        if (!transferForm.fromOutletId || !transferForm.toOutletId || !transferForm.amount || transferForm.amount <= 0) {
+            return toast.error('Please fill all transfer fields correctly');
+        }
+        if (transferForm.fromOutletId === transferForm.toOutletId) {
+            return toast.error('Source and destination outlets must be different');
+        }
+        setTransferring(true);
+        try {
+            const res = await api.post('/wallet/transfer', {
+                customerId: id,
+                fromOutletId: transferForm.fromOutletId,
+                toOutletId: transferForm.toOutletId,
+                amount: Number(transferForm.amount)
+            });
+            if (res.data.success) {
+                toast.success('Wallet balance transferred successfully');
+                setShowTransferModal(false);
+                setTransferForm({ fromOutletId: '', toOutletId: '', amount: '' });
+                await fetchCustomerProfile();
+            }
+        } catch (err) {
+            console.error('Transfer error:', err);
+            toast.error(err?.response?.data?.message || 'Transfer failed');
+        } finally {
+            setTransferring(false);
         }
     };
 
@@ -327,7 +363,7 @@ export default function CustomerDetailPage() {
                         color="green"
                     />
                     <ProfileMetric
-                        label="Wallet balance"
+                        label="Global Wallet"
                         value={`₹${(customer.walletBalance ?? 0).toLocaleString()}`}
                         icon={Wallet}
                         color="yellow"
@@ -345,6 +381,39 @@ export default function CustomerDetailPage() {
                         color="blue"
                     />
                 </div>
+
+                {/* Outlet Wallet Balances Panel */}
+                {customer.outletWallets && customer.outletWallets.length > 0 && (
+                    <div className="border-t border-border bg-surface-alt/5 p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-[11px] font-black uppercase tracking-widest text-text">Admin Outlet Balances</h3>
+                            {customer.outletWallets.some(w => w.balance > 0) && (
+                                <button
+                                    onClick={() => setShowTransferModal(true)}
+                                    className="bg-[#C8956C] text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#A67B59] transition-all shadow-sm flex items-center gap-1.5"
+                                >
+                                    <ArrowRight className="w-3.5 h-3.5" /> Transfer Balance
+                                </button>
+                            )}
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {customer.outletWallets.map(ow => {
+                                const outletObj = outlets.find(o => o._id === ow.outletId);
+                                return (
+                                    <div key={ow.outletId} className="p-4 border border-border bg-surface rounded-xl flex justify-between items-center shadow-sm">
+                                        <div>
+                                            <p className="text-[9px] font-black uppercase text-text-muted mb-1 tracking-widest">
+                                                {outletObj ? outletObj.name : 'Unknown Outlet'}
+                                            </p>
+                                            <p className="text-sm font-black text-text">₹{ow.balance.toLocaleString()}</p>
+                                        </div>
+                                        <Wallet className="w-5 h-5 text-[#C8956C] opacity-50" />
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Content Layout - Details and History Tabs */}
@@ -739,6 +808,108 @@ export default function CustomerDetailPage() {
                     </div>
                 </div>
             </div>
+            
+            {/* Wallet Transfer Modal */}
+            <AnimatePresence>
+                {showTransferModal && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => !transferring && setShowTransferModal(false)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        >
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="bg-surface w-full max-w-md rounded-2xl border border-border overflow-hidden shadow-2xl"
+                            >
+                                <div className="p-6 border-b border-border flex justify-between items-center bg-surface-alt/30">
+                                    <h3 className="text-sm font-black uppercase tracking-widest text-text">Transfer Wallet Balance</h3>
+                                    <button
+                                        onClick={() => setShowTransferModal(false)}
+                                        disabled={transferring}
+                                        className="text-text-muted hover:text-rose-500 transition-colors disabled:opacity-50"
+                                    >
+                                        <X className="w-5 h-5" />
+                                    </button>
+                                </div>
+
+                                <form onSubmit={handleTransferSubmit} className="p-6 space-y-5">
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Source Outlet</label>
+                                        <select
+                                            value={transferForm.fromOutletId}
+                                            onChange={(e) => setTransferForm({ ...transferForm, fromOutletId: e.target.value })}
+                                            className="w-full bg-surface-alt/30 border border-border p-3 rounded-xl text-xs font-bold text-text outline-none focus:border-primary"
+                                            required
+                                        >
+                                            <option value="">Select source outlet</option>
+                                            {customer.outletWallets.filter(ow => ow.balance > 0).map(ow => {
+                                                const outletObj = outlets.find(o => o._id === ow.outletId);
+                                                return (
+                                                    <option key={ow.outletId} value={ow.outletId}>
+                                                        {outletObj ? outletObj.name : 'Unknown Outlet'} (Bal: ₹{ow.balance})
+                                                    </option>
+                                                );
+                                            })}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Destination Outlet</label>
+                                        <select
+                                            value={transferForm.toOutletId}
+                                            onChange={(e) => setTransferForm({ ...transferForm, toOutletId: e.target.value })}
+                                            className="w-full bg-surface-alt/30 border border-border p-3 rounded-xl text-xs font-bold text-text outline-none focus:border-primary"
+                                            required
+                                        >
+                                            <option value="">Select destination outlet</option>
+                                            {outlets.filter(o => o._id !== transferForm.fromOutletId).map(o => (
+                                                <option key={o._id} value={o._id}>
+                                                    {o.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">Transfer Amount (₹)</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            step="1"
+                                            value={transferForm.amount}
+                                            onChange={(e) => setTransferForm({ ...transferForm, amount: e.target.value })}
+                                            className="w-full bg-surface-alt/30 border border-border p-3 rounded-xl text-xs font-bold text-text outline-none focus:border-primary"
+                                            placeholder="Enter amount to transfer"
+                                            required
+                                        />
+                                        {transferForm.fromOutletId && transferForm.amount && (
+                                            <p className="text-[9px] font-bold text-text-muted mt-1">
+                                                Available: ₹{customer.outletWallets.find(w => w.outletId === transferForm.fromOutletId)?.balance || 0}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-2">
+                                        <button
+                                            type="submit"
+                                            disabled={transferring || !transferForm.fromOutletId || !transferForm.toOutletId || !transferForm.amount}
+                                            className="w-full bg-[#C8956C] text-white py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-[#A67B59] flex items-center justify-center gap-2 shadow-md active:scale-95 disabled:opacity-50 transition-all"
+                                        >
+                                            {transferring ? 'Processing...' : 'Confirm Transfer'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </motion.div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

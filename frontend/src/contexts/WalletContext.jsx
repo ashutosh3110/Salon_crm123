@@ -46,6 +46,7 @@ export function WalletProvider({ children }) {
     const { customer } = useCustomerAuth();
     const { userSession, isInitializing, customers, loyaltySettings } = useBusiness();
     const [balance, setBalance] = useState(0);
+    const [outletBalances, setOutletBalances] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [customerWallets, setCustomerWallets] = useState({});
     const [loading, setLoading] = useState(true);
@@ -54,6 +55,7 @@ export function WalletProvider({ children }) {
     useEffect(() => {
         if (!customer) {
             setBalance(0);
+            setOutletBalances([]);
             setTransactions([]);
         }
     }, [customer?._id]);
@@ -67,6 +69,7 @@ export function WalletProvider({ children }) {
                 if (id) {
                     wallets[id] = {
                         balance: c.walletBalance || 0,
+                        outletBalances: c.outletWallets || [],
                         loyaltyPoints: c.loyaltyPoints || 0
                     };
                 }
@@ -83,6 +86,7 @@ export function WalletProvider({ children }) {
             if (res.data.success && res.data.data) {
                 const data = res.data.data;
                 setBalance(data.balance || 0);
+                setOutletBalances(data.outletBalances || []);
                 setTransactions((data.transactions || []).map(tx => ({
                     ...tx,
                     id: tx.id || tx._id,
@@ -140,12 +144,13 @@ export function WalletProvider({ children }) {
         return res.data;
     };
 
-    const verifyWalletTopup = async (paymentId, orderId, signature, amount) => {
+    const verifyWalletTopup = async (paymentId, orderId, signature, amount, outletId) => {
         const res = await api.post('/wallet/topup/verify', {
             razorpayPaymentId: paymentId,
             razorpayOrderId: orderId,
             razorpaySignature: signature,
-            amount: amount
+            amount: amount,
+            outletId: outletId
         });
         if (res.data.success) {
             await refreshWallet();
@@ -153,7 +158,7 @@ export function WalletProvider({ children }) {
         return res.data;
     };
 
-    const addMoney = async (amount) => {
+    const addMoney = async (amount, outletId) => {
         return new Promise(async (resolve) => {
             try {
                 // 1. Load Razorpay Script
@@ -186,7 +191,8 @@ export function WalletProvider({ children }) {
                                 response.razorpay_payment_id,
                                 response.razorpay_order_id,
                                 response.razorpay_signature,
-                                amount
+                                amount,
+                                outletId
                             );
                             if (verifyRes.success) {
                                 toast.success('Wallet recharged successfully!');
@@ -228,9 +234,9 @@ export function WalletProvider({ children }) {
     };
 
     // Admin/Staff Functions
-    const bulkRecharge = async (customerIds, amount, note, expiryDate = null) => {
+    const bulkRecharge = async (customerIds, amount, note, expiryDate = null, outletId = null) => {
         try {
-            const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note, expiryDate });
+            const res = await api.post('/wallet/bulk-recharge', { customerIds, amount, note, expiryDate, outletId });
             return res.data;
         } catch (err) {
             console.error('Bulk recharge failed:', err);
@@ -238,7 +244,7 @@ export function WalletProvider({ children }) {
         }
     };
 
-    const adminAdjustBalance = async (customerId, amount, type, note, expiryDate = null) => {
+    const adminAdjustBalance = async (customerId, amount, type, note, expiryDate = null, outletId = null) => {
         try {
             // We can use bulkRecharge for single adjustment too, or if there's a specific endpoint
             // For now, using bulkRecharge pattern since it's available
@@ -246,7 +252,8 @@ export function WalletProvider({ children }) {
                 customerIds: [customerId], 
                 amount: type === 'DEBIT' ? -amount : amount, 
                 note,
-                expiryDate
+                expiryDate,
+                outletId
             });
             if (res.data?.success) {
                 await initializeWallet(customerId);
@@ -268,6 +275,7 @@ export function WalletProvider({ children }) {
                     ...prev,
                     [customerId]: {
                         balance: data.balance || 0,
+                        outletBalances: data.outletBalances || [],
                         transactions: (data.transactions || []).map(tx => ({
                             ...tx,
                             id: tx._id || tx.id,
@@ -284,6 +292,19 @@ export function WalletProvider({ children }) {
         }
     }, []);
 
+    const transferWalletBalance = async (customerId, fromOutletId, toOutletId, amount) => {
+        try {
+            const res = await api.post('/wallet/transfer', { customerId, fromOutletId, toOutletId, amount });
+            if (res.data?.success) {
+                await initializeWallet(customerId);
+            }
+            return res.data;
+        } catch (err) {
+            console.error('Transfer failed:', err);
+            return { success: false, message: err.response?.data?.message || err.message };
+        }
+    };
+
     const getWallet = useCallback((customerId) => {
         if (!customerId) return { balance: 0, transactions: [], loyaltyPoints: 0 };
         return customerWallets[customerId] || { balance: 0, transactions: [], loyaltyPoints: 0 };
@@ -291,6 +312,7 @@ export function WalletProvider({ children }) {
 
     const value = useMemo(() => ({
         balance,
+        outletBalances,
         transactions,
         loading,
         allWallets,
@@ -302,10 +324,11 @@ export function WalletProvider({ children }) {
         verifyWalletTopup,
         bulkRecharge,
         adminAdjustBalance,
+        transferWalletBalance,
         initializeWallet,
         spentThisMonth: 0,
         walletSettings: loyaltySettings
-    }), [balance, transactions, loading, allWallets, customerWallets, getWallet, refreshWallet, loyaltySettings, addMoney]);
+    }), [balance, outletBalances, transactions, loading, allWallets, customerWallets, getWallet, refreshWallet, loyaltySettings, addMoney]);
 
     return (
         <WalletContext.Provider value={value}>

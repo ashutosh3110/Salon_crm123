@@ -139,6 +139,7 @@ exports.requestOtp = async (req, res) => {
 
         try {
             // Skip SMS for demo number
+            const isDemoNumber = ['9999999999', '0000000000'].includes(String(phone));
             if (!isDemoNumber) {
                 await sendSms(phone, message, process.env.SMS_INDIA_HUB_DLT_TEMPLATE_ID);
             }

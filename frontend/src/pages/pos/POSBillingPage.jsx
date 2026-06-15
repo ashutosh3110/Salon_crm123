@@ -725,8 +725,13 @@ export default function POSBillingPage() {
     // Get real-time wallet balance
     const clientWalletBalance = useMemo(() => {
         if (!selectedClient?._id) return 0;
-        return (allWallets || {})[selectedClient._id]?.balance || 0;
-    }, [selectedClient, allWallets]);
+        const walletData = (allWallets || {})[selectedClient._id];
+        if (!walletData) return 0;
+        const ob = walletData.outletBalances?.find(w => w.outletId === activeOutletId);
+        const outletBalance = ob ? ob.balance : 0;
+        const globalBalance = walletData.balance || 0;
+        return outletBalance + globalBalance;
+    }, [selectedClient, allWallets, activeOutletId]);
 
     const selectedBooking = useMemo(() => {
         return appointmentId ? businessBookings?.find(b => b._id === appointmentId) : null;
@@ -3262,8 +3267,13 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
 
     const qClientWalletBalance = useMemo(() => {
         if (!qClient?._id) return 0;
-        return (allWallets || {})[qClient._id]?.balance || 0;
-    }, [qClient, allWallets]);
+        const walletData = (allWallets || {})[qClient._id];
+        if (!walletData) return 0;
+        const ob = walletData.outletBalances?.find(w => w.outletId === qOutletId);
+        const outletBalance = ob ? ob.balance : 0;
+        const globalBalance = walletData.balance || 0;
+        return outletBalance + globalBalance;
+    }, [qClient, allWallets, qOutletId]);
 
     const qFilteredServices = useMemo(() => {
         let list = services || [];

@@ -231,7 +231,7 @@ exports.checkout = async (req, res) => {
 
             // Use wallet helper to spend balance if applicable
             if (useWalletAmount > 0) {
-                await spendWallet(clientId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`, createdAt);
+                await spendWallet(clientId, outletId, useWalletAmount, `Payment for POS Invoice #${invoiceNumber}`, createdAt);
             }
 
             const totalReceived = (Number(useWalletAmount) || 0) + (Number(paidAmount) || 0);

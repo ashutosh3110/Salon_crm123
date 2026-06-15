@@ -156,7 +156,7 @@ export default function CashAndBank({ type, outletId }) {
       <div className="flex flex-col md:flex-row justify-between gap-3 bg-surface p-4 rounded-[24px] border border-border shadow-sm">
         <div>
           <h2 className="text-lg font-black text-text uppercase tracking-tight">
-            Cash & Bank
+            Day Closing & Opening
           </h2>
           <p className="text-[10px] font-bold text-text-muted uppercase tracking-widest mt-1">
             Daily balance check and closing

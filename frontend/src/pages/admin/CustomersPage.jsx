@@ -632,13 +632,21 @@ export default function CustomersPage({ tab = 'directory' }) {
 
 function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentPage, onPageChange }) {
     const { allWallets, bulkRecharge } = useWallet();
-    const { fetchAllCustomerIds, globalStats } = useBusiness();
+    const { fetchAllCustomerIds, globalStats, outlets, fetchOutlets } = useBusiness();
     const [selectedIds, setSelectedIds] = useState([]);
     const [bulkAmount, setBulkAmount] = useState('');
     const [bulkNote, setBulkNote] = useState('');
     const [bulkExpiry, setBulkExpiry] = useState('');
+    const [bulkOutlet, setBulkOutlet] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSelectingAll, setIsSelectingAll] = useState(false);
+
+    // Ensure outlets are loaded
+    useEffect(() => {
+        if (outlets && outlets.length === 0 && fetchOutlets) {
+            fetchOutlets();
+        }
+    }, [outlets, fetchOutlets]);
 
     const activeSubTab = 'directory';
 
@@ -647,18 +655,23 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
             alert('Please enter a recharge amount.');
             return;
         }
+        if (!bulkOutlet) {
+            alert('Please select an outlet for the recharge.');
+            return;
+        }
         if (selectedIds.length === 0) {
             alert('Please select at least one customer from the table below first.');
             return;
         }
         setIsProcessing(true);
         try {
-            const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit', bulkExpiry || null);
+            const res = await bulkRecharge(selectedIds, Number(bulkAmount), bulkNote || 'Bulk Promotional Credit', bulkExpiry || null, bulkOutlet);
             if (res.success) {
                 alert(`Successfully recharged ${selectedIds.length} wallets!`);
                 setBulkAmount('');
                 setBulkNote('');
                 setBulkExpiry('');
+                setBulkOutlet('');
                 setSelectedIds([]);
             } else {
                 alert('Recharge failed: ' + (res.message || 'Unknown error'));
@@ -690,39 +703,69 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
 
             {activeSubTab === 'directory' && (
                 <>
-                    <div className="bg-surface border border-border p-4 rounded-xl flex flex-row flex-wrap items-center justify-between gap-4 shadow-sm mb-6 w-full text-left">
-                        <div className="flex flex-row flex-wrap items-center gap-6 flex-1">
+                    <div className="bg-surface border border-border p-5 rounded-2xl shadow-sm mb-6 w-full text-left space-y-5">
+                        <div className="flex justify-between items-center border-b border-border pb-3">
+                            <h3 className="text-xs font-black uppercase tracking-widest text-text flex items-center gap-2">
+                                <Wallet className="w-4 h-4 text-primary" /> Bulk Recharge Configuration
+                            </h3>
+                            <span className="text-[10px] text-text-muted font-bold uppercase tracking-widest bg-surface-alt px-3 py-1.5 rounded-lg border border-border">
+                                {selectedIds.length} Selected
+                            </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Recharge Amount Field */}
-                            <div className="flex items-center gap-3">
-                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">
                                     Recharge Amount (₹)
                                 </label>
-                                <input
-                                    type="number"
-                                    placeholder="Enter amount (₹)"
-                                    value={bulkAmount}
-                                    onChange={e => setBulkAmount(e.target.value)}
-                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-40 h-10 shadow-sm"
-                                />
+                                <div className="relative">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted font-black text-xs">₹</span>
+                                    <input
+                                        type="number"
+                                        placeholder="0.00"
+                                        value={bulkAmount}
+                                        onChange={e => setBulkAmount(e.target.value)}
+                                        className="w-full bg-surface-alt/30 border border-border pl-8 pr-3 py-2.5 rounded-xl text-xs font-bold text-text outline-none focus:border-primary transition-all shadow-sm"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Outlet Selector Field */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">
+                                    Target Outlet
+                                </label>
+                                <select
+                                    value={bulkOutlet}
+                                    onChange={e => setBulkOutlet(e.target.value)}
+                                    className="w-full bg-surface-alt/30 border border-border px-3 py-2.5 rounded-xl text-xs font-bold text-text outline-none focus:border-primary transition-all shadow-sm appearance-none cursor-pointer"
+                                    required
+                                >
+                                    <option value="">Select Outlet</option>
+                                    {outlets && outlets.map(o => (
+                                        <option key={o._id} value={o._id}>{o.name}</option>
+                                    ))}
+                                </select>
                             </div>
 
                             {/* Description / Notes Field */}
-                            <div className="flex items-center gap-3">
-                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">
                                     Description / Notes
                                 </label>
                                 <input
                                     type="text"
-                                    placeholder="e.g. festival, promo"
+                                    placeholder="e.g. Festival Promo"
                                     value={bulkNote}
                                     onChange={e => setBulkNote(e.target.value)}
-                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-56 h-10 shadow-sm"
+                                    className="w-full bg-surface-alt/30 border border-border px-3 py-2.5 rounded-xl text-xs font-bold text-text outline-none focus:border-primary transition-all shadow-sm"
                                 />
                             </div>
 
                             {/* Expiry Date Field */}
-                            <div className="flex items-center gap-3">
-                                <label className="text-[10px] font-black text-text uppercase tracking-wider whitespace-nowrap">
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">
                                     Expiry Date
                                 </label>
                                 <input
@@ -730,19 +773,21 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                     value={bulkExpiry}
                                     min={new Date().toISOString().split('T')[0]}
                                     onChange={e => setBulkExpiry(e.target.value)}
-                                    className="p-2.5 rounded-lg bg-surface border border-border font-medium text-xs outline-none focus:border-primary transition-all w-44 h-10 shadow-sm"
+                                    className="w-full bg-surface-alt/30 border border-border px-3 py-2.5 rounded-xl text-xs font-bold text-text outline-none focus:border-primary transition-all shadow-sm"
                                 />
                             </div>
                         </div>
 
                         {/* Action Button */}
-                        <button
-                            onClick={() => handleBulkRecharge()}
-                            disabled={isProcessing}
-                            className="bg-primary text-primary-foreground px-6 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-wider shadow-sm hover:bg-primary/95 active:scale-95 disabled:opacity-50 disabled:scale-100 transition-all flex items-center justify-center cursor-pointer h-10 whitespace-nowrap"
-                        >
-                            {isProcessing ? 'Processing...' : 'Apply to Selected'}
-                        </button>
+                        <div className="pt-2 flex justify-end">
+                            <button
+                                onClick={() => handleBulkRecharge()}
+                                disabled={isProcessing || selectedIds.length === 0}
+                                className="bg-[#B4912B] text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[#a37f20] hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-md transition-all flex items-center justify-center gap-2"
+                            >
+                                {isProcessing ? 'Processing...' : 'Apply Recharge to Selected'}
+                            </button>
+                        </div>
                     </div>
 
                     <div className="table-responsive border border-border rounded-2xl overflow-hidden shadow-sm">
@@ -782,8 +827,39 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="p-3 w-[45%] text-left">
-                                            <span className="text-sm font-black text-emerald-600">₹{(c.walletBalance || 0).toLocaleString()}</span>
+                                        <td className="p-3 w-[45%] text-left align-top">
+                                            <div className="flex flex-col gap-2">
+                                                {/* Global Balance */}
+                                                {(c.walletBalance !== undefined) && (
+                                                    <div className={`flex justify-between items-center px-3 py-1.5 rounded-lg border w-fit min-w-[140px] ${c.walletBalance > 0 ? 'bg-blue-500/10 border-blue-500/20' : 'bg-gray-500/5 border-gray-500/20'}`}>
+                                                        <span className={`text-[9px] font-black uppercase tracking-widest truncate mr-3 ${c.walletBalance > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                            Global Wallet
+                                                        </span>
+                                                        <span className={`text-xs font-black shrink-0 ${c.walletBalance > 0 ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                            ₹{(c.walletBalance || 0).toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                )}
+
+                                                {/* Outlet Balances */}
+                                                {c.outletWallets && c.outletWallets.some(ow => ow.balance > 0) && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {c.outletWallets.filter(ow => ow.balance > 0).map(ow => {
+                                                            const outletObj = outlets?.find(o => o._id === ow.outletId);
+                                                            return (
+                                                                <div key={ow.outletId} className="flex justify-between items-center bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit min-w-[140px]">
+                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 truncate mr-3">
+                                                                        {outletObj ? outletObj.name : 'Unknown Outlet'}
+                                                                    </span>
+                                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-500 shrink-0">
+                                                                        ₹{ow.balance.toLocaleString()}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}

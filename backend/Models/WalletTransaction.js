@@ -10,6 +10,10 @@ const walletTransactionSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Salon'
     },
+    outletId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    },
     amount: {
         type: Number,
         required: true

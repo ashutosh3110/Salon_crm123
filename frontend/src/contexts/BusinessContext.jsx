@@ -251,7 +251,11 @@ export function BusinessProvider({ children }) {
     const fetchCustomers = useCallback(async (page = 1, limit = 5, search = '') => {
         setCustomersLoading(true);
         try {
-            const r = await api.get(`/clients?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`);
+            let url = `/clients?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`;
+            if (activeOutletId) {
+                url += `&outletId=${activeOutletId}`;
+            }
+            const r = await api.get(url);
             let list = r.data?.data || (Array.isArray(r.data) ? r.data : []);
             setCustomers(Array.isArray(list) ? list : []);
             if (r.data?.success) {
@@ -265,7 +269,7 @@ export function BusinessProvider({ children }) {
                 }
             }
         } catch { setCustomers([]); } finally { setCustomersLoading(false); }
-    }, []);
+    }, [activeOutletId]);
 
     const fetchAllCustomerIds = useCallback(async () => {
         try {

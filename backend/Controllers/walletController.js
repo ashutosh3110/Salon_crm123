@@ -24,19 +24,21 @@ if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 // @access  Private (Customer)
 exports.getWalletDetails = async (req, res) => {
     try {
-        let customer = await Customer.findById(req.user._id || req.user.id);
+        let customer = await Customer.findById(req.user._id || req.user.id).populate('outletWallets.outletId', 'name');
         
         if (!customer) {
             // If they are Admin/Staff, they don't have a wallet yet
             return res.json({
                 success: true,
                 balance: 0,
+                outletBalances: [],
                 transactions: [],
                 message: 'No wallet associated with this account type'
             });
         }
 
         const transactions = await WalletTransaction.find({ customerId: req.user._id })
+            .populate('outletId', 'name')
             .sort({ createdAt: -1 })
             .limit(50);
 
@@ -44,6 +46,11 @@ exports.getWalletDetails = async (req, res) => {
             success: true,
             data: {
                 balance: customer.walletBalance || 0,
+                outletBalances: customer.outletWallets.map(w => ({
+                    outletId: w.outletId?._id || w.outletId,
+                    outletName: w.outletId?.name || 'Unknown Outlet',
+                    balance: w.balance
+                })),
                 transactions: transactions.map(tx => ({
                     id: tx._id,
                     amount: tx.amount,
@@ -52,7 +59,8 @@ exports.getWalletDetails = async (req, res) => {
                     description: tx.description,
                     date: tx.createdAt,
                     status: tx.status,
-                    expiryDate: tx.expiryDate
+                    expiryDate: tx.expiryDate,
+                    outletName: tx.outletId ? (tx.outletId.name || 'Unknown Outlet') : 'Global Wallet'
                 }))
             }
         });
@@ -96,7 +104,7 @@ exports.createTopupOrder = async (req, res) => {
 // @access  Private (Customer)
 exports.verifyTopup = async (req, res) => {
     try {
-        const { razorpayOrderId, razorpayPaymentId, razorpaySignature, amount } = req.body;
+        const { razorpayOrderId, razorpayPaymentId, razorpaySignature, amount, outletId } = req.body;
 
         const body = razorpayOrderId + "|" + razorpayPaymentId;
         const expectedSignature = crypto
@@ -105,11 +113,12 @@ exports.verifyTopup = async (req, res) => {
             .digest('hex');
 
         if (expectedSignature === razorpaySignature) {
-            // Use wallet helper to add credit
+            // Use wallet helper to add credit to GLOBAL WALLET (outletId = null)
             const customer = await Customer.findById(req.user._id);
             await addCredit(
                 req.user._id,
                 customer.salonId,
+                null,
                 amount,
                 'Wallet Top-up via Razorpay'
             );
@@ -191,7 +200,7 @@ exports.verifyTopup = async (req, res) => {
 // @access  Private (Admin)
 exports.bulkRecharge = async (req, res) => {
     try {
-        const { customerIds, amount, note } = req.body;
+        const { customerIds, amount, note, outletId } = req.body;
         
         if (!customerIds || !Array.isArray(customerIds) || customerIds.length === 0) {
             return res.status(400).json({ success: false, message: 'Customer IDs array is required' });
@@ -199,6 +208,10 @@ exports.bulkRecharge = async (req, res) => {
 
         if (!amount || amount <= 0) {
             return res.status(400).json({ success: false, message: 'Valid amount is required' });
+        }
+        
+        if (!outletId) {
+            return res.status(400).json({ success: false, message: 'outletId is required' });
         }
 
         const numericAmount = Number(amount);
@@ -211,6 +224,7 @@ exports.bulkRecharge = async (req, res) => {
                 await addCredit(
                     cid,
                     salonId,
+                    outletId,
                     numericAmount,
                     note || 'Bulk Promotional Credit',
                     req.body.expiryDate ? new Date(req.body.expiryDate) : null
@@ -281,9 +295,12 @@ exports.bulkRecharge = async (req, res) => {
 // @access  Private (Customer)
 exports.directTopup = async (req, res) => {
     try {
-        const { amount } = req.body;
+        const { amount, outletId } = req.body;
         if (!amount || amount <= 0) {
             return res.status(400).json({ success: false, message: 'Valid amount is required' });
+        }
+        if (!outletId) {
+            return res.status(400).json({ success: false, message: 'outletId is required' });
         }
 
         const customer = await Customer.findById(req.user._id);
@@ -294,6 +311,7 @@ exports.directTopup = async (req, res) => {
         await addCredit(
             req.user._id,
             customer.salonId,
+            outletId,
             amount,
             'Wallet Top-up (Direct)'
         );
@@ -333,14 +351,19 @@ exports.directTopup = async (req, res) => {
 // @access  Private
 exports.getCustomerWallet = async (req, res) => {
     try {
-        const customer = await Customer.findById(req.params.customerId);
+        const customer = await Customer.findById(req.params.customerId).populate('outletWallets.outletId', 'name');
         if (!customer) {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }
         res.json({
             success: true,
             data: {
-                balance: customer.walletBalance || 0
+                balance: customer.walletBalance || 0,
+                outletBalances: customer.outletWallets.map(w => ({
+                    outletId: w.outletId?._id || w.outletId,
+                    outletName: w.outletId?.name || 'Unknown Outlet',
+                    balance: w.balance
+                }))
             }
         });
     } catch (err) {
@@ -361,6 +384,48 @@ exports.getCustomerTransactions = async (req, res) => {
             success: true,
             count: transactions.length,
             data: transactions
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+// @desc    Transfer wallet balance between outlets (Admin)
+// @route   POST /api/wallet/transfer
+// @access  Private (Admin)
+exports.transferWalletBalance = async (req, res) => {
+    try {
+        const { customerId, fromOutletId, toOutletId, amount } = req.body;
+
+        if (!customerId || !fromOutletId || !toOutletId || !amount || amount <= 0) {
+            return res.status(400).json({ success: false, message: 'Invalid input data for transfer' });
+        }
+
+        if (fromOutletId === toOutletId) {
+            return res.status(400).json({ success: false, message: 'Source and destination outlets cannot be the same' });
+        }
+
+        const numericAmount = Number(amount);
+        const { spendWallet, addCredit } = require('../Utils/walletHelper');
+
+        const customer = await Customer.findById(customerId);
+        if (!customer) {
+            return res.status(404).json({ success: false, message: 'Customer not found' });
+        }
+
+        let fromWallet = customer.outletWallets.find(w => w.outletId && w.outletId.toString() === fromOutletId.toString());
+        if (!fromWallet || fromWallet.balance < numericAmount) {
+            return res.status(400).json({ success: false, message: 'Insufficient balance in the source outlet' });
+        }
+
+        // Spend from source
+        await spendWallet(customerId, fromOutletId, numericAmount, 'Transferred out to another outlet');
+
+        // Add to destination
+        await addCredit(customerId, customer.salonId, toOutletId, numericAmount, 'Transferred in from another outlet');
+
+        res.json({
+            success: true,
+            message: 'Balance transferred successfully'
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

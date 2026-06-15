@@ -169,7 +169,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                 subItems: [
                     { label: 'Dashboard', icon: LayoutDashboard, path: '/admin/finance/dashboard', permission: 'finance_dashboard' },
                     { label: 'Transactions', icon: ArrowDownUp, path: '/admin/finance/transactions', permission: 'finance_transactions' },
-                    { label: 'Cash & Bank Book', icon: Wallet, path: '/admin/finance/cash-book', permission: 'finance_cash_book' },
+                    { label: 'Day Closing & Opening', icon: Wallet, path: '/admin/finance/cash-book', permission: 'finance_cash_book' },
                     { label: 'Expenses', icon: DollarSign, path: '/admin/finance/expenses', permission: 'finance_expenses' },
                     { label: 'Sales Reports', icon: FileText, path: '/admin/finance/reports', permission: 'finance_reports' },
                 ]
@@ -217,6 +217,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                     { label: 'Re-engagement', icon: ShieldAlert, path: '/admin/crm/reengage', permission: 'crm_reengage' },
                     { label: 'Bridal Reminders', icon: Bell, permission: 'crm_bridal', path: '/admin/crm/bridal' },
                     { label: 'Birthday/Anniversary Wishes', icon: Bell, permission: 'crm_birthday_anniversary', path: '/admin/crm/birthday-anniversary-reminders' },
+                    { label: 'Service Reminders', icon: Bell, permission: 'crm_service_reminders', path: '/admin/crm/service-reminders' },
                 ]
             },
             {
