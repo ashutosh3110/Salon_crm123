@@ -1,35 +1,46 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     Plus, Wallet, TrendingUp, TrendingDown,
-    CheckCircle2, ChevronRight, X, Zap, Clock
+    CheckCircle2, ChevronRight, X, Zap, Clock, ChevronLeft, Tag, Gift
 } from 'lucide-react';
-import AppBackButton from '../../components/app/AppBackButton';
 import { useWallet } from '../../contexts/WalletContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 
 export default function AppWalletPage() {
     const navigate = useNavigate();
-    const { balance, transactions, addMoney, spentThisMonth } = useWallet();
+    const { balance, transactions, addMoney } = useWallet();
+    const { customer } = useCustomerAuth();
     const { loyaltySettings } = useBusiness();
-    const { theme } = useCustomerTheme();
-    const isLight = theme === 'light';
+    const { colors: themeColors } = useCustomerTheme();
 
     const [showAddModal, setShowAddModal] = useState(false);
     const [addAmount, setAddAmount] = useState('');
     const [adding, setAdding] = useState(false);
     const [success, setSuccess] = useState(false);
 
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        accent: '#C8956C',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        input: isLight ? '#F1F3F5' : '#141414',
+    const colors = useMemo(() => ({
+        ...themeColors,
+        accent: themeColors.accent || '#E7D06E',
+    }), [themeColors]);
+
+    const hexToRgba = (hex, alpha) => {
+        if (!hex || !hex.startsWith('#')) return hex;
+        const cleanHex = hex.replace('#', '');
+        let r = 0, g = 0, b = 0;
+        if (cleanHex.length === 3) {
+            r = parseInt(cleanHex[0] + cleanHex[0], 16);
+            g = parseInt(cleanHex[1] + cleanHex[1], 16);
+            b = parseInt(cleanHex[2] + cleanHex[2], 16);
+        } else if (cleanHex.length === 6) {
+            r = parseInt(cleanHex.slice(0, 2), 16);
+            g = parseInt(cleanHex.slice(2, 4), 16);
+            b = parseInt(cleanHex.slice(4, 6), 16);
+        }
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
     };
 
     const handleAddMoney = async () => {
@@ -54,176 +65,159 @@ export default function AppWalletPage() {
     };
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-10">
+        <div style={{ background: '#F9F9FA', minHeight: '100vh' }} className="pb-10 font-sans">
             {/* Header */}
-            <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
-                <div className="flex items-center gap-3">
-                    <AppBackButton />
-                    <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Wallet</h1>
-                </div>
+            <div className="sticky top-0 z-50 px-4 py-4 flex items-center justify-between bg-[#F9F9FA]">
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
+                >
+                    <ChevronLeft className="w-6 h-6 text-black" />
+                </button>
+                <h1 className="text-lg font-bold text-gray-900 text-center flex-1 pr-10">Rewards</h1>
             </div>
 
-
-
-            <div className="px-4">
-                {/* Premium Wallet Card */}
+            <div className="px-4 space-y-4">
+                {/* Wallet Balance Card */}
                 <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                style={{
-                    background: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)',
-                    borderRadius: '28px',
-                    padding: '30px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    marginBottom: '24px'
-                }}
-            >
-                {/* Decorative Elements */}
-                <div style={{
-                    position: 'absolute', top: '-20%', right: '-10%',
-                    width: '200px', height: '200px',
-                    background: 'radial-gradient(circle, rgba(200,149,108,0.1) 0%, transparent 70%)',
-                    borderRadius: '50%'
-                }} />
-
-                <div className="relative z-10">
-                    <div className="flex justify-between items-start mb-10">
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    style={{
+                        background: 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)',
+                        borderRadius: '24px',
+                        padding: '24px',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        boxShadow: '0 12px 24px rgba(185, 133, 20, 0.15)',
+                    }}
+                    className="text-white"
+                >
+                    <div className="flex justify-between items-center relative z-10">
                         <div>
-                            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '4px' }}>
-                                Available Balance
-                            </p>
-                            <h2 style={{ color: '#FFF', fontSize: '36px', fontWeight: 900, letterSpacing: '-0.02em' }}>
-                                ₹{balance.toLocaleString()}
+                            <p className="text-xs font-semibold text-white/80 uppercase tracking-wide">Wallet Balance</p>
+                            <h2 className="text-3xl font-extrabold mt-1 tracking-tight">
+                                ₹{balance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </h2>
-                        </div>
-                        <div style={{ color: "#C8956C" }}>
-                            <Wallet size={28} />
-                        </div>
-                    </div>
-
-                    <div className="flex justify-between items-end">
-                        <div className="flex gap-4">
-                            <div>
-                                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '9px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '2px' }}>Account Status</p>
-                                <div className="flex items-center gap-1.5">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                    <span style={{ color: '#FFF', fontSize: '12px', fontWeight: 700 }}>Active</span>
-                                </div>
-                            </div>
                         </div>
                         <button
                             onClick={() => setShowAddModal(true)}
-                            style={{
-                                background: '#C8956C', color: '#FFF', padding: '10px 20px',
-                                borderRadius: '12px 4px 12px 4px', fontSize: '13px', fontWeight: 900,
-                                display: 'flex', alignItems: 'center', gap: '8px',
-                                boxShadow: '0 8px 16px rgba(200,149,108,0.3)'
-                            }}
+                            className="bg-white text-[#B98514] px-4 py-2.5 rounded-full text-xs font-bold shadow-md hover:bg-opacity-95 active:scale-95 transition-all"
                         >
-                            <Plus size={18} /> Add Money
+                            + Add Money
                         </button>
                     </div>
-                </div>
-            </motion.div>
+                </motion.div>
 
-                {/* Transactions Section */}
-                <div className="mt-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 style={{ color: colors.text, fontSize: '16px', fontWeight: 900 }}>Recent Transactions</h3>
-                        <div className="p-2 rounded-full" style={{ background: colors.card, border: `1px solid ${colors.border}` }}>
-                            <ChevronRight size={16} style={{ color: colors.textMuted }} />
+                {/* Loyalty Points Card */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    style={{
+                        background: '#FFF',
+                        borderRadius: '24px',
+                        padding: '20px 24px',
+                        border: '1px solid rgba(0,0,0,0.03)',
+                        boxShadow: '0 8px 16px rgba(0,0,0,0.02)',
+                    }}
+                    className="flex justify-between items-center"
+                >
+                    <div>
+                        <p className="text-xs font-bold text-[#B48418] uppercase tracking-wide">Loyalty Points</p>
+                        <div className="mt-1 flex items-baseline gap-1.5">
+                            <span className="text-2xl font-extrabold text-gray-900">
+                                {(customer?.loyaltyPoints || 0).toLocaleString()}
+                            </span>
+                            <span className="text-xs font-semibold text-gray-400">Points</span>
                         </div>
                     </div>
+                    <button
+                        onClick={() => navigate('/app/loyalty')}
+                        className="bg-[#FFF8E6] text-[#B48418] border border-[#B48418]/20 px-5 py-2.5 rounded-full text-xs font-bold shadow-sm hover:bg-[#B48418]/10 active:scale-95 transition-all"
+                    >
+                        Redeem Now
+                    </button>
+                </motion.div>
 
-                    <div className="space-y-3">
-                        {transactions && transactions.length > 0 ? (
-                            transactions.map((tx, idx) => (
-                                <motion.div
-                                    key={tx.id || idx}
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: idx * 0.05 }}
-                                    style={{
-                                        background: colors.card,
-                                        padding: '16px',
-                                        borderRadius: '20px',
-                                        border: `1px solid ${colors.border}`,
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between'
-                                    }}
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div style={{
-                                            width: '44px', height: '44px', borderRadius: '14px',
-                                            background: tx.type === 'CREDIT' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center'
-                                        }}>
-                                            {tx.type === 'CREDIT' ? 
-                                                <TrendingUp size={20} className="text-emerald-500" /> : 
-                                                <TrendingDown size={20} className="text-red-500" />
-                                            }
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-1">
-                                                <p style={{ color: colors.text, fontSize: '14px', fontWeight: 800 }}>{tx.description}</p>
-                                                {tx.expiryDate && (
-                                                    <span style={{ 
-                                                        fontSize: '8px', fontWeight: 900, background: '#C8956C', 
-                                                        color: '#FFF', padding: '2px 6px', borderRadius: '4px',
-                                                        textTransform: 'uppercase', letterSpacing: '0.05em'
-                                                    }}>
-                                                        PROMO
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 600 }}>
-                                                    {tx.date ? new Date(tx.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '-'}
-                                                </p>
-                                                {tx.expiryDate && (
-                                                    <div className="flex items-center gap-1.5 mt-1 bg-red-500/10 py-1 px-2 rounded-md w-fit border border-red-500/20">
-                                                        <Clock size={10} className="text-red-500" />
-                                                        <p style={{ color: '#EF4444', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                                                            Expires on: {new Date(tx.expiryDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <p style={{ 
-                                            color: tx.type === 'CREDIT' ? '#10B981' : colors.text, 
-                                            fontSize: '15px', fontWeight: 900 
-                                        }}>
-                                            {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
-                                        </p>
-                                        {tx.remainingAmount !== undefined && tx.remainingAmount < tx.amount && tx.remainingAmount > 0 && (
-                                            <p style={{ color: colors.textMuted, fontSize: '9px', fontWeight: 700 }}>
-                                                ₹{tx.remainingAmount} left
-                                            </p>
-                                        )}
-                                    </div>
-                                </motion.div>
-                            ))
-                        ) : (
-                            <div className="py-12 text-center">
-                                <p style={{ color: colors.textMuted, fontSize: '13px', fontWeight: 600 }}>No transactions yet</p>
-                            </div>
-                        )}
+                {/* Grid of Options */}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                    {/* Refer & Earn */}
+                    <div 
+                        onClick={() => navigate('/app/referrals')}
+                        className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
+                    >
+                        <div className="w-12 h-12 flex items-center justify-center mb-2">
+                            <img src="/refer and  earn .png" alt="Refer & Earn" className="w-10 h-10 object-contain" />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800 leading-tight">Refer & Earn</span>
+                        <span className="text-[9px] text-gray-400 mt-1 font-medium">Earn Rewards</span>
+                    </div>
+
+                    {/* Membership */}
+                    <div 
+                        onClick={() => navigate('/app/membership')}
+                        className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
+                    >
+                        <div className="w-12 h-12 flex items-center justify-center mb-2">
+                            <img src="/memebership.png" alt="Membership" className="w-10 h-10 object-contain" />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800 leading-tight">Membership</span>
+                        <span className="text-[9px] text-gray-400 mt-1 font-medium">View Plans</span>
+                    </div>
+
+                    {/* Transactions */}
+                    <div 
+                        onClick={() => navigate('/app/transactions')}
+                        className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
+                    >
+                        <div className="w-12 h-12 flex items-center justify-center mb-2">
+                            <img src="/transaction.png" alt="Transactions" className="w-10 h-10 object-contain" />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800 leading-tight">Transactions</span>
+                        <span className="text-[9px] text-gray-400 mt-1 font-medium">View History</span>
+                    </div>
+
+                    {/* Convert Points */}
+                    <div 
+                        onClick={() => navigate('/app/loyalty')}
+                        className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
+                    >
+                        <div className="w-12 h-12 flex items-center justify-center mb-2">
+                            <img src="/convertpoint.png" alt="Convert Points" className="w-10 h-10 object-contain" />
+                        </div>
+                        <span className="text-xs font-bold text-gray-800 leading-tight">Convert Points</span>
+                        <span className="text-[9px] text-gray-400 mt-1 font-medium">To Wallet</span>
                     </div>
                 </div>
-            </div>
 
+                {/* Banner Promotion */}
+                <motion.div
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="rounded-3xl overflow-hidden relative shadow-md mt-6"
+                    style={{
+                        backgroundImage: "url('/banner image 2.png')",
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        height: '150px',
+                    }}
+                >
+                    <div className="absolute inset-0 flex flex-col justify-end p-5">
+                        <button 
+                            onClick={() => navigate('/app/referrals')}
+                            className="bg-white text-[#B98514] font-extrabold text-[11px] px-5 py-2.5 rounded-full w-fit shadow-md active:scale-95 hover:bg-opacity-95 transition-all"
+                        >
+                            Refer Now
+                        </button>
+                    </div>
+                </motion.div>
+            </div>
 
             {/* Add Money Modal */}
             <AnimatePresence>
                 {showAddModal && (
-                    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0' }}>
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-end', justifyItems: 'center', padding: '0 0' }}>
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -237,22 +231,23 @@ export default function AppWalletPage() {
                             exit={{ y: '100%' }}
                             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
                             style={{
-                                background: colors.card, width: '100%', maxWidth: '430px',
+                                background: '#FFF', width: '100%', maxWidth: '430px',
                                 borderTopLeftRadius: '32px', borderTopRightRadius: '32px',
-                                padding: '32px 24px 96px', position: 'relative'
+                                padding: '32px 24px 96px', position: 'relative',
+                                margin: '0 auto'
                             }}
                         >
                             {!success ? (
                                 <>
                                     <div className="flex justify-between items-center mb-8">
-                                        <h3 style={{ color: colors.text, fontSize: '20px', fontWeight: 900 }}>Top-up Wallet</h3>
-                                        <button onClick={() => setShowAddModal(false)}><X size={24} style={{ color: colors.textMuted }} /></button>
+                                        <h3 className="text-gray-900 text-xl font-black">Top-up Wallet</h3>
+                                        <button onClick={() => setShowAddModal(false)}><X size={24} className="text-gray-400" /></button>
                                     </div>
 
                                     <div className="mb-8">
-                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', marginBottom: '8px' }}>Amount to add</p>
+                                        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2">Amount to add</p>
                                         <div style={{ position: 'relative' }}>
-                                            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '24px', fontWeight: 900, color: colors.text }}>₹</span>
+                                            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontSize: '24px', fontWeight: 900, color: '#111827' }}>₹</span>
                                             <input
                                                 type="number"
                                                 value={addAmount}
@@ -260,9 +255,9 @@ export default function AppWalletPage() {
                                                 autoFocus
                                                 placeholder="0.00"
                                                 style={{
-                                                    width: '100%', background: colors.input, border: `1.5px solid ${colors.border}`,
+                                                    width: '100%', background: '#F9FAFB', border: '1.5px solid #E5E7EB',
                                                     borderRadius: '20px', padding: '16px 16px 16px 40px',
-                                                    fontSize: '28px', fontWeight: 900, color: colors.text, outline: 'none'
+                                                    fontSize: '28px', fontWeight: 900, color: '#111827', outline: 'none'
                                                 }}
                                             />
                                         </div>
@@ -286,9 +281,9 @@ export default function AppWalletPage() {
                                                 key={amt}
                                                 onClick={() => setAddAmount(amt)}
                                                 style={{
-                                                    background: addAmount === amt ? 'rgba(200,149,108,0.1)' : 'transparent',
-                                                    border: `1.5px solid ${addAmount === amt ? '#C8956C' : colors.border}`,
-                                                    borderRadius: '16px', padding: '12px', color: addAmount === amt ? '#C8956C' : colors.text,
+                                                    background: addAmount === amt ? hexToRgba(colors.accent, 0.1) : 'transparent',
+                                                    border: `1.5px solid ${addAmount === amt ? colors.accent : '#E5E7EB'}`,
+                                                    borderRadius: '16px', padding: '12px', color: addAmount === amt ? colors.accent : '#374151',
                                                     fontSize: '14px', fontWeight: 800
                                                 }}
                                             >
@@ -301,7 +296,7 @@ export default function AppWalletPage() {
                                         onClick={handleAddMoney}
                                         disabled={adding || !addAmount}
                                         style={{
-                                            width: '100%', background: '#C8956C', color: '#FFF',
+                                            width: '100%', background: 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)', color: '#FFF',
                                             padding: '18px', borderRadius: '18px 6px 18px 6px',
                                             fontSize: '16px', fontWeight: 900, textTransform: 'uppercase',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
@@ -320,8 +315,8 @@ export default function AppWalletPage() {
                                     <div className="w-20 h-20 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-emerald-500/20">
                                         <CheckCircle2 size={40} color="#10B981" />
                                     </div>
-                                    <h3 style={{ color: colors.text, fontSize: '24px', fontWeight: 900, marginBottom: '8px' }}>Success!</h3>
-                                    <p style={{ color: colors.textMuted, fontSize: '14px', fontWeight: 600 }}>₹{addAmount} has been added to your wallet.</p>
+                                    <h3 className="text-gray-900 text-2xl font-black mb-2">Success!</h3>
+                                    <p className="text-gray-500 text-sm font-semibold">₹{addAmount} has been added to your wallet.</p>
                                 </div>
                             )}
                         </motion.div>

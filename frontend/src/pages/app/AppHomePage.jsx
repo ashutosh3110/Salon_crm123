@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check
 } from 'lucide-react';
 
 
@@ -95,14 +95,14 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight, showPrice
                     display: 'flex', alignItems: 'center', gap: '4px',
                     color: '#FFF', fontSize: '10px', fontWeight: 800
                 }}>
-                    <Clock size={10} color="#C8956C" />
+                    <Clock size={10} color={colors.accent} />
                     <span>{service.duration || 30}m</span>
                 </div>
             </div>
 
             <div style={{ padding: '12px', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '9px', fontWeight: 800, color: '#C8956C', textTransform: 'uppercase' }}>
+                    <span style={{ fontSize: '9px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase' }}>
                         {service.category || 'Specialist'}
                     </span>
                 </div>
@@ -118,8 +118,8 @@ const ServiceCard = memo(({ service, onBook, onClick, colors, isLight, showPrice
                     <button
                         onClick={(e) => { e.stopPropagation(); onBook(service._id || service.id); }}
                         style={{
-                            background: '#C8956C',
-                            color: '#FFF',
+                            background: colors.accent,
+                            color: '#000000',
                             border: 'none',
                             padding: '6px 16px',
                             borderRadius: '8px',
@@ -152,85 +152,120 @@ function HeartBtn({ size = 20 }) {
 }
 
 function StarRow({ rating }) {
+    const { colors } = useCustomerTheme();
     return (
         <span style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-            <Star size={11} fill="#C8956C" color="#C8956C" />
-            <span style={{ fontSize: '11px', color: '#C8956C', fontWeight: 600 }}>{rating}</span>
+            <Star size={11} fill={colors.accent} color={colors.accent} />
+            <span style={{ fontSize: '11px', color: colors.accent, fontWeight: 600 }}>{rating}</span>
         </span>
     );
 }
 
 const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
-    const isPlatinum = plan.name.toLowerCase().includes('platinum');
+    const navigate = useNavigate();
     const isGold = plan.name.toLowerCase().includes('gold') || plan.name.toLowerCase().includes('royale');
+    const isYearly = plan.duration >= 300;
+    const saveAmount = isGold 
+        ? (isYearly ? 600 : 50) 
+        : (isYearly ? 1200 : 100);
 
-    const bgColor = isPlatinum ? 'linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%)' :
-        isGold ? 'linear-gradient(135deg, #F9D423 0%, #FFB703 100%)' :
-            plan.gradient || colors.card;
+    const gradient = isGold 
+        ? 'linear-gradient(135deg, #FFF8F2 0%, #FFFBF9 100%)' 
+        : 'linear-gradient(135deg, #F5F5FA 0%, #FAF9FC 100%)';
 
-    const textColor = isGold ? '#000' : '#FFF';
-    const mutedColor = isGold ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.7)';
-    const bulletColor = isGold ? '#000' : colors.accent;
+    const benefits = Array.isArray(plan.benefits) && plan.benefits.length > 0 
+        ? plan.benefits 
+        : (isGold 
+            ? ['10% OFF on all services', 'Free Hair Spa (2 Times)', 'Priority Booking', 'Special Member Offers'] 
+            : ['15% OFF on all services', 'Free Hair Spa (4 Times)', 'Free Clean Up (2 Times)', 'Priority Booking', 'Special Member Offers']);
+
+    const handleSelectPlan = () => {
+        const planData = {
+            id: plan._id || plan.id,
+            name: plan.name,
+            price: Number(plan.price || 0),
+            duration: Number(plan.duration || 30),
+            benefits: benefits,
+        };
+        navigate('/app/membership/checkout', { state: { plan: planData } });
+    };
 
     return (
         <div
             style={{
                 flexShrink: 0,
-                width: '260px',
-                background: bgColor,
+                width: '320px',
+                background: gradient,
                 borderRadius: '24px',
                 padding: '24px',
-                position: 'relative',
-                overflow: 'hidden',
-                color: textColor,
-                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                border: '1px solid rgba(0,0,0,0.02)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.015)',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '12px'
+                justifyContent: 'space-between',
+                gap: '16px'
             }}
         >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>{isPlatinum ? '💎' : '👑'}</span>
-                <h3 style={{ fontSize: '18px', fontWeight: 900, margin: 0 }}>{plan.name}</h3>
-            </div>
-
-            <div>
-                <h2 style={{ fontSize: '28px', fontWeight: 900, margin: '0 0 2px 0' }}>₹{plan.price}</h2>
-                <p style={{ fontSize: '11px', fontWeight: 700, color: mutedColor, margin: 0 }}>Valid for {plan.duration} days</p>
-            </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '4px' }}>
-                {/* Custom discount bullets */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '14px', color: bulletColor }}>•</span>
-                    <span style={{ fontSize: '11px', fontWeight: 700 }}>{plan.serviceDiscountValue}{plan.serviceDiscountType === 'percentage' ? '%' : '₹'} OFF on All Services</span>
+            {/* Top portion: Tier title, price & You save badge */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ textAlign: 'left' }}>
+                    <h3 
+                        style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}
+                        className={isGold ? 'text-[#C8956C]' : 'text-slate-850'}
+                    >
+                        {plan.name}
+                    </h3>
+                    <p style={{ fontSize: '20px', fontWeight: 900, color: '#0f172a', margin: '4px 0 0 0' }}>
+                        ₹{plan.price.toLocaleString()}
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginLeft: '4px' }}>
+                            /{isYearly ? 'Year' : 'Month'}
+                        </span>
+                    </p>
                 </div>
-                {/* Benefits bullets */}
-                {(plan.benefits || []).slice(0, 2).map((benefit, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '14px', color: bulletColor }}>•</span>
-                        <span style={{ fontSize: '11px', fontWeight: 700 }}>{benefit}</span>
-                    </div>
-                ))}
+                <div 
+                    style={{
+                        padding: '6px 10px',
+                        borderRadius: '9999px',
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        background: isGold ? '#FFF2E6' : '#F0EEFC',
+                        color: isGold ? '#C8956C' : '#6366F1'
+                    }}
+                >
+                    You save ₹{saveAmount}
+                </div>
             </div>
 
-            <button
-                style={{
-                    marginTop: '8px',
-                    width: '100%',
-                    height: '42px',
-                    background: isGold ? '#000' : '#FFF',
-                    color: isGold ? '#FFF' : '#000',
-                    border: 'none',
-                    borderRadius: '12px',
-                    fontSize: '11px',
-                    fontWeight: 900,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.05em'
-                }}
-            >
-                Join Now
-            </button>
+            {/* Bottom portion: Benefits list and Buy button */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '12px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
+                    {benefits.slice(0, 4).map((benefit, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Check 
+                                size={13} 
+                                className={isGold ? 'text-[#C8956C]' : 'text-[#6366F1]'} 
+                                strokeWidth={3} 
+                            />
+                            <span style={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}>{benefit}</span>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Action button */}
+                <div style={{ flexShrink: 0 }}>
+                    <button
+                        onClick={handleSelectPlan}
+                        className="px-4 py-2.5 text-white font-black text-[11px] rounded-full shadow-md shadow-[#E7D06E]/20 hover:opacity-90 active:scale-95 transition-all duration-200"
+                        style={{
+                            background: 'linear-gradient(135deg, #E7D06E 0%, #D8B043 100%)',
+                            border: 'none',
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Buy Now
+                    </button>
+                </div>
+            </div>
         </div>
     );
 });
@@ -311,7 +346,13 @@ export default function AppHomePage() {
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
 
-    const { theme, colors, isLight } = useCustomerTheme();
+    const { theme, colors: themeColors, isLight } = useCustomerTheme();
+    const colors = useMemo(() => ({
+        ...themeColors,
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        accent: '#E7D06E'
+    }), [themeColors]);
     const {
         activeOutlet,
         activeOutletId,
@@ -670,7 +711,7 @@ export default function AppHomePage() {
                             justifyContent: 'center',
                             border: `1px solid ${colors.border}`
                         }}>
-                            <MapPin size={18} color="#C8956C" />
+                            <MapPin size={18} style={{ color: colors.accent }} />
                         </div>
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -689,26 +730,21 @@ export default function AppHomePage() {
                     <div
                         style={{
                             flex: 1,
-                            background: isLight
-                                ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                                : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                            boxShadow: isLight
-                                ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
-                                : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                            borderRadius: '20px 6px 20px 6px',
+                            background: '#F3F4F6',
+                            borderRadius: '9999px',
                             display: 'flex',
                             alignItems: 'center',
-                            padding: '0 14px',
-                            height: '42px',
+                            padding: '0 16px',
+                            height: '46px',
                             gap: '10px',
-                            border: isFocused ? `1.5px solid ${colors.accent}` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         <button
                             onClick={() => searchQuery.trim() && navigate(`/app/services?search=${encodeURIComponent(searchQuery.trim())}`)}
                             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                         >
-                            <Search size={18} color={isFocused ? colors.accent : (isLight ? '#444' : 'rgba(255,255,255,0.7)')} />
+                            <Search size={18} className="text-slate-400" />
                         </button>
                         <input
                             type="text"
@@ -723,7 +759,7 @@ export default function AppHomePage() {
                                 background: 'transparent',
                                 border: 'none',
                                 outline: 'none',
-                                color: isLight ? '#000' : '#FFF',
+                                color: '#1e293b',
                                 fontSize: '14px',
                                 width: '100%',
                                 height: '100%',
@@ -758,7 +794,7 @@ export default function AppHomePage() {
                             {g === tab && (
                                 <div
                                     style={{
-                                        position: 'absolute', bottom: '-1px', left: '15%', right: '15%', height: '3px', background: '#C8956C', borderRadius: '4px',
+                                        position: 'absolute', bottom: '-1px', left: '15%', right: '15%', height: '3px', background: colors.accent, borderRadius: '4px',
                                         zIndex: 1
                                     }}
                                 />
@@ -793,7 +829,7 @@ export default function AppHomePage() {
                                     style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
                                     onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}
                                 >
-                                    <p style={{ fontSize: '10px', color: '#C8956C', margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
+                                    <p style={{ fontSize: '10px', color: colors.accent, margin: '0 0 6px', textTransform: 'uppercase', letterSpacing: '0.14em', fontWeight: 800 }}>
                                         {filteredPromos[currentPromoIndex]?.subtitle}
                                     </p>
                                     <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
@@ -811,7 +847,7 @@ export default function AppHomePage() {
                                 </div>
                             </div>
                         ) : (
-                            <div style={{ height: '100%', background: 'rgba(200,149,108,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <div style={{ height: '100%', background: `${colors.accent}0d`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
                             </div>
                         )}
@@ -843,7 +879,7 @@ export default function AppHomePage() {
                                             height: '64px',
                                             borderRadius: '50%',
                                             padding: '2px',
-                                            background: isActive ? '#C8956C' : 'transparent',
+                                            background: isActive ? colors.accent : 'transparent',
                                             border: isActive ? 'none' : `1px solid ${colors.border}`,
                                             transition: 'all 0.3s ease',
                                             position: 'relative',
@@ -869,11 +905,11 @@ export default function AppHomePage() {
 
                                         <div
                                             style={{
-                                                background: isActive ? '#C8956C' : colors.card,
+                                                background: isActive ? colors.accent : colors.card,
                                                 color: isActive ? '#FFFFFF' : colors.text,
                                                 borderRadius: '10px',
                                                 padding: '4px 10px',
-                                                boxShadow: isActive ? '0 4px 8px rgba(200,149,108,0.2)' : 'none',
+                                                boxShadow: isActive ? `0 4px 8px ${colors.accent}33` : 'none',
                                                 border: isActive ? 'none' : `1px solid ${colors.border}`,
                                                 marginTop: '-12px',
                                                 zIndex: 3,
@@ -1039,7 +1075,7 @@ export default function AppHomePage() {
                                         {activeOutlet.name}
                                     </h3>
                                     <div style={{
-                                        background: 'rgba(200,149,108,0.1)',
+                                        background: `${colors.accent}1a`,
                                         padding: '4px 10px',
                                         borderRadius: '10px',
                                         display: 'flex',
@@ -1047,7 +1083,7 @@ export default function AppHomePage() {
                                         gap: '4px',
                                         border: `1px solid ${colors.accent}30`
                                     }}>
-                                        <Star size={14} fill="#C8956C" color="#C8956C" />
+                                        <Star size={14} fill={colors.accent} color={colors.accent} />
                                         <span style={{ fontSize: '13px', fontWeight: 700, fontFamily: 'system-ui, -apple-system, sans-serif', color: colors.accent }}>{getOutletRating(activeOutlet)}</span>
                                     </div>
                                 </div>
@@ -1190,7 +1226,7 @@ export default function AppHomePage() {
                                                     setActiveOutletId(outlet._id);
                                                     navigate(`/app/booking`);
                                                 }}
-                                                className="px-4 py-2 bg-[#E7D06E] text-white font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
+                                                className="px-4 py-2 bg-[#E7D06E] text-black font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
                                             >
                                                 Book Now
                                             </button>

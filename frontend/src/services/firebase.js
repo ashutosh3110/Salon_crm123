@@ -97,7 +97,11 @@ export const registerToken = async () => {
       return null;
     }
   } catch (err) {
-    console.error('[Firebase] Token registration error:', err.message);
+    if (err.message?.includes('permission-blocked') || err.code === 'messaging/permission-blocked') {
+      console.warn('[Firebase] Notification permission was blocked by the user.');
+    } else {
+      console.error('[Firebase] Token registration error:', err.message);
+    }
     return null;
   }
 };

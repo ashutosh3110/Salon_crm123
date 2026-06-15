@@ -24,12 +24,12 @@ const ServiceSkeleton = ({ colors, isLight }) => (
     >
         <div className="aspect-square bg-black/5 dark:bg-white/5" />
         <div className="p-2.5 space-y-2 flex-1">
-            <div className="h-2 w-12 bg-[#C8956C]/10 rounded" />
+            <div className="h-2 w-12 rounded" style={{ background: `${colors.accent}1a` }} />
             <div className="h-3 w-full bg-black/5 dark:bg-white/5 rounded" />
             <div className="h-2 w-3/4 bg-black/5 dark:bg-white/5 rounded" />
             <div className="mt-auto flex items-center justify-between pt-2">
-                <div className="h-4 w-10 bg-[#C8956C]/10 rounded" />
-                <div className="h-6 w-12 bg-[#C8956C]/20 rounded" />
+                <div className="h-4 w-10 rounded" style={{ background: `${colors.accent}1a` }} />
+                <div className="h-6 w-12 rounded" style={{ background: `${colors.accent}33` }} />
             </div>
         </div>
     </div>
@@ -97,17 +97,17 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
                 />
                 <div className="absolute bottom-2 left-2">
                     <div className="bg-black/60 backdrop-blur-md px-1.5 py-0.5 rounded-md flex items-center gap-1 text-white text-[8px] font-black uppercase tracking-tighter">
-                        <Clock size={8} className="text-[#C8956C]" />
+                        <Clock size={8} style={{ color: colors.accent }} />
                         <span>{service.duration}m</span>
                     </div>
                 </div>
             </div>
 
             <div className="p-2.5 flex flex-col flex-1">
-                <span className="text-[8px] font-black uppercase tracking-widest text-[#C8956C] mb-0.5">{categoryName}</span>
+                <span className="text-[8px] font-black uppercase tracking-widest mb-0.5" style={{ color: colors.accent }}>{categoryName}</span>
                 <h3 
-                    className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight cursor-pointer hover:underline underline-offset-2 decoration-[#C8956C]" 
-                    style={{ color: colors.text }}
+                    className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight cursor-pointer hover:underline underline-offset-2" 
+                    style={{ color: colors.text, decorationColor: colors.accent }}
                     onClick={() => navigate(`/app/service/${service._id || service.id}`)}
                 >
                     {service.name}
@@ -116,13 +116,13 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
 
                 <div className="mt-auto flex items-center justify-between pt-1">
                     {showPrice !== false && (
-                        <span className="text-[13px] font-black text-[#C8956C]">₹{service.price}</span>
+                        <span className="text-[13px] font-black" style={{ color: colors.accent }}>₹{service.price}</span>
                     )}
                     <motion.button
                         whileTap={{ scale: 0.9 }}
                         onClick={() => onBook(service._id || service.id)}
                         style={{
-                            background: '#C8956C',
+                            background: colors.accent,
                             borderRadius: '8px 2px 8px 2px',
                         }}
                         className="px-3 py-1.5 text-white text-[9px] font-black uppercase tracking-tighter"
@@ -137,7 +137,7 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
 
 export default function AppServicesPage() {
     const navigate = useNavigate();
-    const { theme } = useCustomerTheme();
+    const { theme, colors: themeColors } = useCustomerTheme();
     const { 
         activeOutlet, 
         activeOutletId,
@@ -222,14 +222,13 @@ export default function AppServicesPage() {
         return [...formalGroups, ...extraGroups].filter(g => g.services.length > 0);
     }, [categories, services]);
 
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#FFFFFF',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-        input: isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-    };
+    const colors = useMemo(() => ({
+        ...themeColors,
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        accent: themeColors.accent || '#E7D06E',
+        input: themeColors.input || (isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)'),
+    }), [themeColors, isLight]);
 
     // Filter categories & services by gender on client side too for safety
     const displayGroups = useMemo(() => {
@@ -315,17 +314,17 @@ export default function AppServicesPage() {
     if (isLoading) {
         return (
             <div style={{ background: colors.bg, minHeight: '100svh' }} className="flex flex-col items-center justify-center space-y-6">
-                <div className="w-16 h-16 rounded-[20px] bg-[#C8956C]/10 flex items-center justify-center animate-pulse border border-[#C8956C]/20">
-                    <Armchair className="w-8 h-8 text-[#C8956C]" />
+                <div className="w-16 h-16 rounded-[20px] flex items-center justify-center animate-pulse border" style={{ background: `${colors.accent}1a`, borderColor: `${colors.accent}33` }}>
+                    <Armchair className="w-8 h-8" style={{ color: colors.accent }} />
                 </div>
                 <div className="flex flex-col items-center space-y-2">
                     <p style={{ color: colors.text, fontSize: '10px', fontWeight: 800, letterSpacing: '0.2em' }} className="uppercase opacity-60">
                         Curating Services
                     </p>
                     <div className="flex space-x-1.5">
-                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
-                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
-                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} className="w-1 h-1 rounded-full bg-[#C8956C]" />
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0 }} className="w-1 h-1 rounded-full" style={{ background: colors.accent }} />
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.2 }} className="w-1 h-1 rounded-full" style={{ background: colors.accent }} />
+                        <motion.div animate={{ scale: [1, 1.5, 1], opacity: [0.3, 1, 0.3] }} transition={{ duration: 1, repeat: Infinity, delay: 0.4 }} className="w-1 h-1 rounded-full" style={{ background: colors.accent }} />
                     </div>
                 </div>
             </div>
@@ -336,7 +335,7 @@ export default function AppServicesPage() {
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
             <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ 
-                background: isLight ? 'rgba(252, 249, 246, 0.8)' : 'rgba(15, 15, 15, 0.8)', 
+                background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 15, 15, 0.85)', 
                 backdropFilter: 'blur(20px)',
                 borderBottom: `1px solid ${colors.border}`
             }}>
@@ -346,8 +345,8 @@ export default function AppServicesPage() {
                         <AppBackButton />
                         <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full bg-[#C8956C]" />
-                                <p className="text-[8px] font-black uppercase tracking-[0.25em] text-[#C8956C] leading-none">The Experience</p>
+                                <div className="w-1.5 h-1.5 rounded-full" style={{ background: colors.accent }} />
+                                <p className="text-[8px] font-black uppercase tracking-[0.25em] leading-none" style={{ color: colors.accent }}>The Experience</p>
                             </div>
                             <h2 className="text-[15px] font-black tracking-tight leading-tight mt-0.5" style={{ color: colors.text }}>
                                 {activeOutlet?.name || 'Wapixo Salon'}
@@ -376,22 +375,18 @@ export default function AppServicesPage() {
                 {/* Search Bar */}
                 <div
                     style={{
-                        background: isLight
-                            ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                            : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                        boxShadow: isLight ? 'inset 0 1px 3px rgba(0,0,0,0.03)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                        borderRadius: '20px 6px 20px 6px',
-                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? '#E8ECEF' : 'transparent'}`,
-                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        background: '#F3F4F6',
+                        borderRadius: '9999px',
+                        transition: 'all 0.3s ease',
                         padding: '0 16px',
-                        height: '52px',
+                        height: '46px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '12px'
+                        gap: '10px'
                     }}
                     className="mb-5"
                 >
-                    <Search size={16} style={{ color: isFocused ? '#C8956C' : colors.textMuted }} />
+                    <Search size={18} className="text-slate-400" />
                     <input
                         type="text"
                         placeholder="Search for services..."
@@ -399,13 +394,13 @@ export default function AppServicesPage() {
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsFocused(true)}
                         onBlur={() => setIsFocused(false)}
-                        style={{ background: 'transparent', border: 'none', outline: 'none', color: colors.text, width: '100%', fontSize: '13px', fontWeight: 600 }}
+                        style={{ background: 'transparent', border: 'none', outline: 'none', color: '#1e293b', width: '100%', fontSize: '14px', fontWeight: 500 }}
                     />
-                    <SlidersHorizontal size={16} style={{ color: colors.textMuted }} />
+                    <SlidersHorizontal size={16} className="text-slate-400" />
                 </div>
 
                 <div className="flex items-center gap-2 mb-3">
-                    <LayoutGrid size={18} className="text-[#C8956C]" />
+                    <LayoutGrid size={18} style={{ color: colors.accent }} />
                     <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Categories</h2>
                 </div>
 
@@ -426,10 +421,10 @@ export default function AppServicesPage() {
                                     style={{
                                         padding: '10px 20px',
                                         borderRadius: '12px',
-                                        background: isActive ? 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)' : colors.card,
+                                        background: isActive ? `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accent}dd 100%)` : colors.card,
                                         border: `1.5px solid ${isActive ? 'transparent' : colors.border}`,
                                         color: isActive ? '#fff' : colors.textMuted,
-                                        boxShadow: isActive ? '0 4px 12px rgba(200,149,108,0.25)' : 'none',
+                                        boxShadow: isActive ? `0 4px 12px ${colors.accent}40` : 'none',
                                         transition: 'all 0.3s ease',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -450,9 +445,9 @@ export default function AppServicesPage() {
 
             {/* Services Content Grouped by Category */}
             <div className="px-4 mt-6 mb-3 flex items-center gap-3">
-                <Armchair size={18} className="text-[#C8956C]" />
+                <Armchair size={18} style={{ color: colors.accent }} />
                 <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Services</h2>
-                <div className="h-px flex-1 bg-gradient-to-r from-[#C8956C]/20 to-transparent ml-2" />
+                <div className="h-px flex-1 ml-2" style={{ background: `linear-gradient(to right, ${colors.accent}33, transparent)` }} />
             </div>
 
             <motion.div
@@ -479,15 +474,16 @@ export default function AppServicesPage() {
                     </div>
                 ) : (
                     <div className="py-20 text-center">
-                        <div className="w-20 h-20 bg-[#C8956C]/5 rounded-full flex items-center justify-center mx-auto mb-4 border border-[#C8956C]/10">
-                            <Search size={32} className="text-[#C8956C] opacity-40" />
+                        <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4 border" style={{ background: `${colors.accent}0d`, borderColor: `${colors.accent}1a` }}>
+                            <Search size={32} style={{ color: colors.accent, opacity: 0.4 }} />
                         </div>
                         <h3 className="text-sm font-black uppercase tracking-widest mb-1" style={{ color: colors.text }}>No services available</h3>
                         <p className="text-[10px] font-medium opacity-50 px-10 mb-6" style={{ color: colors.text }}>We couldn't find any services matching your criteria in this outlet.</p>
                         <motion.button
                             whileTap={{ scale: 0.95 }}
                             onClick={() => fetchServicesData()}
-                            className="px-8 py-3 bg-gradient-to-br from-[#C8956C] to-[#A06844] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20"
+                            className="px-8 py-3 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
+                            style={{ background: `linear-gradient(to bottom right, ${colors.accent}, ${colors.accent}dd)`, boxShadow: `0 10px 20px ${colors.accent}33` }}
                         >
                             Refresh Services
                         </motion.button>

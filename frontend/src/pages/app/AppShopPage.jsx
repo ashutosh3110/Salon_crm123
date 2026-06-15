@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus, ChevronLeft, SlidersHorizontal } from 'lucide-react';
+import { Search, ShoppingBag, Star, ArrowRight, Heart, X, Plus, Minus, ChevronLeft, SlidersHorizontal, ShoppingCart, Sparkles, Scissors, LayoutGrid } from 'lucide-react';
 import { useCart } from '../../contexts/CartContext';
 import { useInventory } from '../../contexts/InventoryContext';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -39,10 +39,10 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, colors, isLight
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.01 }}
             onClick={() => onOpenProduct(product._id || product.id)}
-            className="rounded-[24px] bg-white border-none flex flex-col h-full p-2 cursor-pointer transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.015)]"
+            className="rounded-[24px] bg-white border-none flex flex-col h-full overflow-hidden cursor-pointer transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.015)]"
         >
             {/* Image Container with light gray background block nested inside */}
-            <div className="relative aspect-square rounded-[18px] bg-[#f5f6f8] flex items-center justify-center p-3 overflow-hidden group">
+            <div className="relative aspect-square bg-[#f5f6f8] flex items-center justify-center p-3 overflow-hidden group">
                 <img
                     src={getImageUrl(product.image) || 'https://images.unsplash.com/photo-1596462502278-27bfdc4033c8?q=80&w=1000'}
                     alt={product.name}
@@ -56,7 +56,7 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, colors, isLight
             </div>
 
             {/* Product Details Section */}
-            <div className="flex flex-col flex-1 pt-3 pb-1.5 px-2 text-left">
+            <div className="flex flex-col flex-1 pt-3 pb-3 px-3.5 text-left">
                 <h3 className="font-semibold text-[13px] text-slate-800 leading-tight line-clamp-1 mb-1">
                     {displayTitle}
                 </h3>
@@ -129,7 +129,7 @@ export default function AppShopPage() {
             absoluteUrl: getImageUrl(firstProd.appImage || firstProd.image)
         });
     }
-    const { theme } = useCustomerTheme();
+    const { theme, colors: themeColors } = useCustomerTheme();
     const isLight = theme === 'light';
     const [placeholderIndex, setPlaceholderIndex] = useState(0);
     const [isFocused, setIsFocused] = useState(false);
@@ -218,15 +218,16 @@ export default function AppShopPage() {
         setActiveCategory(cat);
     }, [searchParams]);
 
-    const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#ffffff',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        toggle: isLight ? '#EDF0F2' : '#242424',
-        input: isLight ? '#FFFFFF' : '#1A1A1A',
-    };
+    const colors = useMemo(() => ({
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        text: '#1A1A1A',
+        textMuted: '#666',
+        border: 'rgba(0,0,0,0.1)',
+        toggle: '#EDF0F2',
+        input: '#FFFFFF',
+        accent: '#E7D06E'
+    }), []);
 
     const handleCategoryChange = (val) => {
         setActiveCategory(val);
@@ -341,63 +342,95 @@ export default function AppShopPage() {
                 }
             `}</style>
 
-            {/* Shop Search Header - Sticky */}
-            <div className="sticky top-0 z-50 pt-3 pb-3 px-4" style={{ background: colors.bg, backdropFilter: 'blur(20px)', borderBottom: `1px solid ${colors.border}` }}>
-                <div className="flex gap-3 items-center">
-                    <div className="relative flex-1" style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 14px',
-                        height: '44px',
-                        background: isLight
-                            ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)'
-                            : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)',
-                        boxShadow: isLight
-                            ? 'inset 0 1px 3px rgba(0,0,0,0.03)'
-                            : 'inset 0 1px 3px rgba(0,0,0,0.2)',
-                        borderRadius: '16px',
-                        border: isFocused ? `1.5px solid #C8956C` : `1.5px solid ${isLight ? 'rgba(0,0,0,0.05)' : 'transparent'}`,
-                        transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
-                    }}>
-                        <Search className="w-4 h-4 mr-2" style={{ color: isFocused ? '#C8956C' : colors.textMuted }} />
-                        <input
-                            type="text"
-                            className="search-input"
-                            placeholder={placeholders[placeholderIndex]}
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => setIsFocused(true)}
-                            onBlur={() => setIsFocused(false)}
-                            style={{ background: 'transparent', border: 'none', color: colors.text, outline: 'none', width: '100%', fontSize: '14px', fontWeight: 500 }}
-                        />
-                    </div>
+            {/* Shop Sticky Header */}
+            <div className="sticky top-0 z-50 pt-4 pb-3 px-4 bg-white">
+                {/* Row 1: Back, Title, Cart */}
+                <div className="flex items-center justify-between mb-4">
+                    <button
+                        type="button"
+                        onClick={() => navigate(-1)}
+                        className="w-10 h-10 flex items-center justify-start text-slate-800 active:scale-95"
+                    >
+                        <ChevronLeft size={24} className="stroke-[2.5]" />
+                    </button>
+                    <h1 className="text-[18px] font-bold text-slate-900" style={{ fontFamily: "'Inter', sans-serif" }}>Shop</h1>
                     <motion.div
                         ref={cartIconRef}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => setIsCartOpen(true)}
-                        style={{
-                            background: '#C8956C',
-                            borderRadius: '14px',
-                            width: 44,
-                            height: 44,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            flexShrink: 0,
-                            position: 'relative',
-                            boxShadow: '0 8px 16px rgba(200,149,108,0.2)'
-                        }}
+                        className="relative w-10 h-10 flex items-center justify-end cursor-pointer text-slate-800"
                     >
-                        <ShoppingBag size={18} color="#FFF" />
-                        {cartCount > 0 && <span className="absolute top-[-4px] right-[-4px] min-w-[18px] h-[18px] bg-black text-white text-[9px] font-black flex items-center justify-center rounded-full border-2 border-white shadow-lg px-1">{cartCount}</span>}
+                        <ShoppingCart size={22} className="stroke-[2]" />
+                        {cartCount > 0 && (
+                            <span className="absolute top-1 right-[-4px] w-[18px] h-[18px] bg-[#E7D06E] text-black text-[9px] font-black flex items-center justify-center rounded-full border-[1.5px] border-white">
+                                {cartCount}
+                            </span>
+                        )}
+                    </motion.div>
+                </div>
+
+                {/* Row 2: Search Bar & Filter Button */}
+                <div className="flex gap-3 items-center">
+                    <div className="relative flex-1" style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 16px',
+                        height: '46px',
+                        background: '#F3F4F6',
+                        borderRadius: '9999px',
+                        transition: 'all 0.3s ease'
+                    }}>
+                        <Search className="w-5 h-5 mr-2.5 text-slate-400" />
+                        <input
+                            type="text"
+                            className="search-input"
+                            placeholder="Search products, brands..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onFocus={() => setIsFocused(true)}
+                            onBlur={() => setIsFocused(false)}
+                            style={{ background: 'transparent', border: 'none', color: '#1e293b', outline: 'none', width: '100%', fontSize: '14px', fontWeight: 500 }}
+                        />
+                    </div>
+                    {/* Gold Circular Filter Button */}
+                    <motion.div
+                        whileTap={{ scale: 0.95 }}
+                        className="w-11.5 h-11.5 w-[46px] h-[46px] rounded-full flex items-center justify-center cursor-pointer shadow-sm"
+                        style={{ background: '#E7D06E' }}
+                    >
+                        {/* Custom Spray Bottle / Perfume SVG matching mockup filter button */}
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
+                            <path d="M6 18c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9H6v9z" />
+                            <path d="M9 9V6c0-1.1.9-2 2-2h2c1.1 0 2 .9 2 2v3" />
+                            <path d="M12 4V2" />
+                            <path d="M19 4l2 2" />
+                            <path d="M21 3h-1" />
+                        </svg>
                     </motion.div>
                 </div>
             </div>
 
+            {/* Promo Banner */}
+            <div className="px-4 mt-3">
+                <div className="relative w-full rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.02)] aspect-[328/136]">
+                    <img 
+                        src="/shop banner iamge .png" 
+                        alt="Shop Promo Banner" 
+                        className="w-full h-full object-cover" 
+                    />
+                    {/* Overlay the 'Shop Now' button directly onto the banner image */}
+                    <button 
+                        className="absolute left-[24px] bottom-[20px] px-5 py-2.5 bg-white text-[#C69A27] font-extrabold text-[11px] rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider"
+                        style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
+                        Shop Now
+                    </button>
+                </div>
+            </div>
+
             {/* Categories Section */}
-            <div className="mt-6 mb-6">
-                <div className="app-scroll no-scrollbar flex gap-4 overflow-x-auto px-4 pb-2">
+            <div className="mt-6 mb-4">
+                <div className="app-scroll no-scrollbar flex gap-5 overflow-x-auto px-4 pb-2">
                     {categories.map(cat => {
                         const isActive = activeCategory === cat.name;
                         return (
@@ -419,7 +452,7 @@ export default function AppShopPage() {
                                     height: '64px',
                                     borderRadius: '50%',
                                     padding: '2px',
-                                    background: isActive ? '#C8956C' : 'transparent',
+                                    background: isActive ? '#E7D06E' : 'transparent',
                                     border: isActive ? 'none' : `1px solid ${colors.border}`,
                                     transition: 'all 0.3s ease',
                                     position: 'relative',
@@ -445,11 +478,11 @@ export default function AppShopPage() {
 
                                 <div
                                     style={{
-                                        background: isActive ? '#C8956C' : colors.card,
+                                        background: isActive ? '#E7D06E' : colors.card,
                                         color: isActive ? '#FFFFFF' : colors.text,
                                         borderRadius: '10px',
                                         padding: '4px 10px',
-                                        boxShadow: isActive ? '0 4px 8px rgba(200,149,108,0.2)' : 'none',
+                                        boxShadow: isActive ? '0 4px 8px rgba(231,208,110,0.2)' : 'none',
                                         border: isActive ? 'none' : `1px solid ${colors.border}`,
                                         marginTop: '-12px',
                                         zIndex: 3,
@@ -513,7 +546,7 @@ export default function AppShopPage() {
             <div className="fixed inset-0 pointer-events-none z-[10000]">
                 <AnimatePresence>
                     {flyingItems.map((item) => (
-                        <motion.img key={item.id} src={getImageUrl(item.image)} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#C8956C] shadow-2xl" />
+                        <motion.img key={item.id} src={getImageUrl(item.image)} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#E7D06E] shadow-2xl" />
                     ))}
                 </AnimatePresence>
             </div>

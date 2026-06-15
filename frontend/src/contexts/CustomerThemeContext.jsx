@@ -29,7 +29,7 @@ export function CustomerThemeProvider({ children }) {
         textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
         input: isLight ? '#EDF0F2' : '#242424',
         border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.07)',
-        accent: '#C8956C'
+        accent: '#E7D06E'
     };
 
     return (

@@ -16,7 +16,7 @@ const tabs = [
 export default function AppBottomNav() {
     const location = useLocation();
     const navigate = useNavigate();
-    const { theme } = useCustomerTheme();
+    const { theme, colors } = useCustomerTheme();
     const { unreadCount } = useNotifications();
     const isLight = theme === 'light';
     const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
@@ -87,7 +87,7 @@ export default function AppBottomNav() {
                                 <Icon
                                     size={21}
                                     strokeWidth={active ? 2.2 : 1.6}
-                                    color={active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.32)')}
+                                    color={active ? colors.accent : (isLight ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.32)')}
                                 />
                                 {hasNotifications && (
                                     <motion.div
@@ -100,7 +100,7 @@ export default function AppBottomNav() {
                             <span style={{
                                 fontSize: '10px',
                                 fontWeight: active ? 600 : 400,
-                                color: active ? '#C8956C' : (isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.32)'),
+                                color: active ? colors.accent : (isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.32)'),
                                 letterSpacing: '0.02em',
                             }}>
                                 {tab.label}

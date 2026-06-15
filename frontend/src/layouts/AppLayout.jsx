@@ -23,7 +23,7 @@ export default function AppLayout() {
     const navigate = useNavigate();
     const { gender } = useGender();
     const { customer, loading: authLoading } = useCustomerAuth();
-    const { theme } = useCustomerTheme();
+    const { theme, colors } = useCustomerTheme();
     const { activeOutletId, isInitializing, isPageLoading } = useBusiness();
     const { cart, cartTotal, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart } = useCart();
 
@@ -124,7 +124,7 @@ export default function AppLayout() {
                     transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
                     className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full"
                     style={{
-                        background: 'radial-gradient(circle, #C8956C 0%, transparent 70%)',
+                        background: `radial-gradient(circle, ${colors.accent} 0%, transparent 70%)`,
                         filter: 'blur(60px)',
                         willChange: 'opacity'
                     }}
@@ -172,7 +172,7 @@ export default function AppLayout() {
                     --app-text: ${isLight ? '#1A1A1A' : '#FFFFFF'};
                     --app-text-muted: ${isLight ? '#666666' : 'rgba(255,255,255,0.4)'};
                     --app-border: ${isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'};
-                    --app-accent: #C8956C;
+                    --app-accent: ${colors.accent};
                 }
 
                 .app-shell {
@@ -326,9 +326,9 @@ export default function AppLayout() {
                                 animate={{ rotate: 360 }}
                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                             >
-                                <Loader2 className="w-10 h-10 text-[#C8956C]" />
+                                <Loader2 className="w-10 h-10" style={{ color: colors.accent }} />
                             </motion.div>
-                            <p className="mt-4 text-[#C8956C] text-[10px] font-bold tracking-[0.2em] uppercase">
+                            <p className="mt-4 text-[10px] font-bold tracking-[0.2em] uppercase" style={{ color: colors.accent }}>
                                 Refreshing Experience
                             </p>
                         </motion.div>

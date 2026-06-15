@@ -1,5 +1,19 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
-import { useEffect, lazy, Suspense } from 'react';
+import { useEffect, lazy as reactLazy, Suspense } from 'react';
+const lazy = (importFunc) => {
+  return reactLazy(() =>
+    importFunc().catch((error) => {
+      console.error("Dynamic import failed, reloading page...", error);
+      const lastReload = sessionStorage.getItem('last_chunk_reload');
+      const now = Date.now();
+      if (!lastReload || now - parseInt(lastReload, 10) > 10000) {
+        sessionStorage.setItem('last_chunk_reload', String(now));
+        window.location.reload();
+      }
+      return new Promise(() => {});
+    })
+  );
+};
 import { motion } from 'framer-motion';
 import MobileDebugger from './components/MobileDebugger';
 import { AuthProvider } from './contexts/AuthContext';

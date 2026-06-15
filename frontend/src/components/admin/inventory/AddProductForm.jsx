@@ -473,10 +473,10 @@ export default function AddProductForm({ onSave, initialData, onCancel }) {
                                         <input
                                             type="date"
                                             className={`w-full px-4 py-3 bg-background border rounded-lg text-sm font-bold focus:border-[#B4912B] outline-none transition-all ${formData.expiryDate && new Date(formData.expiryDate) < new Date()
-                                                    ? 'border-rose-400 text-rose-600 bg-rose-50/50'
-                                                    : formData.expiryDate && new Date(formData.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-                                                        ? 'border-amber-400 text-amber-600 bg-amber-50/50'
-                                                        : 'border-border'
+                                                ? 'border-rose-400 text-rose-600 bg-rose-50/50'
+                                                : formData.expiryDate && new Date(formData.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+                                                    ? 'border-amber-400 text-amber-600 bg-amber-50/50'
+                                                    : 'border-border'
                                                 }`}
                                             value={formData.expiryDate ? (typeof formData.expiryDate === 'string' && formData.expiryDate.includes('T') ? formData.expiryDate.split('T')[0] : formData.expiryDate) : ''}
                                             onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}

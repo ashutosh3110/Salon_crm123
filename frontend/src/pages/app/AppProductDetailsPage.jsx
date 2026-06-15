@@ -61,7 +61,13 @@ export default function AppProductDetailsPage() {
     const navigate = useNavigate();
     const { addToCart, cart, updateQuantity, setIsCartOpen, removeFromCart } = useCart();
     const { isProductLiked, toggleProductLike } = useFavorites();
-    const { colors, isLight } = useCustomerTheme();
+    const { colors: themeColors, isLight } = useCustomerTheme();
+    const colors = useMemo(() => ({
+        ...themeColors,
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        accent: '#E7D06E'
+    }), [themeColors]);
     const { products: inventoryProducts, shopCategories } = useInventory();
     const { isInitializing } = useBusiness();
     
@@ -278,7 +284,7 @@ export default function AppProductDetailsPage() {
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap items-center gap-3 mb-4"
                         >
-                            <span className="px-3 py-1 bg-[#C8956C] text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
+                            <span style={{ backgroundColor: '#E7D06E', color: '#000000' }} className="px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
                                 {product.brand}
                             </span>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
@@ -311,7 +317,7 @@ export default function AppProductDetailsPage() {
                     <div className="flex items-end justify-between gap-4">
                         <div className="space-y-0.5">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Investment</p>
-                            <p className="text-4xl font-black text-[#C8956C] tracking-tighter italic">₹{product.price}</p>
+                            <p className="text-4xl font-black text-[#E7D06E] tracking-tighter italic">₹{product.price}</p>
                         </div>
                         <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-black/5 h-12 shadow-inner">
                             <button 
@@ -393,7 +399,7 @@ export default function AppProductDetailsPage() {
                                 {usage && <p className="leading-relaxed font-medium">{usage}</p>}
                                 {care && (
                                     <div className="mt-4 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-                                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#C8956C] mb-2 flex items-center gap-2">
+                                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#E7D06E] mb-2 flex items-center gap-2">
                                             <Sparkles size={12}/> Pro Tip
                                         </h5>
                                         <p className="text-[11px] font-medium opacity-80">{care}</p>
@@ -417,7 +423,7 @@ export default function AppProductDetailsPage() {
                                             </div>
                                             <p className="text-[12px] italic mb-3 font-medium opacity-80 leading-relaxed">"{rev.comment}"</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-5 h-5 rounded-full bg-[#C8956C]/20 flex items-center justify-center text-[8px] font-black text-[#C8956C]">
+                                                <div className="w-5 h-5 rounded-full bg-[#E7D06E]/20 flex items-center justify-center text-[8px] font-black text-[#E7D06E]">
                                                     {rev.customerName?.charAt(0)}
                                                 </div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">— {rev.customerName}</p>
@@ -429,7 +435,7 @@ export default function AppProductDetailsPage() {
                                 )}
                                 <button 
                                     onClick={() => setIsReviewModalOpen(true)}
-                                    className="w-full h-14 rounded-2xl border-2 border-dashed border-[#C8956C]/30 text-[#C8956C] text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                    className="w-full h-14 rounded-2xl border-2 border-dashed border-[#E7D06E]/30 text-[#E7D06E] text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
                                 >
                                     <MessageSquare size={16} /> Write a Review
                                 </button>
@@ -464,7 +470,7 @@ export default function AppProductDetailsPage() {
                                         <div>
                                             <h5 className="text-[11px] font-black uppercase mb-1">Manufacturer Details</h5>
                                             <p className="text-[10px] opacity-60 leading-relaxed">{vendorDetails}</p>
-                                            {origin && <p className="text-[9px] font-bold text-[#C8956C] mt-1 uppercase tracking-widest">Origin: {origin}</p>}
+                                            {origin && <p className="text-[9px] font-bold text-[#E7D06E] mt-1 uppercase tracking-widest">Origin: {origin}</p>}
                                         </div>
                                     </div>
                                 )}
@@ -484,9 +490,9 @@ export default function AppProductDetailsPage() {
                             }}
                             disabled={currentStock <= 0}
                             style={{
-                                background: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)') : 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
-                                color: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)') : '#FFFFFF',
-                                boxShadow: currentStock > 0 ? '0 20px 40px rgba(200,149,108,0.3)' : 'none'
+                                background: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)') : '#E7D06E',
+                                color: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)') : '#000000',
+                                boxShadow: currentStock > 0 ? '0 20px 40px rgba(231,208,110,0.3)' : 'none'
                             }}
                             className="w-full h-16 rounded-2xl flex items-center justify-center gap-4 shadow-2xl transition-all"
                         >
