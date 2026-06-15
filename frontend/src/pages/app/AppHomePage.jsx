@@ -1,14 +1,15 @@
 // Updated at 22:45 for stability
 import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight, ChevronDown, X, Navigation
 } from 'lucide-react';
 
 
@@ -413,6 +414,32 @@ export default function AppHomePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [activeOutletSlide, setActiveOutletSlide] = useState(0);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [locationSearchQuery, setLocationSearchQuery] = useState('');
+    const [globalLocations, setGlobalLocations] = useState([]);
+    const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+
+    useEffect(() => {
+        if (locationSearchQuery.length < 3) {
+            setGlobalLocations([]);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            setIsSearchingLocation(true);
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationSearchQuery)}&format=json&limit=5&addressdetails=1`, {
+                    headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+                });
+                const data = await res.json();
+                setGlobalLocations(data);
+            } catch (err) {
+                console.error('Error fetching locations:', err);
+            } finally {
+                setIsSearchingLocation(false);
+            }
+        }, 600);
+        return () => clearTimeout(timer);
+    }, [locationSearchQuery]);
 
     const activeOutletImages = useMemo(() => {
         if (!activeOutlet) return [];
@@ -700,29 +727,30 @@ export default function AppHomePage() {
                         justifyContent: 'space-between'
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '12px',
-                            background: isLight ? '#FFF' : '#242424',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: `1px solid ${colors.border}`
-                        }}>
-                            <MapPin size={18} style={{ color: colors.accent }} />
-                        </div>
-                        <div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Selection</p>
+                        <div onClick={() => setShowLocationModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+                            <div style={{
+                                width: '36px',
+                                height: '36px',
+                                borderRadius: '12px',
+                                background: isLight ? '#FFF' : '#242424',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                border: `1px solid ${colors.border}`
+                            }}>
+                                <MapPin size={18} style={{ color: colors.accent }} />
                             </div>
-                            <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                {activeOutlet?.name || 'Wapixo Salon'}
-                                <span style={{ fontSize: '12px' }}>📍</span>
-                            </h3>
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Selection</p>
+                                    <ChevronDown size={12} color={colors.textMuted} />
+                                </div>
+                                <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                    {activeOutlet?.name || 'Wapixo Salon'}
+                                    <span style={{ fontSize: '12px' }}>📍</span>
+                                </h3>
+                            </div>
                         </div>
-                    </div>
                 </div>
 
                 {/* ── SEARCH BAR ── */}
@@ -1486,6 +1514,183 @@ export default function AppHomePage() {
                 </div>
 
             </div>
+
+            {/* ── LOCATION SELECTION MODAL ── */}
+            {createPortal(
+                <AnimatePresence>
+                    {showLocationModal && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowLocationModal(false)}
+                                style={{
+                                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99998,
+                                    backdropFilter: 'blur(4px)'
+                                }}
+                            />
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                style={{
+                                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99999,
+                                    background: colors.card, borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
+                                    padding: '24px', paddingBottom: '32px', maxHeight: '80vh', overflowY: 'auto'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0 }}>Select Location</h3>
+                                    <button onClick={() => setShowLocationModal(false)} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', padding: 0 }}>
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition(
+                                                (pos) => {
+                                                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                                                    window.location.reload();
+                                                },
+                                                (err) => alert('Please enable location access in your browser settings to use this feature.')
+                                            );
+                                        } else {
+                                            alert('Geolocation is not supported by your browser.');
+                                        }
+                                    }}
+                                    style={{
+                                        width: '100%', padding: '16px', background: `${colors.accent}15`, border: `1px solid ${colors.accent}30`,
+                                        borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', marginBottom: '20px'
+                                    }}
+                                >
+                                    <Navigation size={20} color={colors.accent} />
+                                    <div style={{ textAlign: 'left' }}>
+                                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.accent }}>Use Current Location</p>
+                                        <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Find nearest salons automatically</p>
+                                    </div>
+                                </button>
+
+                                <p style={{ fontSize: '12px', fontWeight: 700, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Or select manually</p>
+                                
+                                <div style={{ 
+                                    display: 'flex', alignItems: 'center', gap: '10px', background: isLight ? '#f9f9fa' : '#242424', 
+                                    padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', border: `1px solid ${colors.border}`
+                                }}>
+                                    <Search size={16} color={colors.textMuted} />
+                                    <input 
+                                        type="text" 
+                                        placeholder="Search area, city or salon..." 
+                                        value={locationSearchQuery}
+                                        onChange={(e) => setLocationSearchQuery(e.target.value)}
+                                        style={{ 
+                                            background: 'transparent', border: 'none', outline: 'none', 
+                                            width: '100%', fontSize: '14px', color: colors.text 
+                                        }} 
+                                    />
+                                </div>
+                                
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    
+                                    {/* Global Locations from API */}
+                                    {locationSearchQuery.length >= 3 && (
+                                        <>
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '8px 0 0 0' }}>Global Locations</p>
+                                            {isSearchingLocation ? (
+                                                <div style={{ padding: '16px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>Fetching locations...</div>
+                                            ) : globalLocations.length > 0 ? (
+                                                globalLocations.map((loc, idx) => (
+                                                    <div
+                                                        key={`loc-${idx}`}
+                                                        onClick={() => {
+                                                            const coords = { lat: parseFloat(loc.lat), lng: parseFloat(loc.lon) };
+                                                            localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                                                            window.location.reload();
+                                                        }}
+                                                        style={{
+                                                            padding: '14px', border: `1px solid ${colors.border}`,
+                                                            borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                                                            cursor: 'pointer', background: 'transparent', transition: 'all 0.2s ease'
+                                                        }}
+                                                    >
+                                                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${colors.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <MapPin size={16} color={colors.accent} />
+                                                        </div>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{loc.name}</p>
+                                                            <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{loc.display_name.split(',').slice(1).join(',').trim()}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ padding: '16px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No global locations found</div>
+                                            )}
+                                            
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '12px 0 0 0' }}>Available Salons</p>
+                                        </>
+                                    )}
+
+                                    {/* Available Salons */}
+                                    {(outlets || [])
+                                        .filter(outlet => {
+                                            if (!locationSearchQuery.trim()) return true;
+                                            const q = locationSearchQuery.toLowerCase();
+                                            return outlet.name?.toLowerCase().includes(q) || 
+                                                   outlet.address?.city?.toLowerCase().includes(q) || 
+                                                   outlet.address?.street?.toLowerCase().includes(q);
+                                        })
+                                        .map(outlet => {
+                                        const isSelected = activeOutletId === (outlet._id || outlet.id);
+                                        return (
+                                            <div
+                                                key={outlet._id || outlet.id}
+                                                onClick={() => {
+                                                    setActiveOutletId(outlet._id || outlet.id);
+                                                    setShowLocationModal(false);
+                                                }}
+                                                style={{
+                                                    padding: '16px', border: `1px solid ${isSelected ? colors.accent : colors.border}`,
+                                                    borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    cursor: 'pointer', background: isSelected ? `${colors.accent}0a` : 'transparent',
+                                                    transition: 'all 0.2s ease'
+                                                }}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: colors.bg, border: `1px solid ${colors.border}` }}>
+                                                        <img src={getImageUrl(outlet.image || outlet.images?.[0]) || fallbackImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }} />
+                                                    </div>
+                                                    <div>
+                                                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.text }}>{outlet.name}</p>
+                                                        <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>{outlet.address?.city || outlet.address?.street || 'Our Location'}</p>
+                                                    </div>
+                                                </div>
+                                                {isSelected && <Check size={18} color={colors.accent} />}
+                                            </div>
+                                        );
+                                    })}
+                                    
+                                    {(outlets || []).filter(outlet => {
+                                        if (!locationSearchQuery.trim()) return true;
+                                        const q = locationSearchQuery.toLowerCase();
+                                        return outlet.name?.toLowerCase().includes(q) || 
+                                               outlet.address?.city?.toLowerCase().includes(q) || 
+                                               outlet.address?.street?.toLowerCase().includes(q);
+                                    }).length === 0 && (
+                                        <div style={{ padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '13px' }}>
+                                            No salons found matching "{locationSearchQuery}"
+                                        </div>
+                                    )}
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 }
