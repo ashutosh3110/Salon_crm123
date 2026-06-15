@@ -21,7 +21,8 @@ import {
     ArrowRight,
     Eye,
     Calendar,
-    ChevronDown
+    ChevronDown,
+    Key
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
@@ -81,6 +82,7 @@ export default function StaffPage() {
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [viewingStaff, setViewingStaff] = useState(null);
+    const [passwordModal, setPasswordModal] = useState({ show: false, staffId: null, newPassword: '' });
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -119,7 +121,7 @@ export default function StaffPage() {
         if (!form.phone) newErrors.phone = 'Phone is required';
         else if (form.phone.length !== 10) newErrors.phone = 'Phone must be 10 digits';
 
-        if (!form.roleId) newErrors.roleId = 'Role is required';
+        if (!form.role) newErrors.role = 'Role is required';
         if (!form.outletId) newErrors.outletId = 'Salon assignment is required';
 
         // Image requirement for new members
@@ -203,7 +205,7 @@ export default function StaffPage() {
 
     // Disable body scroll when modal is open
     useEffect(() => {
-        if (showModal || !!viewingStaff) {
+        if (showModal || !!viewingStaff || passwordModal.show) {
             // Lock body and html
             document.body.style.setProperty('overflow', 'hidden', 'important');
             document.documentElement.style.setProperty('overflow', 'hidden', 'important');
@@ -242,7 +244,7 @@ export default function StaffPage() {
                 el.removeAttribute('data-scroll-locked');
             });
         };
-    }, [showModal, viewingStaff]);
+    }, [showModal, viewingStaff, passwordModal.show]);
 
     const [avatarFile, setAvatarFile] = useState(null);
 
@@ -298,6 +300,7 @@ export default function StaffPage() {
             Object.keys(form).forEach(key => {
                 if (key === 'avatar') return;
                 if (['pan', 'salary', 'bankName', 'accountNo', 'ifsc'].includes(key)) return;
+                if (key === 'roleId' && !form[key]) return;
                 if (key === 'availability') {
                     formData.append(key, JSON.stringify(form[key]));
                 } else if (key === 'stylistSpecializations') {
@@ -369,6 +372,21 @@ export default function StaffPage() {
             toast.success('Invitation resent successfully.');
         } catch (err) {
             toast.error('Failed to resend invite.');
+        }
+    };
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+        if (!passwordModal.newPassword || passwordModal.newPassword.length < 6) {
+            toast.error("Password must be at least 6 characters long");
+            return;
+        }
+        try {
+            await updateStaff(passwordModal.staffId, { password: passwordModal.newPassword });
+            toast.success("Password updated successfully");
+            setPasswordModal({ show: false, staffId: null, newPassword: '' });
+        } catch (err) {
+            toast.error("Failed to update password");
         }
     };
 
@@ -482,9 +500,9 @@ export default function StaffPage() {
                                 className="pl-5 pr-10 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-[11px] font-black tracking-widest outline-none focus:border-slate-300 dark:focus:border-slate-700 transition-all appearance-none w-44 max-w-[180px] text-slate-700 dark:text-slate-300 shadow-sm truncate"
                             >
                                 <option value="All Roles">All Roles</option>
-                                {roles.map(r => (
-                                    <option key={r._id} value={r.name.toUpperCase()}>
-                                        {r.name.length > 18 ? r.name.slice(0, 15) + '...' : r.name}
+                                {['ADMIN', 'MANAGER', 'RECEPTIONIST', 'STYLIST', 'ACCOUNTANT'].map(role => (
+                                    <option key={role} value={role}>
+                                        {role}
                                     </option>
                                 ))}
                             </select>
@@ -584,6 +602,13 @@ export default function StaffPage() {
                                             <td className="px-6 py-5">
                                                 <div className="flex items-center justify-center gap-2">
                                                     <button
+                                                        onClick={() => setPasswordModal({ show: true, staffId: s._id, newPassword: '' })}
+                                                        title="Change Password"
+                                                        className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-amber-500 dark:text-slate-400 dark:hover:text-amber-400 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
+                                                    >
+                                                        <Key className="w-4 h-4" />
+                                                    </button>
+                                                    <button
                                                         onClick={() => setViewingStaff(s)}
                                                         className="p-2 border border-slate-200 dark:border-slate-700/80 rounded-[12px] text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800 shadow-sm"
                                                     >
@@ -642,6 +667,54 @@ export default function StaffPage() {
                     </div>
                 </div>
             </div>
+
+            {/* Password Change Modal */}
+            {passwordModal.show && createPortal(
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-[#0f172a]/60 backdrop-blur-sm transition-all overflow-hidden" onClick={() => setPasswordModal({ show: false, staffId: null, newPassword: '' })}>
+                    <form
+                        onSubmit={handleChangePassword}
+                        className="bg-white dark:bg-[#0f172a] w-full max-w-sm shadow-2xl relative border border-border flex flex-col my-auto rounded-xl z-10 p-6"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-center gap-4 border-b border-border pb-4 mb-4">
+                            <Key className="w-6 h-6 staff-modal-header-icon shrink-0" />
+                            <div className="text-left">
+                                <h2 className="text-lg font-black text-text uppercase italic font-mono leading-none">
+                                    Change Password
+                                </h2>
+                                <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.3em] mt-1">Staff Security Access</p>
+                            </div>
+                            <button type="button" onClick={() => setPasswordModal({ show: false, staffId: null, newPassword: '' })} className="ml-auto p-1 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                <XCircle className="w-5 h-5 staff-modal-close-icon" />
+                            </button>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="space-y-1 text-left">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">New Password <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
+                                <input
+                                    type="password"
+                                    required
+                                    autoFocus
+                                    value={passwordModal.newPassword}
+                                    onChange={(e) => setPasswordModal(prev => ({ ...prev, newPassword: e.target.value }))}
+                                    className="w-full px-3 py-2 bg-surface-alt border border-border text-[11px] font-black outline-none focus:border-text font-mono"
+                                    placeholder="ENTER NEW PASSWORD"
+                                />
+                            </div>
+                        </div>
+                        <div className="mt-6">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-[#cca839] hover:bg-[#b59533] text-white py-3 px-4 text-[11px] font-black uppercase tracking-widest transition-all rounded-xl shadow-sm"
+                            >
+                                {loading ? 'UPDATING...' : 'UPDATE PASSWORD'}
+                            </button>
+                        </div>
+                    </form>
+                </div>,
+                document.body
+            )}
 
             {/* Shift Modal - High Density Refinement */}
             {showModal && createPortal(
@@ -787,28 +860,26 @@ export default function StaffPage() {
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Profession/Role <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
                                     <select
-                                        value={form.roleId}
+                                        value={form.role || ''}
                                         onChange={(e) => {
-                                            const rId = e.target.value;
-                                            const selectedRole = roles.find(r => r._id === rId);
-                                            const roleName = selectedRole ? selectedRole.name : '';
-
-                                            const updates = { role: roleName, roleId: rId };
+                                            const roleName = e.target.value;
+                                            const selectedRole = roles.find(r => r.name.toLowerCase() === roleName);
+                                            const updates = { role: roleName, roleId: selectedRole ? selectedRole._id : null };
                                             const isStylistRole = ['stylist'].includes(roleName.toLowerCase());
                                             if (isStylistRole && (!form.availability || !form.availability.days)) {
                                                 updates.availability = JSON.parse(JSON.stringify(DEFAULT_AVAILABILITY));
                                             }
                                             setForm({ ...form, ...updates });
-                                            if (errors.roleId) setErrors(prev => ({ ...prev, roleId: null }));
+                                            if (errors.role) setErrors(prev => ({ ...prev, role: null }));
                                         }}
-                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.roleId ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono uppercase`}
+                                        className={`w-full px-3 py-2 bg-surface-alt border ${errors.role ? 'border-rose-500' : 'border-border'} text-[10px] font-black outline-none focus:border-text font-mono uppercase`}
                                     >
                                         <option value="">Select Role</option>
                                         {roles.map(r => (
-                                            <option key={r._id} value={r._id}>{r.name.toUpperCase()}</option>
+                                            <option key={r._id} value={r.name.toLowerCase()}>{r.name.toUpperCase()}</option>
                                         ))}
                                     </select>
-                                    {errors.roleId && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.roleId}</p>}
+                                    {errors.role && <p className="text-[8px] font-bold text-rose-500 mt-1 uppercase">{errors.role}</p>}
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-[9px] font-black text-text-muted uppercase tracking-widest font-mono">Assign to Salon <span className="text-rose-500" style={{ color: 'red' }}>*</span></label>
@@ -1440,3 +1511,5 @@ function SlotInputGroup({ day, slots, onChange }) {
         </div>
     );
 }
+
+// Password Modal Markup (appended inside the main wrapper)

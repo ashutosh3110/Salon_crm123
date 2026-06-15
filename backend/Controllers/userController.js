@@ -204,6 +204,11 @@ exports.updateUser = async (req, res) => {
             try { req.body.stylistSpecializations = JSON.parse(req.body.stylistSpecializations); } catch (e) { }
         }
 
+        if (req.body.password) {
+            const bcrypt = require('bcryptjs');
+            req.body.password = await bcrypt.hash(req.body.password, 10);
+        }
+
         // Handle uploaded avatar
         if (req.file) {
             req.body.avatar = req.file.path;

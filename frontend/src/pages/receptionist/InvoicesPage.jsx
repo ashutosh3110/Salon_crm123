@@ -25,6 +25,7 @@ import {
 } from '@react-pdf/renderer';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 // Register Fonts
 Font.register({
@@ -149,6 +150,7 @@ const BulkInvoiceListPDF = ({ invoices, stats }) => (
 );
 
 export default function InvoicesPage() {
+    const { activeOutletId } = useBusiness();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
     const [currentPage, setCurrentPage] = useState(1);
@@ -186,7 +188,8 @@ export default function InvoicesPage() {
                 page: currentPage,
                 limit: 10,
                 search: searchQuery || undefined,
-                paymentStatus: statusFilter !== 'All' ? statusFilter.toLowerCase() : undefined
+                paymentStatus: statusFilter !== 'All' ? statusFilter.toLowerCase() : undefined,
+                outletId: activeOutletId || undefined
             };
             const invoicesRes = await mockApi.get('/invoices', { params });
             setInvoices(invoicesRes.data.results || []);
@@ -199,7 +202,7 @@ export default function InvoicesPage() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [currentPage, searchQuery, statusFilter]);
+    }, [currentPage, searchQuery, statusFilter, activeOutletId]);
 
     useEffect(() => {
         fetchData();

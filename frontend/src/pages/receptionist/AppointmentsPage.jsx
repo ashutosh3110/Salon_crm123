@@ -27,11 +27,13 @@ import {
     Banknote
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import mockApi from '../../services/mock/mockApi';
 
 export default function AppointmentsPage() {
     const { user } = useAuth();
+    const { activeOutletId } = useBusiness();
     const navigate = useNavigate();
 
     // Live States
@@ -65,7 +67,7 @@ export default function AppointmentsPage() {
         try {
             const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
             const [bookingsRes, servicesRes, staffRes] = await Promise.all([
-                mockApi.get(`/bookings?date=${dateStr}&limit=100`),
+                mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${activeOutletId || ''}`),
                 mockApi.get('/services?limit=100'),
                 mockApi.get('/users?role=stylist')
             ]);
@@ -113,7 +115,7 @@ export default function AppointmentsPage() {
 
     useEffect(() => {
         fetchData();
-    }, [currentDate]);
+    }, [currentDate, activeOutletId]);
 
     useEffect(() => {
         if (isBookingOpen || isDetailsOpen) {
@@ -194,7 +196,7 @@ export default function AppointmentsPage() {
                 phone: newBooking.phone,
                 serviceId: newBooking.serviceId,
                 staffId: newBooking.staffId,
-                outletId: user?.outletId,
+                outletId: activeOutletId || user?.outletId,
                 appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
                 time: newBooking.time,
                 status: 'upcoming',
