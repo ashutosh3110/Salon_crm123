@@ -1085,11 +1085,16 @@ export default function AppHomePage() {
                     </div>
                 </div>
 
-                {/* ── 5. SERVICES (Filtered list) ── */}
+                {/* ── TRENDING SERVICES ── */}
                 <div style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                        <Scissors size={20} color={colors.accent} />
-                        <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Services</span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Trending Services</h3>
+                        <span 
+                            onClick={() => navigate('/app/services')} 
+                            style={{ fontSize: '13px', fontWeight: 800, color: '#E7D06E', cursor: 'pointer', hover: 'opacity-85' }}
+                        >
+                            See all
+                        </span>
                     </div>
                     <div
                         className="app-scroll no-scrollbar"
@@ -1101,10 +1106,10 @@ export default function AppHomePage() {
                             const filtered = sourceServices.filter(s => {
                                 const isActive = s.status === 'active';
                                 const matchesOutlet = !activeOutletId || 
-                                                    (s.outletIds && s.outletIds.includes(activeOutletId)) || 
-                                                    (s.outletId === activeOutletId) ||
-                                                    (s.outletId === 'all') ||
-                                                    (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
+                                                     (s.outletIds && s.outletIds.includes(activeOutletId)) || 
+                                                     (s.outletId === activeOutletId) ||
+                                                     (s.outletId === 'all') ||
+                                                     (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
                                 return isActive && matchesOutlet;
                             });
                             if (filtered.length === 0) {
@@ -1113,15 +1118,45 @@ export default function AppHomePage() {
                                 );
                             }
                             return filtered.map(service => (
-                                <div key={service._id || service.id} style={{ flexShrink: 0, width: '200px', scrollSnapAlign: 'start' }}>
-                                    <ServiceCard
-                                        service={service}
-                                        onBook={(id) => navigate(`/app/booking?serviceId=${id}`)}
-                                        onClick={(id) => navigate(`/app/service/${id}`)}
-                                        colors={colors}
-                                        isLight={isLight}
-                                        showPrice={activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false}
-                                    />
+                                <div 
+                                    key={service._id || service.id} 
+                                    onClick={() => navigate(`/app/service/${service._id || service.id}`)}
+                                    style={{ 
+                                        flexShrink: 0, 
+                                        width: '110px', 
+                                        scrollSnapAlign: 'start',
+                                        background: '#F5F6F8',
+                                        borderRadius: '20px',
+                                        padding: '6px',
+                                        border: '1px solid rgba(0,0,0,0.02)',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        cursor: 'pointer'
+                                    }}
+                                    className="active:scale-95 transition-transform duration-200"
+                                >
+                                    <div style={{ width: '100%', aspectRatio: '1/1', borderRadius: '15px', overflow: 'hidden', backgroundColor: '#e2e8f0' }}>
+                                        <img
+                                            src={getImageUrl(service.image) || fallbackImage}
+                                            alt={service.name}
+                                            loading="lazy"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
+                                        />
+                                    </div>
+                                    <div 
+                                        style={{ 
+                                            width: '100%', 
+                                            textAlign: 'center', 
+                                            padding: '4px 2px', 
+                                            marginTop: '4px'
+                                        }}
+                                    >
+                                        <p style={{ fontSize: '11px', fontWeight: 700, color: '#334155', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {service.name}
+                                        </p>
+                                    </div>
                                 </div>
                             ));
                         })()}
