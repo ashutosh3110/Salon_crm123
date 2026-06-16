@@ -26,6 +26,7 @@ import {
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 // Register Fonts
 Font.register({
@@ -150,6 +151,7 @@ const BulkInvoiceListPDF = ({ invoices, stats }) => (
 );
 
 export default function InvoicesPage() {
+    const { user } = useAuth();
     const { activeOutletId } = useBusiness();
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('All');
@@ -184,12 +186,16 @@ export default function InvoicesPage() {
             });
 
             // 2. Fetch Invoices with filters
+            const isReceptionistMode = user?.role === 'receptionist';
+            const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+            const outletToFetch = isReceptionistMode ? userOutletId : (activeOutletId || undefined);
+
             const params = {
                 page: currentPage,
                 limit: 10,
                 search: searchQuery || undefined,
                 paymentStatus: statusFilter !== 'All' ? statusFilter.toLowerCase() : undefined,
-                outletId: activeOutletId || undefined
+                outletId: outletToFetch
             };
             const invoicesRes = await mockApi.get('/invoices', { params });
             setInvoices(invoicesRes.data.results || []);
@@ -202,7 +208,7 @@ export default function InvoicesPage() {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [currentPage, searchQuery, statusFilter, activeOutletId]);
+    }, [currentPage, searchQuery, statusFilter, activeOutletId, user?.role, user?.outletId, user?.outlet]);
 
     useEffect(() => {
         fetchData();

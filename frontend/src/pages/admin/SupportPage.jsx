@@ -114,7 +114,16 @@ export default function SupportPage() {
         try {
             setLoading(true);
             const endpoint = activeTab === 'customer' ? '/support/admin/tickets' : '/tickets';
-            const response = await api.get(endpoint);
+            
+            let params = {};
+            if (['receptionist', 'stylist', 'manager'].includes(userRole)) {
+                const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+                if (userOutletId) {
+                    params.outletId = userOutletId;
+                }
+            }
+
+            const response = await api.get(endpoint, { params });
             if (response.data.success) {
                 setTickets(response.data.data);
             }
@@ -148,7 +157,14 @@ export default function SupportPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/tickets', form);
+            const payload = { ...form };
+            if (['receptionist', 'stylist', 'manager'].includes(userRole)) {
+                const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+                if (userOutletId) {
+                    payload.outletId = userOutletId;
+                }
+            }
+            const response = await api.post('/tickets', payload);
             if (response.data.success) {
                 setTickets([response.data.data, ...tickets]);
                 setShowModal(false);

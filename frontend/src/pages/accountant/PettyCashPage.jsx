@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     Wallet,
     Plus,
@@ -21,6 +21,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePettyCash } from '../../contexts/PettyCashContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 
 export default function PettyCashPage() {
     const {
@@ -41,6 +42,15 @@ export default function PettyCashPage() {
         closeDay,
     } = usePettyCash();
     const { user } = useAuth();
+    const { outlets, activeOutletId } = useBusiness();
+
+    const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+    const isReceptionist = user?.role === 'receptionist';
+    const [selectedOutlet, setSelectedOutlet] = useState(isReceptionist ? (user?.outletId || user?.outlet?._id || user?.outlet || '') : (activeOutletId || ''));
+
+    useEffect(() => {
+        refresh({ date: selectedDate, outletId: selectedOutlet });
+    }, [selectedDate, selectedOutlet, refresh]);
 
     const [activeTab, setActiveTab] = useState('Transactions');
     const [showTopUp, setShowTopUp] = useState(false);
@@ -97,7 +107,27 @@ export default function PettyCashPage() {
                     <h1 className="text-2xl font-black text-text tracking-tight uppercase">Petty Cash Terminal</h1>
                     <p className="text-sm text-text-muted font-medium italic">Operational Small-Item Finance & Reconciliation</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 bg-surface border border-border/40 p-1 rounded-xl">
+                        <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            className="px-3 py-1.5 bg-background border border-border/40 rounded-lg text-[10px] font-black uppercase outline-none focus:border-primary/50 text-text"
+                        />
+                        {!isReceptionist && (
+                            <select
+                                value={selectedOutlet}
+                                onChange={(e) => setSelectedOutlet(e.target.value)}
+                                className="px-3 py-1.5 bg-background border border-border/40 rounded-lg text-[10px] font-black uppercase outline-none focus:border-primary/50 text-text"
+                            >
+                                <option value="">Global (All Outlets)</option>
+                                {outlets.map((o) => (
+                                    <option key={o._id} value={o._id}>{o.name}</option>
+                                ))}
+                            </select>
+                        )}
+                    </div>
                     {!isClosedToday && isOpenedToday && (
                         <>
                             <button

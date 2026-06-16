@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useAuth } from '../../contexts/AuthContext';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import toast from 'react-hot-toast';
 
@@ -90,9 +91,11 @@ function getAvatarStyles(name) {
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function ReceptionistLeadsPage() {
+    const { user } = useAuth();
     const { activeOutletId, outlets: contextOutlets, services: contextServices, fetchOutlets, fetchServices } = useBusiness();
     const outlets = contextOutlets || [];
     const services = contextServices || [];
+    const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId;
 
     const [inquiries, setInquiries] = useState([]);
     const [customers, setCustomers] = useState([]);
@@ -110,9 +113,15 @@ export default function ReceptionistLeadsPage() {
         customerId: '',
         name: '', phone: '', email: '', source: 'Walk-in',
         serviceInterest: '', notes: '', followUpDays: 0,
-        outletId: '', interestedService: '',
+        outletId: userOutletId || '', interestedService: '',
         status: 'new'
     });
+
+    useEffect(() => {
+        if (!form.outletId && userOutletId) {
+            setForm(prev => ({ ...prev, outletId: userOutletId }));
+        }
+    }, [userOutletId]);
 
     useEffect(() => {
         const observer = new MutationObserver(() => {
@@ -176,10 +185,11 @@ export default function ReceptionistLeadsPage() {
             const matchSource = filterSource === 'All' || i.source === filterSource;
             const matchStatus = filterStatus === 'All' || i.status === filterStatus;
             const inqOutletId = i.outletId?._id || i.outletId;
-            const matchOutlet = activeOutletId ? (inqOutletId === activeOutletId) : true;
+            const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId;
+            const matchOutlet = userOutletId ? (inqOutletId === userOutletId) : true;
             return matchSearch && matchSource && matchStatus && matchOutlet;
         });
-    }, [inquiries, search, filterSource, filterStatus, activeOutletId]);
+    }, [inquiries, search, filterSource, filterStatus, activeOutletId, user]);
 
     const filteredServices = useMemo(() => {
         if (!form.outletId) return [];
@@ -296,7 +306,7 @@ export default function ReceptionistLeadsPage() {
             serviceInterest: '',
             notes: '',
             followUpDays: 0,
-            outletId: activeOutletId || '',
+            outletId: userOutletId || '',
             interestedService: '',
             status: 'new'
         });
@@ -807,19 +817,7 @@ export default function ReceptionistLeadsPage() {
                                 </select>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Outlet *</label>
-                                    <select
-                                        value={form.outletId}
-                                        onChange={(e) => setForm({ ...form, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
-                                        required
-                                        className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white uppercase"
-                                    >
-                                        <option value="">Select Outlet</option>
-                                        {outlets.map(o => <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>)}
-                                    </select>
-                                </div>
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[9px] font-black text-slate-550 dark:text-slate-400 uppercase tracking-widest block font-sans">Service Interest *</label>
                                     <select
@@ -829,7 +827,7 @@ export default function ReceptionistLeadsPage() {
                                         disabled={!form.outletId}
                                         className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-xs font-bold tracking-wide focus:border-[#B4912B] focus:ring-4 focus:ring-[#B4912B]/10 outline-none transition-all rounded-xl text-slate-900 dark:text-white disabled:opacity-50 uppercase"
                                     >
-                                        <option value="">{!form.outletId ? 'Select Outlet First' : 'Select Service'}</option>
+                                        <option value="">{!form.outletId ? 'Loading Outlet...' : 'Select Service'}</option>
                                         {filteredServices.map(s => <option key={s._id || s.id} value={s._id || s.id}>{s.name} (₹{s.price})</option>)}
                                     </select>
                                 </div>

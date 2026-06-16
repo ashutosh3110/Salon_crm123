@@ -111,23 +111,45 @@ export const mockGet = async (url) => {
         };
     }
 
-    if (url === '/finance/petty-cash/summary') {
-        const sum = getLocal('pet_summary', {
+    if (url.startsWith('/finance/petty-cash/summary')) {
+        const queryParams = new URLSearchParams(url.split('?')[1] || '');
+        const date = queryParams.get('date');
+        const outletId = queryParams.get('outletId');
+        
+        let sum = getLocal(`pet_summary_${outletId || 'default'}`, {
             balance: 5000,
             isOpenedToday: false,
             isClosedToday: false,
-            businessDate: new Date().toISOString().split('T')[0],
+            businessDate: date || new Date().toISOString().split('T')[0],
             categories: ['Staff Refreshment', 'Supplies', 'Transport', 'Misc'],
             denominations: [500, 200, 100, 50, 20, 10, 5, 2, 1]
         });
+        if (date && date !== new Date().toISOString().split('T')[0]) {
+            // For past dates, return a dummy summary
+            sum = { ...sum, balance: 2500, isOpenedToday: true, isClosedToday: true, businessDate: date };
+        }
         return { data: { success: true, data: sum } };
     }
     if (url.startsWith('/finance/petty-cash/entries')) {
-        const entries = getLocal('pet_entries', []);
+        const queryParams = new URLSearchParams(url.split('?')[1] || '');
+        const date = queryParams.get('date');
+        const outletId = queryParams.get('outletId');
+        
+        let entries = getLocal('pet_entries', []);
+        if (date) entries = entries.filter(e => (e.date || e.timestamp?.split('T')[0]) === date);
+        if (outletId) entries = entries.filter(e => e.outletId === outletId || !e.outletId);
+        
         return { data: { success: true, data: { results: entries } } };
     }
     if (url.startsWith('/finance/petty-cash/closings')) {
-        const closings = getLocal('pet_closings', []);
+        const queryParams = new URLSearchParams(url.split('?')[1] || '');
+        const date = queryParams.get('date');
+        const outletId = queryParams.get('outletId');
+        
+        let closings = getLocal('pet_closings', []);
+        if (date) closings = closings.filter(c => (c.date || c.timestamp?.split('T')[0]) === date);
+        if (outletId) closings = closings.filter(c => c.outletId === outletId || !c.outletId);
+        
         return { data: { success: true, data: { results: closings } } };
     }
     
@@ -455,11 +477,18 @@ export const mockGet = async (url) => {
         ]);
         return { data: { success: true, support_faqs: faqs, data: { results: [] } } };
     }
-    if (url === '/support/tickets') {
-        const tickets = getLocal('sup_tickets', []);
+    if (url === '/support/tickets' || url.startsWith('/support/admin/tickets') || url === '/tickets') {
+        let tickets = getLocal('sup_tickets', [
+            { _id: 'tk_1', subject: 'System downtime', category: 'Technical Issue', status: 'pending', createdAt: new Date().toISOString(), outletId: '1' }
+        ]);
+        const urlParams = new URLSearchParams(url.split('?')[1] || '');
+        const outletId = urlParams.get('outletId');
+        if (outletId) {
+             tickets = tickets.filter(t => String(t.outletId) === String(outletId) || !t.outletId);
+        }
         return { data: { success: true, data: tickets } };
     }
-    if (url.startsWith('/support/tickets/')) {
+    if (url.startsWith('/support/tickets/') || url.startsWith('/tickets/')) {
         const id = url.split('/').pop();
         const tickets = getLocal('sup_tickets', []);
         const t = tickets.find(x => x._id === id || x.id === id);
@@ -934,13 +963,22 @@ export const mockGet = async (url) => {
                 success: true,
                 data: {
                     stats: [
-                        { label: "Today's Appointments", value: 12, trend: "+2", positive: true, icon: 'Calendar' },
-                        { label: "Pending Check-ins", value: 4, trend: "-1", positive: false, icon: 'Clock' },
-                        { label: "Completed Today", value: 8, trend: "+12%", positive: true, icon: 'CheckCircle2' },
-                        { label: "New Registrations", value: 3, trend: "+1", positive: true, icon: 'UserPlus' }
+                        { label: "Total Appointments", value: 12, trend: "+2", positive: true, icon: 'Calendar' },
+                        { label: "Total Orders", value: 4, trend: "-1", positive: false, icon: 'ShoppingCart' },
+                        { label: "New Customers", value: 8, trend: "+12%", positive: true, icon: 'UserPlus' },
+                        { label: "Total Invoices", value: 3, trend: "+1", positive: true, icon: 'FileText' }
                     ],
                     performance: { revenue: 24500, avgTicket: 1850, targetFulfillment: 65 },
-                    recentActivity: recentActivity
+                    recentActivity: recentActivity,
+                    hourlyFootfall: [
+                        { time: '10 AM', walkins: 2, bookings: 4 },
+                        { time: '11 AM', walkins: 3, bookings: 5 },
+                        { time: '12 PM', walkins: 5, bookings: 3 },
+                        { time: '1 PM', walkins: 1, bookings: 6 },
+                        { time: '2 PM', walkins: 4, bookings: 2 },
+                        { time: '3 PM', walkins: 2, bookings: 5 },
+                        { time: '4 PM', walkins: 6, bookings: 4 }
+                    ]
                 }
             }
         };
@@ -1411,14 +1449,17 @@ export const mockPost = async (url, data) => {
         return { data: { success: true } };
     }
     
-    if (url === '/support/tickets') {
+    if (url === '/support/tickets' || url === '/tickets') {
         const tickets = getLocal('sup_tickets', []);
         const newT = { ...data, _id: `tk_${Date.now()}`, createdAt: new Date().toISOString(), status: 'open', responses: [] };
+        if (data.outletId) {
+            newT.outletId = data.outletId;
+        }
         saveLocal('sup_tickets', [newT, ...tickets]);
         return { data: { success: true, data: newT } };
     }
-    if (url.startsWith('/support/tickets/') && url.endsWith('/responses')) {
-        const id = url.split('/')[3];
+    if ((url.startsWith('/support/tickets/') || url.startsWith('/tickets/')) && url.endsWith('/responses')) {
+        const id = url.split('/').length > 3 ? url.split('/')[url.split('/').length - 2] : url.split('/')[2];
         const tickets = getLocal('sup_tickets', []);
         const t = tickets.find(x => x._id === id || x.id === id);
         if (t) {
@@ -1597,8 +1638,12 @@ export const mockPatch = async (url, data) => {
         saveLocal('fin_suppliers', updated);
         return { data: { success: true, data: { ...data } } };
     }
-    if (url.startsWith('/support/tickets/')) {
-        const id = url.split('/').pop();
+    if (url.startsWith('/support/tickets/') || url.startsWith('/tickets/')) {
+        let id = url.split('/').pop();
+        if (id === 'status' || id === 'escalate') {
+            const parts = url.split('/');
+            id = parts[parts.length - 2];
+        }
         const tickets = getLocal('sup_tickets', []);
         const updated = tickets.map(t => (t._id === id || t.id === id) ? { ...t, ...data } : t);
         saveLocal('sup_tickets', updated);
