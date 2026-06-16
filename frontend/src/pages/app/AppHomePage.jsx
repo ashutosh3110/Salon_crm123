@@ -849,11 +849,11 @@ export default function AppHomePage() {
                                         src={getImageUrl(filteredPromos[currentPromoIndex].img || filteredPromos[currentPromoIndex].image)}
                                         alt="Promo"
                                         loading="lazy"
-                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35, borderRadius: '24px' }}
+                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.8, borderRadius: '24px' }}
                                         onError={(e) => { e.target.onerror = null; e.target.style.display = 'none'; }}
                                     />
                                 ) : null}
-                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
+                                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%)', borderRadius: '24px' }} />
                                 <div
                                     style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
                                     onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}

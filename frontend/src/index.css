@@ -71,14 +71,20 @@
 @layer base {
 
   html,
-  body {
-    background-color: #FDF9F8;
-    min-height: 100%;
-    overflow-x: hidden;
-    width: 100%;
+  body,
+  #root {
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+    width: 100% !important;
     margin: 0;
     padding: 0;
     position: relative;
+  }
+
+  html,
+  body {
+    background-color: #FDF9F8;
+    min-height: 100%;
     touch-action: manipulation;
     transition: background-color 0.3s ease;
     /* Disable double-tap zoom potential as well */
