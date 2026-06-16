@@ -34,6 +34,7 @@ export default function ReceptionistLayout() {
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     background-color: #F8F9FB !important;
                     color: #1F2937 !important;
+                    --icon-color: #475569 !important;
                 }
                 
                 .admin-panel *,
@@ -152,6 +153,12 @@ export default function ReceptionistLayout() {
                     height: 40px !important;
                     max-height: 40px !important;
                     box-sizing: border-box !important;
+                }
+                .admin-panel table th.text-center {
+                    text-align: center !important;
+                }
+                .admin-panel table th.text-right {
+                    text-align: right !important;
                 }
                 .admin-panel table td {
                     vertical-align: middle !important;
@@ -425,6 +432,7 @@ export default function ReceptionistLayout() {
                     --primary-foreground: #ffffff !important;
                     background-color: #0F172A !important;
                     color: #e2e8f0 !important;
+                    --icon-color: #cbd5e1 !important;
                 }
 
                 .dark .admin-panel,

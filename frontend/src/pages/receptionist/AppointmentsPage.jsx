@@ -146,12 +146,30 @@ export default function AppointmentsPage() {
         };
     }, [isBookingOpen, isDetailsOpen]);
 
-    const filteredAppointments = appointments.filter(apt =>
-        apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        apt.phone?.replace(/\D/g, '').includes(searchQuery.replace(/\D/g, ''))
-    );
+    const filteredAppointments = useMemo(() => {
+        return appointments.filter(apt => {
+            const cleanQuery = searchQuery.replace(/\D/g, '');
+            return searchQuery === '' ||
+                apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (cleanQuery !== '' && apt.phone?.replace(/\D/g, '').includes(cleanQuery));
+        });
+    }, [appointments, searchQuery]);
+
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order => {
+            const clientName = order.clientId?.name || 'Walk-in';
+            const phone = order.clientId?.phone || '';
+            const orderId = order.invoiceNumber || order._id || '';
+            
+            const cleanQuery = searchQuery.replace(/\D/g, '');
+            return searchQuery === '' ||
+                clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                (cleanQuery !== '' && phone.replace(/\D/g, '').includes(cleanQuery));
+        });
+    }, [orders, searchQuery]);
 
     const handleBill = (apt) => {
         navigate('/pos', {
@@ -287,7 +305,7 @@ export default function AppointmentsPage() {
                             <div className="flex flex-1 overflow-x-auto scrollbar-hide">
                                 {staff.map(member => {
                                     // Find appointments for this time slot and this professional
-                                    const slotApts = appointments.filter(apt =>
+                                    const slotApts = filteredAppointments.filter(apt =>
                                         apt.time === time &&
                                         (apt.professional === member.name || (apt.professional === 'Unassigned' && member.name === 'Anita Verma'))
                                     );
@@ -342,6 +360,68 @@ export default function AppointmentsPage() {
 
     return (
         <>
+            <style>{`
+                html:not(.dark) .appointments-search-icon,
+                html:not(.dark) .appointments-search-icon * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+                .dark .appointments-search-icon,
+                .dark .appointments-search-icon * {
+                    color: #cbd5e1 !important;
+                    stroke: #cbd5e1 !important;
+                }
+                .appointment-tab-btn {
+                    border-radius: 8px !important;
+                    transition: all 0.2s ease-in-out !important;
+                    box-shadow: none !important;
+                }
+                html:not(.dark) .appointment-tab-btn.active {
+                    background-color: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                html:not(.dark) .appointment-tab-btn:not(.active) {
+                    background-color: transparent !important;
+                    color: #6b7280 !important;
+                    border: 1px solid #E5E7EB !important;
+                }
+                .dark .appointment-tab-btn.active {
+                    background-color: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                .dark .appointment-tab-btn:not(.active) {
+                    background-color: transparent !important;
+                    color: #94a3b8 !important;
+                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .view-toggle-btn {
+                    border-radius: 8px !important;
+                    transition: all 0.2s ease-in-out !important;
+                    padding: 6px 16px !important;
+                }
+                html:not(.dark) .view-toggle-btn.active {
+                    background-color: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                html:not(.dark) .view-toggle-btn:not(.active) {
+                    background-color: transparent !important;
+                    color: #6b7280 !important;
+                    border: 1px solid #E5E7EB !important;
+                }
+                .dark .view-toggle-btn.active {
+                    background-color: #B4912B !important;
+                    color: #ffffff !important;
+                    border: 1px solid #B4912B !important;
+                }
+                .dark .view-toggle-btn:not(.active) {
+                    background-color: transparent !important;
+                    color: #94a3b8 !important;
+                    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+            `}</style>
             <div className="space-y-6 animate-reveal">
                 {/* Header Area */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -350,18 +430,16 @@ export default function AppointmentsPage() {
                         <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">View and manage all salon bookings and orders</p>
                     </div>
                     <div className="flex items-center gap-2">
-                        <div className="flex bg-surface border border-border p-1">
+                        <div className="flex gap-2">
                             <button
                                 onClick={() => setView('list')}
-                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'list' ? 'text-white' : 'text-text-muted hover:text-text'}`}
-                                style={{ backgroundColor: view === 'list' ? '#B4912B' : undefined }}
+                                className={`view-toggle-btn text-[9px] font-black uppercase tracking-widest transition-all ${view === 'list' ? 'active' : ''}`}
                             >
                                 List
                             </button>
                             <button
                                 onClick={() => setView('calendar')}
-                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'calendar' ? 'text-white' : 'text-text-muted hover:text-text'}`}
-                                style={{ backgroundColor: view === 'calendar' ? '#B4912B' : undefined }}
+                                className={`view-toggle-btn text-[9px] font-black uppercase tracking-widest transition-all ${view === 'calendar' ? 'active' : ''}`}
                             >
                                 Calendar
                             </button>
@@ -377,24 +455,16 @@ export default function AppointmentsPage() {
                 </div>
 
                 {/* Tabs */}
-                <div className="flex border-b border-border">
+                <div className="flex gap-2 border-b border-border pb-3">
                     <button
                         onClick={() => setActiveTab('bookings')}
-                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2`}
-                        style={{
-                            color: activeTab === 'bookings' ? '#B4912B' : '#6b7280',
-                            borderBottomColor: activeTab === 'bookings' ? '#B4912B' : 'transparent'
-                        }}
+                        className={`appointment-tab-btn px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'active' : ''}`}
                     >
                         Bookings
                     </button>
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2`}
-                        style={{
-                            color: activeTab === 'orders' ? '#B4912B' : '#6b7280',
-                            borderBottomColor: activeTab === 'orders' ? '#B4912B' : 'transparent'
-                        }}
+                        className={`appointment-tab-btn px-5 py-2 text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'active' : ''}`}
                     >
                         Orders
                     </button>
@@ -404,7 +474,7 @@ export default function AppointmentsPage() {
                 <div className="bg-surface border border-border p-3 flex flex-col md:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3 w-full md:w-auto">
                         <div className="relative flex-1 md:flex-none">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 appointments-search-icon" />
                             <input
                                 type="text"
                                 value={searchQuery}
@@ -413,9 +483,6 @@ export default function AppointmentsPage() {
                                 className="pl-10 pr-4 py-2 bg-surface-alt border border-border text-[10px] font-extrabold uppercase tracking-widest outline-none focus:ring-1 focus:ring-primary/30 w-full md:w-64"
                             />
                         </div>
-                        <button className="p-2 bg-surface-alt border border-border hover:border-primary/30 transition-all">
-                            <Filter className="w-4 h-4 text-text-muted" />
-                        </button>
                     </div>
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 border border-border bg-surface-alt px-3 py-1.5">
@@ -580,7 +647,7 @@ export default function AppointmentsPage() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border/50">
-                                    {orders.length > 0 ? orders.map((order) => (
+                                    {filteredOrders.length > 0 ? filteredOrders.map((order) => (
                                         <tr key={order._id} className="hover:bg-surface-alt/30 transition-all group">
                                             <td className="px-6 py-4">
                                                 <p className="text-sm font-black text-text uppercase tracking-tight">{order.invoiceNumber || order._id}</p>
