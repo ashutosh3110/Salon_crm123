@@ -27,7 +27,7 @@ export const PettyCashProvider = ({ children }) => {
     const [error, setError] = useState(null);
 
     const { user, isPlanActive } = useAuth();
-    const refresh = useCallback(async () => {
+    const refresh = useCallback(async (options = {}) => {
         // Skip for public pages or customer app
         const publicPaths = ['/login', '/register', '/forgot-password', '/contact', '/blog', '/launchpad'];
         const isPublicPath = publicPaths.some(p => window.location.pathname.startsWith(p)) || window.location.pathname === '/';
@@ -45,7 +45,7 @@ export const PettyCashProvider = ({ children }) => {
         }
 
         // Authorized roles for petty cash
-        const allowedRoles = ['admin', 'manager', 'accountant'];
+        const allowedRoles = ['admin', 'manager', 'accountant', 'receptionist'];
         if (user.role === 'superadmin' || !allowedRoles.includes(user.role)) {
             setLoading(false);
             return;
@@ -54,10 +54,17 @@ export const PettyCashProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
+            const { date, outletId } = options;
+            const params = new URLSearchParams();
+            if (date) params.append('date', date);
+            if (outletId) params.append('outletId', outletId);
+            const q = params.toString() ? `?${params.toString()}` : '';
+            const qAnd = params.toString() ? `&${params.toString()}` : '';
+
             const [sumRes, entRes, clRes] = await Promise.all([
-                api.get('/finance/petty-cash/summary'),
-                api.get('/finance/petty-cash/entries?limit=200'),
-                api.get('/finance/petty-cash/closings?limit=60'),
+                api.get(`/finance/petty-cash/summary${q}`),
+                api.get(`/finance/petty-cash/entries?limit=200${qAnd}`),
+                api.get(`/finance/petty-cash/closings?limit=60${qAnd}`),
             ]);
             const sum = sumRes.data?.data;
             setSummary(sum);

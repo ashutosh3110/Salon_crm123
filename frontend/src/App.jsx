@@ -256,6 +256,7 @@ const CheckInPage = lazy(() => import('./pages/receptionist/CheckInPage'));
 const ReceptionistInvoicesPage = lazy(() => import('./pages/receptionist/InvoicesPage'));
 const PaymentsPage = lazy(() => import('./pages/receptionist/PaymentsPage'));
 const ReceptionistSettingsPage = lazy(() => import('./pages/receptionist/ReceptionistSettingsPage'));
+const ReceptionistProfilePage = lazy(() => import('./pages/receptionist/ReceptionistProfilePage'));
 const PettyCashPage = lazy(() => import('./pages/accountant/PettyCashPage'));
 
 const StylistLayout = lazy(() => import('./layouts/StylistLayout'));
@@ -639,11 +640,13 @@ function App() {
                             <Route path="/receptionist/appointments" element={<AppointmentsPage />} />
                             <Route path="/receptionist/queue" element={<QueuePage />} />
                             <Route path="/receptionist/checkin" element={<CheckInPage />} />
+                            <Route path="/receptionist/pos/billing" element={<POSBillingPage />} />
                             <Route path="/receptionist/invoices" element={<ReceptionistInvoicesPage />} />
                             <Route path="/receptionist/payments" element={<PaymentsPage />} />
                             <Route path="/receptionist/petty-cash" element={<PettyCashPage />} />
                             <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
                             <Route path="/receptionist/support" element={<SupportPage />} />
+                            <Route path="/receptionist/profile" element={<ReceptionistProfilePage />} />
                           </Route>
                         </Route>
 

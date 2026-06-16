@@ -322,6 +322,16 @@ export default function POSBillingPage() {
     const { addRevenue } = useFinance();
     const { allWallets, adminAdjustBalance, initializeWallet } = useWallet();
     const location = useLocation();
+
+    const isReceptionistMode = user?.role === 'receptionist';
+    const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+
+    useEffect(() => {
+        if (isReceptionistMode && userOutletId && activeOutletId !== userOutletId) {
+            setActiveOutletId(userOutletId);
+        }
+    }, [isReceptionistMode, userOutletId, activeOutletId, setActiveOutletId]);
+
     // ─── State ──────────────────────────────────────────────
     const [cart, setCart] = useState([]);
     const [focusedItemIndex, setFocusedItemIndex] = useState(-1);
@@ -880,9 +890,11 @@ export default function POSBillingPage() {
                 const isPaid = b.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
 
-                // Show all completed bookings (addToCart will switch outlet automatically)
-                // const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
-                // if (!matchOutlet) return false;
+                // For receptionists, only show bookings from their assigned outlet
+                if (isReceptionistMode) {
+                    const matchOutlet = !activeOutletId || String(b.outletId?._id || b.outletId) === String(activeOutletId);
+                    if (!matchOutlet) return false;
+                }
 
                 const alreadyBilled = (invoices || []).some(inv => String(inv.bookingId?._id || inv.bookingId) === String(b._id));
                 if (alreadyBilled) return false;
@@ -918,9 +930,11 @@ export default function POSBillingPage() {
                 const isPaid = o.paymentStatus?.toLowerCase() === 'paid';
                 if (!isPaid) return false;
 
-                // Show all completed orders (addToCart will switch outlet automatically)
-                // const matchOutlet = !activeOutletId || String(o.outletId?._id || o.outletId) === String(activeOutletId);
-                // if (!matchOutlet) return false;
+                // For receptionists, only show orders from their assigned outlet
+                if (isReceptionistMode) {
+                    const matchOutlet = !activeOutletId || String(o.outletId?._id || o.outletId) === String(activeOutletId);
+                    if (!matchOutlet) return false;
+                }
 
                 const alreadyBilled = (invoices || []).some(inv => String(inv.orderId?._id || inv.orderId) === String(o._id));
                 if (alreadyBilled) return false;
@@ -951,7 +965,7 @@ export default function POSBillingPage() {
 
             return matchSearch && matchCat;
         });
-    }, [activeTab, searchItem, selectedCategory, serviceMode, businessBookings, businessOrders, invoices, allOutletItems, activeOutletId, services]);
+    }, [activeTab, searchItem, selectedCategory, serviceMode, businessBookings, businessOrders, invoices, allOutletItems, activeOutletId, services, isReceptionistMode]);
 
     const filteredClients = useMemo(() => {
         const clientsList = Array.isArray(businessCustomers) ? businessCustomers : [];
@@ -1345,7 +1359,11 @@ export default function POSBillingPage() {
                     }
                 }
                 setTimeout(() => {
-                    navigate('/pos/invoices');
+                    if (isReceptionistMode) {
+                        navigate('/receptionist/invoices');
+                    } else {
+                        navigate('/pos/invoices');
+                    }
                 }, 1000);
 
 
@@ -1657,7 +1675,7 @@ export default function POSBillingPage() {
     }
 
     return (
-        <div className="flex flex-col h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)] mt-0 overflow-hidden">
+        <div className={`flex flex-col mt-0 overflow-hidden ${isReceptionistMode ? 'h-[calc(100vh-4rem)]' : 'h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)]'}`}>
 
             {/* Mobile Tab Switcher */}
             <div className="flex lg:hidden border-b border-border bg-surface shrink-0">
@@ -2131,7 +2149,7 @@ export default function POSBillingPage() {
                                                             <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                                                             <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">{sel ? sel.name : 'Select Outlet'}</span>
                                                         </div>
-                                                        {!(appointmentId || orderId) && (
+                                                        {!(appointmentId || orderId) && !isReceptionistMode && (
                                                             <button
                                                                 onClick={() => setShowOutletPickerMain(!showOutletPickerMain)}
                                                                 className="text-[9px] font-bold text-[#cca839] hover:underline flex items-center gap-0.5"
@@ -2610,8 +2628,8 @@ export default function POSBillingPage() {
                                         <div className="flex items-center gap-1.5">
                                             <Building2 className="w-3 h-3 text-slate-400 shrink-0" />
                                             <button
-                                                onClick={() => setShowOutletPickerMain(!showOutletPickerMain)}
-                                                className="flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-[#cca839] transition-colors"
+                                                onClick={() => !isReceptionistMode && setShowOutletPickerMain(!showOutletPickerMain)}
+                                                className={`flex items-center gap-1 text-[10px] font-bold text-slate-700 dark:text-slate-300 ${!isReceptionistMode ? 'hover:text-[#cca839] transition-colors cursor-pointer' : 'cursor-default'}`}
                                             >
                                                 <span className="truncate max-w-[150px]">
                                                     {(() => {
@@ -2619,7 +2637,7 @@ export default function POSBillingPage() {
                                                         return sel ? sel.name : 'Select Outlet';
                                                     })()}
                                                 </span>
-                                                <ChevronDown className="w-3 h-3 shrink-0" />
+                                                {!isReceptionistMode && <ChevronDown className="w-3 h-3 shrink-0" />}
                                             </button>
                                         </div>
                                         <AnimatePresence>
@@ -3097,6 +3115,7 @@ export default function POSBillingPage() {
 function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, staff, customers, addCustomer, activeOutletId, fiscal, platformSettings, allWallets, invoiceToEdit }) {
     const { salon } = useBusiness();
     const { user } = useAuth();
+    const isReceptionistMode = user?.role === 'receptionist';
     const [qOutletId, setQOutletId] = useState(activeOutletId || (outlets?.[0]?._id || ''));
     const [qClient, setQClient] = useState(null);
     const [qSearchClient, setQSearchClient] = useState('');
@@ -3911,8 +3930,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 </label>
                                 <div id="outlet-dropdown-container" className="relative">
                                     <button
-                                        onClick={() => setShowQOutletPicker(p => !p)}
-                                        className="qi-outlet-btn w-full flex items-center gap-3 border rounded-xl px-3 py-2.5 transition-all shadow-sm text-left"
+                                        onClick={() => !isReceptionistMode && setShowQOutletPicker(p => !p)}
+                                        className={`qi-outlet-btn w-full flex items-center gap-3 border rounded-xl px-3 py-2.5 transition-all shadow-sm text-left ${isReceptionistMode ? 'cursor-default opacity-90 bg-slate-50' : ''}`}
                                     >
                                         {(() => {
                                             const sel = outlets.find(o => String(o._id) === String(qOutletId));
@@ -3926,7 +3945,9 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 </>
                                             ) : <span className="text-sm italic flex-1" style={{ color: '#94a3b8' }}>Select outlet…</span>;
                                         })()}
-                                        <ChevronDown className={`w-4 h-4 ml-auto flex-shrink-0 transition-transform ${showQOutletPicker ? 'rotate-180' : ''}`} style={{ color: '#94a3b8' }} />
+                                        {!isReceptionistMode && (
+                                            <ChevronDown className={`w-4 h-4 ml-auto flex-shrink-0 transition-transform ${showQOutletPicker ? 'rotate-180' : ''}`} style={{ color: '#94a3b8' }} />
+                                        )}
                                     </button>
                                     <AnimatePresence>
                                         {showQOutletPicker && (

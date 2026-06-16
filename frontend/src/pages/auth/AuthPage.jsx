@@ -324,7 +324,7 @@ export default function AuthPage() {
                                                         { label: 'Stylist', e: 'neha@gmail.com', p: '123456' },
                                                         { label: 'Accountant', e: 'prachi@gmail.com', p: '123456' },
                                                         { label: 'Manager', e: 'aditya@gmail.com', p: '123456' },
-                                                        { label: 'Receptionist', e: 'aman@gmail.com', p: '123456' },
+                                                        { label: 'Receptionist', e: 'reciption@gmail.com', p: '123' },
                                                     ].map(q => (
                                                         <button
                                                             key={q.label}

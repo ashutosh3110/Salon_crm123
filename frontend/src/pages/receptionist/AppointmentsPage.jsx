@@ -42,6 +42,8 @@ export default function AppointmentsPage() {
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState('list'); // 'list' or 'calendar'
+    const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'orders'
+    const [orders, setOrders] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -66,11 +68,20 @@ export default function AppointmentsPage() {
         setLoading(true);
         try {
             const dateStr = `${currentDate.getFullYear()}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getDate().toString().padStart(2, '0')}`;
-            const [bookingsRes, servicesRes, staffRes] = await Promise.all([
-                mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${activeOutletId || ''}`),
+            const isReceptionistMode = user?.role === 'receptionist';
+            const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+            const outletToFetch = isReceptionistMode ? userOutletId : (activeOutletId || '');
+
+            const [bookingsRes, servicesRes, staffRes, invoicesRes] = await Promise.all([
+                mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${outletToFetch}`),
                 mockApi.get('/services?limit=100'),
-                mockApi.get('/users?role=stylist')
+                mockApi.get('/users?role=stylist'),
+                mockApi.get('/invoices', { params: { limit: 100, outletId: outletToFetch } })
             ]);
+
+            if (invoicesRes?.data?.results) {
+                setOrders(invoicesRes.data.results);
+            }
 
             if (bookingsRes.data.results) {
                 const allBookings = bookingsRes.data.results;
@@ -196,7 +207,7 @@ export default function AppointmentsPage() {
                 phone: newBooking.phone,
                 serviceId: newBooking.serviceId,
                 staffId: newBooking.staffId,
-                outletId: activeOutletId || user?.outletId,
+                outletId: user?.role === 'receptionist' ? (user?.outletId || user?.outlet?._id || user?.outlet) : (activeOutletId || user?.outletId),
                 appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
                 time: newBooking.time,
                 status: 'upcoming',
@@ -331,8 +342,8 @@ export default function AppointmentsPage() {
                 {/* Header Area */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl font-black text-text tracking-tight uppercase">Appointments</h1>
-                        <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">View and manage all salon bookings</p>
+                        <h1 className="text-2xl font-black text-text tracking-tight uppercase">Appointments & Orders</h1>
+                        <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">View and manage all salon bookings and orders</p>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex bg-surface border border-border p-1">
@@ -356,6 +367,22 @@ export default function AppointmentsPage() {
                             <Plus className="w-4 h-4" /> Book Appointment
                         </button>
                     </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex border-b border-border">
+                    <button
+                        onClick={() => setActiveTab('bookings')}
+                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-text'}`}
+                    >
+                        Bookings
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('orders')}
+                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-text'}`}
+                    >
+                        Orders
+                    </button>
                 </div>
 
                 {/* Filters Bar */}
@@ -384,6 +411,8 @@ export default function AppointmentsPage() {
                     </div>
                 </div>
 
+                {activeTab === 'bookings' ? (
+                    <>
                 {/* Views */}
                 {view === 'list' ? (
                     <div className="bg-surface border border-border shadow-sm overflow-hidden">
@@ -519,6 +548,65 @@ export default function AppointmentsPage() {
                 ) : (
                     <CalendarView />
                 )}
+                    </>
+                ) : (
+                    <div className="bg-surface border border-border shadow-sm overflow-hidden">
+                        <div className="overflow-x-auto min-h-[400px]">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-surface-alt/50 border-b border-border">
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Order ID</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted">Client</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Amount</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Status</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-text-muted text-center">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-border/50">
+                                    {orders.length > 0 ? orders.map((order) => (
+                                        <tr key={order._id} className="hover:bg-surface-alt/30 transition-all group">
+                                            <td className="px-6 py-4">
+                                                <p className="text-sm font-black text-text uppercase tracking-tight">{order.invoiceNumber || order._id}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 bg-surface-alt border border-border flex items-center justify-center font-black text-[10px] text-text-muted">
+                                                        {(order.clientId?.name || 'W')[0]}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-text uppercase tracking-tight">{order.clientId?.name || 'Walk-in'}</p>
+                                                        <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(order.clientId?.phone || '')}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <p className="text-[11px] font-bold text-text uppercase tracking-widest">₹{order.total}</p>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${order.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'}`}>
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                                                    {order.paymentStatus}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                            </td>
+                                        </tr>
+                                    )) : (
+                                        <tr>
+                                            <td colSpan="5" className="px-6 py-20 text-center">
+                                                <div className="opacity-20 flex flex-col items-center">
+                                                    <Banknote className="w-12 h-12 mb-2" />
+                                                    <p className="text-[10px] font-black uppercase tracking-widest">No active orders in ledger</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
             </div>
 
             <AnimatePresence>
@@ -564,7 +652,7 @@ export default function AppointmentsPage() {
                                         required
                                         value={newBooking.serviceId}
                                         onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                     >
                                         <option value="">-- SELECT SERVICE --</option>
                                         {services.map(s => (
@@ -578,7 +666,7 @@ export default function AppointmentsPage() {
                                         required
                                         value={newBooking.staffId}
                                         onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                        className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                     >
                                         <option value="">-- AUTO ASSIGN / SELECT --</option>
                                         {staff.filter(s => s.isAvailable !== false).map(s => (
@@ -601,7 +689,7 @@ export default function AppointmentsPage() {
                                         <select
                                             value={newBooking.time}
                                             onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20 appearance-none cursor-pointer"
+                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                         >
                                             {timeSlots.map(t => <option key={t}>{t}</option>)}
                                         </select>

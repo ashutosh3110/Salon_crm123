@@ -1,27 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
-    Users,
-    Calendar,
-    Clock,
-    CheckCircle2,
-    AlertCircle,
-    ArrowRight,
-    Search,
-    UserPlus,
-    Plus,
-    UserCheck,
-    TrendingUp,
-    ArrowUpRight,
-    ArrowDownRight,
-    X,
-    Phone,
-    User,
-    Shield,
-    Loader2,
-    Scissors,
-    Smartphone,
-    ChevronDown,
-    Store
+    Users, Calendar, Clock, CheckCircle2, AlertCircle, ArrowRight,
+    Search, UserPlus, Plus, UserCheck, TrendingUp, ArrowUpRight,
+    ArrowDownRight, X, Phone, User, Shield, Loader2, Scissors,
+    Smartphone, ChevronDown, Store, Zap, ShoppingCart, FileText,
+    Eye, Edit3, Printer, Filter, CreditCard, Banknote, Wallet,
+    DollarSign, Activity, BarChart3, Package, Hash, MapPin, Mail,
+    CalendarPlus, ClipboardList
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -29,6 +14,23 @@ import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
 import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { useNavigate } from 'react-router-dom';
+
+// Status badge color mapping
+const statusColors = {
+    confirmed: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-500/20' },
+    arrived: { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-500/20' },
+    pending: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/20' },
+    upcoming: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/20' },
+    completed: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-500/20' },
+    cancelled: { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-500/20' },
+};
+
+function getStatusStyle(status) {
+    const key = (status || '').toLowerCase();
+    return statusColors[key] || statusColors.pending;
+}
 
 export default function ReceptionistDashboard() {
     const { user } = useAuth();
@@ -38,8 +40,10 @@ export default function ReceptionistDashboard() {
     // Live States
     const [stats, setStats] = useState([]);
     const [performance, setPerformance] = useState({ revenue: 0, avgTicket: 0 });
+    const [hourlyFootfall, setHourlyFootfall] = useState([]);
     const [liveFeed, setLiveFeed] = useState([]);
     const [recentActivity, setRecentActivity] = useState([]);
+    const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,6 +51,9 @@ export default function ReceptionistDashboard() {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [isWalkinOpen, setIsWalkinOpen] = useState(false);
     const [reporting, setReporting] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [activeTab, setActiveTab] = useState('booking'); // 'booking' | 'order'
 
     // Manual Booking Form State
     const [newBooking, setNewBooking] = useState({
@@ -56,6 +63,15 @@ export default function ReceptionistDashboard() {
         staffId: '',
         time: '12:00 PM',
         date: new Date().toISOString().split('T')[0]
+    });
+
+    // Order Form State
+    const [newOrder, setNewOrder] = useState({
+        clientName: '',
+        phone: '',
+        products: '',
+        quantity: 1,
+        notes: ''
     });
 
     // Client Registration State
@@ -83,10 +99,10 @@ export default function ReceptionistDashboard() {
 
                 if (statsRes.data?.success) {
                     const iconMap = {
-                        "Today's Appointments": Calendar,
-                        "Pending Check-ins": Clock,
-                        "Completed Today": CheckCircle2,
-                        "New Registrations": UserPlus
+                        "Total Appointments": Calendar,
+                        "Total Orders": ShoppingCart,
+                        "New Customers": UserPlus,
+                        "Total Invoices": FileText
                     };
                     setStats((statsRes.data.data?.stats || []).map(s => ({
                         ...s,
@@ -98,11 +114,14 @@ export default function ReceptionistDashboard() {
                     if (statsRes.data.data?.recentActivity) {
                         setRecentActivity(statsRes.data.data.recentActivity);
                     }
+                    if (statsRes.data.data?.hourlyFootfall) {
+                        setHourlyFootfall(statsRes.data.data.hourlyFootfall);
+                    }
                 }
 
                 // Get all today's bookings for availability check
                 const allBookings = bookingsRes.data?.results || [];
-                setLiveFeed(allBookings.slice(0, 5).map(b => ({
+                setLiveFeed(allBookings.slice(0, 8).map(b => ({
                     id: b.id || b._id,
                     client: b.clientId?.name || 'Walk-in',
                     service: b.serviceId?.name || 'Unknown',
@@ -110,6 +129,7 @@ export default function ReceptionistDashboard() {
                     professional: b.staffId?.name || 'Unassigned',
                     status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
                     source: b.source || 'APP',
+                    amount: b.serviceId?.price || '—',
                     isRegistry: false
                 })));
 
@@ -181,7 +201,7 @@ export default function ReceptionistDashboard() {
             // Refresh feed
             const d = new Date();
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-            const feedRes = await mockApi.get(`/bookings?date=${today}&limit=5`);
+            const feedRes = await mockApi.get(`/bookings?date=${today}&limit=8`);
             if (feedRes.data.results) {
                 setLiveFeed(feedRes.data.results.map(b => ({
                     id: b.id || b._id,
@@ -190,7 +210,8 @@ export default function ReceptionistDashboard() {
                     time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
                     professional: b.staffId?.name || 'Unassigned',
                     status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-                    source: b.source || 'APP'
+                    source: b.source || 'APP',
+                    amount: b.serviceId?.price || '—'
                 })));
             }
             alert(`Check-in Successful: Guest marked as arrived.`);
@@ -214,7 +235,7 @@ export default function ReceptionistDashboard() {
             // Refresh stats
             const statsRes = await mockApi.get('/dashboard/receptionist');
             if (statsRes.data.success) {
-                const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};
+                const iconMap = { "Total Appointments": Calendar, "Total Orders": ShoppingCart, "New Customers": UserPlus, "Total Invoices": FileText };
                 setStats(statsRes.data.data.stats.map(s => ({ ...s, icon: iconMap[s.label] || AlertCircle })));
             }
         } catch (err) {
@@ -250,15 +271,15 @@ export default function ReceptionistDashboard() {
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const [statsRes, feedRes] = await Promise.all([
                 mockApi.get(`/dashboard/receptionist?outletId=${activeOutletId || ''}`),
-                mockApi.get(`/bookings?date=${today}&limit=5&outletId=${activeOutletId || ''}`)
+                mockApi.get(`/bookings?date=${today}&limit=8&outletId=${activeOutletId || ''}`)
             ]);
 
             if (statsRes.data.success) {
                  const iconMap = {
-                    "Today's Appointments": Calendar,
-                    "Pending Check-ins": Clock,
-                    "Completed Today": CheckCircle2,
-                    "New Registrations": UserPlus
+                    "Total Appointments": Calendar,
+                    "Total Orders": ShoppingCart,
+                    "New Customers": UserPlus,
+                    "Total Invoices": FileText
                 };
                 setStats(statsRes.data.data.stats.map(s => ({
                     ...s,
@@ -274,11 +295,11 @@ export default function ReceptionistDashboard() {
                     time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
                     professional: b.staffId?.name || 'Unassigned',
                     status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-                    source: b.source || 'APP'
+                    source: b.source || 'APP',
+                    amount: b.serviceId?.price || '—'
                 })));
             }
 
-            setIsBookingOpen(false);
             setNewBooking({
                 clientName: '',
                 phone: '',
@@ -293,294 +314,809 @@ export default function ReceptionistDashboard() {
         }
     };
 
+    const handleOrderSubmit = async (e) => {
+        e.preventDefault();
+        if (!newOrder.clientName || !newOrder.phone || !newOrder.products) {
+            alert('Please fill all required fields.');
+            return;
+        }
+        try {
+            await mockApi.post('/orders', {
+                clientName: newOrder.clientName,
+                phone: newOrder.phone,
+                products: newOrder.products,
+                quantity: newOrder.quantity,
+                notes: newOrder.notes,
+                outletId: user?.outletId,
+                status: 'pending',
+                source: 'RECEPTION'
+            });
+            setNewOrder({ clientName: '', phone: '', products: '', quantity: 1, notes: '' });
+            alert('Order placed successfully!');
+        } catch (err) {
+            alert('Failed to place order.');
+        }
+    };
+
+    // Filtered appointments
+    const filteredFeed = useMemo(() => {
+        return liveFeed.filter(apt => {
+            const matchesSearch = !searchQuery || 
+                apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                apt.professional.toLowerCase().includes(searchQuery.toLowerCase());
+            const matchesStatus = statusFilter === 'all' || apt.status.toLowerCase() === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
+    }, [liveFeed, searchQuery, statusFilter]);
+
+    // Current date/shift info
+    const now = new Date();
+    const dateStr = now.toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const currentHour = now.getHours();
+    const shiftLabel = currentHour < 14 ? 'Morning Shift' : currentHour < 20 ? 'Evening Shift' : 'Night Shift';
+
+    // Custom tooltip for chart
+    const CustomTooltip = ({ active, payload, label }) => {
+        if (active && payload && payload.length) {
+            return (
+                <div className="bg-white dark:bg-slate-800 border border-[#E5E7EB] dark:border-slate-600 rounded-lg px-3 py-2 shadow-lg">
+                    <p className="text-[11px] font-semibold text-[#6B7280] dark:text-slate-400 mb-1">{label}</p>
+                    {payload.map((p, i) => (
+                        <p key={i} className="text-[12px] font-bold" style={{ color: p.color }}>
+                            {p.name}: {p.value}
+                        </p>
+                    ))}
+                </div>
+            );
+        }
+        return null;
+    };
+
+    // Stat card color config (admin-style colorful cards)
+    const statCardConfig = [
+        {
+            iconColorClass: '!text-[#7C3AED] dark:!text-[#A78BFA]',
+            iconBgClass: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
+            cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
+            cardBorderClass: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#A78BFA]/50',
+        },
+        {
+            iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
+            iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+            cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+            cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
+        },
+        {
+            iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
+            iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+            cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+            cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
+        },
+        {
+            iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
+            iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+            cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+            cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50',
+        },
+    ];
+
     return (
-        <div className="space-y-6 animate-reveal">
-            {/* Command Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase flex items-center gap-4">
-                        Dashboard
-                        <div className="relative group flex items-center h-8">
+        <div className="space-y-5 animate-reveal font-sans">
+
+            {/* ═══════════════════════════════════════════
+                DASHBOARD HEADER
+            ═══════════════════════════════════════════ */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-left">
+                <div className="text-left">
+                    <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight flex items-center gap-2">
+                        Welcome Back! <span className="animate-pulse">👋</span>
+                    </h1>
+                    <p className="text-[13px] text-slate-500 dark:text-slate-400 font-normal mt-1.5">
+                        {dateStr} · <span className="text-[#C89B2B] font-semibold">{shiftLabel}</span>
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                    {user?.role !== 'receptionist' && (
+                        <div className="relative group flex items-center">
                             <div className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
-                                <Store className="w-3.5 h-3.5 text-text-muted" />
+                                <Store className="w-3.5 h-3.5 text-[#6B7280]" />
                             </div>
                             <select
                                 value={activeOutletId || ''}
                                 onChange={(e) => setActiveOutletId(e.target.value)}
-                                className="pl-8 pr-8 py-1 bg-surface border border-border text-[10px] font-black uppercase tracking-widest text-text rounded appearance-none cursor-pointer focus:outline-none focus:border-primary transition-all h-full min-w-[140px]"
+                                className="pl-8 pr-7 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold text-slate-600 dark:text-white rounded-xl appearance-none cursor-pointer focus:outline-none focus:border-[#C89B2B] transition-all min-w-[130px] shadow-sm"
                             >
                                 <option value="">All Outlets</option>
                                 {(outlets || []).map(o => (
-                                    <option key={o._id} value={o._id}>{o.name.toUpperCase()}</option>
+                                    <option key={o._id} value={o._id}>{o.name}</option>
                                 ))}
                             </select>
-                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none z-10" />
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#6B7280] pointer-events-none z-10" />
                         </div>
-                    </h1>
-                    <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Live Salon Overview</p>
-                </div>
-                <div className="flex items-center gap-3">
+                    )}
                     <button
                         onClick={() => handleAction('Client Registration')}
-                        className="px-5 py-2.5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all flex items-center gap-2"
+                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm hover:border-[#C89B2B] hover:text-[#C89B2B] transition-all"
                     >
-                        <UserPlus className="w-4 h-4" /> New Registration
+                        <UserPlus className="w-3.5 h-3.5" /> New Client
                     </button>
                     <button
                         onClick={() => handleAction('Walk-in')}
-                        className="px-5 py-2.5 bg-surface border border-border text-text text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all flex items-center gap-2"
+                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm hover:border-emerald-400 hover:text-emerald-500 transition-all"
                     >
-                        <UserCheck className="w-4 h-4" /> New Walk-in
+                        <Zap className="w-3.5 h-3.5" /> Walk-in
                     </button>
                     <button
                         onClick={() => handleAction('Booking')}
-                        className="px-5 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#C89B2B] hover:bg-[#B88D25] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                     >
-                        <Plus className="w-4 h-4" /> New Booking
+                        <Plus className="w-3.5 h-3.5" /> New Booking
                     </button>
                 </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {stats.map((stat, i) => (
-                    <div key={i} className="bg-surface py-6 px-8 border border-border group hover:border-primary/20 transition-all relative overflow-hidden">
-                        {/* Soft Glow */}
-                        <div className={`absolute -right-4 -top-4 w-24 h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors opacity-50`} />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <stat.icon className="w-4 h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+            {/* ═══════════════════════════════════════════
+                KPI STAT CARDS — Admin-style colorful
+            ═══════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {stats.map((stat, i) => {
+                    const config = statCardConfig[i % statCardConfig.length];
+                    return (
+                        <div
+                            key={i}
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${config.cardBgClass} ${config.cardBorderClass}`}
+                        >
+                            <div className="flex !items-start gap-3 !text-left">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${config.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                    <stat.icon className={`w-4 h-4 ${config.iconColorClass}`} strokeWidth={2} />
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                <div className="flex flex-col !items-start !text-left">
+                                    <span
+                                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                        className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                                    >
+                                        {stat.label}
+                                    </span>
+                                    <h3
+                                        style={{ fontSize: '24px', fontWeight: 850 }}
+                                        className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left"
+                                    >
+                                        <AnimatedCounter value={stat.value} />
+                                    </h3>
+                                </div>
+                            </div>
+                            <div
+                                style={{ fontSize: '11px', fontWeight: 700 }}
+                                className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-80 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
+                            >
+                                <span className={`flex items-center gap-0.5 ${stat.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
                                     {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                                     {stat.trend}
-                                </div>
-                            </div>
-
-                            <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-2xl font-black text-text uppercase tracking-tight">
-                                    <AnimatedCounter value={stat.value} />
-                                </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={stat.positive ? "text-emerald-400" : "text-rose-400"}>
-                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
+                                </span>
+                                <span className="text-slate-400 dark:text-slate-500 ml-1">vs last period</span>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Upcoming Appointments Feed */}
-                <div className="lg:col-span-2 space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1.5 h-6 bg-primary" />
-                            <h2 className="text-sm font-black text-text uppercase tracking-widest">Today's Appointments</h2>
+            {/* ═══════════════════════════════════════════
+                BOOKING / ORDER FORM — Inline 2-column
+            ═══════════════════════════════════════════ */}
+            <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#C89B2B]/20 dark:!border-[#C89B2B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#C89B2B]/35 dark:hover:!border-[#C89B2B]/30 transition-all !overflow-hidden">
+                {/* Tab Switcher */}
+                <div className="flex items-center gap-0 border-b border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={() => setActiveTab('booking')}
+                        className={`flex items-center gap-2 px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider border-b-2 transition-all ${
+                            activeTab === 'booking'
+                                ? 'border-[#C89B2B] text-[#C89B2B]'
+                                : 'border-transparent text-slate-400 hover:text-slate-600'
+                        }`}
+                    >
+                        <CalendarPlus className="w-3.5 h-3.5" /> Book Appointment
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('order')}
+                        className={`flex items-center gap-2 px-5 py-3.5 text-[11px] font-bold uppercase tracking-wider border-b-2 transition-all ${
+                            activeTab === 'order'
+                                ? 'border-[#C89B2B] text-[#C89B2B]'
+                                : 'border-transparent text-slate-400 hover:text-slate-600'
+                        }`}
+                    >
+                        <ShoppingCart className="w-3.5 h-3.5" /> Book Order
+                    </button>
+                </div>
+
+                {/* Booking Tab */}
+                {activeTab === 'booking' && (
+                    <form onSubmit={handleManualBookingSubmit} className="p-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newBooking.clientName}
+                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter client name"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={newBooking.phone}
+                                        onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Service</label>
+                                <div className="relative">
+                                    <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <select
+                                        required
+                                        value={newBooking.serviceId}
+                                        onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">Select service...</option>
+                                        {services.map(s => (
+                                            <option key={s.id || s._id} value={s.id || s._id}>{s.name} - ₹{s.price}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Staff Assignment</label>
+                                <div className="relative">
+                                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <select
+                                        required
+                                        value={newBooking.staffId}
+                                        onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option value="">Select stylist...</option>
+                                        {staff.filter(s => s.isAvailable).map(s => (
+                                            <option key={s.id || s._id} value={s.id || s._id}>{s.name} - {s.role}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</label>
+                                <input
+                                    type="date"
+                                    value={newBooking.date}
+                                    onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
+                                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Slot</label>
+                                <div className="relative">
+                                    <select
+                                        value={newBooking.time}
+                                        onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
+                                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
+                                    >
+                                        <option>10:00 AM</option>
+                                        <option>11:00 AM</option>
+                                        <option>12:00 PM</option>
+                                        <option>01:00 PM</option>
+                                        <option>02:00 PM</option>
+                                        <option>03:00 PM</option>
+                                        <option>04:00 PM</option>
+                                        <option>05:00 PM</option>
+                                        <option>06:00 PM</option>
+                                        <option>07:00 PM</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
+                                </div>
+                            </div>
                         </div>
-                        <button onClick={() => navigate('/receptionist/appointments')} className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2 hover:translate-x-1 transition-transform">
-                            Full Database <ArrowRight className="w-3 h-3" />
-                        </button>
+                        <div className="flex justify-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                                type="submit"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#C89B2B] hover:bg-[#B88D25] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
+                            >
+                                <Calendar className="w-4 h-4" /> Confirm Appointment
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                {/* Order Tab */}
+                {activeTab === 'order' && (
+                    <form onSubmit={handleOrderSubmit} className="p-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newOrder.clientName}
+                                        onChange={(e) => setNewOrder({ ...newOrder, clientName: e.target.value })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter client name"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        required
+                                        type="tel"
+                                        value={newOrder.phone}
+                                        onChange={(e) => setNewOrder({ ...newOrder, phone: e.target.value })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter phone number"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Product / Service</label>
+                                <div className="relative">
+                                    <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        required
+                                        type="text"
+                                        value={newOrder.products}
+                                        onChange={(e) => setNewOrder({ ...newOrder, products: e.target.value })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter product name"
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantity</label>
+                                <div className="relative">
+                                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={newOrder.quantity}
+                                        onChange={(e) => setNewOrder({ ...newOrder, quantity: parseInt(e.target.value) || 1 })}
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                    />
+                                </div>
+                            </div>
+                            <div className="sm:col-span-2 space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes (Optional)</label>
+                                <input
+                                    type="text"
+                                    value={newOrder.notes}
+                                    onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })}
+                                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                    placeholder="Add any special notes..."
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                                type="submit"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#C89B2B] hover:bg-[#B88D25] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
+                            >
+                                <ShoppingCart className="w-4 h-4" /> Place Order
+                            </button>
+                        </div>
+                    </form>
+                )}
+            </div>
+
+            {/* ═══════════════════════════════════════════
+                MAIN CONTENT: 70/30 GRID
+            ═══════════════════════════════════════════ */}
+            <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
+
+                {/* ═══ LEFT COLUMN (70%) ═══ */}
+                <div className="lg:col-span-7 space-y-4">
+
+                    {/* Today's Traffic & Footfall Chart */}
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#C89B2B]/20 dark:!border-[#C89B2B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#C89B2B]/35 dark:hover:!border-[#C89B2B]/30 transition-all !overflow-hidden p-5">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight">Today's Traffic & Footfall</h2>
+                            <div className="flex items-center gap-4 text-[11px] font-medium text-[#6B7280]">
+                                <span className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-[#C89B2B]" /> Walk-ins
+                                </span>
+                                <span className="flex items-center gap-1.5">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" /> Appointments
+                                </span>
+                            </div>
+                        </div>
+                        <div className="h-[240px] w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={hourlyFootfall} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorWalkinsNew" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#C89B2B" stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor="#C89B2B" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorBookingsNew" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9CA3AF', fontWeight: 500 }} dy={8} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9CA3AF', fontWeight: 500 }} />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <Area type="monotone" dataKey="walkins" name="Walk-ins" stroke="#C89B2B" fillOpacity={1} fill="url(#colorWalkinsNew)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: '#C89B2B', strokeWidth: 0 }} />
+                                    <Area type="monotone" dataKey="bookings" name="Appointments" stroke="#10b981" fillOpacity={1} fill="url(#colorBookingsNew)" strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: '#10b981', strokeWidth: 0 }} />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
 
-                    <div className="bg-surface border border-border overflow-hidden">
-                        <div className="divide-y divide-border">
-                            {liveFeed.map((apt) => (
-                                <div key={apt.id} className="p-5 flex items-center justify-between hover:bg-surface-alt/50 transition-all group">
-                                    <div className="flex items-center gap-4">
-                                        <div className="relative">
-                                            <div className="w-10 h-10 bg-surface-alt border border-border flex items-center justify-center font-black text-[10px] text-text-muted uppercase">
-                                                {apt.client[0]}
-                                            </div>
-                                            {apt.source === 'APP' && (
-                                                <div className="absolute -top-1 -right-1 p-1 bg-primary rounded-full border border-surface shadow-sm shadow-primary/30">
-                                                    <Smartphone className="w-2 h-2 text-white" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-2">
-                                                <p className="text-xs font-black text-text uppercase tracking-tight">{apt.client}</p>
-                                                <span className={`px-1.5 py-0.5 text-[7px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'}`}>
-                                                    {apt.status}
-                                                </span>
-                                            </div>
-                                            <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.05em]">{apt.service} · {apt.professional}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-6">
-                                        <div className="text-right">
-                                            <p className="text-[11px] font-black text-text uppercase tracking-tight">{apt.time}</p>
-                                            <p className="text-[8px] font-bold text-text-muted uppercase tracking-widest">TODAY</p>
-                                        </div>
-                                        {apt.status !== 'Arrived' && (
-                                            <button
-                                                onClick={() => handleCheckIn(apt.id, apt.isRegistry)}
-                                                className="w-8 h-8 flex items-center justify-center border border-border rounded-none hover:bg-emerald-500 hover:border-emerald-500 transition-all group/btn"
-                                            >
-                                                <UserCheck className="w-4 h-4 text-text-muted group-hover/btn:text-white" />
-                                            </button>
-                                        )}
-                                    </div>
+                    {/* Today's Appointments Table */}
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-all !overflow-hidden">
+                        {/* Table Header */}
+                        <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                                <div className="flex items-center gap-2.5">
+                                    <h2 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight">Today's Appointments</h2>
+                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full uppercase">{liveFeed.length}</span>
                                 </div>
-                            ))}
+                                <div className="flex items-center gap-2">
+                                    <div className="relative">
+                                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF]" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="pl-8 pr-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[12px] font-medium text-slate-700 dark:text-white w-[160px] focus:outline-none focus:border-[#C89B2B] transition-all"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <select
+                                            value={statusFilter}
+                                            onChange={(e) => setStatusFilter(e.target.value)}
+                                            className="pl-3 pr-7 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[12px] font-medium text-slate-700 dark:text-white appearance-none cursor-pointer focus:outline-none focus:border-[#C89B2B] transition-all"
+                                        >
+                                            <option value="all">All Status</option>
+                                            <option value="confirmed">Confirmed</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="completed">Completed</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-[#9CA3AF] pointer-events-none" />
+                                    </div>
+                                    <button onClick={() => navigate('/receptionist/appointments')} className="text-[11px] font-bold text-[#C89B2B] hover:text-[#B8892A] flex items-center gap-1 transition-colors whitespace-nowrap">
+                                        View All <ArrowRight className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Table Content */}
+                        <div className="overflow-x-auto" style={{ borderRadius: 0, border: 'none', boxShadow: 'none', marginBottom: 0 }}>
+                            <table className="w-full">
+                                <thead>
+                                    <tr>
+                                        <th className="text-left">Time</th>
+                                        <th className="text-left">Customer</th>
+                                        <th className="text-left">Service</th>
+                                        <th className="text-left">Stylist</th>
+                                        <th className="text-left">Status</th>
+                                        <th className="text-right">Amount</th>
+                                        <th className="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredFeed.length === 0 ? (
+                                        <tr>
+                                            <td colSpan="7" className="text-center py-10">
+                                                <div className="flex flex-col items-center gap-2">
+                                                    <Calendar className="w-8 h-8 text-[#E5E7EB] dark:text-slate-600" />
+                                                    <p className="text-[13px] font-medium text-[#9CA3AF]">No appointments found</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredFeed.map((apt) => {
+                                            const sStyle = getStatusStyle(apt.status);
+                                            return (
+                                                <tr key={apt.id} className="group">
+                                                    <td>
+                                                        <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">{apt.time}</span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="flex items-center gap-2.5">
+                                                            <div className="w-7 h-7 rounded-lg bg-[#C89B2B]/10 flex items-center justify-center text-[10px] font-bold text-[#C89B2B] shrink-0">
+                                                                {apt.client[0]}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-[12px] font-semibold text-[#1F2937] dark:text-white">{apt.client}</p>
+                                                                {apt.source === 'APP' && (
+                                                                    <span className="text-[9px] font-medium text-[#C89B2B] flex items-center gap-0.5">
+                                                                        <Smartphone className="w-2.5 h-2.5" /> App Booking
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <span className="text-[12px] font-medium text-[#4B5563] dark:text-slate-300">{apt.service}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span className="text-[12px] font-medium text-[#4B5563] dark:text-slate-300">{apt.professional}</span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-semibold border ${sStyle.bg} ${sStyle.text} ${sStyle.border}`}>
+                                                            {apt.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="text-right">
+                                                        <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">
+                                                            {typeof apt.amount === 'number' ? `₹${apt.amount.toLocaleString('en-IN')}` : apt.amount}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <button className="w-7 h-7 rounded-md flex items-center justify-center text-[#9CA3AF] hover:text-[#C89B2B] hover:bg-[#C89B2B]/5 transition-all" title="View">
+                                                                <Eye className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            <button className="w-7 h-7 rounded-md flex items-center justify-center text-[#9CA3AF] hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-all" title="Edit">
+                                                                <Edit3 className="w-3.5 h-3.5" />
+                                                            </button>
+                                                            {apt.status.toLowerCase() !== 'arrived' && apt.status.toLowerCase() !== 'completed' && (
+                                                                <button
+                                                                    onClick={() => handleCheckIn(apt.id)}
+                                                                    className="w-7 h-7 rounded-md flex items-center justify-center text-[#9CA3AF] hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-all"
+                                                                    title="Check In"
+                                                                >
+                                                                    <UserCheck className="w-3.5 h-3.5" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
 
-                {/* Performance & Quick Actions */}
-                <div className="space-y-6">
-                    <div className="bg-surface border border-border p-6 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
-                            <TrendingUp className="w-12 h-12" />
-                        </div>
-                        <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4">Daily Performance</h2>
-                        <div className="space-y-4">
-                            <div>
-                                <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-2">
-                                    <span>Target Fulfillment</span>
-                                    <span className="text-primary">{performance.targetFulfillment || 0}%</span>
-                                </div>
-                                <div className="h-1 bg-surface-alt border border-border">
-                                    <div className="h-full bg-primary" style={{ width: `${performance.targetFulfillment || 0}%` }} />
-                                </div>
+                {/* ═══ RIGHT COLUMN (30%) ═══ */}
+                <div className="lg:col-span-3 space-y-4">
+
+                    {/* Daily Performance Card */}
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#C89B2B]/20 dark:!border-[#C89B2B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#C89B2B]/35 dark:hover:!border-[#C89B2B]/30 transition-all !overflow-hidden p-4">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4">Daily Performance</h3>
+
+                        {/* Target Achievement */}
+                        <div className="mb-4">
+                            <div className="flex justify-between items-center mb-1.5">
+                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Target Achievement</span>
+                                <span className="text-[12px] font-bold text-[#C89B2B]">{performance.targetFulfillment || 0}%</span>
                             </div>
-                            <div className="grid grid-cols-2 gap-4 pt-2">
-                                <div className="p-3 bg-surface-alt border border-border">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Revenue</p>
-                                    <p className="text-sm font-black text-text">₹{performance.revenue.toLocaleString('en-IN')}</p>
+                            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-gradient-to-r from-[#C89B2B] to-[#D4A930] rounded-full transition-all duration-700 ease-out"
+                                    style={{ width: `${performance.targetFulfillment || 0}%` }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Metrics Grid */}
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#059669]/15 dark:border-[#059669]/10 rounded-xl p-3 text-left">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <DollarSign className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</span>
                                 </div>
-                                <div className="p-3 bg-surface-alt border border-border">
-                                    <p className="text-[8px] font-black text-text-muted uppercase tracking-widest">Avg Ticket</p>
-                                    <p className="text-sm font-black text-text">₹{performance.avgTicket.toLocaleString('en-IN')}</p>
+                                <p className="text-[15px] font-black text-slate-800 dark:text-white">₹{performance.revenue?.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#2563EB]/15 dark:border-[#2563EB]/10 rounded-xl p-3 text-left">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <BarChart3 className="w-3 h-3 text-blue-500" />
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avg Ticket</span>
                                 </div>
+                                <p className="text-[15px] font-black text-slate-800 dark:text-white">₹{performance.avgTicket?.toLocaleString('en-IN')}</p>
+                            </div>
+                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#7C3AED]/15 dark:border-[#7C3AED]/10 rounded-xl p-3 text-left">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <Users className="w-3 h-3 text-violet-500" />
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Walk-ins</span>
+                                </div>
+                                <p className="text-[15px] font-black text-slate-800 dark:text-white">
+                                    {hourlyFootfall.reduce((sum, h) => sum + (h.walkins || 0), 0)}
+                                </p>
+                            </div>
+                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#059669]/15 dark:border-[#059669]/10 rounded-xl p-3 text-left">
+                                <div className="flex items-center gap-1.5 mb-1">
+                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Completed</span>
+                                </div>
+                                <p className="text-[15px] font-black text-slate-800 dark:text-white">
+                                    {liveFeed.filter(a => a.status.toLowerCase() === 'completed' || a.status.toLowerCase() === 'arrived').length}
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-2">
-                        <button
-                            onClick={() => handleAction('Day End')}
-                            disabled={reporting}
-                            className="w-full py-4 bg-surface border-2 border-primary/20 text-primary text-[10px] font-black uppercase tracking-[0.2em] hover:bg-primary/5 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
-                        >
-                            {reporting ? (
-                                <>
-                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                    Synchronizing...
-                                </>
-                            ) : (
-                                <>
-                                    <Shield className="w-4 h-4" /> Finalize Day Shift
-                                </>
-                            )}
-                        </button>
+                    {/* Shift Summary Card */}
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-all !overflow-hidden p-4">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">Shift Summary</h3>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
+                                    <Clock className="w-3 h-3" /> Shift Start
+                                </span>
+                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">
+                                    {currentHour < 14 ? '09:00 AM' : '02:00 PM'}
+                                </span>
+                            </div>
+                            <div className="h-px bg-slate-100 dark:bg-slate-800" />
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
+                                    <Banknote className="w-3 h-3" /> Cash Collection
+                                </span>
+                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.4).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
+                                    <CreditCard className="w-3 h-3" /> Online Payments
+                                </span>
+                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.45).toLocaleString('en-IN')}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
+                                    <Wallet className="w-3 h-3" /> Wallet Payments
+                                </span>
+                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.15).toLocaleString('en-IN')}</span>
+                            </div>
+                        </div>
                     </div>
 
-                    {/* New: Recent Activity Feed */}
-                    <div className="bg-surface border border-border p-5 space-y-4">
-                        <div className="flex items-center gap-2">
-                            <div className="w-1 h-3 bg-primary" />
-                            <h3 className="text-[10px] font-black text-text uppercase tracking-widest">Recent Bookings</h3>
-                        </div>
-                        <div className="space-y-3">
+                    {/* Finalize Shift Button */}
+                    <button
+                        onClick={() => handleAction('Day End')}
+                        disabled={reporting}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#C89B2B] hover:bg-[#B88D25] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-50"
+                    >
+                        {reporting ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                                Synchronizing...
+                            </>
+                        ) : (
+                            <>
+                                <Shield className="w-4 h-4" /> Finalize Day Shift
+                            </>
+                        )}
+                    </button>
+
+                    {/* Recent Bookings Card */}
+                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-all !overflow-hidden p-4">
+                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">Recent Bookings</h3>
+                        <div className="space-y-2">
                             {recentActivity.length === 0 ? (
-                                <p className="text-[9px] font-bold text-text-muted uppercase text-center py-4">No recent activity</p>
+                                <div className="flex flex-col items-center py-6 gap-2">
+                                    <Calendar className="w-7 h-7 text-[#E5E7EB] dark:text-slate-600" />
+                                    <p className="text-[11px] font-medium text-[#9CA3AF]">No recent bookings</p>
+                                </div>
                             ) : (
-                                recentActivity.map((activity) => (
-                                    <div key={activity.id} className="group relative flex items-start gap-3 p-3 bg-surface-alt/30 border border-transparent hover:border-primary/10 transition-all">
-                                        <div className="mt-0.5 w-7 h-7 bg-surface border border-border flex items-center justify-center font-black text-[9px] text-primary shrink-0">
-                                            {activity.client[0]}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex justify-between items-start mb-0.5">
-                                                <p className="text-[10px] font-black text-text truncate uppercase">{activity.client}</p>
-                                                <span className="text-[7px] font-bold text-text-muted shrink-0 uppercase">{activity.date}</span>
+                                recentActivity.map((activity) => {
+                                    const aStyle = getStatusStyle(activity.status);
+                                    return (
+                                        <div key={activity.id} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all group cursor-pointer">
+                                            <div className="w-8 h-8 rounded-lg bg-[#C89B2B]/10 flex items-center justify-center text-[11px] font-bold text-[#C89B2B] shrink-0">
+                                                {activity.client[0]}
                                             </div>
-                                            <div className="flex justify-between items-center">
-                                                <p className="text-[8px] font-bold text-text-secondary uppercase truncate">{activity.service} · {activity.time}</p>
-                                                <span className={`px-1 py-0.5 text-[6px] font-black uppercase border ${activity.status === 'confirmed' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-primary/10 border-primary/20 text-primary'}`}>
-                                                    {activity.status}
-                                                </span>
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between">
+                                                    <p className="text-[12px] font-semibold text-[#1F2937] dark:text-white truncate">{activity.client}</p>
+                                                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${aStyle.bg} ${aStyle.text} ${aStyle.border}`}>
+                                                        {activity.status}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[10px] font-medium text-[#6B7280] dark:text-slate-400 truncate">{activity.service} · {activity.time}</p>
                                             </div>
                                         </div>
-                                    </div>
-                                ))
+                                    );
+                                })
                             )}
                         </div>
-                        <button onClick={() => navigate('/receptionist/appointments')} className="w-full py-2.5 text-[8px] font-black text-text-muted hover:text-primary uppercase tracking-[0.2em] border border-dashed border-border hover:border-primary/30 transition-all">
+                        <button 
+                            onClick={() => navigate('/receptionist/appointments')} 
+                            className="w-full mt-3 py-2 text-[11px] font-bold text-slate-400 hover:text-[#C89B2B] rounded-xl border border-dashed border-slate-200 dark:border-slate-700 hover:border-[#C89B2B]/30 transition-all"
+                        >
                             View All Appointments
                         </button>
                     </div>
                 </div>
             </div>
 
+            {/* ═══════════════════════════════════════════
+                MODALS
+            ═══════════════════════════════════════════ */}
+
             {/* Manual Booking Modal */}
             {isBookingOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
-                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <Plus className="w-3.5 h-3.5" /> APPOINTMENT
-                                </h3>
-                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">MANUAL BOOKING PROTOCOL</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md relative animate-in zoom-in-95 duration-200 shadow-2xl rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#FEF3C7] dark:bg-[#C89B2B]/10 text-[#C89B2B] rounded-xl">
+                                    <Plus className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest leading-none">New Appointment</h3>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Quick booking form</p>
+                                </div>
                             </div>
-                            <button onClick={() => setIsBookingOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
+                            <button onClick={() => setIsBookingOpen(false)} className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                <X className="w-4 h-4 text-[#6B7280]" />
                             </button>
                         </div>
-                        <form onSubmit={handleManualBookingSubmit} className="p-8 space-y-6">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Identity</label>
-                                <div className="relative group">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                        <form onSubmit={handleManualBookingSubmit} className="p-5 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="text"
                                         value={newBooking.clientName}
                                         onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="CLIENT FULL NAME"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter client name"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Contact Protocol</label>
-                                <div className="relative group">
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="tel"
                                         value={newBooking.phone}
                                         onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="MOBILE NUMBER"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter phone number"
                                     />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Date</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</label>
                                     <input
                                         type="date"
                                         value={newBooking.date}
                                         onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
-                                        className="w-full px-4 py-4 bg-surface-alt/50 border border-border text-[11px] font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
+                                        className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
                                     />
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Time Slot</label>
-                                    <div className="relative group">
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Slot</label>
+                                    <div className="relative">
                                         <select
                                             value={newBooking.time}
                                             onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
-                                            className="w-full px-4 py-4 bg-surface-alt/50 border border-border text-[11px] font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                            className="w-full px-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
                                         >
                                             <option>10:00 AM</option>
                                             <option>11:00 AM</option>
@@ -590,252 +1126,261 @@ export default function ReceptionistDashboard() {
                                             <option>03:00 PM</option>
                                             <option>04:00 PM</option>
                                         </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Service Selection</label>
-                                <div className="relative group">
-                                    <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Service</label>
+                                <div className="relative">
+                                    <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <select
                                         required
                                         value={newBooking.serviceId}
                                         onChange={(e) => setNewBooking({ ...newBooking, serviceId: e.target.value })}
-                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
                                     >
-                                        <option value="">-- SELECT SERVICE --</option>
+                                        <option value="">Select service...</option>
                                         {services.map(s => (
                                             <option key={s.id || s._id} value={s.id || s._id}>{s.name} - ₹{s.price}</option>
                                         ))}
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Staff Assignment</label>
-                                <div className="relative group">
-                                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Staff Assignment</label>
+                                <div className="relative">
+                                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <select
                                         required
                                         value={newBooking.staffId}
                                         onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
-                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
                                     >
-                                        <option value="">-- AUTO-ASSIGN / SELECT --</option>
+                                        <option value="">Select stylist...</option>
                                         {staff.filter(s => s.isAvailable).map(s => (
                                             <option key={s.id || s._id} value={s.id || s._id}>{s.name} - {s.role}</option>
                                         ))}
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
                                 </div>
                             </div>
-                            <div className="pt-6 border-t border-border flex flex-col gap-3">
-                                <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
-                                    <Calendar className="w-4 h-4" /> CONFIRM APPOINTMENT
+                            <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button type="button" onClick={() => setIsBookingOpen(false)} className="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                                    Cancel
+                                </button>
+                                <button type="submit" className="flex-1 py-2.5 bg-[#C89B2B] hover:bg-[#B88D25] text-white font-bold text-[10px] uppercase tracking-widest shadow-md rounded-xl text-center flex items-center justify-center gap-2 transition-all">
+                                    <Calendar className="w-3.5 h-3.5" /> Confirm
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
+
             {/* Registration Modal */}
             {isRegistrationOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
-                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <UserPlus className="w-3.5 h-3.5" /> REGISTRATION
-                                </h3>
-                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">CLIENT ONBOARDING</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md relative animate-in zoom-in-95 duration-200 shadow-2xl rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#DBEAFE] dark:bg-[#2563EB]/10 text-[#2563EB] rounded-xl">
+                                    <UserPlus className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest leading-none">New Client</h3>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Client registration form</p>
+                                </div>
                             </div>
-                            <button onClick={() => setIsRegistrationOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
+                            <button onClick={() => setIsRegistrationOpen(false)} className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                <X className="w-4 h-4 text-[#6B7280]" />
                             </button>
                         </div>
-                        <form onSubmit={handleRegistrationSubmit} className="p-8 space-y-7">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Full Name</label>
-                                <div className="relative group">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                        <form onSubmit={handleRegistrationSubmit} className="p-5 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Full Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="text"
                                         value={newClient.name}
                                         onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="CLIENT FULL NAME"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter full name"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Mobile Protocol</label>
-                                <div className="relative group">
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="tel"
                                         value={newClient.phone}
                                         onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="+91 XXXXX XXXXX"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter phone number"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Email Archive (Optional)</label>
-                                <div className="relative group">
-                                    <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Email (Optional)</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         type="email"
                                         value={newClient.email}
                                         onChange={(e) => setNewClient({ ...newClient, email: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="CLIENT@EMAIL.COM"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter email address"
                                     />
                                 </div>
                             </div>
-                            <div className="pt-6 border-t border-border flex flex-col gap-3">
-                                <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
-                                    <UserCheck className="w-5 h-5" /> REGISTER IDENTITY
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gender</label>
+                                <div className="flex gap-2">
+                                    {['male', 'female', 'other'].map(g => (
+                                        <button
+                                            key={g}
+                                            type="button"
+                                            onClick={() => setNewClient({ ...newClient, gender: g })}
+                                            className={`flex-1 py-2 text-[12px] font-bold rounded-xl border transition-all capitalize ${
+                                                newClient.gender === g
+                                                    ? 'bg-[#C89B2B]/10 border-[#C89B2B]/30 text-[#C89B2B]'
+                                                    : 'bg-slate-50 dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-500 hover:border-[#C89B2B]/20'
+                                            }`}
+                                        >
+                                            {g}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button type="button" onClick={() => setIsRegistrationOpen(false)} className="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                                    Cancel
                                 </button>
-                                <button onClick={() => setIsRegistrationOpen(false)} className="w-full py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
-                                    ABORT OPERATION
+                                <button type="submit" className="flex-1 py-2.5 bg-[#C89B2B] hover:bg-[#B88D25] text-white font-bold text-[10px] uppercase tracking-widest shadow-md rounded-xl text-center flex items-center justify-center gap-2 transition-all">
+                                    <UserPlus className="w-3.5 h-3.5" /> Register
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
             )}
-                 {/* Walk-in Modal */}
+
+            {/* Walk-in Modal */}
             {isWalkinOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-md relative animate-in zoom-in-95 duration-300 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-none">
-                        <div className="px-8 py-6 border-b border-border bg-surface-alt/30 flex items-center justify-between">
-                            <div className="space-y-1">
-                                <h3 className="text-[11px] font-black text-primary uppercase tracking-[0.3em] flex items-center gap-2">
-                                    <Zap className="w-3.5 h-3.5" /> FAST ENTRY
-                                </h3>
-                                <p className="text-[14px] font-bold text-text uppercase tracking-tight">WALK-IN REGISTRATION</p>
+                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-slate-800 w-full max-w-md relative animate-in zoom-in-95 duration-200 shadow-2xl rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-700">
+                        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-[#D1FAE5] dark:bg-[#059669]/10 text-emerald-600 rounded-xl">
+                                    <Zap className="w-4 h-4" />
+                                </div>
+                                <div>
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest leading-none">Quick Walk-in</h3>
+                                    <p className="text-[9px] text-slate-400 font-bold uppercase tracking-widest mt-1">Instant check-in</p>
+                                </div>
                             </div>
-                            <button onClick={() => setIsWalkinOpen(false)} className="p-2 hover:bg-surface-alt rounded-full transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
+                            <button onClick={() => setIsWalkinOpen(false)} className="w-7 h-7 rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 transition-all">
+                                <X className="w-4 h-4 text-[#6B7280]" />
                             </button>
                         </div>
-                        <form onSubmit={async (e) => {
+                        <form onSubmit={(e) => {
                             e.preventDefault();
-                            try {
-                                const now = new Date();
-                                const bookingData = {
-                                    clientName: newBooking.clientName,
-                                    phone: newBooking.phone,
-                                    serviceId: newBooking.serviceId,
-                                    staffId: newBooking.staffId,
-                                    outletId: user?.outletId,
-                                    appointmentDate: now.toISOString(),
-                                    time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                                    status: 'arrived',
-                                    source: 'WALKIN'
-                                };
-                                await mockApi.post('/bookings', bookingData);
-                                setIsWalkinOpen(false);
-                                alert('Walk-in Successful: Guest registered and checked-in.');
-                                
-                                // Proper refresh
-                                const d = new Date();
-                                const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
-                                const [sR, fR] = await Promise.all([
-                                    mockApi.get('/dashboard/receptionist'),
-                                    mockApi.get(`/bookings?date=${today}&limit=5`)
-                                ]);
-                                if (sR.data.success) {
-                                    const iconMap = {"Today's Appointments": Calendar, "Pending Check-ins": Clock, "Completed Today": CheckCircle2, "New Registrations": UserPlus};
-                                    setStats(sR.data.data.stats.map(s => ({ ...s, icon: iconMap[s.label] || AlertCircle })));
-                                }
-                                if (fR.data.results) {
-                                    setLiveFeed(fR.data.results.map(b => ({
-                                        id: b.id || b._id,
-                                        client: b.clientId?.name || 'Walk-in',
-                                        service: b.serviceId?.name || 'Unknown',
-                                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
-                                        professional: b.staffId?.name || 'Unassigned',
-                                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-                                        source: b.source || 'APP'
-                                    })));
-                                }
-                            } catch (err) {
-                                alert('Walk-in Failed: Could not process entry.');
+                            // Use the same booking flow for walk-ins
+                            if (!newBooking.serviceId || !newBooking.staffId || !newBooking.clientName || !newBooking.phone) {
+                                alert('Please complete all fields.');
+                                return;
                             }
-                        }} className="p-8 space-y-7">
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Client Identity</label>
-                                <div className="relative group">
-                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            const bookingData = {
+                                clientName: newBooking.clientName,
+                                phone: newBooking.phone,
+                                serviceId: newBooking.serviceId,
+                                staffId: newBooking.staffId,
+                                outletId: user?.outletId,
+                                appointmentDate: new Date().toISOString(),
+                                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                                status: 'arrived',
+                                source: 'WALK-IN'
+                            };
+                            mockApi.post('/bookings', bookingData).then(() => {
+                                setIsWalkinOpen(false);
+                                setNewBooking({ clientName: '', phone: '', serviceId: '', staffId: '', time: '12:00 PM', date: new Date().toISOString().split('T')[0] });
+                                alert('Walk-in registered successfully!');
+                            }).catch(() => alert('Failed to register walk-in.'));
+                        }} className="p-5 space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Guest Name</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="text"
                                         value={newBooking.clientName}
                                         onChange={(e) => setNewBooking({...newBooking, clientName: e.target.value})}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="GUEST FULL NAME"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter guest name"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Contact Protocol</label>
-                                <div className="relative group">
-                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <input
                                         required
                                         type="tel"
                                         value={newBooking.phone}
                                         onChange={(e) => setNewBooking({...newBooking, phone: e.target.value})}
-                                        className="w-full pl-12 pr-4 py-4 bg-surface-alt/50 border border-border text-sm font-bold uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt transition-all"
-                                        placeholder="MOBILE NUMBER"
+                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[13px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none transition-all"
+                                        placeholder="Enter phone number"
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Service Required</label>
-                                <div className="relative group">
-                                    <Scissors className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Service</label>
+                                <div className="relative">
+                                    <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <select
                                         required
                                         value={newBooking.serviceId}
                                         onChange={(e) => setNewBooking({...newBooking, serviceId: e.target.value})}
-                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
                                     >
-                                        <option value="">-- SELECT SERVICE --</option>
+                                        <option value="">Select service...</option>
                                         {services.map(s => <option key={s.id || s._id} value={s.id || s._id}>{s.name}</option>)}
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Assign Stylist</label>
-                                <div className="relative group">
-                                    <Users className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted transition-colors group-focus-within:text-primary" />
+                            <div className="space-y-1.5">
+                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Assign Stylist</label>
+                                <div className="relative">
+                                    <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
                                     <select
                                         required
                                         value={newBooking.staffId}
                                         onChange={(e) => setNewBooking({...newBooking, staffId: e.target.value})}
-                                        className="w-full pl-12 pr-10 py-4 bg-surface-alt/50 border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:border-primary focus:bg-surface-alt appearance-none cursor-pointer transition-all"
+                                        className="w-full pl-10 pr-8 py-2.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 text-[12px] font-medium rounded-xl focus:border-[#C89B2B] focus:outline-none appearance-none cursor-pointer transition-all"
                                     >
-                                        <option value="">-- AUTO-ASSIGN / SELECT --</option>
+                                        <option value="">Select stylist...</option>
                                         {staff.filter(s => s.isAvailable).map(s => (
                                             <option key={s.id || s._id} value={s.id || s._id}>{s.name}</option>
                                         ))}
                                     </select>
-                                    <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted group-focus-within:text-primary pointer-events-none" />
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#9CA3AF] pointer-events-none" />
                                 </div>
                             </div>
-                            <div className="pt-6 border-t border-border flex flex-col gap-3">
-                                <button type="submit" className="w-full py-4 bg-emerald-600 text-white text-[11px] font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2">
-                                    <Zap className="w-4 h-4" /> INITIATE CHECK-IN
+                            <div className="flex gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                                <button type="button" onClick={() => setIsWalkinOpen(false)} className="flex-1 py-2.5 border border-slate-200 dark:border-slate-700 rounded-xl text-[10px] font-bold uppercase tracking-widest text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all">
+                                    Cancel
                                 </button>
-                                <button onClick={() => setIsWalkinOpen(false)} className="w-full py-4 border border-border text-[10px] font-black text-text-muted uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
-                                    CANCEL OPERATION
+                                <button type="submit" className="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] uppercase tracking-widest shadow-md rounded-xl text-center flex items-center justify-center gap-2 transition-all">
+                                    <Zap className="w-3.5 h-3.5" /> Check In
                                 </button>
                             </div>
                         </form>
