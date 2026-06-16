@@ -257,6 +257,7 @@ const ReceptionistInvoicesPage = lazy(() => import('./pages/receptionist/Invoice
 const PaymentsPage = lazy(() => import('./pages/receptionist/PaymentsPage'));
 const ReceptionistSettingsPage = lazy(() => import('./pages/receptionist/ReceptionistSettingsPage'));
 const ReceptionistProfilePage = lazy(() => import('./pages/receptionist/ReceptionistProfilePage'));
+const ReceptionistAttendance = lazy(() => import('./pages/receptionist/ReceptionistAttendance'));
 const PettyCashPage = lazy(() => import('./pages/accountant/PettyCashPage'));
 
 const StylistLayout = lazy(() => import('./layouts/StylistLayout'));
@@ -647,6 +648,7 @@ function App() {
                             <Route path="/receptionist/settings" element={<ReceptionistSettingsPage />} />
                             <Route path="/receptionist/support" element={<SupportPage />} />
                             <Route path="/receptionist/profile" element={<ReceptionistProfilePage />} />
+                            <Route path="/receptionist/attendance" element={<ReceptionistAttendance />} />
                           </Route>
                         </Route>
 
@@ -655,7 +657,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<StylistLayout />}>
-                            <Route path="/stylist" element={<StaffDashboardPage />} />
+                            <Route path="/stylist" element={<StylistDashboard />} />
                             <Route path="/stylist/schedule" element={<Navigate to="/stylist" replace />} />
                             <Route path="/stylist/clients" element={<StylistClientsPage />} />
                             <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />

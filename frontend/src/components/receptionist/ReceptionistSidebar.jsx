@@ -12,7 +12,8 @@ import {
 
 const menuItems = [
     { label: 'Dashboard', icon: LayoutDashboard, path: '/receptionist' },
-    { label: 'Appointments & Orders', icon: Calendar, path: '/receptionist/appointments' },
+    { label: 'Attendance', icon: Calendar, path: '/receptionist/attendance' },
+    { label: 'Appointments & Orders', icon: ClipboardList, path: '/receptionist/appointments' },
     { label: 'Lead & Enquiry', icon: MessageSquare, path: '/receptionist/leads' },
     { label: 'Quick Bill', icon: Zap, path: '/receptionist/pos/billing', accent: true },
     { label: 'Invoice & Payments', icon: FileText, path: '/receptionist/invoices' },

@@ -36,6 +36,8 @@
         "manager": "/manager",
         "receptionist": "/receptionist",
         "stylist": "/stylist",
+        "stylish": "/stylist",
+        "staff": "/stylist",
         "accountant": "/accountant",
         "inventory_manager": "/inventory"
     }

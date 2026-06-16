@@ -20,11 +20,23 @@ const {
     getSalaryAdvances,
     createSalaryAdvance,
     updateSalaryAdvance,
-    deleteSalaryAdvance
+    deleteSalaryAdvance,
+    punchAttendance,
+    getMyTodayAttendance,
+    getMyAttendanceHistory,
+    getMyWorksite
 } = require('../Controllers/hrController');
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
+
+// Self-attendance routes (accessible to any logged-in staff member)
+router.post('/attendance/punch', punchAttendance);
+router.get('/attendance/me', getMyTodayAttendance);
+router.get('/attendance/history', getMyAttendanceHistory);
+router.get('/attendance/worksite', getMyWorksite);
+
+// HR admin routes require 'admin', 'manager', or 'p:hr' permission
 router.use(authorize('admin', 'manager', 'p:hr'));
 
 router.get('/staff', getAllStaff);

@@ -17,7 +17,8 @@ const getLocal = (key, def = []) => {
 };
 const saveLocal = (key, data) => localStorage.setItem(key, JSON.stringify(data));
 
-export const mockGet = async (url) => {
+export const mockGet = async (url, config = {}) => {
+    const params = config.params || {};
     await delay();
     if (url.startsWith('/payroll/period')) {
         const year = new URLSearchParams(url.split('?')[1]).get('year');
@@ -799,6 +800,86 @@ export const mockGet = async (url) => {
         const today = new Date().toLocaleDateString('en-CA');
         const todayRecord = punches.find(p => p.date === today);
         return { data: todayRecord || {} };
+    }
+    if (url === '/attendance/history') {
+        const month = params?.month !== undefined ? parseInt(params.month, 10) : new Date().getMonth();
+        const year = params?.year !== undefined ? parseInt(params.year, 10) : new Date().getFullYear();
+        // Generate mock data for the requested month
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const history = [];
+        
+        let presentCount = 0;
+        let absentCount = 0;
+
+        const realPunches = getLocal('stylist_attendance', []);
+        const todayStr = new Date().toLocaleDateString('en-CA');
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const dateObj = new Date(year, month, d);
+            const isWeekend = dateObj.getDay() === 0; // Sunday
+
+            if (dateObj > new Date()) continue; // don't mock future
+
+            const realPunch = realPunches.find(p => p.date === dateStr);
+            if (realPunch) {
+                history.push({
+                    date: dateStr,
+                    status: 'PRESENT',
+                    checkInAt: realPunch.checkInAt,
+                    checkOutAt: realPunch.checkOutAt,
+                    notes: null
+                });
+                presentCount++;
+                continue;
+            }
+
+            // If it's today and no real punch exists, we mark as absent (or pending)
+            if (dateStr === todayStr) {
+                history.push({
+                    date: dateStr,
+                    status: 'ABSENT',
+                    checkInAt: null,
+                    checkOutAt: null,
+                    notes: null
+                });
+                absentCount++;
+                continue;
+            }
+
+            let status = 'PRESENT';
+            if (isWeekend) status = 'WEEKOFF';
+            else {
+                const rand = Math.random();
+                if (rand < 0.15) status = 'ABSENT';
+            }
+
+            let checkIn = null;
+            let checkOut = null;
+            if (status === 'PRESENT') {
+                checkIn = `${dateStr}T09:00:00Z`;
+                checkOut = `${dateStr}T18:00:00Z`;
+                presentCount++;
+            } else if (status === 'ABSENT') {
+                absentCount++;
+            }
+
+            history.push({
+                date: dateStr,
+                status,
+                checkInAt: checkIn,
+                checkOutAt: checkOut,
+                notes: null
+            });
+        }
+
+        return {
+            data: {
+                success: true,
+                data: history,
+                stats: { present: presentCount, absent: absentCount, total: daysInMonth }
+            }
+        };
     }
     if (url === '/stylist/commissions') {
         const stats = [

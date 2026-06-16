@@ -239,9 +239,7 @@ export default function AuthPage() {
                             </AnimatePresence>
                         </div>
 
-                        <div className="absolute top-0 right-0 p-8 opacity-20">
-                            <Sparkles className="w-5 h-5 text-[#B4912B] animate-pulse" />
-                        </div>
+
                     </motion.div>
 
                     {/* Form Section */}
@@ -321,7 +319,7 @@ export default function AuthPage() {
                                                 <div className="grid grid-cols-2 gap-2">
                                                     {[
                                                         { label: 'Admin', e: 'mrmmultani@gmail.com', p: '123456' },
-                                                        { label: 'Stylist', e: 'neha@gmail.com', p: '123456' },
+                                                        { label: 'Stylist', e: 'stylish@gmail.com', p: '123' },
                                                         { label: 'Accountant', e: 'prachi@gmail.com', p: '123456' },
                                                         { label: 'Manager', e: 'aditya@gmail.com', p: '123456' },
                                                         { label: 'Receptionist', e: 'reciption@gmail.com', p: '123' },

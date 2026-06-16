@@ -1,38 +1,44 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import * as Icons from 'lucide-react';
+import { getImageUrl } from '../../utils/imageUtils';
 import {
-    ChevronLeft, ChevronRight, X, ChevronDown, LogOut, User, Shield, Info
+    LayoutDashboard, Users, Clock, Settings, LogOut, ChevronLeft, ChevronRight, X, User,
+    Scissors, Bell, Shield, LifeBuoy, DollarSign, UserCheck
 } from 'lucide-react';
-import stylistMenuData from '../../data/stylistMenu.json';
 
-// Map icon names from JSON to actual Lucide components
-const menuItems = stylistMenuData.map(item => ({
-    ...item,
-    icon: Icons[item.iconName] || Icons.HelpCircle,
-    subItems: item.subItems?.map(sub => ({
-        ...sub,
-        icon: Icons[sub.iconName] || Icons.HelpCircle
-    }))
-}));
+const menuItems = [
+    { label: 'Overview', icon: LayoutDashboard, path: '/stylist' },
+    { label: 'Attendance', icon: UserCheck, path: '/stylist/attendance', badge: { count: 'LIVE', color: 'bg-emerald-500 text-white animate-pulse' } },
+    { label: 'My clients', icon: Users, path: '/stylist/clients' },
+    { label: 'Earnings', icon: DollarSign, path: '/stylist/commissions' },
+    { label: 'Time off', icon: Clock, path: '/stylist/timeoff' },
+    { label: 'Settings', icon: Settings, path: '/stylist/settings', subItems: [
+        { label: 'My profile', path: '/stylist/settings/profile' },
+        { label: 'Services & skills', path: '/stylist/settings/skills' },
+        { label: 'Availability', path: '/stylist/settings/availability' },
+        { label: 'Security', path: '/stylist/settings/security' }
+    ]},
+    { label: 'Support', icon: LifeBuoy, path: '/stylist/support' }
+];
 
-export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
+export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
+    const { salon } = useBusiness();
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
-    const [expandedItem, setExpandedItem] = useState(null);
+
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
+    const [expandedItem, setExpandedItem] = useState(null);
 
     useEffect(() => {
         const handleResize = () => setIsLgUp(window.innerWidth >= 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
-
-    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     useEffect(() => {
         menuItems.forEach(item => {
@@ -51,89 +57,157 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
         }
     };
 
-    const isActive = (path) => {
-        if (path === '/stylist') return location.pathname === '/stylist';
-        return location.pathname === path || location.pathname.startsWith(`${path}/`);
-    };
+    const effectiveCollapsed = isLgUp && collapsed && !isHovered;
 
     const sidebarContent = (
-        <div className="flex flex-col h-full bg-background transition-all duration-300 relative border-r border-border/40">
-            {/* Collapse Toggle (Desktop) */}
-            <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="hidden lg:flex absolute -right-3 top-8 w-6 h-6 rounded-full bg-surface border border-border/60 items-center justify-center shadow-lg hover:text-primary hover:border-primary transition-all z-50 group hover:scale-110"
-            >
-                {collapsed
-                    ? <ChevronRight className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
-                    : <ChevronLeft className="w-3.5 h-3.5 text-text-muted group-hover:text-primary" />
+        <div className="sidebar-container flex flex-col h-full bg-white dark:bg-slate-900 border-r border-[#E5E7EB] dark:border-slate-700/50 transition-all duration-300" style={{ backdropFilter: 'blur(20px)' }}>
+            <style>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 3px;
                 }
-            </button>
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(100,100,100,0.15);
+                    border-radius: 999px;
+                }
+                .sidebar-container,
+                .sidebar-container *,
+                .sidebar-container button,
+                .sidebar-container span,
+                .sidebar-container a {
+                    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+                    font-style: normal !important;
+                }
+                /* Active state: gold bg, white text & icons */
+                .sidebar-container nav a.sidebar-active {
+                    background-color: #C89B2B !important;
+                    color: #ffffff !important;
+                }
+                .sidebar-container nav a.sidebar-active svg,
+                .sidebar-container nav a.sidebar-active span {
+                    color: #ffffff !important;
+                }
+                /* Inactive icons */
+                html:not(.dark) .sidebar-container nav a:not(.sidebar-active) svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button:not(.sidebar-active) svg.sidebar-svg-icon {
+                    color: #6B7280 !important;
+                    stroke: #6B7280 !important;
+                }
+                html:not(.dark) .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
+                html:not(.dark) .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
+                    color: #C89B2B !important;
+                    stroke: #C89B2B !important;
+                }
+                /* Dark mode inactive icons */
+                .dark .sidebar-container nav a:not(.sidebar-active) svg.sidebar-svg-icon,
+                .dark .sidebar-container nav button:not(.sidebar-active) svg.sidebar-svg-icon {
+                    color: #94a3b8 !important;
+                    stroke: #94a3b8 !important;
+                }
+                .dark .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
+                .dark .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
+                    color: #C89B2B !important;
+                    stroke: #C89B2B !important;
+                }
+                /* Logout hover */
+                .sidebar-container .logout-btn:hover svg {
+                    color: #EF4444 !important;
+                    stroke: #EF4444 !important;
+                }
+            `}</style>
 
-            {/* Logo Section */}
-            <div className="flex items-center justify-between h-20 px-6 border-b border-border/40">
-                <div className="flex-1 flex items-center justify-center overflow-hidden">
-                    <div className="w-45 h-45 flex items-center justify-center shrink-0">
+            {/* Logo Header */}
+            <div className={`flex ${effectiveCollapsed ? 'flex-col gap-1.5 h-[60px] py-2 justify-center' : 'flex-row justify-between h-[56px] px-4'} items-center border-b border-[#E5E7EB] dark:border-slate-700/50 relative shrink-0`}>
+                <div className="flex items-center justify-center overflow-hidden">
+                    <div className={`${effectiveCollapsed ? 'h-6 w-6' : 'h-10 w-32'} flex items-center justify-center shrink-0`}>
                         <img
                             src={logoSrc}
-                            alt="Salon"
-                            className="w-full h-full object-contain"
+                            alt="Logo"
+                            className={`w-full h-full object-contain ${effectiveCollapsed ? '' : 'scale-[1.3]'}`}
                         />
                     </div>
                 </div>
-                {/* Mobile close */}
-                {mobileOpen && (
-                    <button
-                        onClick={() => setMobileOpen(false)}
-                        className="lg:hidden absolute top-4 right-4 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-surface-alt transition-colors"
-                    >
-                        <X className="w-5 h-5 text-text-muted" />
-                    </button>
-                )}
+                {/* Desktop Collapse/Expand */}
+                <button
+                    onClick={() => setCollapsed(!collapsed)}
+                    className="hidden lg:flex w-6 h-6 rounded-md items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-400 hover:text-slate-600 cursor-pointer"
+                    title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+                >
+                    {collapsed ? (
+                        <ChevronRight className="w-3.5 h-3.5" />
+                    ) : (
+                        <ChevronLeft className="w-3.5 h-3.5" />
+                    )}
+                </button>
+                <button
+                    onClick={() => setMobileOpen(false)}
+                    className="lg:hidden absolute top-3 right-3 w-7 h-7 rounded-md flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+                >
+                    <X className="w-4 h-4 text-slate-400" />
+                </button>
             </div>
 
-            {/* Nav Links */}
-            <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            {/* Navigation */}
+            <nav className="flex-1 px-2 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
                     const hasSubItems = item.subItems && item.subItems.length > 0;
                     const isExpanded = expandedItem === item.label && !effectiveCollapsed;
-                    const active = isActive(item.path);
-
+                    const isItemActive = location.pathname === item.path || (item.path !== '/stylist' && location.pathname.startsWith(item.path));
+                    
                     if (hasSubItems) {
                         return (
-                            <div key={item.label} className="space-y-1">
+                            <div key={item.label} className="space-y-0.5">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
-                                    className={`flex items-center justify-between w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group ${active ? 'bg-primary/10 text-primary shadow-sm' : 'text-text-secondary hover:bg-surface hover:text-text'
+                                    title={effectiveCollapsed ? item.label : undefined}
+                                    className={`flex items-center w-full rounded-lg transition-all duration-200 ease-out group relative cursor-pointer border-0
+                                        ${effectiveCollapsed ? 'justify-center h-9 w-9 mx-auto' : 'justify-between px-3 py-[7px] gap-2.5'}
+                                        ${isItemActive && !isExpanded
+                                            ? 'sidebar-active bg-[#C89B2B] text-white shadow-sm shadow-[#C89B2B]/20'
+                                            : 'text-[#4B5563] dark:text-slate-300 hover:bg-[#C89B2B]/[0.06] dark:hover:bg-slate-700/50 hover:text-[#C89B2B]'
                                         }`}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    <div className={`flex items-center ${effectiveCollapsed ? 'justify-center' : 'gap-2.5'}`}>
                                         <item.icon
-                                            className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${active ? 'text-primary' : 'text-text-muted group-hover:text-text-secondary'}`}
+                                            className={`w-[18px] h-[18px] shrink-0 sidebar-svg-icon transition-colors ${isItemActive && !isExpanded ? 'text-white' : ''}`}
                                         />
-                                        {!effectiveCollapsed && <span className="whitespace-nowrap animate-in fade-in duration-300">{item.label}</span>}
+                                        {!effectiveCollapsed && (
+                                            <span className={`whitespace-nowrap text-[13px] font-semibold tracking-[-0.01em] transition-colors ${isItemActive && !isExpanded ? '!text-white' : 'text-[#374151] dark:text-slate-300 group-hover:text-[#C89B2B]'}`}>
+                                                {item.label}
+                                            </span>
+                                        )}
                                     </div>
                                     {!effectiveCollapsed && (
-                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                                        <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 sidebar-svg-icon ${isExpanded ? 'rotate-90' : ''}`} />
+                                    )}
+                                    
+                                    {/* Tooltip (collapsed) */}
+                                    {effectiveCollapsed && (
+                                        <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700">
+                                            {item.label}
+                                        </div>
                                     )}
                                 </button>
-
+                                
                                 {isExpanded && !effectiveCollapsed && (
-                                    <div className="ml-7 pl-2 border-l border-primary/20 space-y-1 mt-1">
-                                        {item.subItems.map((sub) => (
-                                            <NavLink
-                                                key={sub.path}
-                                                to={sub.path}
-                                                onClick={() => setMobileOpen(false)}
-                                                className={({ isActive: isSubActive }) =>
-                                                    `flex items-center justify-between py-2 px-4 rounded-full text-[10px] font-bold transition-all duration-300 relative ${isSubActive
-                                                        ? 'bg-white text-primary shadow-sm border border-primary/20 translate-x-1.5'
-                                                        : 'text-text-muted hover:text-text-secondary hover:translate-x-1'
-                                                    }`
-                                                }
-                                            >
-                                                <span>{sub.label}</span>
-                                            </NavLink>
-                                        ))}
+                                    <div className="mt-1 mb-2 space-y-0.5">
+                                        {item.subItems.map((sub) => {
+                                            const isSubActive = location.pathname === sub.path;
+                                            return (
+                                                <NavLink
+                                                    key={sub.path}
+                                                    to={sub.path}
+                                                    onClick={() => setMobileOpen(false)}
+                                                    className={`flex items-center pl-10 pr-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200
+                                                        ${isSubActive 
+                                                            ? 'text-[#C89B2B] bg-[#C89B2B]/5 font-semibold' 
+                                                            : 'text-[#6B7280] dark:text-slate-400 hover:text-[#C89B2B] dark:hover:text-[#C89B2B]'
+                                                        }`}
+                                                >
+                                                    <span className={`w-1.5 h-1.5 rounded-full mr-2.5 ${isSubActive ? 'bg-[#C89B2B]' : 'bg-transparent border border-[#9CA3AF] dark:border-slate-500'}`} />
+                                                    {sub.label}
+                                                </NavLink>
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>
@@ -142,35 +216,48 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
 
                     return (
                         <NavLink
-                            key={item.label}
+                            key={item.label || item.path}
                             to={item.path}
                             end={item.path === '/stylist'}
                             onClick={() => setMobileOpen(false)}
-                            className={({ isActive: isItemActive }) =>
-                                `flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group relative ${isItemActive
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/20 scale-[1.02] border border-primary/30'
-                                    : 'text-text-secondary hover:bg-surface hover:text-text'
-                                }`
-                            }
+                            title={effectiveCollapsed ? item.label : undefined}
+                            className={`flex items-center rounded-lg transition-all duration-200 ease-out group relative
+                                ${effectiveCollapsed ? 'justify-center h-9 w-9 mx-auto' : 'px-3 py-[7px] gap-2.5'}
+                                ${isItemActive
+                                    ? 'sidebar-active bg-[#C89B2B] text-white shadow-sm shadow-[#C89B2B]/20'
+                                    : 'text-[#4B5563] dark:text-slate-300 hover:bg-[#C89B2B]/[0.06] dark:hover:bg-slate-700/50 hover:text-[#C89B2B]'
+                                }`}
                         >
-                            <div className="flex items-center gap-3">
-                                <item.icon
-                                    className={`w-5 h-5 shrink-0 transition-transform group-hover:scale-110 ${isActive(item.path) ? 'text-white' : 'text-text-muted group-hover:text-text-secondary'}`}
-                                />
-                                {!effectiveCollapsed && <span className="whitespace-nowrap animate-in fade-in duration-300">{item.label}</span>}
-                            </div>
-
-                            {/* Badges */}
-                            {!effectiveCollapsed && item.badge && (
-                                <span className={`px-1.5 py-0.5 rounded-md text-[9px] font-black tracking-tighter ${isActive(item.path) ? "bg-white/20 text-white" : item.badge.color}`}>
-                                    {item.badge.count}
-                                </span>
+                            <item.icon
+                                className={`w-[18px] h-[18px] shrink-0 sidebar-svg-icon transition-colors ${isItemActive ? 'text-white' : ''}`}
+                            />
+                            {!effectiveCollapsed && (
+                                <div className="flex flex-1 items-center justify-between">
+                                    <span className={`whitespace-nowrap text-[13px] font-semibold tracking-[-0.01em] transition-colors ${isItemActive ? '!text-white' : 'text-[#374151] dark:text-slate-300 group-hover:text-[#C89B2B]'}`}>
+                                        {item.label}
+                                    </span>
+                                    {item.badge && (
+                                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider ${isItemActive ? "bg-white/20 text-white" : item.badge.color}`}>
+                                            {item.badge.count}
+                                        </span>
+                                    )}
+                                </div>
                             )}
-
-                            {/* Tooltip for collapsed mode */}
+                            
+                            {/* Badge Indicator (collapsed) */}
+                            {effectiveCollapsed && item.badge && (
+                                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                            )}
+                            
+                            {/* Tooltip (collapsed) */}
                             {effectiveCollapsed && (
-                                <div className="absolute left-[70px] px-3 py-2 rounded-lg bg-gray-900 text-white text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-2xl transition-all duration-200 border border-gray-700 translate-x-1 group-hover:translate-x-0">
+                                <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700 flex items-center gap-2">
                                     {item.label}
+                                    {item.badge && (
+                                        <span className={`px-1 py-0.5 rounded text-[8px] font-bold ${item.badge.color.replace('animate-pulse', '')}`}>
+                                            {item.badge.count}
+                                        </span>
+                                    )}
                                 </div>
                             )}
                         </NavLink>
@@ -178,39 +265,44 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
                 })}
             </nav>
 
-            {/* Footer / User Profile Chip */}
-            <div className="mt-auto p-3 space-y-2 border-t border-border/40 bg-surface/30 backdrop-blur-md">
-                {!effectiveCollapsed && (
-                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-surface border border-border/60 shadow-sm hover:border-primary/30 transition-colors animate-in fade-in slide-in-from-bottom-2 duration-500 overflow-hidden">
-                        <div className="w-9 h-9 flex items-center justify-center shrink-0 bg-primary/10 rounded-xl overflow-hidden border border-primary/20">
+            {/* User Profile Card */}
+            {!effectiveCollapsed && (
+                <div className="px-2 pb-1.5 animate-in fade-in duration-300">
+                    <div className="flex items-center gap-2.5 px-3 py-2 rounded-xl bg-[#F8F9FB] dark:bg-slate-800/50 border border-[#E5E7EB] dark:border-slate-700/50">
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0 bg-[#C89B2B]/10 border border-[#C89B2B]/20">
                             {user?.avatar ? (
                                 <img src={user.avatar} alt="" className="w-full h-full object-cover" />
                             ) : (
-                                <User className="w-5 h-5 text-primary" />
+                                <User className="w-4 h-4 text-[#C89B2B]" />
                             )}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-[11px] font-black text-text truncate uppercase leading-none mb-1">{user?.name || 'Stylist Pro'}</h3>
-                            <div className="flex items-center gap-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[9px] font-bold text-text-muted uppercase tracking-tighter">Duty: Active</span>
+                            <div className="text-[12px] font-semibold text-[#1F2937] dark:text-white truncate">{user?.name || 'Stylist Pro'}</div>
+                            <div className="text-[10px] text-[#6B7280] dark:text-slate-400 truncate flex items-center gap-1.5 mt-0.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                                On Duty
                             </div>
                         </div>
-                        <NavLink to="/stylist/settings" className="p-1.5 rounded-lg hover:bg-surface-alt text-text-muted hover:text-primary transition-colors">
-                            <Icons.Settings className="w-3.5 h-3.5" />
+                        <NavLink to="/stylist/settings" className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-[#C89B2B] transition-colors shrink-0 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-slate-600">
+                            <Settings className="w-3.5 h-3.5" />
                         </NavLink>
                     </div>
-                )}
+                </div>
+            )}
 
+            {/* Logout */}
+            <div className={`border-t border-[#E5E7EB] dark:border-slate-700/50 ${effectiveCollapsed ? 'p-1.5' : 'px-3 py-2'}`}>
                 <button
                     onClick={logout}
-                    className={`flex items-center justify-center gap-3 w-full px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-300 group ${effectiveCollapsed ? 'justify-center' : 'text-text-secondary hover:bg-red-50 hover:text-red-600 border border-transparent hover:border-red-100'}`}
+                    className={`logout-btn flex items-center rounded-lg text-[13px] font-semibold text-[#6B7280] dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 transition-all duration-200 group cursor-pointer border-0
+                        ${effectiveCollapsed ? 'justify-center h-9 w-9 mx-auto relative' : 'w-full px-3 py-2 gap-2.5'}`}
+                    title={effectiveCollapsed ? 'Logout' : undefined}
                 >
-                    <LogOut className={`w-5 h-5 shrink-0 ${effectiveCollapsed ? 'text-text-muted' : 'text-text-muted group-hover:text-red-600'}`} />
-                    {!effectiveCollapsed && <span className="flex-1 text-left">Log out</span>}
+                    <LogOut className="shrink-0 w-[18px] h-[18px] text-[#6B7280] dark:text-slate-400 group-hover:text-red-500 transition-colors sidebar-svg-icon" />
+                    {!effectiveCollapsed && <span className="animate-in fade-in slide-in-from-left-2 duration-300 font-semibold">Logout</span>}
                     {effectiveCollapsed && (
-                        <div className="absolute left-[70px] px-3 py-2 rounded-lg bg-red-600 text-white text-[10px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-2xl transition-all duration-200 translate-x-1 group-hover:translate-x-0">
-                            Log out
+                        <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity border border-slate-700">
+                            Logout
                         </div>
                     )}
                 </button>
@@ -222,10 +314,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
         <>
             {/* Desktop Sidebar */}
             <aside
-                onMouseEnter={() => setIsHovered?.(true)}
-                onMouseLeave={() => setIsHovered?.(false)}
-                className={`hidden lg:block fixed top-0 left-0 h-screen bg-background z-40 transition-all duration-300 ${effectiveCollapsed ? 'w-[68px]' : 'w-64 shadow-2xl shadow-primary/5'
-                    }`}
+                className={`hidden lg:block fixed top-0 left-0 h-screen z-30 transition-all duration-300 ${effectiveCollapsed ? 'w-[60px]' : 'w-[230px]'}`}
             >
                 {sidebarContent}
             </aside>
@@ -233,15 +322,14 @@ export default function StylistSidebar({ collapsed, setCollapsed, mobileOpen, se
             {/* Mobile Overlay */}
             {mobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 bg-black/60 z-40 transition-opacity backdrop-blur-sm animate-in fade-in duration-300"
+                    className="lg:hidden fixed inset-0 bg-black/40 z-40 transition-opacity backdrop-blur-sm"
                     onClick={() => setMobileOpen(false)}
                 />
             )}
 
             {/* Mobile Sidebar */}
             <aside
-                className={`lg:hidden fixed top-0 left-0 h-screen w-64 bg-background z-50 transition-transform duration-300 ${mobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
-                    }`}
+                className={`lg:hidden fixed top-0 left-0 h-screen w-[230px] z-50 transition-transform duration-300 bg-white dark:bg-slate-900 shadow-2xl ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 {sidebarContent}
             </aside>

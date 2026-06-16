@@ -4,7 +4,7 @@ import {
     Activity, Zap, Navigation, RefreshCw, Smartphone, Building2,
 } from 'lucide-react';
 
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { haversineMeters } from '../../utils/geo';
 
@@ -45,7 +45,7 @@ export default function StylistAttendance() {
     const refreshWorksite = useCallback(async () => {
         setWorksiteLoading(true);
         try {
-            const res = await mockApi.get('/attendance/worksite');
+            const res = await api.get('/hr/attendance/worksite');
             const data = res.data?.data ?? res.data;
             setWorksite(data || null);
         } catch {
@@ -59,7 +59,7 @@ export default function StylistAttendance() {
         const date = todayLocalYmd();
         setFetching(true);
         try {
-            const res = await mockApi.get('/attendance/me', { params: { date } });
+            const res = await api.get('/hr/attendance/me', { params: { date } });
             const data = res.data?.data ?? res.data;
             setTodayRecord(data || null);
             if (data?.checkInAt && !data?.checkOutAt) setStatus('ACTIVE_RUN');
@@ -202,7 +202,7 @@ export default function StylistAttendance() {
             // Use the resolved locationName if available, otherwise fallback to coordinates
             const locStr = locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
             
-            await mockApi.post('/attendance/punch', {
+            await api.post('/hr/attendance/punch', {
                 type: type === 'IN' ? 'in' : 'out',
                 date: todayLocalYmd(),
                 location: locStr,
