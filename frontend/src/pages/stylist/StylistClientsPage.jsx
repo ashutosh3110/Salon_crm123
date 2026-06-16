@@ -203,7 +203,7 @@ export default function StylistClientsPage() {
 
             <div className="flex flex-col lg:flex-row gap-3">
                 <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted/50" />
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted dark:text-slate-400" />
                     <input
                         type="text"
                         placeholder="Search by name or phone..."
@@ -370,12 +370,12 @@ export default function StylistClientsPage() {
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 overflow-y-auto max-h-[90vh] hide-scrollbar"
+                            className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md shadow-2xl border border-slate-200/50 dark:border-slate-700/50 overflow-y-auto max-h-[90vh] hide-scrollbar"
                             onClick={(e) => e.stopPropagation()}
                         >
-                            <div className="p-5 bg-white border-b border-slate-100 flex justify-between items-center">
-                                <h4 className="text-[11px] font-black text-slate-900 uppercase flex items-center gap-2 tracking-widest">
-                                    <UserPlus className="w-4 h-4 text-slate-800" /> Register Client
+                            <div className="p-5 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                                <h4 className="text-[11px] font-black text-slate-900 dark:text-slate-100 uppercase flex items-center gap-2 tracking-widest">
+                                    <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Register Client
                                 </h4>
                                 <button type="button" onClick={() => setShowEnrollModal(false)} className="text-slate-400 hover:text-rose-500 transition-colors">
                                     <X className="w-5 h-5" />
@@ -424,23 +424,23 @@ export default function StylistClientsPage() {
                                             value={enrollForm.notes}
                                             onChange={(e) => setEnrollForm((f) => ({ ...f, notes: e.target.value }))}
                                             placeholder="Preferences…"
-                                            className="w-full h-24 bg-slate-50 border border-slate-200 p-3.5 text-xs font-black text-slate-800 outline-none rounded-2xl placeholder:text-slate-400 focus:border-slate-400 transition-colors resize-none"
+                                            className="w-full h-24 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3.5 text-xs font-black text-slate-800 dark:text-slate-100 outline-none rounded-2xl placeholder:text-slate-400 focus:border-slate-400 transition-colors resize-none"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="p-6 bg-slate-50 border-t border-slate-100 flex gap-3">
+                                <div className="p-6 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex gap-3">
                                     <button 
                                         type="button" 
                                         onClick={() => setShowEnrollModal(false)} 
-                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 uppercase tracking-widest border border-slate-200 rounded-xl bg-white hover:bg-slate-100 transition-all"
+                                        className="flex-1 py-3 text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
                                     >
                                         Cancel
                                     </button>
                                     <button 
                                         type="submit" 
                                         disabled={enrollSubmitting}
-                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 hover:bg-slate-900 rounded-xl transition-all shadow-lg shadow-slate-800/10 disabled:opacity-50"
+                                        className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl transition-all shadow-lg shadow-slate-800/10 disabled:opacity-50"
                                     >
                                         {enrollSubmitting ? 'Saving…' : 'Save Client'}
                                     </button>

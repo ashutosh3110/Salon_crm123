@@ -22,11 +22,11 @@ function formatTime(iso) {
 }
 
 const statusColors = {
-    PRESENT: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
-    ABSENT: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
-    LATE: 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
-    HALF_DAY: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
-    WEEKOFF: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20',
+    PRESENT: 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
+    ABSENT: 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
+    LATE: 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
+    HALF_DAY: 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
+    WEEKOFF: 'bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30',
 };
 
 export default function StylistAttendance() {
@@ -257,7 +257,7 @@ export default function StylistAttendance() {
                 <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            <Building2 className="w-4 h-4 text-blue-500" />
+                            <Building2 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                             Assigned Outlet
                         </div>
                         {worksite.outlet ? (
@@ -285,8 +285,8 @@ export default function StylistAttendance() {
 
             {/* Daily Punch Card */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 shadow-sm relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                    <Activity className="w-64 h-64 text-blue-600 dark:text-blue-400" />
+                <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-[0.06] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
+                    <Activity className="w-64 h-64 text-blue-600 dark:text-blue-300" />
                 </div>
                 
                 <div className="relative z-10 flex flex-col md:flex-row gap-8 justify-between">
@@ -319,8 +319,8 @@ export default function StylistAttendance() {
                             
                             {location && (
                                 <div className="space-y-1">
-                                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                                        <MapPin className="w-4 h-4 text-blue-500" />
+                                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
+                                        <MapPin className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                         <span>{isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}</span>
                                     </div>
                                     <div className="flex items-center gap-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest pl-6">
@@ -335,7 +335,7 @@ export default function StylistAttendance() {
                             <button
                                 type="button"
                                 onClick={fetchLocation}
-                                className="flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-600 uppercase tracking-widest pl-6 pt-1 transition-colors"
+                                className="flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 uppercase tracking-widest pl-6 pt-1 transition-colors"
                             >
                                 <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} /> Refresh location
                             </button>
@@ -352,8 +352,8 @@ export default function StylistAttendance() {
                             disabled={status !== 'OFFLINE' || !canPunch || loadingLocation}
                             className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
                                 ${status !== 'OFFLINE' || !canPunch
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20 active:scale-95'}`}
+                                    ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                    : 'bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-emerald-500/25 active:scale-95'}`}
                         >
                             <Zap className="w-5 h-5" /> Punch In
                         </button>
@@ -362,8 +362,8 @@ export default function StylistAttendance() {
                             disabled={status !== 'ACTIVE_RUN' || !canPunch || loadingLocation}
                             className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
                                 ${status !== 'ACTIVE_RUN' || !canPunch
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20 active:scale-95'}`}
+                                    ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                    : 'bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white shadow-rose-500/25 active:scale-95'}`}
                         >
                             <CheckCircle2 className="w-5 h-5" /> Punch Out
                         </button>
@@ -375,19 +375,19 @@ export default function StylistAttendance() {
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <CalendarIcon className="w-5 h-5 text-blue-500" />
+                        <CalendarIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
                         Monthly History
                     </h2>
 
                     <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
-                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-300">
+                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors text-slate-600 dark:text-slate-200">
                             <ChevronLeft className="w-5 h-5" />
                         </button>
                         <span className="px-4 font-bold text-sm min-w-[140px] text-center text-slate-800 dark:text-slate-100">{monthName}</span>
                         <button 
                             onClick={nextMonth} 
                             disabled={isCurrentMonth}
-                            className={`p-2 rounded-lg transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                            className={`p-2 rounded-lg transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-600' : 'hover:bg-slate-100 dark:hover:bg-slate-700/70 text-slate-600 dark:text-slate-200'}`}
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>

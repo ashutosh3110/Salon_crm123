@@ -592,8 +592,8 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                                                 >
                                                     <div className="flex gap-4">
                                                         <div className={`mt-1 w-8 h-8 flex items-center justify-center border ${n.type?.includes('warning') || n.type?.includes('low') ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' :
-                                                                n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
-                                                                    'bg-primary/10 border-primary/20 text-primary'
+                                                            n.type?.includes('confirm') || n.type?.includes('success') || n.type?.includes('payment') ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' :
+                                                                'bg-primary/10 border-primary/20 text-primary'
                                                             }`}>
                                                             {!n.isRead && <span className="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 border-2 border-surface" />}
                                                             {n.type?.includes('warning') || n.type?.includes('low') ? <AlertTriangle className="w-4 h-4" /> :

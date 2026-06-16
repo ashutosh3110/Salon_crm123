@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Calendar, Clock, CheckCircle2, XCircle, Plus, Activity, X } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, XCircle, Plus, Activity, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
 
@@ -249,7 +249,7 @@ export default function StylistTimeOffPage() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
+                            <div className="absolute top-0 right-0 p-10 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4">
                                 <Clock className="w-32 h-32 text-primary" />
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">
@@ -270,18 +270,21 @@ export default function StylistTimeOffPage() {
                             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Leave type</label>
-                                    <select
-                                        required
-                                        value={formData.type}
-                                        onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                        className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none"
-                                    >
-                                        {leaveTypes.map((t) => (
-                                            <option key={t} value={t}>
-                                                {formatTypeLabel(t)}
-                                            </option>
-                                        ))}
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            required
+                                            value={formData.type}
+                                            onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                                            className="w-full px-5 py-4 bg-background dark:bg-slate-800 border border-border dark:border-slate-700 text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none text-text dark:text-slate-100"
+                                        >
+                                            {leaveTypes.map((t) => (
+                                                <option key={t} value={t} className="bg-white dark:bg-slate-800 text-text dark:text-slate-100">
+                                                    {formatTypeLabel(t)}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted dark:text-slate-400" />
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">

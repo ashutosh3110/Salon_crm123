@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus, ShieldAlert, Activity, Zap, Clock, X } from 'lucide-react';
+import { User, Shield, Bell, Scissors, MapPin, Phone, Mail, ChevronRight, Check, Plus, ShieldAlert, Activity, Zap, Clock, X, ChevronDown } from 'lucide-react';
 import PasswordField from '../../components/common/PasswordField';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
@@ -306,176 +306,200 @@ export default function StylistSettingsPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
-                        className="space-y-10"
+                        className="space-y-5"
                     >
-                        <div className="flex items-center gap-8 border-b border-border/10 pb-10">
-                            <div className="relative group">
-                                <input
-                                    type="file"
-                                    id="profile-img-upload"
-                                    className="hidden"
-                                    accept="image/*"
-                                    onChange={handleImageUpload}
-                                />
+                        {/* Avatar + name row */}
+                        <div className="flex items-center gap-5 pb-4 border-b border-border/10">
+                            <div className="relative group shrink-0">
+                                <input type="file" id="profile-img-upload" className="hidden" accept="image/*" onChange={handleImageUpload} />
                                 <label
                                     htmlFor="profile-img-upload"
-                                    className="w-28 h-28 bg-background border border-border flex items-center justify-center text-4xl font-black text-primary group-hover:border-primary/50 transition-all shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)] cursor-pointer overflow-hidden"
+                                    className="relative w-16 h-16 rounded-2xl bg-background border border-border flex items-center justify-center font-black text-primary transition-all cursor-pointer overflow-hidden"
+                                    title={`Max: ${platformSettings?.maxImageSize || 5}${platformSettings?.maxImageSizeUnit || 'MB'}`}
                                 >
                                     {profileForm.avatar ? (
                                         <img src={getAvatarUrl(profileForm.avatar)} alt="" className="w-full h-full object-cover" />
                                     ) : (
-                                        <User className="w-12 h-12 text-text-muted" />
+                                        <User className="w-7 h-7 text-text-muted" />
                                     )}
-                                </label>
-                                <label
-                                    htmlFor="profile-img-upload"
-                                    className="absolute -bottom-2 -right-2 w-10 h-10 border border-border bg-surface text-primary flex items-center justify-center shadow-lg hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer"
-                                    title={`Max: ${platformSettings?.maxImageSize || 5}${platformSettings?.maxImageSizeUnit || 'MB'}`}
-                                >
-                                    <Plus className="w-5 h-5" />
+                                    {/* Centered overlay with + */}
+                                    <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                                        <Plus className="w-5 h-5 text-white" />
+                                    </span>
                                 </label>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-black text-text tracking-tighter uppercase">
+                                <h2 className="text-xl font-black text-text tracking-tighter uppercase leading-tight">
                                     {(profileForm.name || user?.name || 'Stylist').toUpperCase()}
                                 </h2>
-                                <p className="text-[10px] text-primary font-black uppercase tracking-[0.2em] mt-1 not-italic">
-                                    {profileForm.specialist || 'Your title'}
-                                </p>
-                                <p className="text-[9px] text-text-muted mt-2 font-black uppercase tracking-widest opacity-60">
-                                    Staff ref: #{employeeRef}
-                                </p>
+                                <p className="text-[9px] text-primary font-black uppercase tracking-[0.2em] mt-0.5 not-italic">{profileForm.specialist || 'Your title'}</p>
+                                <p className="text-[8px] text-text-muted mt-1 font-black uppercase tracking-widest opacity-50">Ref: #{employeeRef}</p>
                             </div>
                         </div>
 
-                        <div className="grid sm:grid-cols-2 gap-x-10 gap-y-8">
-                            <div className="space-y-3">
+                        {/* Form fields — compact grid */}
+                        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+
+                            {/* Full Name */}
+                            <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Full name</label>
-                                <input
-                                    type="text"
-                                    value={profileForm.name}
-                                    onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Account status</label>
-                                <div
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-emerald-500 opacity-60 cursor-not-allowed"
-                                >
-                                    <div
-                                        className="w-2 h-2 rounded-full bg-emerald-500"
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.name}
+                                        onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all"
                                     />
-                                    {user?.status === 'active' ? 'Active' : user?.status === 'inactive' ? 'Inactive' : '—'}
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 flex items-center gap-2">
-                                    <Mail className="w-3 h-3" /> Email
-                                </label>
-                                <input
-                                    type="email"
-                                    value={profileForm.email}
-                                    onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1 flex items-center gap-2">
-                                    <Phone className="w-3 h-3" /> Phone
-                                </label>
-                                <input
-                                    type="text"
-                                    value={profileForm.phone}
-                                    onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Title (Profession)</label>
-                                <input
-                                    type="text"
-                                    value={profileForm.specialist}
-                                    readOnly
-                                    disabled
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest opacity-60 cursor-not-allowed focus:outline-none"
-                                />
-                            </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Assigned outlet</label>
-                                <div className="relative group">
-                                    <select
-                                        value={profileForm.outletId}
-                                        disabled
-                                        className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest opacity-60 cursor-not-allowed appearance-none"
-                                    >
-                                        <option value="">Select outlet</option>
-                                        {(outlets || []).map((o) => (
-                                            <option key={o._id} value={o._id}>
-                                                {o.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
-                                        <MapPin className="w-4 h-4" />
+
+                            {/* Account Status */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Account status</label>
+                                <div className="relative">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-500" />
+                                    <div className="w-full pl-8 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl flex items-center text-emerald-500 opacity-60 cursor-not-allowed">
+                                        {user?.status === 'active' ? 'Active' : user?.status === 'inactive' ? 'Inactive' : '—'}
                                     </div>
                                 </div>
                             </div>
-                            <div className="space-y-3">
+
+                            {/* Email */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Email</label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="email"
+                                        value={profileForm.email}
+                                        onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Phone */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Phone</label>
+                                <div className="relative">
+                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.phone}
+                                        onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Title / Profession */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Title (Profession)</label>
+                                <div className="relative">
+                                    <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.specialist}
+                                        readOnly
+                                        disabled
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl opacity-50 cursor-not-allowed focus:outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Assigned Outlet */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Assigned outlet</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary z-10" />
+                                    <select
+                                        value={profileForm.outletId}
+                                        disabled
+                                        className="w-full pl-9 pr-9 py-2.5 bg-background dark:bg-slate-800/50 border border-border dark:border-slate-700 text-[10px] font-black uppercase tracking-widest rounded-xl opacity-50 cursor-not-allowed appearance-none focus:outline-none text-text dark:text-slate-300"
+                                    >
+                                        <option value="">Select outlet</option>
+                                        {(outlets || []).map((o) => (
+                                            <option key={o._id} value={o._id} className="bg-white dark:bg-slate-800">{o.name}</option>
+                                        ))}
+                                    </select>
+                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none text-primary" />
+                                </div>
+                            </div>
+
+                            {/* Experience */}
+                            <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Experience</label>
-                                <input
-                                    type="text"
-                                    value={profileForm.stylistExperience}
-                                    onChange={(e) => setProfileForm({ ...profileForm, stylistExperience: e.target.value })}
-                                    placeholder="e.g. 8 years"
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
+                                <div className="relative">
+                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.stylistExperience}
+                                        onChange={(e) => setProfileForm({ ...profileForm, stylistExperience: e.target.value })}
+                                        placeholder="e.g. 8 years"
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30"
+                                    />
+                                </div>
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Clients served (label)</label>
-                                <input
-                                    type="text"
-                                    value={profileForm.stylistClientsLabel}
-                                    onChange={(e) => setProfileForm({ ...profileForm, stylistClientsLabel: e.target.value })}
-                                    placeholder="e.g. 500+"
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
+
+                            {/* Clients served */}
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Clients served</label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.stylistClientsLabel}
+                                        onChange={(e) => setProfileForm({ ...profileForm, stylistClientsLabel: e.target.value })}
+                                        placeholder="e.g. 500+"
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30"
+                                    />
+                                </div>
                             </div>
-                            <div className="sm:col-span-2 space-y-3">
+
+                            {/* Bio */}
+                            <div className="sm:col-span-2 space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Bio</label>
-                                <textarea
-                                    value={profileForm.stylistBio}
-                                    onChange={(e) => setProfileForm({ ...profileForm, stylistBio: e.target.value })}
-                                    placeholder="Short bio for customers…"
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all h-24 resize-none"
-                                />
+                                <div className="relative">
+                                    <Zap className="absolute left-3 top-3 w-3.5 h-3.5 text-primary" />
+                                    <textarea
+                                        value={profileForm.stylistBio}
+                                        onChange={(e) => setProfileForm({ ...profileForm, stylistBio: e.target.value })}
+                                        placeholder="Short bio for customers…"
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all h-16 resize-none placeholder:text-text-muted/30"
+                                    />
+                                </div>
                             </div>
-                            <div className="sm:col-span-2 space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">
-                                    Specializations (comma separated)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={profileForm.specText}
-                                    onChange={(e) => setProfileForm({ ...profileForm, specText: e.target.value })}
-                                    placeholder="Bridal, Colour, Keratin…"
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
-                                />
+
+                            {/* Specializations */}
+                            <div className="sm:col-span-2 space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Specializations <span className="opacity-50">(comma separated)</span></label>
+                                <div className="relative">
+                                    <Scissors className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary" />
+                                    <input
+                                        type="text"
+                                        value={profileForm.specText}
+                                        onChange={(e) => setProfileForm({ ...profileForm, specText: e.target.value })}
+                                        placeholder="Bridal, Colour, Keratin…"
+                                        className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[10px] font-black uppercase tracking-widest rounded-xl focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30"
+                                    />
+                                </div>
                             </div>
                         </div>
 
-                        <div className="flex gap-4 flex-wrap">
+                        {/* Actions */}
+                        <div className="flex items-center gap-3 pt-1">
                             <button
                                 type="button"
                                 onClick={saveProfile}
                                 disabled={isSaving}
-                                className="bg-primary text-white px-10 py-4 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50"
+                                className="bg-primary text-white px-7 py-2.5 font-black text-[9px] uppercase tracking-[0.25em] rounded-xl shadow-lg shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50"
                             >
                                 {isSaving ? 'Saving…' : 'Save profile'}
                             </button>
                             {user?.status === 'active' && (
-                                <div className="flex items-center gap-2 px-6 py-4 border border-emerald-500/20 bg-emerald-500/5 text-emerald-500 text-[9px] font-black uppercase tracking-widest">
-                                    <Check className="w-4 h-4" /> Account active
+                                <div className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 text-[9px] font-black uppercase tracking-widest">
+                                    <Check className="w-3.5 h-3.5" /> Account active
                                 </div>
                             )}
                         </div>
@@ -525,14 +549,17 @@ export default function StylistSettingsPage() {
                                         onChange={(e) => setNewSkill({ ...newSkill, name: e.target.value })}
                                         className="w-full px-4 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest"
                                     />
-                                    <select
-                                        value={newSkill.level}
-                                        onChange={(e) => setNewSkill({ ...newSkill, level: e.target.value })}
-                                        className="w-full px-4 py-3 bg-surface border border-border text-[10px] font-black uppercase tracking-widest"
-                                    >
-                                        <option value="expert">Expert</option>
-                                        <option value="intermediate">Intermediate</option>
-                                    </select>
+                                    <div className="relative">
+                                        <select
+                                            value={newSkill.level}
+                                            onChange={(e) => setNewSkill({ ...newSkill, level: e.target.value })}
+                                            className="w-full px-4 py-3 bg-surface dark:bg-slate-800 border border-border dark:border-slate-700 text-[10px] font-black uppercase tracking-widest text-text dark:text-slate-100 appearance-none focus:outline-none focus:border-primary transition-colors"
+                                        >
+                                            <option value="expert" className="bg-white dark:bg-slate-800">Expert</option>
+                                            <option value="intermediate" className="bg-white dark:bg-slate-800">Intermediate</option>
+                                        </select>
+                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted dark:text-slate-400" />
+                                    </div>
                                     <input
                                         type="text"
                                         placeholder="Icon (emoji)"
@@ -714,41 +741,48 @@ export default function StylistSettingsPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
-                        className="space-y-10"
+                        className="space-y-5"
                     >
-                        <div className="flex items-center gap-3 border-b border-border/10 pb-6">
-                            <Shield className="w-4 h-4 text-primary" />
-                            <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Change password</h3>
+                        {/* Header */}
+                        <div className="flex items-center gap-2.5 pb-4 border-b border-border/10">
+                            <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                                <Shield className="w-3.5 h-3.5 text-primary" />
+                            </div>
+                            <div>
+                                <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Change password</h3>
+                                <p className="text-[9px] text-text-muted font-bold uppercase tracking-wider mt-0.5">Update your account password</p>
+                            </div>
                         </div>
 
-                        <div className="space-y-6 max-w-xl">
-                            <div className="space-y-3">
+                        {/* Password Fields */}
+                        <div className="space-y-3 max-w-md">
+                            <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Current password</label>
                                 <PasswordField
                                     autoComplete="current-password"
                                     value={pwd.current}
                                     onChange={(e) => setPwd({ ...pwd, current: e.target.value })}
-                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-4 py-2.5 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all rounded-xl pr-10"
                                     buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
-                            <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">New password (min 8)</label>
+                            <div className="space-y-1.5">
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">New password <span className="text-text-muted/60">(min 8 chars)</span></label>
                                 <PasswordField
                                     autoComplete="new-password"
                                     value={pwd.next}
                                     onChange={(e) => setPwd({ ...pwd, next: e.target.value })}
-                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-4 py-2.5 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all rounded-xl pr-10"
                                     buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
-                            <div className="space-y-3">
+                            <div className="space-y-1.5">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Confirm new password</label>
                                 <PasswordField
                                     autoComplete="new-password"
                                     value={pwd.confirm}
                                     onChange={(e) => setPwd({ ...pwd, confirm: e.target.value })}
-                                    inputClassName="w-full px-5 py-4 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all"
+                                    inputClassName="w-full px-4 py-2.5 bg-background border border-border text-[10px] font-black focus:outline-none focus:border-primary transition-all rounded-xl pr-10"
                                     buttonClassName="text-text-muted hover:text-primary"
                                 />
                             </div>
@@ -757,24 +791,25 @@ export default function StylistSettingsPage() {
                                 type="button"
                                 onClick={submitPassword}
                                 disabled={isSaving}
-                                className="px-10 py-4 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all disabled:opacity-50"
+                                className="mt-1 px-7 py-2.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.25em] shadow-lg shadow-primary/20 hover:bg-primary-dark rounded-xl transition-all disabled:opacity-50"
                             >
                                 {isSaving ? 'Updating…' : 'Update password'}
                             </button>
                         </div>
 
-                        <div className="p-8 border border-border relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-8 opacity-5">
-                                <ShieldAlert className="w-16 h-16 text-primary" />
+                        {/* 2FA Card — compact */}
+                        <div className="p-4 border border-border rounded-xl relative overflow-hidden bg-surface-alt/30">
+                            <div className="absolute top-0 right-0 p-4 opacity-[0.06] dark:opacity-[0.08]">
+                                <ShieldAlert className="w-12 h-12 text-primary" />
                             </div>
-                            <div className="relative z-10 flex items-start gap-6">
-                                <div className="p-3 bg-primary/10 border border-primary/20">
-                                    <Activity className="w-6 h-6 text-primary" />
+                            <div className="relative z-10 flex items-center gap-4">
+                                <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg shrink-0">
+                                    <Activity className="w-4 h-4 text-primary" />
                                 </div>
                                 <div>
-                                    <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em] mb-2">Two-factor authentication</h4>
-                                    <p className="text-[10px] text-text-muted uppercase font-bold tracking-tight mb-0 not-italic">
-                                        Not available yet. Use a strong password and keep it private.
+                                    <h4 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Two-factor authentication</h4>
+                                    <p className="text-[9px] text-text-muted font-bold tracking-tight mt-0.5 not-italic">
+                                        Not available yet — use a strong password and keep it private.
                                     </p>
                                 </div>
                             </div>
@@ -817,13 +852,13 @@ export default function StylistSettingsPage() {
                             key={id}
                             type="button"
                             onClick={() => navigate(`/stylist/settings/${id}`)}
-                            className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all ${
+                            className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${
                                 section === id ? 'bg-primary text-white' : 'text-text-muted hover:text-text hover:bg-background'
                             }`}
                         >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className={`w-3.5 h-3.5 ${section === id ? 'text-white' : 'text-text-muted'}`} />
                             {label}
-                            <ChevronRight className={`w-3 h-3 opacity-50 ${section === id ? '' : 'hidden sm:inline'}`} />
+                            <ChevronRight className={`w-3 h-3 ${section === id ? 'text-white opacity-70' : 'opacity-50 hidden sm:inline'}`} />
                         </button>
                     ))}
                 </nav>

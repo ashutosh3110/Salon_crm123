@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc, Search } from 'lucide-react';
+import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc, Search, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import stylistData from '../../data/stylistMockData.json';
@@ -70,13 +70,13 @@ export default function StylistGalleryPage() {
                     </div>
 
                     <div className="relative group/search flex-1 md:max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted/50 group-focus-within/search:text-primary transition-colors" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted dark:text-slate-400 group-focus-within/search:text-primary transition-colors" />
                         <input
                             type="text"
                             placeholder="Search by category or style..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2.5 bg-background border border-border text-[8px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30 shadow-inner"
+                            className="w-full pl-9 pr-4 py-2.5 bg-background dark:bg-slate-800 border border-border dark:border-slate-700 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30 shadow-inner text-text dark:text-slate-100"
                         />
                     </div>
                 </div>
@@ -167,7 +167,7 @@ export default function StylistGalleryPage() {
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4 animate-pulse">
+                            <div className="absolute top-0 right-0 p-10 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4 animate-pulse">
                                 <Disc className="w-32 h-32 text-primary" />
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">
@@ -201,9 +201,12 @@ export default function StylistGalleryPage() {
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Style Category</label>
-                                        <select required className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none">
-                                            {categories.slice(1).map(c => <option key={c} value={c}>{c.replace('_VECTORS', '')}</option>)}
-                                        </select>
+                                        <div className="relative">
+                                            <select required className="w-full px-5 py-4 bg-background dark:bg-slate-800 border border-border dark:border-slate-700 text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none text-text dark:text-slate-100">
+                                                {categories.slice(1).map(c => <option key={c} value={c} className="bg-white dark:bg-slate-800 text-text dark:text-slate-100">{c.replace('_VECTORS', '')}</option>)}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted dark:text-slate-400" />
+                                        </div>
                                     </div>
                                 </div>
 

@@ -109,7 +109,7 @@ export default function StylistCommissionsPage() {
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
-                                className="absolute top-full right-0 mt-2 w-56 bg-surface border border-border shadow-2xl z-50 py-2"
+                                className="absolute top-full right-0 mt-2 w-56 bg-surface dark:bg-slate-900 border border-border dark:border-slate-700 shadow-2xl z-50 py-2"
                             >
                                 {PERIODS.map((p) => (
                                     <button
@@ -120,7 +120,7 @@ export default function StylistCommissionsPage() {
                                             setShowPeriodDropdown(false);
                                             showToast(`Period: ${p.replace(/_/g, ' ')}`);
                                         }}
-                                        className={`w-full px-6 py-4 text-left ${csText} tracking-widest hover:bg-surface-alt ${period === p ? 'text-primary' : ''}`}
+                                        className={`w-full px-6 py-4 text-left ${csText} tracking-widest hover:bg-surface-alt dark:hover:bg-slate-800 ${period === p ? 'text-primary' : ''}`}
                                     >
                                         {p.replace(/_/g, ' ')}
                                     </button>
@@ -235,7 +235,7 @@ export default function StylistCommissionsPage() {
                 </div>
 
                 <div className="bg-surface border border-border p-8 flex flex-col justify-between relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+                    <div className="absolute top-0 right-0 p-8 opacity-[0.06] dark:opacity-[0.08] group-hover:opacity-[0.12] transition-opacity">
                         <Target className="w-24 h-24 text-primary" />
                     </div>
 
@@ -294,7 +294,7 @@ export default function StylistCommissionsPage() {
                             exit={{ opacity: 0, scale: 0.95 }}
                             className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-5 -translate-y-4 translate-x-4">
+                            <div className="absolute top-0 right-0 p-10 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4">
                                 <AwardIcon className="w-32 h-32 text-primary" />
                             </div>
                             <div className="flex items-center justify-between mb-10 relative z-10">

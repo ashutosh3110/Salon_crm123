@@ -4,9 +4,9 @@ import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     Calendar, Users, Clock, Star, TrendingUp,
-    CheckCircle2, ArrowRight, Activity, Search, X, 
+    CheckCircle2, ArrowRight, Activity, Search, X,
     Scissors, Shield, Target, Award, Plus, CalendarPlus,
-    UserCheck, Loader2, DollarSign
+    UserCheck, Loader2, DollarSign, ChevronDown
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip,
@@ -185,8 +185,8 @@ export default function StylistDashboard() {
             {/* Custom Toast */}
             {toast && (
                 <div className={`fixed top-4 right-4 z-[100] px-4 py-3 rounded-xl shadow-lg border flex items-center gap-3 animate-in fade-in slide-in-from-top-4 duration-300
-                    ${toast.isErr 
-                        ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/50 dark:border-rose-900/50 dark:text-rose-400' 
+                    ${toast.isErr
+                        ? 'bg-rose-50 border-rose-200 text-rose-600 dark:bg-rose-950/50 dark:border-rose-900/50 dark:text-rose-400'
                         : 'bg-emerald-50 border-emerald-200 text-emerald-600 dark:bg-emerald-950/50 dark:border-emerald-900/50 dark:text-emerald-400'}`}
                 >
                     {toast.isErr ? <X className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
@@ -209,8 +209,8 @@ export default function StylistDashboard() {
                     <Link
                         to="/stylist/attendance"
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all
-                            ${shiftActive 
-                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200' 
+                            ${shiftActive
+                                ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200'
                                 : 'bg-[#C89B2B] text-white hover:bg-[#B48A25] shadow-[#C89B2B]/20 shadow-lg hover:-translate-y-0.5'}`}
                     >
                         {shiftActive ? <Clock className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
@@ -248,7 +248,7 @@ export default function StylistDashboard() {
 
             {/* 70/30 Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
+
                 {/* Main Content (70%) */}
                 <div className="lg:col-span-2 flex flex-col gap-6">
                     {/* Performance Chart */}
@@ -268,31 +268,31 @@ export default function StylistDashboard() {
                                             <stop offset="95%" stopColor="#C89B2B" stopOpacity={0} />
                                         </linearGradient>
                                     </defs>
-                                    <XAxis 
-                                        dataKey="label" 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} 
-                                        dy={10} 
+                                    <XAxis
+                                        dataKey="label"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
+                                        dy={10}
                                     />
-                                    <YAxis 
-                                        axisLine={false} 
-                                        tickLine={false} 
-                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} 
+                                    <YAxis
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }}
                                         tickFormatter={val => `₹${val}`}
                                     />
-                                    <Tooltip 
+                                    <Tooltip
                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontWeight: 600 }}
                                         itemStyle={{ color: '#1F2937', fontWeight: 800 }}
                                         formatter={(val) => [`₹${val}`, 'Revenue']}
                                     />
-                                    <Area 
-                                        type="monotone" 
-                                        dataKey="value" 
-                                        stroke="#C89B2B" 
-                                        strokeWidth={3} 
-                                        fillOpacity={1} 
-                                        fill="url(#colorPerf)" 
+                                    <Area
+                                        type="monotone"
+                                        dataKey="value"
+                                        stroke="#C89B2B"
+                                        strokeWidth={3}
+                                        fillOpacity={1}
+                                        fill="url(#colorPerf)"
                                         activeDot={{ r: 6, fill: '#C89B2B', stroke: '#fff', strokeWidth: 2 }}
                                     />
                                 </AreaChart>
@@ -309,25 +309,28 @@ export default function StylistDashboard() {
                             </h2>
                             <div className="flex items-center gap-2">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                    <input 
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500" />
+                                    <input
                                         type="text"
                                         placeholder="Search clients..."
                                         value={searchTerm}
                                         onChange={e => setSearchTerm(e.target.value)}
-                                        className="pl-9 pr-4 py-2 w-full sm:w-48 text-sm bg-slate-50 border-slate-200"
+                                        className="pl-9 pr-4 py-2 w-full sm:w-48 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#C89B2B]"
                                     />
                                 </div>
-                                <select 
-                                    value={statusFilter}
-                                    onChange={e => setStatusFilter(e.target.value)}
-                                    className="py-2 px-3 text-sm bg-slate-50 border-slate-200 font-medium"
-                                >
-                                    <option value="ALL">All Status</option>
-                                    <option value="upcoming">Upcoming</option>
-                                    <option value="in-progress">In Progress</option>
-                                    <option value="completed">Completed</option>
-                                </select>
+                                <div className="relative">
+                                    <select
+                                        value={statusFilter}
+                                        onChange={e => setStatusFilter(e.target.value)}
+                                        className="py-2 pl-3 pr-8 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl font-medium focus:outline-none focus:ring-1 focus:ring-[#C89B2B] appearance-none"
+                                    >
+                                        <option value="ALL" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">All Status</option>
+                                        <option value="upcoming" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Upcoming</option>
+                                        <option value="in-progress" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">In Progress</option>
+                                        <option value="completed" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Completed</option>
+                                    </select>
+                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400 dark:text-slate-500" />
+                                </div>
                             </div>
                         </div>
 
@@ -370,7 +373,7 @@ export default function StylistDashboard() {
                                                     </td>
                                                     <td className="px-4 py-3 text-right">
                                                         {row.uiStatus === 'upcoming' && (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => updateBooking(row.id, 'confirmed')}
                                                                 className="text-xs font-bold text-[#C89B2B] hover:text-[#B48A25] bg-[#C89B2B]/10 hover:bg-[#C89B2B]/20 px-3 py-1.5 rounded-lg transition-colors"
                                                             >
@@ -378,7 +381,7 @@ export default function StylistDashboard() {
                                                             </button>
                                                         )}
                                                         {row.uiStatus === 'in-progress' && (
-                                                            <button 
+                                                            <button
                                                                 onClick={() => updateBooking(row.id, 'completed')}
                                                                 className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-3 py-1.5 rounded-lg transition-colors"
                                                             >
