@@ -775,4 +775,208 @@ exports.getInactiveClients = async (req, res) => {
     }
 };
 
+// @desc    Get stylist's active client roster
+// @route   GET /clients/stylist-roster
+// @access  Private
+exports.getStylistRoster = async (req, res) => {
+    try {
+        const stylistId = req.user.id;
+        const outletId = req.user.outletId;
+        const salonId = req.user.salonId;
+
+        if (!outletId) {
+            return res.json({ success: true, results: [] });
+        }
+
+        // 1. Get client IDs from bookings assigned to this stylist at this outlet
+        const Booking = require('../Models/Booking');
+        const bookings = await Booking.find({
+            salonId,
+            outletId,
+            staffId: stylistId
+        });
+
+        // 2. Get customer IDs from invoices where this stylist was assigned to items at this outlet
+        const Invoice = require('../Models/Invoice');
+        const invoices = await Invoice.find({
+            salonId,
+            outletId,
+            'items.stylistIds': stylistId
+        });
+
+        const clientIdsSet = new Set();
+        bookings.forEach(b => {
+            if (b.clientId) clientIdsSet.add(b.clientId.toString());
+        });
+        invoices.forEach(inv => {
+            if (inv.customerId) clientIdsSet.add(inv.customerId.toString());
+        });
+
+        const clientIds = Array.from(clientIdsSet);
+
+        if (clientIds.length === 0) {
+            return res.json({ success: true, results: [] });
+        }
+
+        // 3. Fetch customer details
+        // Allow text search by name/phone/email
+        const searchRegex = req.query.name ? new RegExp(req.query.name, 'i') : null;
+        const query = {
+            _id: { $in: clientIds }
+        };
+        if (searchRegex) {
+            query.$or = [
+                { name: searchRegex },
+                { phone: searchRegex },
+                { email: searchRegex }
+            ];
+        }
+
+        const customers = await Customer.find(query).sort({ name: 1 });
+
+        // For each customer, calculate specific stats for this stylist
+        const results = await Promise.all(customers.map(async (c) => {
+            const cIdStr = c._id.toString();
+            
+            // Completed bookings with this stylist
+            const customerBookings = bookings.filter(b => b.clientId?.toString() === cIdStr);
+            const completedBookings = customerBookings.filter(b => b.status === 'completed');
+            
+            // Invoices with this stylist
+            const customerInvoices = invoices.filter(inv => inv.customerId?.toString() === cIdStr);
+            
+            // Visits count (completed bookings or invoices)
+            const totalVisits = completedBookings.length + customerInvoices.length;
+            
+            // Last visit date
+            const visitDates = [
+                ...completedBookings.map(b => b.appointmentDate),
+                ...customerInvoices.map(inv => inv.createdAt)
+            ].filter(Boolean);
+            
+            let lastVisit = c.lastVisit || null;
+            if (visitDates.length > 0) {
+                lastVisit = new Date(Math.max(...visitDates.map(d => new Date(d))));
+            }
+
+            // Spend (Sum of items cost where stylist was assigned)
+            let spend = 0;
+            customerInvoices.forEach(inv => {
+                inv.items.forEach(item => {
+                    if (item.stylistIds?.some(sid => sid.toString() === stylistId.toString())) {
+                        spend += (item.price || 0) * (item.quantity || 1);
+                    }
+                });
+            });
+
+            if (spend === 0 && completedBookings.length > 0) {
+                spend = completedBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+            }
+
+            // Last service name
+            let lastServiceSummary = '—';
+            const sortedVisits = [
+                ...completedBookings.map(b => ({ date: b.appointmentDate, name: 'Service' })),
+                ...customerInvoices.map(inv => {
+                    const myItem = inv.items.find(item => item.stylistIds?.some(sid => sid.toString() === stylistId.toString()));
+                    return { date: inv.createdAt, name: myItem?.name || 'Service' };
+                })
+            ].filter(v => v.date).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sortedVisits.length > 0) {
+                lastServiceSummary = sortedVisits[0].name;
+            }
+
+            return {
+                _id: c._id,
+                name: c.name,
+                email: c.email || '',
+                phone: c.phone || '',
+                totalVisits,
+                lastVisit: lastVisit ? lastVisit.toISOString().split('T')[0] : null,
+                spend,
+                tags: c.isVIP ? ['VIP'] : [],
+                status: c.status || 'Active',
+                lastServiceSummary,
+                notes: c.remarks || c.notes || ''
+            };
+        }));
+
+        res.json({
+            success: true,
+            results
+        });
+    } catch (error) {
+        console.error('getStylistRoster error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
+// @desc    Get service history of a client with this stylist
+// @route   GET /clients/:id/stylist-history
+// @access  Private
+exports.getStylistClientHistory = async (req, res) => {
+    try {
+        const client_id = req.params.id;
+        const stylistId = req.user.id;
+        const salonId = req.user.salonId;
+        const outletId = req.user.outletId;
+
+        // Fetch completed bookings for this client and stylist
+        const Booking = require('../Models/Booking');
+        const bookings = await Booking.find({
+            salonId,
+            outletId,
+            clientId: client_id,
+            staffId: stylistId,
+            status: 'completed'
+        }).populate('serviceId', 'name');
+
+        // Fetch invoices for this client where this stylist was assigned to items
+        const Invoice = require('../Models/Invoice');
+        const invoices = await Invoice.find({
+            salonId,
+            outletId,
+            customerId: client_id,
+            'items.stylistIds': stylistId
+        });
+
+        const history = [];
+
+        bookings.forEach(b => {
+            history.push({
+                id: b._id.toString(),
+                service: b.serviceId?.name || 'Service',
+                date: new Date(b.appointmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
+                cost: `₹${b.totalPrice.toLocaleString('en-IN')}`,
+                rawDate: b.appointmentDate
+            });
+        });
+
+        invoices.forEach(inv => {
+            inv.items.forEach(item => {
+                if (item.stylistIds?.some(sid => sid.toString() === stylistId.toString())) {
+                    history.push({
+                        id: `${inv._id}-${item._id}`,
+                        service: item.name || 'Service',
+                        date: new Date(inv.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase(),
+                        cost: `₹${((item.price || 0) * (item.quantity || 1)).toLocaleString('en-IN')}`,
+                        rawDate: inv.createdAt
+                    });
+                }
+            });
+        });
+
+        history.sort((a, b) => new Date(b.rawDate) - new Date(a.rawDate));
+
+        res.json({
+            success: true,
+            data: history
+        });
+    } catch (error) {
+        console.error('getStylistClientHistory error:', error);
+        res.status(500).json({ success: false, message: 'Server Error' });
+    }
+};
+
 

@@ -528,7 +528,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                             title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                         >
                             {theme === 'light' ? (
-                                <Moon className="w-5 h-5 text-text-secondary" />
+                                <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                             ) : (
                                 <Sun className="w-5 h-5 text-amber-400" />
                             )}
@@ -643,7 +643,7 @@ export default function BaseRoleLayout({ SidebarComponent, title, accentColor = 
                             className="w-10 h-10 bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 group transition-colors border border-border/40 ml-1"
                             title="Logout"
                         >
-                            <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                            <LogOut className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300 group-hover:text-rose-500" />
                         </button>
                     </div>
                 </header>

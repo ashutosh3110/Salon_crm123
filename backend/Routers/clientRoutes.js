@@ -12,7 +12,9 @@ const {
     incrementReminderCount,
     sendManualPaymentReminder,
     registerCelebrationWish,
-    sendManualCelebrationWish
+    sendManualCelebrationWish,
+    getStylistRoster,
+    getStylistClientHistory
 } = require('../Controllers/clientController');
 const { protect, authorize } = require('../Middleware/auth');
 
@@ -28,10 +30,13 @@ router.patch('/:id/celebration-wish', authorize('admin', 'manager', 'receptionis
 router.post('/:id/send-payment-reminder', authorize('admin', 'manager', 'receptionist'), sendManualPaymentReminder);
 router.post('/:id/send-celebration-wish', authorize('admin', 'manager', 'receptionist'), sendManualCelebrationWish);
 
+router.get('/stylist-roster', authorize('admin', 'manager', 'receptionist', 'stylist', 'stylish'), getStylistRoster);
+router.get('/:id/stylist-history', authorize('admin', 'manager', 'receptionist', 'stylist', 'stylish'), getStylistClientHistory);
+
 router
     .route('/')
     .get(authorize('admin', 'manager', 'receptionist', 'p:marketing'), getClients)
-    .post(authorize('admin', 'manager', 'receptionist'), createClient);
+    .post(authorize('admin', 'manager', 'receptionist', 'stylist', 'stylish'), createClient);
 
 router
     .route('/:id')

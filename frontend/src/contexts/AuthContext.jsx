@@ -14,7 +14,8 @@ const ROLE_REDIRECT_MAP = authData.redirect_map || {};
  */
 export const getRedirectPath = (user) => {
     if (!user || !user.role) return '/login';
-    const roleKey = String(user.role).toLowerCase();
+    let roleKey = String(user.role).toLowerCase();
+    if (roleKey === 'manger') roleKey = 'manager';
     return ROLE_REDIRECT_MAP[roleKey] || '/admin';
 };
 
@@ -24,12 +25,24 @@ export function AuthProvider({ children }) {
     const navigate = useNavigate();
     const { pathname } = useLocation();
 
+    // Normalization helper to clean up role misspelling from backend/database
+    const normalizeUser = (u) => {
+        if (!u) return u;
+        if (u.role === 'manger' || u.role === 'Manger') {
+            return { ...u, role: 'manager' };
+        }
+        return u;
+    };
+
     useEffect(() => {
         const role = localStorage.getItem('active_auth_role');
         if (role) {
             const storedUser = localStorage.getItem(`auth_user_${role}`);
             if (storedUser) {
-                try { setUser(JSON.parse(storedUser)); } catch (e) { }
+                try {
+                    const parsed = JSON.parse(storedUser);
+                    setUser(normalizeUser(parsed));
+                } catch (e) { }
             }
         }
         setLoading(false);
@@ -41,15 +54,16 @@ export function AuthProvider({ children }) {
             const response = await api.post('/auth/login', { email, password });
             if (response.data.success) {
                 const { accessToken, user: userData } = response.data.data;
-                const role = userData.role || 'admin';
+                const normalizedUser = normalizeUser(userData);
+                const role = normalizedUser.role || 'admin';
 
                 localStorage.setItem(`auth_token_${role}`, accessToken);
-                localStorage.setItem(`auth_user_${role}`, JSON.stringify(userData));
+                localStorage.setItem(`auth_user_${role}`, JSON.stringify(normalizedUser));
                 localStorage.setItem('active_auth_role', role);
                 localStorage.setItem('token', accessToken);
 
-                setUser(userData);
-                return { accessToken, user: userData };
+                setUser(normalizedUser);
+                return { accessToken, user: normalizedUser };
             }
         } catch (realErr) {
             console.error('[AuthContext] Login failed:', realErr.response?.data?.message || realErr.message);
@@ -61,9 +75,10 @@ export function AuthProvider({ children }) {
         const res = await api.patch('/auth/updatedetails', data);
         const updated = res.data?.data || res.data?.user;
         if (updated) {
-            const role = updated.role || user?.role || 'admin';
-            localStorage.setItem(`auth_user_${role}`, JSON.stringify(updated));
-            setUser(updated);
+            const normalized = normalizeUser(updated);
+            const role = normalized.role || user?.role || 'admin';
+            localStorage.setItem(`auth_user_${role}`, JSON.stringify(normalized));
+            setUser(normalized);
         }
         return updated;
     }, [user]);
@@ -79,8 +94,9 @@ export function AuthProvider({ children }) {
             const res = await api.get('/auth/me');
             const updated = res.data?.data || res.data?.user;
             if (updated) {
-                localStorage.setItem(`auth_user_${role}`, JSON.stringify(updated));
-                setUser(updated);
+                const normalized = normalizeUser(updated);
+                localStorage.setItem(`auth_user_${role}`, JSON.stringify(normalized));
+                setUser(normalized);
             }
         } catch (e) {
             console.error('refreshUser failed:', e);

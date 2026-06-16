@@ -36,6 +36,9 @@ const staffSchema = new mongoose.Schema({
     role: {
         type: String
     },
+    specialist: {
+        type: String
+    },
     roleId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Role'
@@ -86,6 +89,15 @@ const staffSchema = new mongoose.Schema({
             label: { type: String, default: 'Lunch' }
         }]
     },
+    skills: [{
+        name: String,
+        level: {
+            type: String,
+            enum: ['expert', 'intermediate'],
+            default: 'expert'
+        },
+        icon: String
+    }],
     // HR Related Fields
     hrProfile: {
         joiningDate: Date,

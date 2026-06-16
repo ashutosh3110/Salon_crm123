@@ -267,6 +267,7 @@ const StylistCommissionsPage = lazy(() => import('./pages/stylist/StylistCommiss
 const StylistTimeOffPage = lazy(() => import('./pages/stylist/StylistTimeOffPage'));
 const StylistAttendance = lazy(() => import('./pages/stylist/StylistAttendance'));
 const StylistSettingsPage = lazy(() => import('./pages/stylist/StylistSettingsPage'));
+const StylistGalleryPage = lazy(() => import('./pages/stylist/StylistGalleryPage'));
 
 const AccountantLayout = lazy(() => import('./layouts/AccountantLayout'));
 const AccountantDashboard = lazy(() => import('./pages/accountant/AccountantDashboard'));
@@ -617,7 +618,7 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<ManagerLayout />}>
-                            <Route path="/manager" element={<StaffDashboardPage />} />
+                            <Route path="/manager" element={<ManagerDashboard />} />
                             <Route path="/manager/team" element={<TeamPage />} />
                             <Route path="/manager/performance" element={<PerformancePage />} />
                             <Route path="/manager/attendance" element={<AttendancePage />} />
@@ -663,6 +664,7 @@ function App() {
                             <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />
                             <Route path="/stylist/timeoff" element={<StylistTimeOffPage />} />
                             <Route path="/stylist/attendance" element={<StylistAttendance />} />
+                            <Route path="/stylist/gallery" element={<StylistGalleryPage />} />
                             <Route path="/stylist/settings" element={<StylistSettingsPage />} />
                             <Route path="/stylist/settings/:section" element={<StylistSettingsPage />} />
                             <Route path="/stylist/support" element={<SupportPage />} />
