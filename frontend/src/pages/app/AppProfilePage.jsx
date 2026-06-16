@@ -340,6 +340,14 @@ export default function AppProfilePage() {
             action: () => navigate('/app/membership')
         },
         {
+            label: 'Consultation',
+            icon: MessageSquare,
+            color: '#0ea5e9',
+            bgColor: 'rgba(14, 165, 233, 0.05)',
+            borderColor: 'rgba(14, 165, 233, 0.15)',
+            action: () => navigate('/app/consultation')
+        },
+        {
             label: 'Addresses',
             icon: MapPin,
             color: '#ea580c',
@@ -388,7 +396,7 @@ export default function AppProfilePage() {
             <div
                 style={{
                     background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0.9) 85%, #ffffff 100%), linear-gradient(135deg, #c59341 0%, #9e59b2 50%, #6924ab 100%)',
-                    borderRadius: '36px 36px 0px 0px',
+                    borderRadius: '0px',
                     padding: '36px 24px 0px 24px',
                     position: 'relative',
                     overflow: 'hidden',
@@ -633,17 +641,29 @@ export default function AppProfilePage() {
                     <ChevronRight size={16} className="opacity-20" />
                 </button>
 
+                <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    style={{ background: '#ffffff', border: '1px solid rgba(0,0,0,0.05)' }}
+                    className="w-full h-14 rounded-2xl bg-white flex items-center justify-between px-6 hover:bg-black/5 transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <Shield size={18} className="text-red-500 opacity-75" />
+                        <span className="text-sm font-semibold text-gray-800">Delete Account</span>
+                    </div>
+                    <ChevronRight size={16} className="opacity-20" />
+                </button>
+
                 {!showLogoutConfirm ? (
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
-                        style={{ border: '1px solid rgba(0,0,0,0.05)' }}
-                        className="w-full h-14 rounded-2xl bg-white flex items-center justify-between px-6 hover:bg-red-50/50 transition-colors"
+                        style={{
+                            background: 'rgba(239, 68, 68, 0.05)',
+                            border: '1px solid rgba(239, 68, 68, 0.1)'
+                        }}
+                        className="w-full h-12 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
                     >
-                        <div className="flex items-center gap-3">
-                            <LogOut size={18} className="text-red-500 opacity-75" />
-                            <span className="text-sm font-semibold text-gray-800">Logout</span>
-                        </div>
-                        <ChevronRight size={16} className="opacity-20" />
+                        <LogOut size={14} className="text-red-500" />
+                        <span className="text-xs font-bold text-red-500 uppercase tracking-wider">Logout</span>
                     </button>
                 ) : (
                     <div className="p-4 rounded-2xl bg-red-50 border border-red-100 flex gap-3">
@@ -651,18 +671,6 @@ export default function AppProfilePage() {
                         <button onClick={customerLogout} className="flex-1 h-12 rounded-xl bg-red-600 text-white text-xs font-bold shadow-lg shadow-red-600/10">Log Out</button>
                     </div>
                 )}
-
-                <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    style={{
-                        background: 'rgba(239, 68, 68, 0.05)',
-                        border: '1px solid rgba(239, 68, 68, 0.1)'
-                    }}
-                    className="w-full h-12 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                >
-                    <Shield size={14} className="text-red-500" />
-                    <span className="text-xs font-bold text-red-500 uppercase tracking-wider">Delete Account</span>
-                </button>
             </div>
 
             {/* Inquiries Modal */}

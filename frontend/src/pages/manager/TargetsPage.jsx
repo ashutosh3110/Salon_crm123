@@ -10,7 +10,7 @@ import CustomDropdown from '../../components/common/CustomDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBusiness } from '../../contexts/BusinessContext';
 ;
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 export default function TargetsPage() {
     const { staff } = useBusiness();
@@ -30,8 +30,8 @@ export default function TargetsPage() {
         try {
             const now = new Date();
             const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]; // Last day of the current month
-            const res = await mockApi.get('/hr-performance', { params: { startDate: start, endDate: end } });
+            const end = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0];
+            const res = await api.get('/hr/performance', { params: { startDate: start, endDate: end } });
             setPerformance(res.data?.data || res.data);
         } catch (err) {
             console.error('Failed to fetch performance', err);
@@ -110,7 +110,7 @@ export default function TargetsPage() {
             return;
         }
         try {
-            await mockApi.patch(`/hr-performance/staff/${newTarget.userId}/goal`, {
+            await api.patch(`/hr/staff/${newTarget.userId}/target`, {
                 goal: parseFloat(newTarget.goal)
             });
             showToast('Target protocol updated');

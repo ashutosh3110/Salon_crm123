@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc } from 'lucide-react';
+import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc, Search } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import stylistData from '../../data/stylistMockData.json';

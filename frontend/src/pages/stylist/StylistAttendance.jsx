@@ -1,11 +1,11 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-    Clock, MapPin, CheckCircle2, AlertTriangle, Shield,
-    Activity, Zap, Navigation, RefreshCw, Smartphone, Building2,
-} from 'lucide-react';
-
-import api from '../../services/api';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import api from '../../services/api';
+import { 
+    Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertTriangle, 
+    Zap, Navigation, Activity, ChevronLeft, ChevronRight, MapPin, Search,
+    Shield, RefreshCw, Smartphone, Building2
+} from 'lucide-react';
 import { haversineMeters } from '../../utils/geo';
 
 function todayLocalYmd() {
@@ -21,62 +21,52 @@ function formatTime(iso) {
     }
 }
 
-function formatDisplayDate() {
-    return new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
-}
+const statusColors = {
+    PRESENT: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
+    ABSENT: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
+    LATE: 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
+    HALF_DAY: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
+    WEEKOFF: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20',
+};
 
 export default function StylistAttendance() {
     const { user } = useAuth();
-    const [accuracy, setAccuracy] = useState(0);
+    
+    // Punch Logic States
     const [status, setStatus] = useState('OFFLINE');
+    const [loadingLocation, setLoadingLocation] = useState(false);
     const [location, setLocation] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('ALL');
-    const [todayRecord, setTodayRecord] = useState(null);
-    const [fetching, setFetching] = useState(true);
-    const [actionMsg, setActionMsg] = useState(null);
-    const [worksite, setWorksite] = useState(null);
-    const [worksiteLoading, setWorksiteLoading] = useState(true);
+    const [accuracy, setAccuracy] = useState(0);
     const [locationName, setLocationName] = useState('');
     const [isResolvingName, setIsResolvingName] = useState(false);
-    const [historicNames, setHistoricNames] = useState({}); // Cache for log locations
+    const [error, setError] = useState(null);
+    const [actionMsg, setActionMsg] = useState(null);
+    
+    // Worksite geofence states
+    const [worksite, setWorksite] = useState(null);
+    const [worksiteLoading, setWorksiteLoading] = useState(true);
 
-    const refreshWorksite = useCallback(async () => {
-        setWorksiteLoading(true);
-        try {
-            const res = await api.get('/hr/attendance/worksite');
-            const data = res.data?.data ?? res.data;
-            setWorksite(data || null);
-        } catch {
-            setWorksite(null);
-        } finally {
-            setWorksiteLoading(false);
-        }
-    }, []);
+    // History states
+    const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
+    const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
+    const [historyLoading, setHistoryLoading] = useState(false);
+    const [historyData, setHistoryData] = useState([]);
+    const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, late: 0, halfDay: 0, total: 0 });
 
-    const refreshToday = useCallback(async () => {
-        const date = todayLocalYmd();
-        setFetching(true);
-        try {
-            const res = await api.get('/hr/attendance/me', { params: { date } });
-            const data = res.data?.data ?? res.data;
-            setTodayRecord(data || null);
-            if (data?.checkInAt && !data?.checkOutAt) setStatus('ACTIVE_RUN');
-            else setStatus('OFFLINE');
-        } catch {
-            setTodayRecord(null);
-            setStatus('OFFLINE');
-        } finally {
-            setFetching(false);
-        }
-    }, []);
+    const fetchLocationName = async (lat, lon, isWithin) => {
+        if (!lat || !lon) return;
+        setIsResolvingName(true);
+        setTimeout(() => {
+            if (isWithin && worksite?.outlet?.name) {
+                setLocationName(worksite.outlet.name);
+            } else {
+                setLocationName("Mock Office Complex, Sector 12, Delhi");
+            }
+            setIsResolvingName(false);
+        }, 800);
+    };
 
-    useEffect(() => {
-        refreshToday();
-        refreshWorksite();
-    }, [refreshToday, refreshWorksite]);
-
+    // Geofence calculations
     const radiusMeters = worksite?.outlet?.geofenceRadiusMeters ?? 200;
 
     const distanceMeters = useMemo(() => {
@@ -87,13 +77,16 @@ export default function StylistAttendance() {
         return haversineMeters(location.latitude, location.longitude, olat, olng);
     }, [location, worksite]);
 
-    const withinGeofence =
-        worksite?.geofenceEnforced &&
-        worksite?.configured &&
-        location &&
-        distanceMeters != null &&
-        !Number.isNaN(distanceMeters) &&
-        distanceMeters <= radiusMeters;
+    const withinGeofence = useMemo(() => {
+        return (
+            worksite?.geofenceEnforced &&
+            worksite?.configured &&
+            location &&
+            distanceMeters != null &&
+            !Number.isNaN(distanceMeters) &&
+            distanceMeters <= radiusMeters
+        );
+    }, [worksite, location, distanceMeters, radiusMeters]);
 
     const geofenceBlockedReason = useMemo(() => {
         if (!worksite?.geofenceEnforced) return null;
@@ -108,100 +101,107 @@ export default function StylistAttendance() {
         return null;
     }, [worksite, worksiteLoading, location, distanceMeters, radiusMeters]);
 
-    const canPunch =
-        !worksiteLoading &&
-        !fetching &&
-        !loading &&
-        location &&
-        (!worksite?.geofenceEnforced || withinGeofence);
-
-    const logs = useMemo(() => {
-        const list = [];
-        const dateStr = formatDisplayDate();
-        if (todayRecord?.checkInAt) {
-            list.push({
-                id: 'in',
-                type: 'IN',
-                time: formatTime(todayRecord.checkInAt),
-                date: dateStr,
-                loc: todayRecord.location || (location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : '—'),
-                status: 'VERIFIED',
-            });
-        }
-        if (todayRecord?.checkOutAt) {
-            list.push({
-                id: 'out',
-                type: 'OUT',
-                time: formatTime(todayRecord.checkOutAt),
-                date: dateStr,
-                loc: todayRecord.location || (location ? `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}` : '—'),
-                status: 'VERIFIED',
-            });
-        }
-        return list;
-    }, [todayRecord, location]);
-
-    const filteredLogs = logs.filter((log) => {
-        if (statusFilter === 'ALL') return true;
-        return log.type === statusFilter;
-    });
-
-    const fetchLocationName = async (lat, lon) => {
-        if (!lat || !lon) return;
-        setIsResolvingName(true);
-        // Mock Address Resolution (Offline)
-        setTimeout(() => {
-            if (withinGeofence && worksite?.outlet?.name) {
-                setLocationName(worksite.outlet.name);
-            } else {
-                setLocationName("Mock Office Complex, Sector 12, Delhi");
-            }
-            setIsResolvingName(false);
-        }, 800);
-    };
-
-    const fetchLocation = () => {
-        setLoading(true);
+    const fetchLocation = useCallback(() => {
+        setLoadingLocation(true);
         setError(null);
-
         if (!navigator.geolocation) {
-            setError('Geolocation is not supported by your browser protocol.');
-            setLoading(false);
+            setError('Geolocation is not supported by your browser.');
+            setLoadingLocation(false);
             return;
         }
-
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 setLocation({ latitude, longitude });
                 setAccuracy(position.coords.accuracy.toFixed(1));
-                setLoading(false);
-                fetchLocationName(latitude, longitude);
+                
+                // Determine if within geofence radius
+                let isWithin = false;
+                if (worksite?.outlet) {
+                    const olat = worksite.outlet.latitude;
+                    const olng = worksite.outlet.longitude;
+                    if (olat != null && olng != null) {
+                        const dist = haversineMeters(latitude, longitude, olat, olng);
+                        isWithin = dist <= radiusMeters;
+                    }
+                }
+
+                fetchLocationName(latitude, longitude, isWithin);
+                setLoadingLocation(false);
             },
             (err) => {
                 setError(`Failed to fetch location: ${err.message}`);
-                setLoading(false);
+                setLoadingLocation(false);
             },
             { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
         );
-    };
+    }, [worksite, radiusMeters]);
 
-    const handleAttendance = async (type) => {
+    const refreshWorksite = useCallback(async () => {
+        setWorksiteLoading(true);
+        try {
+            const res = await api.get('/hr/attendance/worksite');
+            const data = res.data?.data ?? res.data;
+            setWorksite(data || null);
+        } catch {
+            setWorksite(null);
+        } finally {
+            setWorksiteLoading(false);
+        }
+    }, []);
+
+    const fetchHistory = useCallback(async (month, year) => {
+        setHistoryLoading(true);
+        try {
+            const res = await api.get('/hr/attendance/history', { params: { month, year } });
+            const data = res.data?.data || res.data;
+            setHistoryData(data?.data || []);
+            setHistoryStats(data?.stats || { present: 0, absent: 0, late: 0, halfDay: 0, total: 0 });
+            
+            // Check if today is marked
+            const todayStr = todayLocalYmd();
+            const todayRec = (data?.data || []).find(d => d.date === todayStr);
+            if (todayRec && todayRec.checkInAt && !todayRec.checkOutAt) {
+                setStatus('ACTIVE_RUN');
+            } else if (todayRec && todayRec.checkOutAt) {
+                setStatus('COMPLETED');
+            } else {
+                setStatus('OFFLINE');
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setHistoryLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        refreshWorksite();
+    }, [refreshWorksite]);
+
+    useEffect(() => {
+        if (!worksiteLoading) {
+            fetchLocation();
+        }
+    }, [worksiteLoading, fetchLocation]);
+
+    useEffect(() => {
+        fetchHistory(currentMonth, currentYear);
+    }, [currentMonth, currentYear, fetchHistory]);
+
+    const handlePunch = async (type) => {
         if (!location) {
-            setError('Turn on location to punch.');
+            setError('Location required to punch in.');
             return;
         }
         if (worksite?.geofenceEnforced && !withinGeofence) {
             setError(geofenceBlockedReason || 'You must be at your assigned outlet to punch.');
             return;
         }
-
-        setActionMsg(null);
         setError(null);
+        setActionMsg(null);
         try {
-            // Use the resolved locationName if available, otherwise fallback to coordinates
             const locStr = locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`;
-            
             await api.post('/hr/attendance/punch', {
                 type: type === 'IN' ? 'in' : 'out',
                 date: todayLocalYmd(),
@@ -209,225 +209,268 @@ export default function StylistAttendance() {
                 latitude: location.latitude,
                 longitude: location.longitude,
             });
-            await refreshToday();
-            setActionMsg(type === 'IN' ? 'Checked in successfully' : 'Checked out successfully');
+            setActionMsg(type === 'IN' ? 'Successfully punched in for the day!' : 'Successfully punched out.');
+            fetchHistory(currentMonth, currentYear);
         } catch (e) {
-            setError(e?.response?.data?.message || e?.message || 'Punch failed');
+            setError(e?.response?.data?.message || 'Failed to record punch.');
         }
     };
 
-    useEffect(() => {
-        fetchLocation();
-    }, []);
+    const nextMonth = () => {
+        let m = currentMonth + 1;
+        let y = currentYear;
+        if (m > 11) { m = 0; y++; }
+        if (new Date(y, m, 1) > new Date()) return;
+        setCurrentMonth(m);
+        setCurrentYear(y);
+    };
+
+    const prevMonth = () => {
+        let m = currentMonth - 1;
+        let y = currentYear;
+        if (m < 0) { m = 11; y--; }
+        setCurrentMonth(m);
+        setCurrentYear(y);
+    };
+
+    const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
+    const isCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
+
+    const canPunch = !worksiteLoading && location && (!worksite?.geofenceEnforced || withinGeofence);
 
     return (
-        <div className="space-y-6 font-black text-left">
-            {/* Assigned outlet + geofence protocol */}
-            <div className="bg-surface border border-border p-5 space-y-3">
-                <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-text-muted">
-                    <Building2 className="w-4 h-4 text-primary" />
-                    Attendance protocol · outlet geofence
+        <div className="p-4 md:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto font-sans">
+            <style>{`
+                .hide-scrollbar::-webkit-scrollbar { display: none; }
+                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+            `}</style>
+
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Attendance & Timesheet</h1>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your daily presence and track historical records</p>
                 </div>
-                {worksiteLoading ? (
-                    <p className="text-[10px] text-text-muted uppercase tracking-widest">Loading worksite…</p>
-                ) : worksite?.geofenceEnforced ? (
-                    <div className="space-y-2">
+            </div>
+
+            {/* Geofence Info Card */}
+            {!worksiteLoading && worksite && (
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                            <Building2 className="w-4 h-4 text-blue-500" />
+                            Assigned Outlet
+                        </div>
                         {worksite.outlet ? (
                             <>
-                                <p className="text-sm font-black text-text">
-                                    {worksite.outlet.name}
-                                    {worksite.outlet.city ? ` · ${worksite.outlet.city}` : ''}
-                                </p>
-                                <p className="text-[10px] text-text-muted font-bold uppercase tracking-wide leading-relaxed">
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                                    {worksite.outlet.name} {worksite.outlet.city ? `· ${worksite.outlet.city}` : ''}
+                                </h3>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">
                                     {worksite.outlet.address}
                                 </p>
-                                {worksite.configured ? (
-                                    <p className="text-[10px] text-emerald-600 uppercase tracking-widest">
-                                        Allowed radius: {radiusMeters}m from outlet coordinates
-                                    </p>
-                                ) : (
-                                    <p className="text-[10px] text-amber-600 uppercase tracking-widest leading-relaxed">
-                                        {worksite.message}
-                                    </p>
-                                )}
                             </>
                         ) : (
-                            <p className="text-[10px] text-amber-600 uppercase tracking-widest leading-relaxed">
-                                {worksite.message}
+                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                {worksite.message || "No outlet assigned."}
                             </p>
                         )}
                     </div>
-                ) : (
-                    <p className="text-[10px] text-text-muted uppercase">Geofence not enforced for this account type.</p>
-                )}
-            </div>
-
-            <div className="grid grid-cols-1 gap-6">
-                <div className="bg-background border border-border p-8 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <Activity className="w-32 h-32 text-primary" />
-                    </div>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-3 h-3 rounded-full ${status === 'ACTIVE_RUN' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
-                                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Current Status: {status === 'ACTIVE_RUN' ? 'ON DUTY' : 'OFF DUTY'}</span>
-                            </div>
-                            <Shield className="w-4 h-4 text-primary opacity-40" />
+                    {worksite.geofenceEnforced && (
+                        <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/20 uppercase tracking-widest">
+                            Geofence Enabled ({radiusMeters}m radius)
                         </div>
+                    )}
+                </div>
+            )}
 
-                        <p className="text-[9px] text-text-muted uppercase mb-2">
-                            {user?.name ? `${user.name} · ` : ''}{todayLocalYmd()}
-                        </p>
-                        {actionMsg && (
-                            <p className="text-[10px] text-emerald-600 uppercase mb-4">{actionMsg}</p>
-                        )}
-                        {error && (
-                            <p className="text-[10px] text-rose-600 uppercase mb-4 leading-relaxed">{error}</p>
-                        )}
-                        {geofenceBlockedReason && (
-                            <p className="text-[10px] text-amber-700 uppercase mb-4 leading-relaxed border border-amber-500/30 bg-amber-500/5 p-3">
-                                {geofenceBlockedReason}
-                            </p>
-                        )}
-
-                        <div className="grid md:grid-cols-2 gap-10">
-                            <div className="space-y-6">
-                                <div>
-                                    <p className="text-[9px] text-text-muted uppercase tracking-[0.2em] mb-2 font-bold italic">Your GPS position</p>
-                                    {loading ? (
-                                        <div className="flex items-center gap-2 text-primary">
-                                            <RefreshCw className="w-4 h-4 animate-spin" />
-                                            <span className="text-xs uppercase tracking-widest">Scanning…</span>
-                                        </div>
-                                    ) : location ? (
-                                        <div className="space-y-1">
-                                            <p className="text-2xl font-black text-text tracking-tighter uppercase flex items-center gap-2">
-                                                <Navigation className="w-5 h-5 text-primary" />
-                                                {isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}
-                                            </p>
-                                            <p className="text-[9px] text-text-muted font-bold tracking-widest uppercase mb-1">
-                                                Coordinates: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-                                            </p>
-                                            <p className="text-[9px] text-emerald-500 uppercase font-black tracking-widest italic">Accuracy ±{accuracy}m</p>
-                                            {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (
-                                                <p className={`text-[10px] uppercase tracking-widest mt-2 ${withinGeofence ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                                    Distance from outlet: ~{Math.round(distanceMeters)}m / limit {radiusMeters}m
-                                                </p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <p className="text-rose-500 text-[10px] font-black uppercase">{error || 'Location required'}</p>
-                                    )}
-                                </div>
-                                <button
-                                    type="button"
-                                    onClick={fetchLocation}
-                                    className="flex items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-primary hover:text-white transition-colors"
-                                >
-                                    <RefreshCw className="w-3 h-3" /> Refresh location
-                                </button>
+            {/* Daily Punch Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 shadow-sm relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+                    <Activity className="w-64 h-64 text-blue-600 dark:text-blue-400" />
+                </div>
+                
+                <div className="relative z-10 flex flex-col md:flex-row gap-8 justify-between">
+                    <div className="space-y-6 flex-1">
+                        <div className="flex items-center gap-3">
+                            <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700`}>
+                                {status === 'ACTIVE_RUN' ? <Clock className="w-5 h-5 text-blue-500 animate-pulse" /> : <Clock className="w-5 h-5 text-slate-500" />}
                             </div>
-
-                            <div className="flex flex-col justify-end gap-3">
-                                <p className="text-[9px] text-text-muted uppercase tracking-widest mb-1">
-                                    Punch is only enabled when you are inside the outlet radius (verified on server).
+                            <div>
+                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Status</p>
+                                <p className="text-xl font-bold text-slate-900 dark:text-white">
+                                    {status === 'ACTIVE_RUN' ? 'Punched In (Active)' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
                                 </p>
-                                <button
-                                    type="button"
-                                    disabled={status === 'ACTIVE_RUN' || !canPunch}
-                                    onClick={() => handleAttendance('IN')}
-                                    className={`w-full py-4 border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3
-                                        ${status === 'ACTIVE_RUN' || !canPunch
-                                            ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
-                                            : 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20 hover:scale-[1.02]'}`}
-                                >
-                                    <Zap className="w-4 h-4" /> Punch in
-                                </button>
-                                <button
-                                    type="button"
-                                    disabled={status === 'OFFLINE' || !canPunch}
-                                    onClick={() => handleAttendance('OUT')}
-                                    className={`w-full py-4 border text-[10px] font-black uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-3
-                                        ${status === 'OFFLINE' || !canPunch
-                                            ? 'opacity-40 cursor-not-allowed bg-surface-alt border-border'
-                                            : 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-500/20 hover:scale-[1.02]'}`}
-                                >
-                                    <Smartphone className="w-4 h-4" /> Punch out
-                                </button>
                             </div>
                         </div>
+
+                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-3">
+                            <div className="flex items-center justify-between">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Location Status</span>
+                                {loadingLocation ? (
+                                    <span className="text-xs text-blue-500 animate-pulse">Detecting...</span>
+                                ) : location ? (
+                                    <span className={`text-xs font-bold ${worksite?.geofenceEnforced ? (withinGeofence ? 'text-emerald-600' : 'text-rose-500') : 'text-emerald-600'}`}>
+                                        {worksite?.geofenceEnforced ? (withinGeofence ? 'Verified' : 'Outside Geofence') : 'Available'}
+                                    </span>
+                                ) : (
+                                    <span className="text-xs font-bold text-rose-500">Not Available</span>
+                                )}
+                            </div>
+                            
+                            {location && (
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                                        <MapPin className="w-4 h-4 text-blue-500" />
+                                        <span>{isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}</span>
+                                    </div>
+                                    <div className="flex items-center gap-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest pl-6">
+                                        <span>Accuracy: ±{accuracy}m</span>
+                                        {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (
+                                            <span>Distance: ~{Math.round(distanceMeters)}m / limit {radiusMeters}m</span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={fetchLocation}
+                                className="flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-600 uppercase tracking-widest pl-6 pt-1 transition-colors"
+                            >
+                                <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} /> Refresh location
+                            </button>
+                        </div>
+
+                        {error && <p className="text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 p-3 rounded-lg">{error}</p>}
+                        {geofenceBlockedReason && <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">{geofenceBlockedReason}</p>}
+                        {actionMsg && <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg">{actionMsg}</p>}
+                    </div>
+
+                    <div className="flex flex-col justify-center gap-4 min-w-[240px]">
+                        <button
+                            onClick={() => handlePunch('IN')}
+                            disabled={status !== 'OFFLINE' || !canPunch || loadingLocation}
+                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
+                                ${status !== 'OFFLINE' || !canPunch
+                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20 active:scale-95'}`}
+                        >
+                            <Zap className="w-5 h-5" /> Punch In
+                        </button>
+                        <button
+                            onClick={() => handlePunch('OUT')}
+                            disabled={status !== 'ACTIVE_RUN' || !canPunch || loadingLocation}
+                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
+                                ${status !== 'ACTIVE_RUN' || !canPunch
+                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                    : 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20 active:scale-95'}`}
+                        >
+                            <CheckCircle2 className="w-5 h-5" /> Punch Out
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <div className="bg-surface border border-border overflow-hidden">
-                <div className="px-6 py-4 border-b border-border bg-surface-alt/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <Clock className="w-4 h-4 text-primary" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] text-text">Today&apos;s punches</span>
-                    </div>
+            {/* History Section */}
+            <div className="space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                        <CalendarIcon className="w-5 h-5 text-blue-500" />
+                        Monthly History
+                    </h2>
 
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1.5 p-1 bg-background border border-border">
-                            {['ALL', 'IN', 'OUT'].map((f) => (
-                                <button
-                                    key={f}
-                                    type="button"
-                                    onClick={() => setStatusFilter(f)}
-                                    className={`px-4 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
-                                >
-                                    {f === 'ALL' ? 'ALL' : f === 'IN' ? 'PUNCH INS' : 'PUNCH OUTS'}
-                                </button>
-                            ))}
-                        </div>
-                        <span className="text-[8px] font-black text-text-muted uppercase tracking-widest border-l border-border/20 pl-4">Total: {filteredLogs.length}</span>
+                    <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-300">
+                            <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <span className="px-4 font-bold text-sm min-w-[140px] text-center text-slate-800 dark:text-slate-100">{monthName}</span>
+                        <button 
+                            onClick={nextMonth} 
+                            disabled={isCurrentMonth}
+                            className={`p-2 rounded-lg transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                        >
+                            <ChevronRight className="w-5 h-5" />
+                        </button>
                     </div>
                 </div>
 
-                <div className="divide-y divide-border/10">
-                    {filteredLogs.map((log) => (
-                        <div key={log.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:bg-background/50 transition-all">
-                            <div className="flex items-center gap-6">
-                                <div className={`w-1 h-8 ${log.type === 'IN' ? 'bg-emerald-500' : 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.2)]'}`} />
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-3">
-                                        <p className="text-sm font-black text-text tracking-tighter">{log.time}</p>
-                                        <div className={`px-2 py-0.5 border text-[7px] font-black uppercase tracking-widest ${log.type === 'IN' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'}`}>
-                                            {log.type === 'IN' ? 'PUNCHED IN' : 'PUNCHED OUT'}
-                                        </div>
-                                    </div>
-                                    <p className="text-[9px] text-text-muted uppercase font-bold tracking-widest italic">{log.date}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-8">
-                                <div className="text-left md:text-right">
-                                    <div className="flex items-center gap-2 mb-1 justify-start md:justify-end">
-                                        <MapPin className="w-3 h-3 text-primary" />
-                                        <span className="text-[9px] font-black text-text uppercase tracking-widest">{log.loc}</span>
-                                    </div>
-                                    <p className="text-[7px] text-text-muted uppercase font-bold tracking-[0.2em] italic">Synced with server</p>
-                                </div>
-                                <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/10 rounded-none">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">{log.status}</span>
-                                </div>
-                            </div>
+                {/* Stat Cards */}
+                <div className="grid grid-cols-2 gap-4">
+                    {[
+                        { label: 'Present', val: historyStats.present, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
+                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
+                    ].map((stat, i) => (
+                        <div key={i} className={`p-4 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
+                            <span className="text-2xl font-black mb-1">{stat.val}</span>
+                            <span className={`text-[10px] font-bold uppercase tracking-wider ${stat.color}`}>{stat.label}</span>
                         </div>
                     ))}
                 </div>
 
-                {logs.length === 0 && !fetching && (
-                    <div className="p-20 text-center space-y-4">
-                        <AlertTriangle className="w-10 h-10 text-text-muted mx-auto opacity-20" />
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">No punches today yet.</p>
+                {/* History List */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch In</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch Out</th>
+                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                                {historyLoading ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">Loading history...</td>
+                                    </tr>
+                                ) : historyData.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">No attendance records found for this month.</td>
+                                    </tr>
+                                ) : (
+                                    historyData.map((record, i) => {
+                                        const d = new Date(record.date);
+                                        const isFuture = d > new Date();
+                                        if (isFuture) return null;
+                                        
+                                        const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                                        const styleClass = statusColors[record.status] || 'bg-slate-50 text-slate-600';
+
+                                        return (
+                                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{displayDate}</span>
+                                                </td>
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${styleClass}`}>
+                                                        {record.status.replace('_', ' ')}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                        {formatTime(record.checkInAt)}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                        {formatTime(record.checkOutAt)}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className="text-sm text-slate-500 dark:text-slate-400 italic">
+                                                        {record.notes || '-'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
+                            </tbody>
+                        </table>
                     </div>
-                )}
-                {fetching && (
-                    <div className="p-12 text-center text-[10px] text-text-muted uppercase">Loading…</div>
-                )}
+                </div>
             </div>
         </div>
     );

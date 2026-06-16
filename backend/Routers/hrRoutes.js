@@ -21,26 +21,36 @@ const {
     createSalaryAdvance,
     updateSalaryAdvance,
     deleteSalaryAdvance,
+    updateStaffRevenueTarget,
     punchAttendance,
     getMyTodayAttendance,
     getMyAttendanceHistory,
-    getMyWorksite
+    getMyWorksite,
+    getMyCommissions,
+    getMyLeaves,
+    applyLeave,
+    getStylistOverview
 } = require('../Controllers/hrController');
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
 
-// Self-attendance routes (accessible to any logged-in staff member)
+// Self-attendance and commission routes (accessible to any logged-in staff member)
+router.get('/overview/me', getStylistOverview);
 router.post('/attendance/punch', punchAttendance);
 router.get('/attendance/me', getMyTodayAttendance);
 router.get('/attendance/history', getMyAttendanceHistory);
 router.get('/attendance/worksite', getMyWorksite);
+router.get('/commissions/me', getMyCommissions);
+router.get('/leaves/me', getMyLeaves);
+router.post('/leaves/me', applyLeave);
 
 // HR admin routes require 'admin', 'manager', or 'p:hr' permission
 router.use(authorize('admin', 'manager', 'p:hr'));
 
 router.get('/staff', getAllStaff);
 router.put('/staff/:id', updateStaffHR);
+router.patch('/staff/:id/target', updateStaffRevenueTarget);
 
 router.post('/attendance', markAttendance);
 router.get('/attendance', getAttendance);

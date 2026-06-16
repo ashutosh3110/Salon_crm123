@@ -38,6 +38,10 @@ exports.login = async (req, res) => {
             });
         }
 
+        if (roleName && roleName.toLowerCase() === 'manger') {
+            roleName = 'manager';
+        }
+
         // 4. Status Checks
         if (userData.isActive === false) {
             const msg = (userData.status === 'pending')
@@ -244,11 +248,48 @@ exports.getMe = async (req, res) => {
 
 exports.updateDetails = async (req, res) => {
     try {
-        const fieldsToUpdate = {
-            name: req.body.name,
-            email: req.body.email,
-            avatar: req.body.avatar
-        };
+        let fieldsToUpdate = {};
+
+        if (req.user.role === 'superadmin' || req.user.role === 'admin') {
+            fieldsToUpdate = {
+                name: req.body.name,
+                email: req.body.email,
+                avatar: req.body.avatar
+            };
+        } else if (req.user.role === 'customer') {
+            fieldsToUpdate = {
+                name: req.body.name,
+                email: req.body.email,
+                avatar: req.body.avatar
+            };
+        } else {
+            // Staff member (e.g. stylist/stylish)
+            fieldsToUpdate = {
+                avatar: req.body.avatar
+            };
+            if (req.body.name !== undefined) fieldsToUpdate.name = req.body.name;
+            if (req.body.phone !== undefined) fieldsToUpdate.phone = req.body.phone;
+            if (req.body.bio !== undefined) fieldsToUpdate.bio = req.body.bio;
+            if (req.body.experience !== undefined) fieldsToUpdate.experience = req.body.experience;
+            if (req.body.specializations !== undefined) fieldsToUpdate.specializations = req.body.specializations;
+            if (req.body.skills !== undefined) fieldsToUpdate.skills = req.body.skills;
+            if (req.body.availability !== undefined) fieldsToUpdate.availability = req.body.availability;
+            if (req.body.isActive !== undefined) fieldsToUpdate.isActive = req.body.isActive;
+
+            if (req.body.email !== undefined) {
+                const lowercaseEmail = req.body.email.toLowerCase().trim();
+                if (lowercaseEmail) {
+                    const existingUser = await User.findOne({ email: lowercaseEmail });
+                    const existingStaff = await Staff.findOne({ email: lowercaseEmail, _id: { $ne: req.user._id } });
+                    const existingSalon = await Salon.findOne({ email: lowercaseEmail });
+
+                    if (existingUser || existingStaff || existingSalon) {
+                        return res.status(400).json({ success: false, message: 'Email is already in use' });
+                    }
+                    fieldsToUpdate.email = lowercaseEmail;
+                }
+            }
+        }
 
         let Model;
         if (req.user.role === 'superadmin') Model = User;
@@ -305,7 +346,7 @@ exports.updatePassword = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ success: false, message: 'Server error' });
+        res.status(500).json({ success: false, message: err.message, stack: err.stack });
     }
 };
 

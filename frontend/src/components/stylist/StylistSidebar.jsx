@@ -6,7 +6,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { getImageUrl } from '../../utils/imageUtils';
 import {
     LayoutDashboard, Users, Clock, Settings, LogOut, ChevronLeft, ChevronRight, X, User,
-    Scissors, Bell, Shield, LifeBuoy, DollarSign, UserCheck
+    Scissors, Bell, Shield, LifeBuoy, DollarSign, UserCheck, Camera
 } from 'lucide-react';
 
 const menuItems = [
@@ -17,7 +17,7 @@ const menuItems = [
     { label: 'Time off', icon: Clock, path: '/stylist/timeoff' },
     { label: 'Settings', icon: Settings, path: '/stylist/settings', subItems: [
         { label: 'My profile', path: '/stylist/settings/profile' },
-        { label: 'Services & skills', path: '/stylist/settings/skills' },
+        // { label: 'Services & skills', pat    h: '/stylist/settings/skills' },
         { label: 'Availability', path: '/stylist/settings/availability' },
         { label: 'Security', path: '/stylist/settings/security' }
     ]},
@@ -189,7 +189,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                 </button>
                                 
                                 {isExpanded && !effectiveCollapsed && (
-                                    <div className="mt-1 mb-2 space-y-0.5">
+                                    <div className="mt-1 mb-2 space-y-0.5 pl-6 border-l border-slate-100 dark:border-slate-800 ml-6">
                                         {item.subItems.map((sub) => {
                                             const isSubActive = location.pathname === sub.path;
                                             return (
@@ -197,14 +197,13 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                                     key={sub.path}
                                                     to={sub.path}
                                                     onClick={() => setMobileOpen(false)}
-                                                    className={`flex items-center pl-10 pr-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200
-                                                        ${isSubActive 
-                                                            ? 'text-[#C89B2B] bg-[#C89B2B]/5 font-semibold' 
-                                                            : 'text-[#6B7280] dark:text-slate-400 hover:text-[#C89B2B] dark:hover:text-[#C89B2B]'
+                                                    className={`flex items-center justify-between py-2 px-3 rounded-md text-[13px] font-semibold transition-all duration-200 relative
+                                                        ${isSubActive
+                                                            ? 'bg-[#C89B2B] text-white shadow-sm'
+                                                            : 'text-[#6B7280] dark:text-slate-400 hover:text-[#C89B2B] hover:bg-[#C89B2B]/10'
                                                         }`}
                                                 >
-                                                    <span className={`w-1.5 h-1.5 rounded-full mr-2.5 ${isSubActive ? 'bg-[#C89B2B]' : 'bg-transparent border border-[#9CA3AF] dark:border-slate-500'}`} />
-                                                    {sub.label}
+                                                    <span className={isSubActive ? 'text-white !text-white' : ''}>{sub.label}</span>
                                                 </NavLink>
                                             );
                                         })}

@@ -64,7 +64,7 @@ export default function SuperAdminTopbar({ onMenuClick }) {
                         onClick={onMenuClick}
                         className="lg:hidden w-10 h-10 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
                     >
-                        <Menu className="w-5 h-5 text-text-secondary" />
+                        <Menu className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
                 </div>
 
@@ -78,7 +78,7 @@ export default function SuperAdminTopbar({ onMenuClick }) {
                         title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                     >
                         {theme === 'light' ? (
-                            <Moon className="w-5 h-5 text-text-secondary" />
+                            <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                         ) : (
                             <Sun className="w-5 h-5 text-amber-400" />
                         )}
@@ -102,7 +102,7 @@ export default function SuperAdminTopbar({ onMenuClick }) {
                         className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 transition-colors border border-border/40 group"
                         title="Logout"
                     >
-                        <LogOut className="w-4.5 h-4.5 text-text-secondary group-hover:text-rose-500" />
+                        <LogOut className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300 group-hover:text-rose-500" />
                     </button>
                 </div>
             </div>

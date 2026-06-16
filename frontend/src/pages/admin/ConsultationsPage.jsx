@@ -11,6 +11,7 @@ import {
     Store,
     Clock,
     X,
+    ChevronDown,
     Filter,
     ShieldAlert,
     CheckCircle2,
@@ -444,17 +445,22 @@ export default function ConsultationsPage() {
                                     {/* Step 1: Select Outlet */}
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-black text-text-muted uppercase tracking-wider block">1. Select Target Outlet *</label>
-                                        <CustomDropdown
-                                            value={formData.outletId}
-                                            onChange={(val) => setFormData({ ...formData, outletId: val, customerId: '' })}
-                                            options={[
-                                                { value: '', label: '-- CHOOSE OUTLET --' },
-                                                ...outlets.map(o => ({ value: o._id || o.id, label: o.name.toUpperCase() }))
-                                            ]}
-                                            disabled={!!selectedConsultation}
-                                            placeholder="-- CHOOSE OUTLET --"
-                                            className="w-full h-11 text-xs font-black uppercase"
-                                        />
+                                        <div className="relative">
+                                            <select
+                                                value={formData.outletId}
+                                                onChange={(e) => setFormData({ ...formData, outletId: e.target.value, customerId: '' })}
+                                                disabled={!!selectedConsultation}
+                                                className="w-full bg-surface-alt border border-border p-3 pr-10 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm cursor-pointer appearance-none"
+                                            >
+                                                <option value="">-- CHOOSE OUTLET --</option>
+                                                {outlets.map(o => (
+                                                    <option key={o._id || o.id} value={o._id || o.id}>
+                                                        {o.name.toUpperCase()}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-45" />
+                                        </div>
                                     </div>
 
                                     {/* Step 2: Auto-fetched Outlet Customers */}
@@ -468,23 +474,25 @@ export default function ConsultationsPage() {
                                                 type="text"
                                                 readOnly
                                                 value={selectedConsultation.customerId?.name || 'Standard Client'}
-                                                className="w-full bg-surface-alt border border-[#e5e7eb] px-3 py-2 rounded-xl text-xs font-black outline-none uppercase cursor-not-allowed opacity-70"
+                                                className="w-full bg-surface-alt border border-border p-3 rounded-2xl text-xs font-black outline-none uppercase cursor-not-allowed opacity-70"
                                             />
                                         ) : (
-                                            <CustomDropdown
-                                                value={formData.customerId}
-                                                onChange={(val) => setFormData({ ...formData, customerId: val })}
-                                                options={[
-                                                    { value: '', label: '-- CHOOSE CUSTOMER --' },
-                                                    ...outletCustomers.map(c => ({
-                                                        value: c._id,
-                                                        label: `${c.name.toUpperCase()} (${maskPhone(c.phone, user?.role)})`
-                                                    }))
-                                                ]}
-                                                disabled={!formData.outletId}
-                                                placeholder="-- CHOOSE CUSTOMER --"
-                                                className="w-full h-11 text-xs font-black uppercase"
-                                            />
+                                            <div className="relative">
+                                                <select
+                                                    value={formData.customerId}
+                                                    onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                                                    disabled={!formData.outletId}
+                                                    className="w-full bg-surface-alt border border-border p-3 pr-10 rounded-2xl text-xs font-black outline-none focus:bg-surface focus:border-primary transition-all uppercase shadow-sm cursor-pointer appearance-none"
+                                                >
+                                                    <option value="">-- CHOOSE CUSTOMER --</option>
+                                                    {outletCustomers.map(c => (
+                                                        <option key={c._id} value={c._id}>
+                                                            {c.name.toUpperCase()} ({maskPhone(c.phone, user?.role)})
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none opacity-45" />
+                                            </div>
                                         )}
                                     </div>
 

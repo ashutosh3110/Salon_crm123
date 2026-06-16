@@ -30,7 +30,7 @@ export default function POSTopbar({ onMenuClick }) {
                         onClick={onMenuClick}
                         className="md:hidden w-10 h-10 border border-border bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
                     >
-                        <Menu className="w-5 h-5 text-text-secondary" />
+                        <Menu className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
 
                     {/* Exit POS Button */}
@@ -66,7 +66,7 @@ export default function POSTopbar({ onMenuClick }) {
                         title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                     >
                         {theme === 'light' ? (
-                            <Moon className="w-4 h-4 text-text-secondary" />
+                            <Moon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                         ) : (
                             <Sun className="w-4 h-4 text-amber-500" />
                         )}
@@ -77,7 +77,7 @@ export default function POSTopbar({ onMenuClick }) {
                         onClick={() => navigate('/pos/notifications')}
                         className="w-10 h-10 bg-surface border border-border flex items-center justify-center hover:bg-surface-alt hover:border-text-muted transition-all relative"
                     >
-                        <Bell className="w-4 h-4 text-text-secondary" />
+                        <Bell className="w-4 h-4 text-slate-600 dark:text-slate-300" />
                         <span className="absolute top-0 right-0 w-2 h-2 bg-rose-500 border-2 border-background" />
                     </button>
 
@@ -103,7 +103,7 @@ export default function POSTopbar({ onMenuClick }) {
                         className="w-10 h-10 bg-surface border border-border flex items-center justify-center hover:bg-rose-500/10 hover:border-rose-500/30 group transition-all"
                         title="Logout Terminal"
                     >
-                        <LogOut className="w-4 h-4 text-text-secondary group-hover:text-rose-500 transition-colors" />
+                        <LogOut className="w-4 h-4 text-slate-600 dark:text-slate-300 group-hover:text-rose-500 transition-colors" />
                     </button>
                 </div>
             </div>

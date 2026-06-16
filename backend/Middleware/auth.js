@@ -91,6 +91,11 @@ exports.protect = async (req, res, next) => {
         // Standardize ID property
         userObj.id = userObj._id;
 
+        // Normalize 'manger' to 'manager'
+        if (userObj.role === 'manger') {
+            userObj.role = 'manager';
+        }
+
         req.user = userObj;
         next();
     } catch (err) {

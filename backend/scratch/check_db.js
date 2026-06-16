@@ -1,35 +1,36 @@
 const mongoose = require('mongoose');
-const Customer = require('../Models/Customer');
-const Salon = require('../Models/Salon');
-require('dotenv').config();
+require('dotenv').config({ path: 'd:/Github/Salon_crm123/backend/.env' });
 
-async function checkCustomers() {
+const mongoUri = process.env.MONGODB_URI;
+
+async function run() {
     try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('Connected to DB');
-
-        const salonData = await Salon.find({}, 'name');
-        console.log('Available Salons:', JSON.stringify(salonData, null, 2));
-
-        const counts = await Customer.aggregate([
-            { $group: { _id: '$salonId', count: { $sum: 1 } } }
-        ]);
-
-        const result = counts.map(c => {
-            const s = salonData.find(sd => sd._id.toString() === (c._id ? c._id.toString() : ''));
-            return {
-                salonId: c._id,
-                salonName: s ? s.name : 'UNKNOWN',
-                customerCount: c.count
-            };
+        await mongoose.connect(mongoUri);
+        
+        const staffs = await mongoose.connection.db.collection('staffs').find({}).toArray();
+        console.log('Staff members:');
+        staffs.forEach(s => {
+            console.log({
+                _id: s._id,
+                name: s.name,
+                email: s.email,
+                role: s.role,
+                status: s.status,
+                isActive: s.isActive
+            });
         });
 
-        console.log('Customer Distribution:', JSON.stringify(result, null, 2));
+        // Let's also check if they have password hash
+        staffs.forEach(s => {
+            console.log(`${s.name} has password field:`, !!s.password);
+        });
 
-        mongoose.connection.close();
     } catch (err) {
-        console.error(err);
+        console.error('Error:', err);
+    } finally {
+        await mongoose.disconnect();
+        process.exit(0);
     }
 }
 
-checkCustomers();
+run();

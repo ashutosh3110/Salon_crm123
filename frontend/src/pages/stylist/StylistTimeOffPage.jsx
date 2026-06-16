@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Calendar, Clock, CheckCircle2, XCircle, Plus, Activity, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 function formatTypeLabel(type) {
     if (!type) return '';
@@ -33,7 +33,7 @@ export default function StylistTimeOffPage() {
         setError(null);
         setLoading(true);
         try {
-            const res = await mockApi.get('/stylist/time-off');
+            const res = await api.get('/hr/leaves/me');
             const data = res.data?.data ?? res.data;
             setRequests(Array.isArray(data?.requests) ? data.requests : []);
             if (Array.isArray(data?.leaveTypes) && data.leaveTypes.length) {
@@ -75,7 +75,7 @@ export default function StylistTimeOffPage() {
         }
         setSubmitting(true);
         try {
-            await mockApi.post('/stylist/time-off', {
+            await api.post('/hr/leaves/me', {
                 type: formData.type,
                 startDate: formData.startDate,
                 endDate: formData.endDate,
