@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Calendar, Clock, CheckCircle2, XCircle, Plus, Activity, X, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../services/api';
@@ -143,20 +144,65 @@ export default function StylistTimeOffPage() {
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {quotaCards.map((s) => (
-                    <div key={s.key || s.label} className="bg-surface border border-border p-4 relative overflow-hidden group">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
-                        <p className="text-[8px] font-black text-text-muted uppercase tracking-[0.2em] mb-1">{s.label}</p>
-                        <p className={`text-2xl font-black tracking-tighter ${s.colorClass || 'text-primary'}`}>
-                            {s.used}
-                            <span className="text-xs font-black text-text-muted mx-1">/</span>
-                            <span className="text-xs font-black text-text-muted">{s.total}</span>
-                        </p>
-                        {s.year != null && (
-                            <p className="text-[7px] font-bold text-text-muted uppercase mt-1 tracking-tighter">Year {s.year}</p>
-                        )}
-                    </div>
-                ))}
+                {quotaCards.map((s) => {
+                    const isRose = s.colorClass?.includes('rose');
+                    const isEmerald = s.colorClass?.includes('emerald');
+                    const isAmber = s.colorClass?.includes('amber');
+                    
+                    let cardBg = 'bg-[#FAF5FF] dark:bg-primary/5';
+                    let cardBorder = 'border-primary/15 hover:border-primary/50';
+                    let iconBg = 'bg-primary/10';
+                    let iconColor = 'text-primary';
+
+                    if (isRose) {
+                        cardBg = 'bg-[#FFF1F2] dark:bg-rose-500/5';
+                        cardBorder = 'border-rose-500/15 hover:border-rose-500/50';
+                        iconBg = 'bg-rose-500/10';
+                        iconColor = 'text-rose-500';
+                    } else if (isEmerald) {
+                        cardBg = 'bg-[#F0FDF4] dark:bg-emerald-500/5';
+                        cardBorder = 'border-emerald-500/15 hover:border-emerald-500/50';
+                        iconBg = 'bg-emerald-500/10';
+                        iconColor = 'text-emerald-500';
+                    } else if (isAmber) {
+                        cardBg = 'bg-[#FFFBEB] dark:bg-amber-500/5';
+                        cardBorder = 'border-amber-500/15 hover:border-amber-500/50';
+                        iconBg = 'bg-amber-500/10';
+                        iconColor = 'text-amber-500';
+                    }
+
+                    return (
+                        <div
+                            key={s.key || s.label}
+                            className={`!rounded-[16px] !border p-4 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[100px] transition-all hover:-translate-y-0.5 hover:shadow-md ${cardBg} ${cardBorder}`}
+                        >
+                            <div className="flex !items-start gap-3 !text-left">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`} style={{ borderRadius: '12px' }}>
+                                    <Activity className={`w-4 h-4 ${iconColor}`} strokeWidth={2} />
+                                </div>
+                                <div className="flex flex-col !items-start !text-left">
+                                    <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-400 leading-none mb-1.5 !text-left">
+                                        {s.label}
+                                    </span>
+                                    <h3 style={{ fontSize: '24px', fontWeight: 850 }} className={`leading-none tracking-tight !text-left ${iconColor}`}>
+                                        {s.used}
+                                        <span className="text-sm font-bold opacity-40 mx-1">/</span>
+                                        <span className="text-sm font-bold opacity-60">{s.total}</span>
+                                    </h3>
+                                    {s.year != null ? (
+                                        <span style={{ fontSize: '10px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-2 !text-left uppercase tracking-widest">
+                                            Year {s.year}
+                                        </span>
+                                    ) : (
+                                        <span style={{ fontSize: '10px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-2 !text-left opacity-0 uppercase tracking-widest">
+                                            -
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
             </div>
 
             <div className="space-y-4">
@@ -233,26 +279,27 @@ export default function StylistTimeOffPage() {
                 </div>
             </div>
 
-            <AnimatePresence>
+            {createPortal(
+                <AnimatePresence>
                 {showForm && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+                    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
                             onClick={() => !submitting && setShowForm(false)}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
                         />
                         <motion.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
+                            className="bg-surface w-full max-w-lg rounded-[24px] border border-border shadow-2xl relative p-8 max-h-[90vh] overflow-y-auto"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4">
+                            <div className="absolute top-0 right-0 p-8 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4">
                                 <Clock className="w-32 h-32 text-primary" />
                             </div>
-                            <div className="flex items-center justify-between mb-10 relative z-10">
+                            <div className="flex items-center justify-between mb-8 relative z-10">
                                 <div>
                                     <h2 className="text-xl font-black text-text uppercase tracking-tight">Apply for leave</h2>
                                     <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Sends request to your salon</p>
@@ -261,7 +308,7 @@ export default function StylistTimeOffPage() {
                                     type="button"
                                     disabled={submitting}
                                     onClick={() => setShowForm(false)}
-                                    className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all disabled:opacity-50"
+                                    className="w-10 h-10 rounded-xl bg-surface-alt flex items-center justify-center text-text-muted hover:text-text transition-all disabled:opacity-50"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -332,7 +379,9 @@ export default function StylistTimeOffPage() {
                         </motion.div>
                     </div>
                 )}
-            </AnimatePresence>
+                </AnimatePresence>,
+                document.body
+            )}
 
             <AnimatePresence>
                 {toast && (
