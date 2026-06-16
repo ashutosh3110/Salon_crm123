@@ -73,6 +73,7 @@ export default function AppLayout() {
     const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
     const hideHeaderPaths = [
         '/app/product',
+        '/app/service',
         '/app/bookings',
         '/app/orders',
         '/app/services',

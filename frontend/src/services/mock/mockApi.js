@@ -919,6 +919,16 @@ export const mockGet = async (url) => {
     }
     
     if (url.startsWith('/dashboard/receptionist')) {
+        let recentActivity = [
+            { id: 'act_1', client: 'Anita Roy', service: 'Haircut', time: '10:30 AM', status: 'confirmed', date: '09 APR', outletId: '1' },
+            { id: 'act_2', client: 'Vikram Singh', service: 'Beard Trim', time: '11:15 AM', status: 'arrived', date: '09 APR', outletId: '2' }
+        ];
+        const urlParams = new URLSearchParams(url.split('?')[1] || '');
+        const outletId = urlParams.get('outletId');
+        if (outletId) {
+            recentActivity = recentActivity.filter(a => String(a.outletId) === String(outletId) || !a.outletId);
+        }
+        
         return {
             data: {
                 success: true,
@@ -930,20 +940,23 @@ export const mockGet = async (url) => {
                         { label: "New Registrations", value: 3, trend: "+1", positive: true, icon: 'UserPlus' }
                     ],
                     performance: { revenue: 24500, avgTicket: 1850, targetFulfillment: 65 },
-                    recentActivity: [
-                        { id: 'act_1', client: 'Anita Roy', service: 'Haircut', time: '10:30 AM', status: 'confirmed', date: '09 APR' },
-                        { id: 'act_2', client: 'Vikram Singh', service: 'Beard Trim', time: '11:15 AM', status: 'arrived', date: '09 APR' }
-                    ]
+                    recentActivity: recentActivity
                 }
             }
         };
     }
 
     if (url.startsWith('/bookings')) {
-        const bookings = getLocal('app_bookings', [
-            { id: 'bk_1', clientId: { name: 'Anita Roy' }, serviceId: { name: 'Haircut' }, staffId: { name: 'Rahul Sharma' }, time: '10:30 AM', status: 'confirmed', source: 'APP' },
-            { id: 'bk_2', clientId: { name: 'Vikram Singh' }, serviceId: { name: 'Beard Trim' }, staffId: { name: 'Alina Khan' }, time: '11:15 AM', status: 'arrived', source: 'RECEPTION' }
+        let bookings = getLocal('app_bookings', [
+            { id: 'bk_1', clientId: { name: 'Anita Roy' }, serviceId: { name: 'Haircut' }, staffId: { name: 'Rahul Sharma' }, time: '10:30 AM', status: 'confirmed', source: 'APP', outletId: '1' },
+            { id: 'bk_2', clientId: { name: 'Vikram Singh' }, serviceId: { name: 'Beard Trim' }, staffId: { name: 'Alina Khan' }, time: '11:15 AM', status: 'arrived', source: 'RECEPTION', outletId: '2' }
         ]);
+        const urlParams = new URLSearchParams(url.split('?')[1] || '');
+        const outletId = urlParams.get('outletId');
+        if (outletId) {
+            // Keep bookings that match the outlet, or if they have no outletId assigned yet (for backward compatibility of mock)
+            bookings = bookings.filter(b => String(b.outletId) === String(outletId) || !b.outletId);
+        }
         return { data: { success: true, results: bookings, data: bookings } };
     }
 
@@ -999,10 +1012,15 @@ export const mockGet = async (url) => {
             const inv = invoices.find(i => i._id === id || i.invoiceNumber === id);
             return { data: inv || invoices[0] };
         }
-        const invoices = getLocal('app_invoices', [
-            { _id: 'inv_1', invoiceNumber: 'INV1001', clientId: { name: 'Anita Roy', phone: '9876543210' }, total: 2450, paymentStatus: 'paid', paymentMethod: 'cash', createdAt: new Date().toISOString(), staffId: { name: 'Rahul Sharma' } },
-            { _id: 'inv_2', invoiceNumber: 'INV1002', clientId: { name: 'Vikram Singh', phone: '9876543211' }, total: 950, paymentStatus: 'unpaid', paymentMethod: 'upi', createdAt: new Date().toISOString(), staffId: { name: 'Alina Khan' } }
+        let invoices = getLocal('app_invoices', [
+            { _id: 'inv_1', invoiceNumber: 'INV1001', clientId: { name: 'Anita Roy', phone: '9876543210' }, total: 2450, paymentStatus: 'paid', paymentMethod: 'cash', createdAt: new Date().toISOString(), staffId: { name: 'Rahul Sharma' }, outletId: '1' },
+            { _id: 'inv_2', invoiceNumber: 'INV1002', clientId: { name: 'Vikram Singh', phone: '9876543211' }, total: 950, paymentStatus: 'unpaid', paymentMethod: 'upi', createdAt: new Date().toISOString(), staffId: { name: 'Alina Khan' }, outletId: '2' }
         ]);
+        const urlParams = new URLSearchParams(url.split('?')[1] || '');
+        const outletId = urlParams.get('outletId');
+        if (outletId) {
+             invoices = invoices.filter(inv => String(inv.outletId) === String(outletId) || !inv.outletId);
+        }
         return { data: { success: true, results: invoices, totalResults: invoices.length, totalPages: 1 } };
     }
     

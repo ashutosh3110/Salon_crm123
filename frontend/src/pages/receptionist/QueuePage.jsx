@@ -24,10 +24,12 @@ import {
 import { useNavigate } from 'react-router-dom';
 import mockApi from '../../services/mock/mockApi';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { AnimatePresence } from 'framer-motion';
 
 export default function QueuePage() {
     const { user } = useAuth();
+    const { activeOutletId } = useBusiness();
     const navigate = useNavigate();
     
     // Live States
@@ -53,10 +55,11 @@ export default function QueuePage() {
     const fetchData = async () => {
         try {
             const today = new Date().toISOString().split('T')[0];
+            const currentOutletId = activeOutletId || user?.outletId || '';
             const [queueRes, bookingsRes, staffRes, servicesRes] = await Promise.all([
-                mockApi.get(`/bookings?status=arrived&date=${today}&outletId=${user?.outletId}`),
-                mockApi.get(`/bookings?date=${today}&limit=100&outletId=${user?.outletId}`),
-                mockApi.get(`/users?role=stylist&outletId=${user?.outletId}`),
+                mockApi.get(`/bookings?status=arrived&date=${today}&outletId=${currentOutletId}`),
+                mockApi.get(`/bookings?date=${today}&limit=100&outletId=${currentOutletId}`),
+                mockApi.get(`/users?role=stylist&outletId=${currentOutletId}`),
                 mockApi.get('/services?limit=100')
             ]);
 
@@ -108,7 +111,7 @@ export default function QueuePage() {
         fetchData();
         const interval = setInterval(fetchData, 60000);
         return () => clearInterval(interval);
-    }, []);
+    }, [activeOutletId]);
 
     useEffect(() => {
         if (isWelcomeOpen || isAddGuestOpen) {
@@ -154,7 +157,7 @@ export default function QueuePage() {
             const now = new Date();
             await mockApi.post('/bookings', {
                 ...guest,
-                outletId: user?.outletId,
+                outletId: activeOutletId || user?.outletId,
                 appointmentDate: now.toISOString(),
                 time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 status: 'arrived',

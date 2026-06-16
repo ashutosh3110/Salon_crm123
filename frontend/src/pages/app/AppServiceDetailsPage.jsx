@@ -115,7 +115,7 @@ export default function AppServiceDetailsPage() {
 
     if (isLoading || isInitializing) {
         return (
-            <div style={{ background: colors.bg }} className="min-h-screen relative flex flex-col overflow-hidden">
+            <div style={{ background: '#FFFFFF' }} className="min-h-screen relative flex flex-col overflow-hidden">
                 <style>{`
                     @keyframes shimmer_effect {
                         0% { background-position: -200% 0; }
@@ -161,13 +161,13 @@ export default function AppServiceDetailsPage() {
 
     if (!service) {
         return (
-            <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+            <div style={{ background: '#FFFFFF', color: colors.text }} className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
                 <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mb-6">
                     <span className="text-red-500 font-bold text-2xl">!</span>
                 </div>
                 <h2 className="text-xl font-black italic uppercase tracking-tighter mb-2">Service Not Found</h2>
                 <p className="text-sm opacity-60 mb-8">This service may have been removed or is unavailable.</p>
-                <button onClick={() => navigate(-1)} className="px-6 py-3 bg-[#C8956C] text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-[#C8956C]/20">Go Back</button>
+                <button onClick={() => navigate(-1)} style={{ background: colors.accent, boxShadow: `0 10px 20px ${colors.accent}33` }} className="px-6 py-3 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg">Go Back</button>
             </div>
         );
     }
@@ -175,18 +175,24 @@ export default function AppServiceDetailsPage() {
     const categoryName = businessCategories?.find(c => String(c._id) === String(service.category) || c.name === service.category)?.name || 'General';
 
     return (
-        <div style={{ background: colors.bg, color: colors.text }} className="min-h-screen relative flex flex-col overflow-hidden">
-            {/* Header Actions */}
-            <div className="fixed top-6 left-6 right-6 z-[70] flex justify-between items-center">
+        <div style={{ background: '#FFFFFF', color: colors.text }} className="min-h-screen relative flex flex-col overflow-hidden">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between" style={{
+                background: '#FFFFFF',
+                borderBottom: `1px solid ${colors.border}`
+            }}>
                 <button
-                    type="button"
                     onClick={() => navigate(-1)}
-                    className="w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                 >
-                    <ChevronLeft size={22} />
+                    <ChevronLeft size={24} style={{ color: colors.text }} />
                 </button>
 
-                <div className="flex gap-3">
+                <h1 className="text-[17px] font-bold text-center flex-1 pl-4" style={{ color: colors.text, margin: 0 }}>
+                    Service Details
+                </h1>
+
+                <div className="flex gap-2">
                     <button
                         type="button"
                         onClick={() => {
@@ -198,14 +204,16 @@ export default function AppServiceDetailsPage() {
                                 });
                             }
                         }}
-                        className="w-11 h-11 rounded-2xl bg-black/40 text-white backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10"
+                        className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
+                        style={{ color: colors.text }}
                     >
                         <Share2 size={20} />
                     </button>
                     <button
                         type="button"
                         onClick={() => toggleServiceLike(service._id || service.id)}
-                        className={`w-11 h-11 rounded-2xl bg-black/40 backdrop-blur-xl flex items-center justify-center active:scale-90 shadow-2xl border border-white/10 transition-colors ${isServiceLiked(service._id || service.id) ? 'text-rose-500' : 'text-white'}`}
+                        className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
+                        style={{ color: isServiceLiked(service._id || service.id) ? 'rgb(244,63,94)' : colors.text }}
                     >
                         <Heart size={20} className={isServiceLiked(service._id || service.id) ? 'fill-current' : ''} />
                     </button>
@@ -234,7 +242,7 @@ export default function AppServiceDetailsPage() {
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap items-center gap-3 mb-4"
                         >
-                            <span className="px-3 py-1 bg-[#C8956C] text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
+                            <span style={{ background: colors.accent }} className="px-3 py-1 text-white text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
                                 {categoryName}
                             </span>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
@@ -242,7 +250,7 @@ export default function AppServiceDetailsPage() {
                                 <span className="text-[10px] font-black">{service.rating || '4.9'}</span>
                             </div>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
-                                <Clock className="w-3 h-3 text-[#C8956C]" />
+                                <Clock className="w-3 h-3" style={{ color: colors.accent }} />
                                 <span className="text-[10px] font-black">{service.duration} MINS</span>
                             </div>
                         </motion.div>
@@ -258,17 +266,16 @@ export default function AppServiceDetailsPage() {
                 </div>
 
                 {/* Details Section */}
-                <div className="p-8 pb-32 space-y-9" style={{ background: colors.bg }}>
+                <div className="p-8 pb-32 space-y-9" style={{ background: '#FFFFFF' }}>
                     <div className="flex items-end justify-between gap-4">
                         <div className="space-y-0.5">
-                            <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Investment</p>
                             {activeOutlet?.showServicePrice !== false && salon?.showServicePrice !== false && (
-                                <p className="text-4xl font-black text-[#C8956C] tracking-tighter italic">₹{service.price}</p>
+                                <p className="text-4xl font-black tracking-tighter italic" style={{ color: colors.accent }}>₹{service.price}</p>
                             )}
                         </div>
                         <div className="flex flex-col items-end gap-1">
                             <div className="flex items-center gap-2 p-2 px-4 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5">
-                                <User size={14} className="text-[#C8956C]" />
+                                <User size={14} style={{ color: colors.accent }} />
                                 <span className="text-[11px] font-bold opacity-70">Any Expert</span>
                             </div>
                         </div>
@@ -299,14 +306,14 @@ export default function AppServiceDetailsPage() {
                                             <div className="flex justify-between items-center mb-3">
                                                 <div className="flex gap-1">
                                                     {[1, 2, 3, 4, 5].map(s => (
-                                                        <Star key={s} size={11} fill={s <= rev.rating ? '#C8956C' : 'none'} color={s <= rev.rating ? '#C8956C' : 'rgba(255,255,255,0.1)'} />
+                                                        <Star key={s} size={11} fill={s <= rev.rating ? colors.accent : 'none'} color={s <= rev.rating ? colors.accent : 'rgba(255,255,255,0.1)'} />
                                                     ))}
                                                 </div>
                                                 <span className="text-[10px] opacity-30 font-bold">{new Date(rev.createdAt).toLocaleDateString()}</span>
                                             </div>
                                             <p className="text-[12px] italic mb-3 font-medium opacity-80 leading-relaxed">"{rev.comment}"</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-5 h-5 rounded-full bg-[#C8956C]/20 flex items-center justify-center text-[8px] font-black text-[#C8956C]">
+                                                <div style={{ background: `${colors.accent}33`, color: colors.accent }} className="w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-black">
                                                     {rev.customerName?.charAt(0)}
                                                 </div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">— {rev.customerName}</p>
@@ -318,7 +325,8 @@ export default function AppServiceDetailsPage() {
                                 )}
                                 <button 
                                     onClick={() => setIsReviewModalOpen(true)}
-                                    className="w-full h-14 rounded-2xl border-2 border-dashed border-[#C8956C]/30 text-[#C8956C] text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                    style={{ borderColor: `${colors.accent}4d`, color: colors.accent }}
+                                    className="w-full h-14 rounded-2xl border-2 border-dashed text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
                                 >
                                     <MessageSquare size={16} /> Write a Review
                                 </button>
@@ -355,8 +363,8 @@ export default function AppServiceDetailsPage() {
                             type="button"
                             onClick={() => navigate(`/app/booking?serviceId=${service._id}`)}
                             style={{
-                                background: 'linear-gradient(135deg, #C8956C 0%, #A06844 100%)',
-                                boxShadow: '0 20px 40px rgba(200,149,108,0.3)'
+                                background: `linear-gradient(135deg, ${colors.accent} 0%, ${colors.accent}dd 100%)`,
+                                boxShadow: `0 20px 40px ${colors.accent}4d`
                             }}
                             className="w-full h-16 rounded-2xl flex items-center justify-center gap-4 text-white shadow-2xl transition-all"
                         >

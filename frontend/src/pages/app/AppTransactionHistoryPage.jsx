@@ -1,8 +1,8 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-    TrendingUp, TrendingDown, Clock, Search, 
+import {
+    TrendingUp, TrendingDown, Clock, Search,
     Wallet, Gem, ShoppingBag, Calendar, ArrowRightLeft,
     AlertCircle, ChevronLeft
 } from 'lucide-react';
@@ -22,7 +22,7 @@ export default function AppTransactionHistoryPage() {
         card: '#FFFFFF',
         text: themeColors.text || '#1A1A1A',
         textMuted: themeColors.textMuted || '#666',
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
         border: themeColors.border || 'rgba(0,0,0,0.07)',
         input: '#F3F4F6',
     }), [themeColors]);
@@ -30,8 +30,8 @@ export default function AppTransactionHistoryPage() {
     const filteredTransactions = useMemo(() => {
         return transactions.filter(tx => {
             const matchesTab = activeTab === 'all' || tx.type.toLowerCase() === activeTab;
-            const matchesSearch = tx.description.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                                 tx.amount.toString().includes(searchQuery);
+            const matchesSearch = tx.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                tx.amount.toString().includes(searchQuery);
             return matchesTab && matchesSearch;
         });
     }, [transactions, activeTab, searchQuery]);
@@ -52,7 +52,7 @@ export default function AppTransactionHistoryPage() {
 
         const now = new Date();
         const diff = now - d;
-        
+
         if (diff < 24 * 60 * 60 * 1000) {
             return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
@@ -67,8 +67,8 @@ export default function AppTransactionHistoryPage() {
             {/* Header */}
             <div className="sticky top-0 z-30 px-4 py-4" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                 <div className="flex items-center justify-between mb-4">
-                    <button 
-                        onClick={() => navigate(-1)} 
+                    <button
+                        onClick={() => navigate(-1)}
                         className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                     >
                         <ChevronLeft className="w-6 h-6" style={{ color: colors.text }} />
@@ -83,7 +83,7 @@ export default function AppTransactionHistoryPage() {
                             key={tab}
                             onClick={() => setActiveTab(tab)}
                             className="flex-1 py-2.5 text-[11px] font-black uppercase tracking-widest rounded-xl transition-all"
-                            style={{ 
+                            style={{
                                 background: activeTab === tab ? colors.card : 'transparent',
                                 color: activeTab === tab ? colors.accent : colors.textMuted,
                                 boxShadow: activeTab === tab ? '0 4px 12px rgba(0,0,0,0.03)' : 'none'
@@ -97,7 +97,7 @@ export default function AppTransactionHistoryPage() {
                 {/* Search Bar */}
                 <div className="relative">
                     <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 opacity-30" style={{ color: colors.text }} />
-                    <input 
+                    <input
                         type="text"
                         placeholder="Search transactions..."
                         value={searchQuery}
@@ -116,7 +116,7 @@ export default function AppTransactionHistoryPage() {
                         <p className="font-black uppercase tracking-widest text-[10px]">Loading History...</p>
                     </div>
                 ) : filteredTransactions.length > 0 ? (
-                    <motion.div 
+                    <motion.div
                         variants={stagger}
                         initial="hidden"
                         animate="show"
@@ -125,7 +125,7 @@ export default function AppTransactionHistoryPage() {
                         {filteredTransactions.map((tx, idx) => {
                             const config = getIcon(tx.type, tx.description);
                             const isDebit = tx.type === 'DEBIT';
-                            
+
                             return (
                                 <motion.div
                                     key={tx.id || idx}

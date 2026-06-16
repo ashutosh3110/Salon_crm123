@@ -484,7 +484,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
             )}
 
             {/* Nav Links */}
-            <nav className="flex-1 py-5 px-3 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
+            <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
                 {menuItems.map((item) => {
                     const isSubscriptionPath = item.path === '/admin/subscription';
                     const isSupportPath = item.path === '/admin/support';
@@ -500,15 +500,15 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                             ));
 
                     return (
-                        <div key={item.label || item.path} className="space-y-1">
+                        <div key={item.label || item.path} className="space-y-0.5">
 
                             {hasSubItems ? (
-                                <div className="space-y-1">
+                                <div className="space-y-0.5">
                                     <button
                                         onClick={() => !isLocked && toggleExpand(item.label)}
                                         title={effectiveCollapsed ? item.label : undefined}
-                                        className={`flex items-center justify-between w-full rounded-lg text-[15px] font-bold transition-all duration-200 ease-out group relative cursor-pointer
-                                            ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
+                                        className={`flex items-center justify-between w-full rounded-lg text-[14px] font-bold transition-all duration-200 ease-out group relative cursor-pointer
+                                            ${effectiveCollapsed ? 'justify-center h-10 w-10 mx-auto' : 'px-3 py-2.5 gap-3'}
                                             ${active
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
                                                 : 'border border-transparent text-slate-500 hover:bg-[#B4912B]/10 hover:text-[#B4912B]'
@@ -541,7 +541,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                 animate={{ height: 'auto', opacity: 1 }}
                                                 exit={{ height: 0, opacity: 0 }}
                                                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                                                className="overflow-hidden ml-7 pl-4 relative space-y-1 mt-1 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#e2e8f0]"
+                                                className="overflow-hidden ml-6 pl-3 relative space-y-0.5 mt-0.5 before:absolute before:left-0 before:top-0 before:bottom-0 before:w-px before:bg-[#e2e8f0]"
                                             >
                                                 {item.subItems.map((sub) => {
                                                     const isSubActive = sub.path.includes('?')
@@ -554,7 +554,7 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                                             key={sub.path}
                                                             to={isLocked ? '#' : sub.path}
                                                             onClick={(e) => { if (isLocked) e.preventDefault(); else setMobileOpen(false); }}
-                                                            className={`flex items-center justify-between py-2.5 px-4 rounded-md text-[13px] font-bold transition-all duration-200 relative
+                                                            className={`flex items-center justify-between py-2 px-3 rounded-md text-[13px] font-bold transition-all duration-200 relative
                                                                 ${isSubActive
                                                                     ? 'bg-[#B4912B] text-white shadow-sm active-submenu-item'
                                                                     : 'text-slate-500 dark:text-slate-400 hover:text-[#B4912B] hover:bg-[#B4912B]/10'
@@ -581,8 +581,8 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
                                     title={effectiveCollapsed ? item.label : undefined}
                                     className={({ isActive: isItemActive }) => {
                                         const currentActive = isItemActive && !isLocked;
-                                        return `flex items-center rounded-lg text-[15px] font-bold transition-all duration-200 ease-out group relative
-                                            ${effectiveCollapsed ? 'justify-center h-11 w-11 mx-auto' : 'px-4 py-3 gap-3'}
+                                        return `flex items-center rounded-lg text-[14px] font-bold transition-all duration-200 ease-out group relative
+                                            ${effectiveCollapsed ? 'justify-center h-10 w-10 mx-auto' : 'px-3 py-2.5 gap-3'}
                                             ${currentActive
                                                 ? 'bg-[#B4912B] text-white shadow-sm border border-[#B4912B]'
                                                 : 'border border-transparent text-slate-500 dark:text-slate-400 hover:bg-[#B4912B]/10 hover:text-[#B4912B] dark:hover:text-[#C5A23C]'

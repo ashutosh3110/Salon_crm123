@@ -1,7 +1,9 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, User, Star } from 'lucide-react';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
+import { getImageUrl } from '../../utils/imageUtils';
+
+const fallbackImage = "https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200";
 
 const BookingCard = memo(({ booking, onTap, index = 0 }) => {
     const { theme } = useCustomerTheme();
@@ -10,29 +12,29 @@ const BookingCard = memo(({ booking, onTap, index = 0 }) => {
     const colors = {
         card: isLight ? '#FFFFFF' : '#1A1A1A',
         text: isLight ? '#1A1A1A' : '#ffffff',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
+        textMuted: isLight ? '#718096' : 'rgba(255,255,255,0.4)',
         border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
     };
 
     const statusConfig = {
         pending: {
-            bg: isLight ? 'bg-amber-100' : 'bg-amber-500/10',
-            text: isLight ? 'text-amber-700' : 'text-amber-400',
+            bg: '#FFF9E6',
+            text: '#D97706',
             label: 'Pending'
         },
         confirmed: {
-            bg: isLight ? 'bg-blue-100' : 'bg-blue-500/10',
-            text: isLight ? 'text-blue-700' : 'text-blue-400',
+            bg: '#F0FDF4',
+            text: '#16A34A',
             label: 'Confirmed'
         },
         completed: {
-            bg: isLight ? 'bg-emerald-100' : 'bg-emerald-500/10',
-            text: isLight ? 'text-emerald-700' : 'text-emerald-400',
+            bg: '#EFF6FF',
+            text: '#2563EB',
             label: 'Completed'
         },
         cancelled: {
-            bg: isLight ? 'bg-gray-100' : 'bg-white/5',
-            text: isLight ? 'text-gray-500' : 'text-white/40',
+            bg: '#FEF2F2',
+            text: '#DC2626',
             label: 'Cancelled'
         },
     };
@@ -41,18 +43,21 @@ const BookingCard = memo(({ booking, onTap, index = 0 }) => {
 
     const formatDate = (dateStr) => {
         const date = new Date(dateStr);
-        const today = new Date();
-        const tomorrow = new Date();
-        tomorrow.setDate(today.getDate() + 1);
-
-        if (date.toDateString() === today.toDateString()) return 'Today';
-        if (date.toDateString() === tomorrow.toDateString()) return 'Tomorrow';
-        return date.toLocaleDateString('en-IN', { weekday: 'short', month: 'short', day: 'numeric' });
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     };
 
     const formatTime = (dateStr) => {
-        return new Date(dateStr).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
+        return booking.time || new Date(dateStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     };
+
+    const outletName = booking.outlet?.name || 'Looks & Style Salon';
+    const outletLocation = booking.outlet?.address
+        ? `${booking.outlet.address.city || ''}, ${booking.outlet.address.state || ''}`.replace(/^,\s*/, '')
+        : 'Azamgarh, UP';
+
+    const serviceName = booking.service?.name || 'Hair Spa, Hair Cut & Style';
+    const staffName = booking.staff?.name || 'Rahul Stylist';
+    const priceAmount = booking.totalPrice || booking.price || 798;
 
     return (
         <motion.div
@@ -63,60 +68,124 @@ const BookingCard = memo(({ booking, onTap, index = 0 }) => {
             onClick={() => onTap?.(booking)}
             style={{
                 background: colors.card,
-                border: `1px solid ${colors.border}`,
-                boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.02)' : 'none'
+                borderBottom: `1px solid ${colors.border}`,
+                padding: '12px 0'
             }}
-            className={`rounded-2xl p-5 cursor-pointer hover:border-[#C8956C]/30 transition-all ${booking.status === 'cancelled' ? 'opacity-70' : ''}`}
+            className="w-full text-left"
         >
-            <div className="flex items-start justify-between gap-3">
-                <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-black uppercase tracking-tight truncate" style={{ color: colors.text }}>{booking.service?.name}</h4>
-                    <p className="text-[10px] mt-1 flex items-center gap-1.5 font-bold uppercase tracking-widest" style={{ color: colors.textMuted }}>
-                        <User className="w-3 h-3 text-[#C8956C]" /> {booking.staff?.name}
-                    </p>
-                    {booking.createdAt && (
-                        <p className="text-[8px] mt-1 opacity-40 font-black uppercase tracking-widest">
-                            Booked on: {new Date(booking.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                        </p>
-                    )}
-                </div>
-                <span className={`text-[9px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg shrink-0 border border-current opacity-80 ${status.bg} ${status.text}`}
-                >
-                    {status.label}
-                </span>
-            </div>
-
-            <div className="flex items-center gap-4 mt-4 pt-4 border-t" style={{ borderTopColor: colors.border }}>
-                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest" style={{ color: colors.textMuted }}>
-                    <Calendar className="w-3 h-3 text-[#C8956C]" />
-                    {formatDate(booking.appointmentDate)}
-                </span>
-                <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest" style={{ color: colors.textMuted }}>
-                    <Clock className="w-3 h-3 text-[#C8956C]" />
-                    {formatTime(booking.appointmentDate)}
-                </span>
-                <div className="ml-auto text-right">
-                    {booking.membershipDiscount > 0 && (
-                        <p className="text-[9px] line-through opacity-30 font-bold mb-0.5">₹{booking.subtotal?.toLocaleString()}</p>
-                    )}
-                    <p className="text-sm font-black text-[#C8956C] tracking-tighter">₹{(booking.totalPrice || booking.price || 0).toLocaleString()}</p>
-                </div>
-            </div>
-
-            {booking.status === 'completed' && (
-                <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        booking.onRate?.(booking);
+            {/* Salon Info Header Row */}
+            <div className="flex gap-3 items-start mb-2">
+                <img
+                    src={getImageUrl(booking.outlet?.image || booking.outlet?.images?.[0]) || fallbackImage}
+                    alt={outletName}
+                    style={{
+                        width: '60px',
+                        height: '60px',
+                        borderRadius: '12px',
+                        objectFit: 'cover'
                     }}
-                    className="w-full mt-4 py-3 bg-[#C8956C]/10 border border-[#C8956C]/20 text-[#C8956C] rounded-xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-[#C8956C] hover:text-white transition-all flex items-center justify-center gap-2"
-                >
-                    <Star size={12} fill="currentColor" /> Rate & Review
-                </motion.button>
+                    onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
+                />
+                <div className="flex flex-col justify-center">
+                    <h3 className="text-[14px] font-bold text-slate-900 leading-tight mb-0.5" style={{ color: colors.text }}>
+                        {outletName}
+                    </h3>
+                    <p className="text-[11px] font-medium text-slate-400" style={{ color: colors.textMuted }}>
+                        {outletLocation}
+                    </p>
+                </div>
+            </div>
+
+            {/* Grid of details */}
+            <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-3">
+                {/* Row 1 */}
+                <div>
+                    <p className="text-[11px] font-medium text-slate-400 mb-0" style={{ color: colors.textMuted }}>Date</p>
+                    <p className="text-[12px] font-bold text-slate-800" style={{ color: colors.text }}>{formatDate(booking.appointmentDate)}</p>
+                </div>
+                <div>
+                    <p className="text-[11px] font-medium text-slate-400 mb-0" style={{ color: colors.textMuted }}>Time</p>
+                    <p className="text-[12px] font-bold text-slate-800" style={{ color: colors.text }}>{formatTime(booking.appointmentDate)}</p>
+                </div>
+
+                {/* Row 2 */}
+                <div>
+                    <p className="text-[11px] font-medium text-slate-400 mb-0" style={{ color: colors.textMuted }}>Service</p>
+                    <p className="text-[12px] font-bold text-slate-800 truncate" style={{ color: colors.text }}>{serviceName}</p>
+                </div>
+                <div>
+                    <p className="text-[11px] font-medium text-slate-400 mb-0" style={{ color: colors.textMuted }}>Staff</p>
+                    <p className="text-[12px] font-bold text-slate-800 truncate" style={{ color: colors.text }}>{staffName}</p>
+                </div>
+
+                {/* Row 3 */}
+                <div>
+                    <p className="text-[11px] font-medium text-slate-400 mb-0" style={{ color: colors.textMuted }}>Price</p>
+                    <p className="text-[16px] font-black text-slate-900 leading-none" style={{ color: colors.text }}>₹{priceAmount}</p>
+                </div>
+                <div className="flex items-end justify-start">
+                    <span
+                        style={{
+                            background: status.bg,
+                            color: status.text,
+                            padding: '3px 10px',
+                            borderRadius: '6px',
+                            fontSize: '10px',
+                            fontWeight: '700',
+                            display: 'inline-block'
+                        }}
+                    >
+                        {status.label}
+                    </span>
+                </div>
+            </div>
+
+            {/* Buttons */}
+            {['pending', 'confirmed'].includes(booking.status) && (
+                <div className="flex gap-3 mt-3">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onTap?.(booking);
+                        }}
+                        style={{
+                            flex: 1,
+                            padding: '9px 0',
+                            borderRadius: '10px',
+                            background: '#F3F4F6',
+                            color: '#1E293B',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            border: 'none',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Reschedule
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onTap?.(booking);
+                        }}
+                        style={{
+                            flex: 1,
+                            padding: '9px 0',
+                            borderRadius: '10px',
+                            background: '#FEF2F2',
+                            color: '#DC2626',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            border: 'none',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Cancel
+                    </button>
+                </div>
             )}
         </motion.div>
     );
 });
 
+BookingCard.displayName = 'BookingCard';
 export default BookingCard;

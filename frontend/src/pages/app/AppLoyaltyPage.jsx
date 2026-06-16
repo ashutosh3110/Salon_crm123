@@ -30,11 +30,11 @@ const AppLoyaltyPage = () => {
         textMuted: themeColors.textMuted || '#666',
         border: themeColors.border || 'rgba(0,0,0,0.08)',
         toggle: themeColors.input || '#F3F4F6',
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
     }), [themeColors]);
 
     const [rule, setRule] = React.useState({
-        pointsRate: 10, 
+        pointsRate: 10,
         minRedeemPoints: 100,
     });
 
@@ -79,14 +79,14 @@ const AppLoyaltyPage = () => {
         }} className="pb-8 font-sans text-sm">
             {/* Header */}
             <div className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     className="w-9 h-9 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                 >
                     <ChevronLeft className="w-5.5 h-5.5" style={{ color: colors.text }} />
                 </button>
                 <h1 className="text-base font-bold text-center flex-1 pr-2" style={{ color: colors.text }}>Loyalty Rewards</h1>
-                <button 
+                <button
                     onClick={() => navigate('/app/loyalty-how-it-works')}
                     className="text-[11px] font-bold transition-opacity hover:opacity-80 px-2 py-1 uppercase tracking-wide"
                     style={{ color: colors.accent }}
@@ -108,8 +108,8 @@ const AppLoyaltyPage = () => {
                     }}
                 >
                     <div style={{ position: 'relative' }}>
-                        <div style={{ 
-                            width: 44, height: 44, borderRadius: '12px', 
+                        <div style={{
+                            width: 44, height: 44, borderRadius: '12px',
                             background: 'linear-gradient(135deg, #DFAC2C 0%, #B98514 100%)',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '16px', fontWeight: 900, color: '#FFF',
@@ -153,9 +153,9 @@ const AppLoyaltyPage = () => {
                         <div style={{ position: 'relative', zIndex: 1 }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <div style={{ 
-                                        width: 28, height: 28, borderRadius: '8px', 
-                                        background: 'rgba(255,255,255,0.15)', 
+                                    <div style={{
+                                        width: 28, height: 28, borderRadius: '8px',
+                                        background: 'rgba(255,255,255,0.15)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         backdropFilter: 'blur(5px)'
                                     }}>
@@ -202,7 +202,7 @@ const AppLoyaltyPage = () => {
                 >
                     <div style={{ position: 'relative', zIndex: 1 }} className="space-y-4">
                         <div style={{ fontSize: '12px', fontWeight: 700, opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Balance</div>
-                        
+
                         <div className="flex justify-between items-end">
                             <div>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
@@ -235,16 +235,16 @@ const AppLoyaltyPage = () => {
                         gap: '16px',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.01)'
                     }}>
-                        <div style={{ 
-                            width: 38, height: 38, borderRadius: '10px', 
-                            background: isLight ? '#FFF8E6' : 'rgba(223, 172, 44, 0.1)', 
+                        <div style={{
+                            width: 38, height: 38, borderRadius: '10px',
+                            background: isLight ? '#FFF8E6' : 'rgba(223, 172, 44, 0.1)',
                             color: colors.accent,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             shrink: 0
                         }}>
                             <Coins size={18} style={{ color: colors.accent }} />
                         </div>
-                        
+
                         <div style={{ flex: 1 }}>
                             <p style={{ fontSize: '9px', color: colors.textMuted, margin: '0 0 1px', textTransform: 'uppercase', fontWeight: 900, letterSpacing: '0.05em' }}>Point Value</p>
                             <div style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>

@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { 
-    Coins, 
-    Gift, 
-    Zap, 
+import {
+    Coins,
+    Gift,
+    Zap,
     Share2,
     Star,
     Trophy,
@@ -27,7 +27,7 @@ const AppLoyaltyHowItWorksPage = () => {
         textMuted: themeColors.textMuted || '#666',
         border: themeColors.border || 'rgba(0,0,0,0.06)',
         toggle: themeColors.input || '#EDF0F2',
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
     }), [themeColors]);
 
     useEffect(() => {
@@ -100,8 +100,8 @@ const AppLoyaltyHowItWorksPage = () => {
         }} className="pb-10 font-sans text-sm">
             {/* Header */}
             <div className="sticky top-0 z-50 px-4 py-3 flex items-center justify-between" style={{ background: colors.bg }}>
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     className="w-9 h-9 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                 >
                     <ChevronLeft className="w-5.5 h-5.5" style={{ color: colors.text }} />
@@ -233,7 +233,7 @@ const AppLoyaltyHowItWorksPage = () => {
                 </div>
 
                 {/* Redemption Math (Compact) */}
-                <div 
+                <div
                     style={{
                         background: colors.card,
                         borderRadius: '16px',

@@ -24,7 +24,7 @@ export default function AppWalletPage() {
 
     const colors = useMemo(() => ({
         ...themeColors,
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
     }), [themeColors]);
 
     const hexToRgba = (hex, alpha) => {
@@ -68,8 +68,8 @@ export default function AppWalletPage() {
         <div style={{ background: '#F9F9FA', minHeight: '100vh' }} className="pb-10 font-sans">
             {/* Header */}
             <div className="sticky top-0 z-50 px-4 py-4 flex items-center justify-between bg-[#F9F9FA]">
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
                 >
                     <ChevronLeft className="w-6 h-6 text-black" />
@@ -142,48 +142,48 @@ export default function AppWalletPage() {
                 {/* Grid of Options */}
                 <div className="grid grid-cols-2 gap-3 pt-2">
                     {/* Refer & Earn */}
-                    <div 
+                    <div
                         onClick={() => navigate('/app/referrals')}
                         className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
                     >
-                        <div className="w-12 h-12 flex items-center justify-center mb-2">
-                            <img src="/refer and  earn .png" alt="Refer & Earn" className="w-10 h-10 object-contain" />
+                        <div className="w-[56px] h-[56px] flex items-center justify-center mb-1">
+                            <img src="/refer and  earn .png" alt="Refer & Earn" className="w-[52px] h-[52px] object-contain" />
                         </div>
                         <span className="text-xs font-bold text-gray-800 leading-tight">Refer & Earn</span>
                         <span className="text-[9px] text-gray-400 mt-1 font-medium">Earn Rewards</span>
                     </div>
 
                     {/* Membership */}
-                    <div 
+                    <div
                         onClick={() => navigate('/app/membership')}
                         className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
                     >
-                        <div className="w-12 h-12 flex items-center justify-center mb-2">
-                            <img src="/memebership.png" alt="Membership" className="w-10 h-10 object-contain" />
+                        <div className="w-[56px] h-[56px] flex items-center justify-center mb-1">
+                            <img src="/memebership.png" alt="Membership" className="w-[52px] h-[52px] object-contain" />
                         </div>
                         <span className="text-xs font-bold text-gray-800 leading-tight">Membership</span>
                         <span className="text-[9px] text-gray-400 mt-1 font-medium">View Plans</span>
                     </div>
 
                     {/* Transactions */}
-                    <div 
+                    <div
                         onClick={() => navigate('/app/transactions')}
                         className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
                     >
-                        <div className="w-12 h-12 flex items-center justify-center mb-2">
-                            <img src="/transaction.png" alt="Transactions" className="w-10 h-10 object-contain" />
+                        <div className="w-[56px] h-[56px] flex items-center justify-center mb-1">
+                            <img src="/transaction.png" alt="Transactions" className="w-[52px] h-[52px] object-contain" />
                         </div>
                         <span className="text-xs font-bold text-gray-800 leading-tight">Transactions</span>
                         <span className="text-[9px] text-gray-400 mt-1 font-medium">View History</span>
                     </div>
 
                     {/* Convert Points */}
-                    <div 
+                    <div
                         onClick={() => navigate('/app/loyalty')}
                         className="bg-white rounded-2xl p-4 flex flex-col items-center justify-center text-center shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-50/50 cursor-pointer active:scale-95 transition-all"
                     >
-                        <div className="w-12 h-12 flex items-center justify-center mb-2">
-                            <img src="/convertpoint.png" alt="Convert Points" className="w-10 h-10 object-contain" />
+                        <div className="w-[56px] h-[56px] flex items-center justify-center mb-1">
+                            <img src="/convertpoint.png" alt="Convert Points" className="w-[52px] h-[52px] object-contain" />
                         </div>
                         <span className="text-xs font-bold text-gray-800 leading-tight">Convert Points</span>
                         <span className="text-[9px] text-gray-400 mt-1 font-medium">To Wallet</span>
@@ -204,7 +204,7 @@ export default function AppWalletPage() {
                     }}
                 >
                     <div className="absolute inset-0 flex flex-col justify-end p-5">
-                        <button 
+                        <button
                             onClick={() => navigate('/app/referrals')}
                             className="bg-white text-[#B98514] font-extrabold text-[11px] px-5 py-2.5 rounded-full w-fit shadow-md active:scale-95 hover:bg-opacity-95 transition-all"
                         >
@@ -262,7 +262,7 @@ export default function AppWalletPage() {
                                             />
                                         </div>
                                         {loyaltySettings?.active && addAmount > 0 && (
-                                            <motion.div 
+                                            <motion.div
                                                 initial={{ opacity: 0, y: -10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 className="flex items-center gap-2 mt-4 p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/10"

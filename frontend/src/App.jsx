@@ -249,6 +249,7 @@ const CustomerAppWrapper = lazy(() => import('./layouts/CustomerAppWrapper'));
 // Role-Specific Layouts - Lazy Loaded
 const ReceptionistLayout = lazy(() => import('./layouts/ReceptionistLayout'));
 const ReceptionistDashboard = lazy(() => import('./pages/receptionist/ReceptionistDashboard'));
+const ReceptionistLeadsPage = lazy(() => import('./pages/receptionist/ReceptionistLeadsPage'));
 const AppointmentsPage = lazy(() => import('./pages/receptionist/AppointmentsPage'));
 const QueuePage = lazy(() => import('./pages/receptionist/QueuePage'));
 const CheckInPage = lazy(() => import('./pages/receptionist/CheckInPage'));
@@ -633,7 +634,8 @@ function App() {
                  ═══════════════════════════════════════════════════════════ */}
                         <Route element={<ProtectedRoute />}>
                           <Route element={<ReceptionistLayout />}>
-                            <Route path="/receptionist" element={<StaffDashboardPage />} />
+                            <Route path="/receptionist" element={<ReceptionistDashboard />} />
+                            <Route path="/receptionist/leads" element={<ReceptionistLeadsPage />} />
                             <Route path="/receptionist/appointments" element={<AppointmentsPage />} />
                             <Route path="/receptionist/queue" element={<QueuePage />} />
                             <Route path="/receptionist/checkin" element={<CheckInPage />} />

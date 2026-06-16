@@ -29,8 +29,8 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, colors, isLight
     }, [product.price, discountPercent]);
 
     // Use brand or fallback to name, like "L'Oréal Professionnel" in screenshot
-    const displayTitle = product.brand && product.brand !== 'Premium' 
-        ? `${product.brand} ${product.name.split(' ').slice(1).join(' ')}`.trim() 
+    const displayTitle = product.brand && product.brand !== 'Premium'
+        ? `${product.brand} ${product.name.split(' ').slice(1).join(' ')}`.trim()
         : product.name;
 
     return (
@@ -66,7 +66,7 @@ const ProductCard = React.memo(({ product, index, onOpenProduct, colors, isLight
                     <span className="text-[11px] line-through text-slate-400 font-medium">₹{originalPrice}</span>
                 </div>
 
-                <span className="text-[11px] font-bold text-[#E7D06E] uppercase tracking-wide">
+                <span className="text-[11px] font-bold text-[#B4912B] uppercase tracking-wide">
                     {discountPercent}% OFF
                 </span>
             </div>
@@ -226,7 +226,7 @@ export default function AppShopPage() {
         border: 'rgba(0,0,0,0.1)',
         toggle: '#EDF0F2',
         input: '#FFFFFF',
-        accent: '#E7D06E'
+        accent: '#B4912B'
     }), []);
 
     const handleCategoryChange = (val) => {
@@ -362,7 +362,7 @@ export default function AppShopPage() {
                     >
                         <ShoppingCart size={22} className="stroke-[2]" />
                         {cartCount > 0 && (
-                            <span className="absolute top-1 right-[-4px] w-[18px] h-[18px] bg-[#E7D06E] text-black text-[9px] font-black flex items-center justify-center rounded-full border-[1.5px] border-white">
+                            <span className="absolute top-1 right-[-4px] w-[18px] h-[18px] bg-[#B4912B] text-black text-[9px] font-black flex items-center justify-center rounded-full border-[1.5px] border-white">
                                 {cartCount}
                             </span>
                         )}
@@ -396,7 +396,7 @@ export default function AppShopPage() {
                     <motion.div
                         whileTap={{ scale: 0.95 }}
                         className="w-11.5 h-11.5 w-[46px] h-[46px] rounded-full flex items-center justify-center cursor-pointer shadow-sm"
-                        style={{ background: '#E7D06E' }}
+                        style={{ background: '#B4912B' }}
                     >
                         {/* Custom Spray Bottle / Perfume SVG matching mockup filter button */}
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
@@ -413,13 +413,13 @@ export default function AppShopPage() {
             {/* Promo Banner */}
             <div className="px-4 mt-3">
                 <div className="relative w-full rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.02)] aspect-[328/136]">
-                    <img 
-                        src="/shop banner iamge .png" 
-                        alt="Shop Promo Banner" 
-                        className="w-full h-full object-cover" 
+                    <img
+                        src="/shop banner iamge .png"
+                        alt="Shop Promo Banner"
+                        className="w-full h-full object-cover"
                     />
                     {/* Overlay the 'Shop Now' button directly onto the banner image */}
-                    <button 
+                    <button
                         className="absolute left-[24px] bottom-[20px] px-5 py-2.5 bg-white text-[#C69A27] font-extrabold text-[11px] rounded-full shadow-sm hover:bg-slate-50 transition-all active:scale-95 uppercase tracking-wider"
                         style={{ fontFamily: "'Inter', sans-serif" }}
                     >
@@ -430,9 +430,10 @@ export default function AppShopPage() {
 
             {/* Categories Section */}
             <div className="mt-6 mb-4">
-                <div className="app-scroll no-scrollbar flex gap-5 overflow-x-auto px-4 pb-2">
+                <div className="app-scroll no-scrollbar flex gap-6 overflow-x-auto px-5 pb-3">
                     {categories.map(cat => {
                         const isActive = activeCategory === cat.name;
+                        
                         return (
                             <motion.div
                                 key={cat.name}
@@ -442,30 +443,27 @@ export default function AppShopPage() {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '8px',
                                     flexShrink: 0,
                                     cursor: 'pointer'
                                 }}
                             >
+                                {/* Rounded Box Icon Container */}
                                 <div style={{
-                                    width: '64px',
-                                    height: '64px',
-                                    borderRadius: '50%',
-                                    padding: '2px',
-                                    background: isActive ? '#E7D06E' : 'transparent',
-                                    border: isActive ? 'none' : `1px solid ${colors.border}`,
-                                    transition: 'all 0.3s ease',
-                                    position: 'relative',
-                                    zIndex: 2
+                                    width: '56px',
+                                    height: '56px',
+                                    borderRadius: '16px',
+                                    overflow: 'hidden',
+                                    background: isActive ? '#FFF9E6' : '#FFFFFF',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: isActive ? '2px solid #B4912B' : '1px solid rgba(0,0,0,0.06)',
+                                    transition: 'all 0.2s ease',
+                                    boxShadow: isActive ? '0 4px 12px rgba(180, 145, 43, 0.2)' : 'none'
                                 }}>
-                                    <div style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        borderRadius: '50%',
-                                        overflow: 'hidden',
-                                        background: colors.card,
-                                        border: `2px solid ${isLight ? '#fff' : colors.bg}`
-                                    }}>
+                                    {cat.name === 'All' ? (
+                                        <LayoutGrid size={22} color={isActive ? '#B4912B' : '#64748B'} className="stroke-[2.5]" />
+                                    ) : (
                                         <img
                                             src={getImageUrl(cat.img) || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=200&q=80'}
                                             alt={cat.name}
@@ -473,34 +471,22 @@ export default function AppShopPage() {
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             onError={(e) => { e.target.onerror = null; e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E"; }}
                                         />
-                                    </div>
+                                    )}
                                 </div>
 
-                                <div
+                                {/* Clean label text */}
+                                <span
                                     style={{
-                                        background: isActive ? '#E7D06E' : colors.card,
-                                        color: isActive ? '#FFFFFF' : colors.text,
-                                        borderRadius: '10px',
-                                        padding: '4px 10px',
-                                        boxShadow: isActive ? '0 4px 8px rgba(231,208,110,0.2)' : 'none',
-                                        border: isActive ? 'none' : `1px solid ${colors.border}`,
-                                        marginTop: '-12px',
-                                        zIndex: 3,
-                                        minWidth: '50px',
-                                        textAlign: 'center'
+                                        fontSize: '12px',
+                                        fontWeight: isActive ? 700 : 500,
+                                        color: isActive ? '#B4912B' : '#475569',
+                                        marginTop: '8px',
+                                        transition: 'all 0.2s ease',
+                                        whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    <span
-                                        style={{
-                                            fontSize: '8px',
-                                            fontWeight: 800,
-                                            letterSpacing: '0.05em',
-                                            textTransform: 'uppercase'
-                                        }}
-                                    >
-                                        {cat.name}
-                                    </span>
-                                </div>
+                                    {cat.name}
+                                </span>
                             </motion.div>
                         );
                     })}
@@ -511,7 +497,7 @@ export default function AppShopPage() {
             <div className="px-4">
                 <div className="flex justify-between items-center mb-3.5 mt-2">
                     <h2 className="text-[16px] font-bold text-slate-800" style={{ fontFamily: "'Inter', sans-serif" }}>Best Selling</h2>
-                    <span className="text-[12px] font-bold text-[#E7D06E] cursor-pointer hover:opacity-85">See all</span>
+                    <span className="text-[12px] font-bold text-[#B4912B] cursor-pointer hover:opacity-85">See all</span>
                 </div>
                 <div className="grid grid-cols-2 gap-3.5">
                     <AnimatePresence mode="popLayout">
@@ -546,7 +532,7 @@ export default function AppShopPage() {
             <div className="fixed inset-0 pointer-events-none z-[10000]">
                 <AnimatePresence>
                     {flyingItems.map((item) => (
-                        <motion.img key={item.id} src={getImageUrl(item.image)} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#E7D06E] shadow-2xl" />
+                        <motion.img key={item.id} src={getImageUrl(item.image)} initial={{ x: item.startX - 24, y: item.startY - 24, scale: 0, opacity: 0 }} animate={{ x: item.endX - 24, y: item.endY - 24, scale: [0.5, 1.2, 0.2], opacity: [0.8, 1, 0.5], rotate: 720 }} exit={{ opacity: 0 }} transition={{ duration: 0.8, ease: "circIn" }} className="fixed w-12 h-12 object-cover rounded-full border-2 border-[#B4912B] shadow-2xl" />
                     ))}
                 </AnimatePresence>
             </div>

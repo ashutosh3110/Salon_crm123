@@ -9,17 +9,19 @@ import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import api from '../../services/api';
 
-const tabs = ['Upcoming', 'Past'];
+import { ChevronLeft } from 'lucide-react';
+
+const tabs = ['Upcoming', 'Completed', 'Cancelled'];
 
 const BookingSkeleton = () => {
     const { theme } = useCustomerTheme();
     const isLight = theme === 'light';
     const bg = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)';
-    
+
     return (
-        <div 
+        <div
             className="rounded-2xl p-5 border animate-pulse"
-            style={{ 
+            style={{
                 background: isLight ? '#FFFFFF' : '#1A1A1A',
                 borderColor: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)'
             }}
@@ -46,7 +48,7 @@ export default function AppMyBookingsPage() {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('Upcoming');
     const [selectedReviewBooking, setSelectedReviewBooking] = useState(null);
-    
+
     const navigate = useNavigate();
     const { colors: themeColors, theme } = useCustomerTheme();
     const isLight = theme === 'light';
@@ -57,10 +59,10 @@ export default function AppMyBookingsPage() {
     const fetchBookings = useCallback(async (force = false) => {
         if (!customer?._id) return;
         if (!force && lastFetchedCustomerId.current === customer._id) return;
-        
+
         lastFetchedCustomerId.current = customer._id;
         setLoading(true);
-        
+
         try {
             const res = await api.get(`/bookings/customer/${customer._id}`);
             if (res.data?.success) {
@@ -95,31 +97,21 @@ export default function AppMyBookingsPage() {
         textMuted: themeColors.textMuted || '#666',
         border: themeColors.border || 'rgba(0,0,0,0.07)',
         toggle: isLight ? '#F3F4F6' : '#1A1A1A',
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
     };
 
-    const { upcoming, past } = useMemo(() => {
-        const now = new Date();
-        now.setHours(0, 0, 0, 0); // Start of today
-
-        const upcoming = bookings.filter(b => {
-            const bDate = new Date(b.appointmentDate);
-            bDate.setHours(0,0,0,0);
-            // Keep cancelled bookings in upcoming if the date hasn't passed yet
-            return (['pending', 'confirmed', 'cancelled'].includes(b.status) && bDate >= now);
-        }).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
-
-        const past = bookings.filter(b => {
-            const bDate = new Date(b.appointmentDate);
-            bDate.setHours(0,0,0,0);
-            // Past is completed, no-show, or anything that has already happened
-            return (['completed', 'no-show'].includes(b.status) || bDate < now);
-        }).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
-
-        return { upcoming, past };
+    const { upcoming, completed, cancelled } = useMemo(() => {
+        const upcoming = bookings.filter(b => ['pending', 'confirmed'].includes(b.status));
+        const completed = bookings.filter(b => b.status === 'completed');
+        const cancelled = bookings.filter(b => b.status === 'cancelled');
+        return { upcoming, completed, cancelled };
     }, [bookings]);
 
-    const displayBookings = activeTab === 'Upcoming' ? upcoming : past;
+    const displayBookings = useMemo(() => {
+        if (activeTab === 'Upcoming') return upcoming;
+        if (activeTab === 'Completed') return completed;
+        return cancelled;
+    }, [activeTab, upcoming, completed, cancelled]);
 
     return (
         <>
@@ -129,83 +121,102 @@ export default function AppMyBookingsPage() {
                 style={{ background: '#FFFFFF', minHeight: '100svh' }}
                 className="pb-10"
             >
-                {/* Header */}
-                <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                    <div className="flex items-center gap-3">
-                        <AppBackButton />
-                        <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Bookings</h1>
+                {/* Redesigned Header to match screenshot */}
+                <div className="sticky top-0 z-50 px-4 py-4 flex items-center" style={{ background: '#FFFFFF', position: 'relative' }}>
+                    <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'absolute', left: '16px' }}>
+                        <ChevronLeft size={24} color="#000000" />
+                    </button>
+                    <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: '700', color: '#000000', margin: 0 }}>My Bookings</h1>
+                </div>
+
+                {/* Redesigned Tabs to match screenshot */}
+                <div style={{ display: 'flex', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 8px' }}>
+                    {tabs.map((tab) => {
+                        const isActive = activeTab === tab;
+                        return (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                style={{
+                                    flex: 1,
+                                    padding: '12px 0',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    fontWeight: isActive ? '700' : '500',
+                                    color: isActive ? '#B4912B' : '#718096',
+                                    position: 'relative',
+                                    transition: 'color 0.2s ease',
+                                }}
+                            >
+                                {tab}
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeTabUnderline"
+                                        style={{
+                                            position: 'absolute',
+                                            bottom: 0,
+                                            left: '10%',
+                                            right: '10%',
+                                            height: '2px',
+                                            background: '#B4912B',
+                                        }}
+                                    />
+                                )}
+                            </button>
+                        );
+                    })}
+                </div>
+
+                <div className="px-4 mt-6">
+                    {/* Bookings List */}
+                    <div className="space-y-3">
+                        {loading ? (
+                            <div className="space-y-3">
+                                {[1, 2, 3].map(i => <BookingSkeleton key={i} />)}
+                            </div>
+                        ) : displayBookings.length === 0 ? (
+                            <motion.div
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                style={{ background: colors.card, border: `1px dashed ${colors.border}` }}
+                                className="text-center py-20 rounded-3xl"
+                            >
+                                <div style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <CalendarX className="w-8 h-8 opacity-20" style={{ color: colors.text }} />
+                                </div>
+                                <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>
+                                    No {activeTab.toLowerCase()} bookings found
+                                </p>
+                                <p className="text-[10px] mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed opacity-40" style={{ color: colors.textMuted }}>
+                                    Your history is currently a clean state
+                                </p>
+                                <motion.button
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => navigate('/app/booking')}
+                                    style={{ background: colors.accent, boxShadow: `0 8px 20px ${colors.accent}40` }}
+                                    className="mt-8 px-8 py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl"
+                                >
+                                    Book Now
+                                </motion.button>
+                            </motion.div>
+                        ) : (
+                            displayBookings.map((booking, i) => (
+                                <BookingCard
+                                    key={booking._id}
+                                    booking={{
+                                        ...booking,
+                                        onRate: () => setSelectedReviewBooking(booking)
+                                    }}
+                                    index={i}
+                                    onTap={(b) => navigate(`/app/bookings/${b._id}`)}
+                                />
+                            ))
+                        )}
                     </div>
                 </div>
-
-                <div className="px-4 space-y-6">
-                <div style={{ background: colors.toggle, border: `1px solid ${colors.border}` }} className="flex gap-1 rounded-2xl p-1 shadow-sm">
-                    {tabs.map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab)}
-                            className={`relative flex-1 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 ${activeTab === tab ? 'text-white' : (isLight ? 'text-gray-400' : 'text-white/30')
-                                }`}
-                        >
-                            {activeTab === tab && (
-                                <motion.div
-                                    layoutId="bookingsTab"
-                                    style={{ background: colors.accent }}
-                                    className="absolute inset-0 rounded-xl"
-                                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-                                />
-                            )}
-                            <span className="relative z-10">{tab} <span className="opacity-50 ml-1">({tab === 'Upcoming' ? upcoming.length : past.length})</span></span>
-                        </button>
-                    ))}
-                </div>
-
-                {/* Bookings List */}
-                <div className="space-y-3">
-                    {loading ? (
-                        <div className="space-y-3">
-                            {[1, 2, 3].map(i => <BookingSkeleton key={i} />)}
-                        </div>
-                    ) : displayBookings.length === 0 ? (
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            style={{ background: colors.card, border: `1px dashed ${colors.border}` }}
-                            className="text-center py-20 rounded-3xl"
-                        >
-                            <div style={{ background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.05)', border: `1px solid ${colors.border}` }} className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <CalendarX className="w-8 h-8 opacity-20" style={{ color: colors.text }} />
-                            </div>
-                            <p className="text-[11px] font-black uppercase tracking-[0.2em]" style={{ color: colors.text }}>
-                                {activeTab === 'Upcoming' ? 'No recent bookings' : 'No past bookings available'}
-                            </p>
-                            <p className="text-[10px] mt-2 font-bold uppercase tracking-widest max-w-[200px] mx-auto leading-relaxed opacity-40" style={{ color: colors.textMuted }}>
-                                {activeTab === 'Upcoming' ? 'Book your next session to enjoy top-tier service' : 'Your history is currently a clean state'}
-                            </p>
-                            <motion.button
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => navigate('/app/booking')}
-                                style={{ background: colors.accent, boxShadow: `0 8px 20px ${colors.accent}40` }}
-                                className="mt-8 px-8 py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl"
-                            >
-                                Book Now
-                            </motion.button>
-                        </motion.div>
-                    ) : (
-                        displayBookings.map((booking, i) => (
-                            <BookingCard
-                                key={booking._id}
-                                booking={{
-                                    ...booking,
-                                    onRate: () => setSelectedReviewBooking(booking)
-                                }}
-                                index={i}
-                                onTap={(b) => navigate(`/app/bookings/${b._id}`)}
-                            />
-                        ))
-                    )}
-                </div>
-            </div>
-        </motion.div>
+            </motion.div>
 
             <ReviewModal
                 isOpen={!!selectedReviewBooking}

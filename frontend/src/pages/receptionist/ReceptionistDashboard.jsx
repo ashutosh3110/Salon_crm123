@@ -20,9 +20,11 @@ import {
     Loader2,
     Scissors,
     Smartphone,
-    ChevronDown
+    ChevronDown,
+    Store
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { useBusiness } from '../../contexts/BusinessContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
@@ -31,6 +33,7 @@ import { useBookingRegistry } from '../../contexts/BookingRegistryContext';
 export default function ReceptionistDashboard() {
     const { user } = useAuth();
     const { bookings: registryBookings, addBooking, updateBookingStatus: registryUpdate } = useBookingRegistry();
+    const { activeOutletId, setActiveOutletId, outlets } = useBusiness();
 
     // Live States
     const [stats, setStats] = useState([]);
@@ -72,8 +75,8 @@ export default function ReceptionistDashboard() {
                 const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
                 
                 const [statsRes, bookingsRes, servicesRes, staffRes] = await Promise.all([
-                    mockApi.get('/dashboard/receptionist'),
-                    mockApi.get(`/bookings?date=${today}&limit=100`),
+                    mockApi.get(`/dashboard/receptionist?outletId=${activeOutletId || ''}`),
+                    mockApi.get(`/bookings?date=${today}&limit=100&outletId=${activeOutletId || ''}`),
                     mockApi.get('/services?limit=100'),
                     mockApi.get('/users?role=stylist')
                 ]);
@@ -143,7 +146,7 @@ export default function ReceptionistDashboard() {
         fetchData();
         const interval = setInterval(fetchData, 60000); // 1 min sync
         return () => clearInterval(interval);
-    }, []);
+    }, [activeOutletId]);
 
     useEffect(() => {
         if (isRegistrationOpen || isBookingOpen || isWalkinOpen) {
@@ -246,8 +249,8 @@ export default function ReceptionistDashboard() {
             const d = new Date();
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const [statsRes, feedRes] = await Promise.all([
-                mockApi.get('/dashboard/receptionist'),
-                mockApi.get(`/bookings?date=${today}&limit=5`)
+                mockApi.get(`/dashboard/receptionist?outletId=${activeOutletId || ''}`),
+                mockApi.get(`/bookings?date=${today}&limit=5&outletId=${activeOutletId || ''}`)
             ]);
 
             if (statsRes.data.success) {
@@ -295,7 +298,25 @@ export default function ReceptionistDashboard() {
             {/* Command Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Dashboard</h1>
+                    <h1 className="text-2xl font-black text-text tracking-tight uppercase flex items-center gap-4">
+                        Dashboard
+                        <div className="relative group flex items-center h-8">
+                            <div className="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                                <Store className="w-3.5 h-3.5 text-text-muted" />
+                            </div>
+                            <select
+                                value={activeOutletId || ''}
+                                onChange={(e) => setActiveOutletId(e.target.value)}
+                                className="pl-8 pr-8 py-1 bg-surface border border-border text-[10px] font-black uppercase tracking-widest text-text rounded appearance-none cursor-pointer focus:outline-none focus:border-primary transition-all h-full min-w-[140px]"
+                            >
+                                <option value="">All Outlets</option>
+                                {(outlets || []).map(o => (
+                                    <option key={o._id} value={o._id}>{o.name.toUpperCase()}</option>
+                                ))}
+                            </select>
+                            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none z-10" />
+                        </div>
+                    </h1>
                     <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-[0.2em] opacity-60">Live Salon Overview</p>
                 </div>
                 <div className="flex items-center gap-3">

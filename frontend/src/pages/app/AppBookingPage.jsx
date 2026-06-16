@@ -1270,7 +1270,7 @@ export default function AppBookingPage() {
         '--app-text': '#1A1A1A',
         '--app-text-muted': '#666666',
         '--app-border': 'rgba(0,0,0,0.1)',
-        '--app-accent': '#E7D06E',
+        '--app-accent': '#B4912B',
     } : {};
 
     return (
@@ -1280,13 +1280,13 @@ export default function AppBookingPage() {
                 <button
                     onClick={handleBack}
                     style={{ color: colors.textMuted, fontFamily: "'Poppins', sans-serif" }}
-                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? 'hover:text-[#E7D06E]' : 'hover:text-[#C8956C]'}`}
+                    className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest transition-colors ${(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? 'hover:text-[#B4912B]' : 'hover:text-[#C8956C]'}`}
                 >
                     <ArrowLeft className="w-4 h-4" /> {((isPreselected && step === 3 && isCustomerAuthenticated) || step === 0) ? 'Cancel' : 'Back'}
                 </button>
                 <div
                     className="text-[10px] font-bold uppercase tracking-[0.2em] font-mono"
-                    style={{ color: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#E7D06E' : '#C8956C', fontFamily: "'Poppins', sans-serif" }}
+                    style={{ color: (step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#B4912B' : '#C8956C', fontFamily: "'Poppins', sans-serif" }}
                 >
                     Step {virtualStep + 1}/{STEPS.length}
                 </div>
@@ -1294,7 +1294,7 @@ export default function AppBookingPage() {
 
             {/* Step Indicator */}
             <div className="py-2">
-                <StepIndicator currentStep={virtualStep} steps={STEPS} accentColor={(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#E7D06E' : '#C8956C'} />
+                <StepIndicator currentStep={virtualStep} steps={STEPS} accentColor={(step === 1 || step === 2 || step === 3 || step === 4 || step === 5) ? '#B4912B' : '#C8956C'} />
             </div>
 
             {/* Step Content */}
@@ -1333,7 +1333,7 @@ export default function AppBookingPage() {
                                 </div>
                                 <button
                                     onClick={() => isPreselected ? goTo(3) : goTo(1)}
-                                    style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                    style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                     className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl transition-all active:scale-[0.98]"
                                 >
                                     Continue to {isPreselected ? 'Stylist' : 'Outlet'} <ArrowRight size={16} />
@@ -1383,7 +1383,7 @@ export default function AppBookingPage() {
                                         <button
                                             onClick={handleSendOtp}
                                             disabled={otpLoading}
-                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                             className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
                                         >
                                             {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Send OTP'} <ArrowRight size={16} />
@@ -1440,7 +1440,7 @@ export default function AppBookingPage() {
                                         <button
                                             onClick={handleVerifyOtp}
                                             disabled={otpLoading}
-                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                             className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
                                         >
                                             {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Verify & Continue'} <Check size={16} />
@@ -1583,7 +1583,7 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(2)}
                                 disabled={!selectedOutlet}
-                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                 className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-8"
                             >
                                 Continue <ArrowRight size={16} />
@@ -1604,16 +1604,16 @@ export default function AppBookingPage() {
                         <div className="space-y-6 text-left">
                             <div className="flex flex-col gap-0">
                                 <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                    Select <span className="text-[#E7D06E]">Services</span>
+                                    Select <span className="text-[#B4912B]">Services</span>
                                 </h2>
                                 <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available at {selectedOutlet?.name}</p>
                             </div>
 
                             {/* Search bar */}
                             <div className="relative group">
-                                <div className="absolute inset-0 bg-[#E7D06E]/5 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
-                                <div className={`relative flex items-center gap-3 border h-12 px-4 rounded-xl group-focus-within:border-[#E7D06E]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
-                                    <Search size={16} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#E7D06E] transition-colors`} />
+                                <div className="absolute inset-0 bg-[#B4912B]/5 rounded-xl blur-md opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <div className={`relative flex items-center gap-3 border h-12 px-4 rounded-xl group-focus-within:border-[#B4912B]/50 transition-all ${isLight ? 'bg-white border-neutral-200 shadow-sm' : 'bg-white/[0.03] border-white/[0.05]'}`}>
+                                    <Search size={16} className={`${isLight ? 'text-neutral-400' : 'text-white/20'} group-focus-within:text-[#B4912B] transition-colors`} />
                                     <input
                                         type="text"
                                         placeholder="Search services..."
@@ -1643,9 +1643,9 @@ export default function AppBookingPage() {
                                                         onClick={() => toggleService(svc)}
                                                         style={{
                                                             background: isSelected ? 'rgba(231,208,110,0.1)' : colors.card,
-                                                            borderColor: isSelected ? '#E7D06E' : colors.border
+                                                            borderColor: isSelected ? '#B4912B' : colors.border
                                                         }}
-                                                        className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all hover:border-[#E7D06E]/40"
+                                                        className="p-4 rounded-2xl border flex items-center justify-between cursor-pointer transition-all hover:border-[#B4912B]/40"
                                                     >
                                                         <div className="text-left space-y-1">
                                                             <p className="text-sm font-bold" style={{ color: colors.text }}>{svc.name}</p>
@@ -1653,7 +1653,7 @@ export default function AppBookingPage() {
                                                                 {svc.duration} min · ₹{svc.price} {svc.isInclusiveTax ? 'incl. GST' : '+ GST'}
                                                             </p>
                                                         </div>
-                                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#E7D06E] border-[#E7D06E]' : 'border-border'}`}>
+                                                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${isSelected ? 'bg-[#B4912B] border-[#B4912B]' : 'border-border'}`}>
                                                             {isSelected && <Check size={12} color="black" strokeWidth={4} />}
                                                         </div>
                                                     </div>
@@ -1666,9 +1666,9 @@ export default function AppBookingPage() {
 
                             {/* Floating Selection Bar */}
                             {selectedServices.length > 0 && (
-                                <div className="p-4 rounded-2xl bg-[#E7D06E]/10 border border-[#E7D06E]/30 flex items-center justify-between mt-2 shadow-sm">
+                                <div className="p-4 rounded-2xl bg-[#B4912B]/10 border border-[#B4912B]/30 flex items-center justify-between mt-2 shadow-sm">
                                     <div className="text-left">
-                                        <p className="text-[10px] font-black uppercase text-[#E7D06E] tracking-widest">Selected Package</p>
+                                        <p className="text-[10px] font-black uppercase text-[#B4912B] tracking-widest">Selected Package</p>
                                         <p className="text-sm font-bold text-text mt-0.5">{selectedServices.length} Service(s) · ₹{totalPrice}</p>
                                     </div>
                                     <button
@@ -1683,7 +1683,7 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(3)}
                                 disabled={selectedServices.length === 0}
-                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                 className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98] mt-4"
                             >
                                 Continue <ArrowRight size={16} />
@@ -1704,7 +1704,7 @@ export default function AppBookingPage() {
                         <div className="space-y-6 text-left">
                             <div className="flex flex-col gap-0">
                                 <h2 className="text-xl font-bold uppercase tracking-tight" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                                    Choose <span className="text-[#E7D06E]">Expert</span>
+                                    Choose <span className="text-[#B4912B]">Expert</span>
                                 </h2>
                                 <p className="text-[10px] opacity-40 font-black uppercase tracking-widest mt-1">Available experts at {selectedOutlet?.name}</p>
                             </div>
@@ -1729,7 +1729,7 @@ export default function AppBookingPage() {
                                             onClick={() => setSelectedStaff(s)}
                                             style={{
                                                 background: isSelected ? 'rgba(231,208,110,0.1)' : colors.card,
-                                                borderColor: isSelected ? '#E7D06E' : colors.border
+                                                borderColor: isSelected ? '#B4912B' : colors.border
                                             }}
                                             className="w-full flex items-center gap-3.5 p-3 px-4 rounded-2xl border-2 transition-all shadow-sm"
                                         >
@@ -1737,16 +1737,16 @@ export default function AppBookingPage() {
                                                 {s.image ? (
                                                     <img src={getImageUrl(s.image)} alt={s.name} className="w-full h-full object-cover" />
                                                 ) : (
-                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#E7D06E] text-base bg-[#E7D06E]/5">
+                                                    <div className="w-full h-full flex items-center justify-center font-bold text-[#B4912B] text-base bg-[#B4912B]/5">
                                                         {s.name?.charAt(0)}
                                                     </div>
                                                 )}
                                             </div>
                                             <div className="text-left flex-1">
                                                 <p className="text-sm font-bold" style={{ color: colors.text }}>{s.name}</p>
-                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#E7D06E] mt-0.5">{s.role || 'Expert'}</p>
+                                                <p className="text-[9px] font-black uppercase tracking-widest text-[#B4912B] mt-0.5">{s.role || 'Expert'}</p>
                                             </div>
-                                            {isSelected && <Check size={18} className="text-[#E7D06E] flex-shrink-0" />}
+                                            {isSelected && <Check size={18} className="text-[#B4912B] flex-shrink-0" />}
                                         </motion.button>
                                     );
                                 })}
@@ -1755,7 +1755,7 @@ export default function AppBookingPage() {
                             <button
                                 onClick={() => goTo(4)}
                                 disabled={!selectedStaff}
-                                style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                 className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 disabled:opacity-20 shadow-xl transition-all active:scale-[0.98]"
                             >
                                 Continue <ArrowRight size={16} />
@@ -1774,7 +1774,7 @@ export default function AppBookingPage() {
                         className="space-y-6"
                     >
                         <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Select <span className="text-[#E7D06E]">Timeline</span>
+                            Select <span className="text-[#B4912B]">Timeline</span>
                         </h2>
 
                         <div className="flex items-center justify-between px-2">
@@ -1783,14 +1783,14 @@ export default function AppBookingPage() {
                                 <button
                                     onClick={handlePrevMonth}
                                     style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                                    className="p-2 rounded-xl hover:text-[#E7D06E] transition-colors"
+                                    className="p-2 rounded-xl hover:text-[#B4912B] transition-colors"
                                 >
                                     <ChevronLeft size={14} />
                                 </button>
                                 <button
                                     onClick={handleNextMonth}
                                     style={{ background: colors.card, border: `1px solid ${colors.border}` }}
-                                    className="p-2 rounded-xl hover:text-[#E7D06E] transition-colors"
+                                    className="p-2 rounded-xl hover:text-[#B4912B] transition-colors"
                                 >
                                     <ChevronRight size={14} />
                                 </button>
@@ -1812,11 +1812,11 @@ export default function AppBookingPage() {
                                         disabled={!canSelect}
                                         onClick={() => { setSelectedDate(d); setSelectedTime(null); }}
                                         style={{
-                                            background: isSelected ? '#E7D06E' : 'transparent',
+                                            background: isSelected ? '#B4912B' : 'transparent',
                                             color: isSelected ? '#000000' : colors.text,
                                             position: 'relative'
                                         }}
-                                        className={`h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all ${!canSelect ? 'opacity-20' : 'active:scale-95 hover:bg-[#E7D06E]/10'}`}
+                                        className={`h-10 rounded-xl flex flex-col items-center justify-center text-xs font-bold transition-all ${!canSelect ? 'opacity-20' : 'active:scale-95 hover:bg-[#B4912B]/10'}`}
                                     >
                                         {d.dayNum}
                                         {d.isToday && !isSelected && (
@@ -1826,7 +1826,7 @@ export default function AppBookingPage() {
                                                 width: '3px',
                                                 height: '3px',
                                                 borderRadius: '50%',
-                                                background: '#E7D06E'
+                                                background: '#B4912B'
                                             }} />
                                         )}
                                     </button>
@@ -1844,11 +1844,11 @@ export default function AppBookingPage() {
                                             key={idx}
                                             onClick={() => setSelectedTime(slot.time)}
                                             style={{
-                                                background: selectedTime === slot.time ? '#E7D06E' : colors.card,
-                                                borderColor: selectedTime === slot.time ? '#E7D06E' : colors.border,
+                                                background: selectedTime === slot.time ? '#B4912B' : colors.card,
+                                                borderColor: selectedTime === slot.time ? '#B4912B' : colors.border,
                                                 color: selectedTime === slot.time ? '#000000' : colors.text,
                                             }}
-                                            className={`py-3 rounded-2xl border text-[11px] font-bold transition-all ${selectedTime === slot.time ? 'shadow-lg shadow-[#E7D06E]/20' : ''}`}
+                                            className={`py-3 rounded-2xl border text-[11px] font-bold transition-all ${selectedTime === slot.time ? 'shadow-lg shadow-[#B4912B]/20' : ''}`}
                                         >
                                             {slot.time}
                                         </button>
@@ -1874,7 +1874,7 @@ export default function AppBookingPage() {
                             >
                                 <button
                                     onClick={() => goTo(5)}
-                                    style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                    style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                     className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-xl active:scale-[0.98] transition-all"
                                 >
                                     Continue to Checkout <ArrowRight size={16} />
@@ -1894,7 +1894,7 @@ export default function AppBookingPage() {
                         className="space-y-6"
                     >
                         <h2 className="text-xl font-bold uppercase tracking-tight text-left" style={{ fontFamily: "'Libre Baskerville', serif" }}>
-                            Confirm & <span className="text-[#E7D06E]">Book</span>
+                            Confirm & <span className="text-[#B4912B]">Book</span>
                         </h2>
 
                         <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="rounded-[2rem] p-6 space-y-6 shadow-sm text-left">
@@ -1971,7 +1971,7 @@ export default function AppBookingPage() {
                                             color: colors.text
                                         }}
                                     />
-                                                                    {isPromoApplied ? (
+                                    {isPromoApplied ? (
                                         <button
                                             type="button"
                                             onClick={handleRemovePromo}
@@ -1984,7 +1984,7 @@ export default function AppBookingPage() {
                                             type="button"
                                             onClick={() => applyPromo()}
                                             disabled={!couponCode.trim()}
-                                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                                            style={{ backgroundColor: '#B4912B', color: '#000000' }}
                                             className="px-5 py-3 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:opacity-80 transition-all disabled:opacity-20 active:scale-95"
                                         >
                                             Apply
@@ -2006,16 +2006,16 @@ export default function AppBookingPage() {
                                         onClick={() => setPaymentMethod('salon')}
                                         className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
                                         style={{
-                                            borderColor: paymentMethod === 'salon' ? '#E7D06E' : colors.border,
+                                            borderColor: paymentMethod === 'salon' ? '#B4912B' : colors.border,
                                             background: paymentMethod === 'salon' ? 'rgba(231, 208, 110, 0.1)' : 'transparent'
                                         }}
                                     >
                                         <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#E7D06E' : colors.textMuted }}>Pay at Salon</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'salon' ? '#B4912B' : colors.textMuted }}>Pay at Salon</p>
                                             <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>In-store payment</p>
                                         </div>
                                         {paymentMethod === 'salon' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#E7D06E] flex items-center justify-center">
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#B4912B] flex items-center justify-center">
                                                 <Check size={8} color="black" strokeWidth={4} />
                                             </div>
                                         )}
@@ -2025,16 +2025,16 @@ export default function AppBookingPage() {
                                         onClick={() => setPaymentMethod('wallet')}
                                         className="p-4 rounded-2xl border transition-all text-left relative overflow-hidden"
                                         style={{
-                                            borderColor: paymentMethod === 'wallet' ? '#E7D06E' : colors.border,
+                                            borderColor: paymentMethod === 'wallet' ? '#B4912B' : colors.border,
                                             background: paymentMethod === 'wallet' ? 'rgba(231, 208, 110, 0.1)' : 'transparent'
                                         }}
                                     >
                                         <div className="relative z-10">
-                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#E7D06E' : colors.textMuted }}>Digital Wallet</p>
+                                            <p className="text-[9px] font-black uppercase tracking-widest" style={{ color: paymentMethod === 'wallet' ? '#B4912B' : colors.textMuted }}>Digital Wallet</p>
                                             <p className="text-[7px] font-medium mt-0.5 opacity-40 uppercase tracking-wider" style={{ color: colors.text }}>Bal: ₹{balance?.toFixed(0)}</p>
                                         </div>
                                         {paymentMethod === 'wallet' && (
-                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#E7D06E] flex items-center justify-center">
+                                            <div className="absolute top-1 right-1 w-3 h-3 rounded-full bg-[#B4912B] flex items-center justify-center">
                                                 <Check size={8} color="black" strokeWidth={4} />
                                             </div>
                                         )}
@@ -2082,7 +2082,7 @@ export default function AppBookingPage() {
                                 </div>
                                 <div className="flex justify-between text-2xl pt-2">
                                     <span style={{ color: colors.textMuted }}>Total</span>
-                                    <span className="text-[#E7D06E] px-1">₹{finalPrice.toFixed(2)}</span>
+                                    <span className="text-[#B4912B] px-1">₹{finalPrice.toFixed(2)}</span>
                                 </div>
                                 {loyaltySettings?.active && (
                                     <div className="flex justify-between items-center py-2 px-3 mt-2 rounded-xl bg-[#C8956C]/5 border border-[#C8956C]/20">
@@ -2099,7 +2099,7 @@ export default function AppBookingPage() {
                         <button
                             onClick={handleSubmit}
                             disabled={submitting}
-                            style={{ backgroundColor: '#E7D06E', color: '#000000' }}
+                            style={{ backgroundColor: '#B4912B', color: '#000000' }}
                             className="w-full py-3 rounded-[20px] text-[12px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-4 shadow-2xl hover:opacity-90 active:scale-95 transition-all mt-4"
                         >
                             {submitting ? (

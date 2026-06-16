@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Clock, ShoppingBag, Heart, Star, ChevronRight, SlidersHorizontal, Armchair, DoorClosed, LayoutGrid } from 'lucide-react';
+import { Search, Clock, ShoppingBag, Heart, Star, ChevronLeft, ChevronRight, SlidersHorizontal, Armchair, DoorClosed, LayoutGrid } from 'lucide-react';
 import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -13,13 +13,13 @@ import { getImageUrl } from '../../utils/imageUtils';
 import { useFavorites } from '../../contexts/FavoritesContext';
 
 const ServiceSkeleton = ({ colors, isLight }) => (
-    <div 
-        style={{ 
-            background: colors.card, 
-            borderRadius: '16px', 
+    <div
+        style={{
+            background: colors.card,
+            borderRadius: '16px',
             border: `1.5px solid ${colors.border}`,
             boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.2)'
-        }} 
+        }}
         className="flex flex-col h-full overflow-hidden animate-pulse"
     >
         <div className="aspect-square bg-black/5 dark:bg-white/5" />
@@ -68,20 +68,20 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
                         toggleServiceLike(serviceId);
                     }}
                     className="w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md transition-colors"
-                    style={{ 
+                    style={{
                         background: isLiked ? 'rgba(244,63,94,0.2)' : 'rgba(0,0,0,0.2)',
                         border: isLiked ? '1px solid rgba(244,63,94,0.3)' : '1px solid rgba(255,255,255,0.1)'
                     }}
                 >
-                    <Heart 
-                        size={14} 
-                        className={isLiked ? 'text-rose-500' : 'text-white'} 
-                        fill={isLiked ? '#f43f5e' : 'transparent'} 
+                    <Heart
+                        size={14}
+                        className={isLiked ? 'text-rose-500' : 'text-white'}
+                        fill={isLiked ? '#f43f5e' : 'transparent'}
                     />
                 </motion.button>
             </div>
 
-            <div 
+            <div
                 className="relative aspect-square overflow-hidden bg-slate-100 cursor-pointer"
                 onClick={() => navigate(`/app/service/${service._id || service.id}`)}
             >
@@ -90,9 +90,9 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
                     alt={service.name}
                     loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    onError={(e) => { 
-                        e.target.onerror = null; 
-                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E"; 
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%22400%22%20height%3D%22400%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Crect%20width%3D%22100%25%22%20height%3D%22100%25%22%20fill%3D%22%23222222%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23666666%22%20font-family%3D%22sans-serif%22%20font-size%3D%2220%22%20font-weight%3D%22bold%22%3EWapixo%3C%2Ftext%3E%3C%2Fsvg%3E";
                     }}
                 />
                 <div className="absolute bottom-2 left-2">
@@ -105,8 +105,8 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
 
             <div className="p-2.5 flex flex-col flex-1">
                 <span className="text-[8px] font-black uppercase tracking-widest mb-0.5" style={{ color: colors.accent }}>{categoryName}</span>
-                <h3 
-                    className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight cursor-pointer hover:underline underline-offset-2" 
+                <h3
+                    className="text-[12px] font-bold mb-1 line-clamp-1 h-[1.2em] leading-tight cursor-pointer hover:underline underline-offset-2"
                     style={{ color: colors.text, decorationColor: colors.accent }}
                     onClick={() => navigate(`/app/service/${service._id || service.id}`)}
                 >
@@ -138,12 +138,12 @@ const ServiceCard = ({ service, onBook, colors, isLight, categories, navigate, s
 export default function AppServicesPage() {
     const navigate = useNavigate();
     const { theme, colors: themeColors } = useCustomerTheme();
-    const { 
-        activeOutlet, 
+    const {
+        activeOutlet,
         activeOutletId,
         salon
     } = useBusiness();
-    
+
     const { gender: appGender } = useGender();
     const isLight = theme === 'light';
 
@@ -168,9 +168,9 @@ export default function AppServicesPage() {
             // Revert back to fetching for outlet
             const servsRes = await api.get(`/services/outlet/${activeOutletId}`);
             const fetchedServices = servsRes.data?.data || [];
-            
+
             setServices(fetchedServices);
-            
+
             // Extract categories from the fetched services since /service-categories might be failing
             const uniqueCatNames = [...new Set(fetchedServices.map(s => s.category || 'Uncategorized'))];
             const inferredCategories = uniqueCatNames.map(name => ({
@@ -178,7 +178,7 @@ export default function AppServicesPage() {
                 name: name,
                 status: 'active'
             }));
-            
+
             setCategories(inferredCategories);
         } catch (err) {
             console.error('Error fetching services page data', err);
@@ -195,10 +195,10 @@ export default function AppServicesPage() {
     const groupedServices = useMemo(() => {
         const activeServices = services.filter(s => s.status !== 'inactive');
         const activeCategories = categories;
-        
+
         // Track which services were assigned to a formal category
         const assignedServiceIds = new Set();
-        
+
         // Groups from formal categories
         const formalGroups = activeCategories.map(cat => {
             const catServices = activeServices.filter(s => {
@@ -212,7 +212,7 @@ export default function AppServicesPage() {
         // Groups for services that didn't match any formal category
         const leftoverServices = activeServices.filter(s => !assignedServiceIds.has(s._id || s.id));
         const leftoverCatNames = [...new Set(leftoverServices.map(s => s.category || 'Uncategorized'))];
-        
+
         const extraGroups = leftoverCatNames.map(name => ({
             name,
             services: leftoverServices.filter(s => (s.category || 'Uncategorized') === name),
@@ -226,7 +226,7 @@ export default function AppServicesPage() {
         ...themeColors,
         bg: '#FFFFFF',
         card: '#FFFFFF',
-        accent: themeColors.accent || '#E7D06E',
+        accent: themeColors.accent || '#B4912B',
         input: themeColors.input || (isLight ? 'linear-gradient(135deg, #FFF9F5 0%, #F3EAE3 100%)' : 'linear-gradient(135deg, #2A211B 0%, #1A1411 100%)'),
     }), [themeColors, isLight]);
 
@@ -259,10 +259,10 @@ export default function AppServicesPage() {
     const flatServices = useMemo(() => {
         // Collect all services from displayGroups
         let all = displayGroups.flatMap(g => g.services.map(s => ({ ...s, groupName: g.name, groupCount: g.services.length })));
-        
+
         // Sort by groupCount (Popularity of category)
         all.sort((a, b) => b.groupCount - a.groupCount);
-        
+
         return all;
     }, [displayGroups]);
 
@@ -297,7 +297,7 @@ export default function AppServicesPage() {
             const q = searchQuery.trim().toLowerCase().replace(/\s/g, '');
             result = result.filter(s => s.name.toLowerCase().replace(/\s/g, '').includes(q));
         }
-        
+
 
         return result;
     }, [flatServices, activeCategory, searchQuery]);
@@ -334,34 +334,31 @@ export default function AppServicesPage() {
     return (
         <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-24">
             {/* Header */}
-            <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{ 
-                background: isLight ? 'rgba(255, 255, 255, 0.85)' : 'rgba(15, 15, 15, 0.85)', 
-                backdropFilter: 'blur(20px)',
+            <div className="sticky top-0 z-40 px-4 pt-4 pb-4" style={{
+                background: isLight ? '#FFFFFF' : '#0F0F0F',
                 borderBottom: `1px solid ${colors.border}`
             }}>
-                {/* Salon Info & Gender Badge */}
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                        <AppBackButton />
-                        <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                                <div className="w-1.5 h-1.5 rounded-full" style={{ background: colors.accent }} />
-                                <p className="text-[8px] font-black uppercase tracking-[0.25em] leading-none" style={{ color: colors.accent }}>The Experience</p>
-                            </div>
-                            <h2 className="text-[15px] font-black tracking-tight leading-tight mt-0.5" style={{ color: colors.text }}>
-                                {activeOutlet?.name || 'Wapixo Salon'}
-                            </h2>
-                        </div>
-                    </div>
-
-                    {/* Gender Indicator Badge */}
-                    <motion.div 
+                {/* Back, Title, Gender Badge */}
+                <div className="flex items-center justify-between mb-4 relative" style={{ minHeight: '40px' }}>
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="w-10 h-10 rounded-full flex items-center justify-center bg-transparent active:bg-gray-200/50 transition-colors"
+                        style={{ position: 'absolute', left: '-8px' }}
+                    >
+                        <ChevronLeft size={24} style={{ color: colors.text }} />
+                    </button>
+                    <h1 className="text-[18px] font-bold text-center flex-1" style={{ color: colors.text, margin: 0 }}>
+                        Services
+                    </h1>
+                    <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         className="px-3 py-1 rounded-full border flex items-center gap-2 shadow-sm"
-                        style={{ 
+                        style={{
                             background: isLight ? 'white' : 'rgba(255,255,255,0.03)',
-                            borderColor: colors.border
+                            borderColor: colors.border,
+                            position: 'absolute',
+                            right: '0px'
                         }}
                     >
                         <div className={`w-1.5 h-1.5 rounded-full ${appGender === 'men' ? 'bg-blue-500' : 'bg-pink-500'} shadow-[0_0_8px] ${appGender === 'men' ? 'shadow-blue-500/50' : 'shadow-pink-500/50'}`} />
@@ -399,11 +396,6 @@ export default function AppServicesPage() {
                     <SlidersHorizontal size={16} className="text-slate-400" />
                 </div>
 
-                <div className="flex items-center gap-2 mb-3">
-                    <LayoutGrid size={18} style={{ color: colors.accent }} />
-                    <h2 className="text-sm font-black uppercase tracking-widest" style={{ color: colors.text }}>Categories</h2>
-                </div>
-
                 {dynamicCategories.length <= 1 ? (
                     <div className="px-4 py-3 text-center opacity-50 text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.text }}>
                         No categories available
@@ -412,7 +404,7 @@ export default function AppServicesPage() {
                     <div className="app-scroll no-scrollbar flex gap-2 overflow-x-auto -mx-4 px-4 pb-2">
                         {dynamicCategories.map(catName => {
                             const isActive = activeCategory === catName;
-                            
+
                             return (
                                 <motion.button
                                     key={catName}

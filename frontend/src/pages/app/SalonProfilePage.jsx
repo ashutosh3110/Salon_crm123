@@ -191,7 +191,7 @@ export default function SalonProfilePage() {
         return isMatch && genderMatch && s.status === 'active';
     });
 
-    const accent = colors.accent || '#E7D06E';
+    const accent = colors.accent || '#B4912B';
     const heroImages = outlet.images?.length > 0 ? outlet.images : (outlet.image ? [outlet.image] : []);
     const outletRating = outlet.rating || '4.8';
 

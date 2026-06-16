@@ -101,17 +101,17 @@ export default function AppMembershipPage() {
                 name: p.name,
                 price: Number(p.price || 0),
                 duration: Number(p.duration || 30),
-                benefits: Array.isArray(p.benefits) && p.benefits.length > 0 
-                    ? p.benefits 
-                    : (isGold 
-                        ? ['10% OFF on all services', 'Free Hair Spa (2 Times)', 'Priority Booking', 'Special Member Offers'] 
+                benefits: Array.isArray(p.benefits) && p.benefits.length > 0
+                    ? p.benefits
+                    : (isGold
+                        ? ['10% OFF on all services', 'Free Hair Spa (2 Times)', 'Priority Booking', 'Special Member Offers']
                         : ['15% OFF on all services', 'Free Hair Spa (4 Times)', 'Free Clean Up (2 Times)', 'Priority Booking', 'Special Member Offers']),
                 icon: p.icon || (isGold ? 'crown' : 'gem'),
-                gradient: isGold 
-                    ? 'linear-gradient(135deg, #FFF8F2 0%, #FFFBF9 100%)' 
+                gradient: isGold
+                    ? 'linear-gradient(135deg, #FFF8F2 0%, #FFFBF9 100%)'
                     : 'linear-gradient(135deg, #F5F5FA 0%, #FAF9FC 100%)',
-                saveAmount: isGold 
-                    ? (billingCycle === 'yearly' ? 600 : 50) 
+                saveAmount: isGold
+                    ? (billingCycle === 'yearly' ? 600 : 50)
                     : (billingCycle === 'yearly' ? 1200 : 100)
             };
         });
@@ -127,8 +127,8 @@ export default function AppMembershipPage() {
         <div style={{ minHeight: '100vh', background: '#fcfcfd', color: '#1e293b', paddingBottom: '80px', fontFamily: "'Inter', sans-serif" }}>
             {/* Header */}
             <div className="sticky top-0 z-50 px-4 py-3.5 bg-white border-b border-slate-100 flex items-center justify-between">
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center', color: '#1e293b' }}
                 >
                     <ArrowLeft size={22} />
@@ -148,11 +148,10 @@ export default function AppMembershipPage() {
                     </div>
                     <button
                         onClick={() => setBillingCycle('monthly')}
-                        className={`flex-1 py-2 text-[13px] font-bold rounded-full transition-all duration-300 ${
-                            billingCycle === 'monthly'
+                        className={`flex-1 py-2 text-[13px] font-bold rounded-full transition-all duration-300 ${billingCycle === 'monthly'
                                 ? 'bg-white text-slate-800 shadow-sm'
                                 : 'text-slate-400 hover:text-slate-600'
-                        }`}
+                            }`}
                     >
                         Monthly
                     </button>
@@ -160,7 +159,7 @@ export default function AppMembershipPage() {
                         onClick={() => setBillingCycle('yearly')}
                         className={`flex-1 py-2 text-[13px] font-bold rounded-full transition-all duration-300 text-white shadow-sm`}
                         style={{
-                            background: billingCycle === 'yearly' ? 'linear-gradient(135deg, #E7D06E 0%, #D8B043 100%)' : 'transparent',
+                            background: billingCycle === 'yearly' ? 'linear-gradient(135deg, #B4912B 0%, #D8B043 100%)' : 'transparent',
                             color: billingCycle === 'yearly' ? '#ffffff' : '#94a3b8'
                         }}
                     >
@@ -173,7 +172,7 @@ export default function AppMembershipPage() {
             <div className="px-4 flex flex-col gap-5 max-w-[480px] mx-auto">
                 {loading ? (
                     <div className="text-center py-20">
-                        <div className="w-8 h-8 border-2 border-[#E7D06E] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <div className="w-8 h-8 border-2 border-[#B4912B] border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
                         <p className="text-xs font-semibold text-slate-400">Loading plans...</p>
                     </div>
                 ) : (
@@ -195,7 +194,7 @@ export default function AppMembershipPage() {
                                 {/* Top portion: Tier title, price & You save badge */}
                                 <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <h3 
+                                        <h3
                                             style={{ margin: 0, fontSize: '22px', fontWeight: 800 }}
                                             className={isGold ? 'text-[#C8956C]' : 'text-slate-800'}
                                         >
@@ -208,10 +207,9 @@ export default function AppMembershipPage() {
                                             </span>
                                         </p>
                                     </div>
-                                    <div 
-                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${
-                                            isGold ? 'bg-[#FFF2E6] text-[#C8956C]' : 'bg-[#F0EEFC] text-[#6366F1]'
-                                        }`}
+                                    <div
+                                        className={`px-3 py-1.5 rounded-full text-[11px] font-bold ${isGold ? 'bg-[#FFF2E6] text-[#C8956C]' : 'bg-[#F0EEFC] text-[#6366F1]'
+                                            }`}
                                     >
                                         You save ₹{plan.saveAmount}
                                     </div>
@@ -222,10 +220,10 @@ export default function AppMembershipPage() {
                                     <div className="flex flex-col gap-2">
                                         {plan.benefits.map((benefit, idx) => (
                                             <div key={idx} className="flex items-center gap-2">
-                                                <Check 
-                                                    size={14} 
-                                                    className={isGold ? 'text-[#C8956C]' : 'text-[#6366F1]'} 
-                                                    strokeWidth={3} 
+                                                <Check
+                                                    size={14}
+                                                    className={isGold ? 'text-[#C8956C]' : 'text-[#6366F1]'}
+                                                    strokeWidth={3}
                                                 />
                                                 <span className="text-[12px] text-slate-600 font-semibold">{benefit}</span>
                                             </div>
@@ -237,9 +235,9 @@ export default function AppMembershipPage() {
                                         <button
                                             onClick={() => handleSelectPlan(plan)}
                                             disabled={isActive}
-                                            className="px-5 py-2.5 text-white font-black text-[12px] rounded-full shadow-md shadow-[#E7D06E]/20 hover:opacity-90 active:scale-95 transition-all duration-200"
+                                            className="px-5 py-2.5 text-white font-black text-[12px] rounded-full shadow-md shadow-[#B4912B]/20 hover:opacity-90 active:scale-95 transition-all duration-200"
                                             style={{
-                                                background: 'linear-gradient(135deg, #E7D06E 0%, #D8B043 100%)',
+                                                background: 'linear-gradient(135deg, #B4912B 0%, #D8B043 100%)',
                                                 cursor: isActive ? 'not-allowed' : 'pointer',
                                                 opacity: isActive ? 0.65 : 1
                                             }}
@@ -257,7 +255,7 @@ export default function AppMembershipPage() {
             {/* Footer Terms Link */}
             <div className="text-center mt-10 px-4 opacity-50">
                 <p className="text-[11px] font-semibold text-slate-500 m-0">
-                    All plans are subject to <Link to="/app/terms" style={{ color: '#E7D06E', textDecoration: 'none', fontWeight: 700 }}>Terms & Conditions</Link>.
+                    All plans are subject to <Link to="/app/terms" style={{ color: '#B4912B', textDecoration: 'none', fontWeight: 700 }}>Terms & Conditions</Link>.
                 </p>
                 <p className="text-[11px] font-semibold text-slate-500 mt-1">
                     Experience salon care like never before.

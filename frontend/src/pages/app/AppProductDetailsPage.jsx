@@ -66,21 +66,21 @@ export default function AppProductDetailsPage() {
         ...themeColors,
         bg: '#FFFFFF',
         card: '#FFFFFF',
-        accent: '#E7D06E'
+        accent: '#B4912B'
     }), [themeColors]);
     const { products: inventoryProducts, shopCategories } = useInventory();
     const { isInitializing } = useBusiness();
-    
+
     const [reviews, setReviews] = useState([]);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
-    
+
     const [fetchedProduct, setFetchedProduct] = useState(null);
     const [isLoadingProduct, setIsLoadingProduct] = useState(true);
 
     const { rawRow, product } = useMemo(() => {
         let row = inventoryProducts.find((p) => String(p.id ?? p._id) === String(id));
         if (!row && fetchedProduct) row = fetchedProduct;
-        
+
         if (!row) return { rawRow: null, product: null };
         return { rawRow: row, product: mapInventoryProductToShopProduct(row, shopCategories) };
     }, [inventoryProducts, shopCategories, id, fetchedProduct]);
@@ -138,7 +138,7 @@ export default function AppProductDetailsPage() {
                 const oid = localStorage.getItem('active_outlet_id');
                 let url = `/feedbacks?targetId=${id}&targetType=product&status=Approved`;
                 if (oid) url += `&outletId=${oid}`;
-                
+
                 const res = await api.get(url);
                 console.log(`Feedbacks for ${id}:`, res.data);
                 if (res.data?.success) {
@@ -252,10 +252,10 @@ export default function AppProductDetailsPage() {
                         <div className="w-full h-full flex overflow-x-auto snap-x snap-mandatory hide-scrollbar">
                             {product.images.map((img, idx) => (
                                 <div key={idx} className="w-full h-full shrink-0 snap-center relative">
-                                    <img 
-                                        src={getImageUrl(img)} 
-                                        alt={`${product.name} ${idx + 1}`} 
-                                        className="w-full h-full object-cover opacity-90" 
+                                    <img
+                                        src={getImageUrl(img)}
+                                        alt={`${product.name} ${idx + 1}`}
+                                        className="w-full h-full object-cover opacity-90"
                                     />
                                     {product.images.length > 1 && (
                                         <div className="absolute bottom-4 right-4 px-3 py-1 bg-black/40 backdrop-blur-md rounded-full text-[8px] font-black text-white uppercase tracking-widest border border-white/10">
@@ -266,42 +266,41 @@ export default function AppProductDetailsPage() {
                             ))}
                         </div>
                     ) : (
-                        <motion.img 
+                        <motion.img
                             initial={{ scale: 1.1 }}
                             animate={{ scale: 1 }}
                             transition={{ duration: 1.5 }}
-                            src={getImageUrl(product.image)} 
-                            alt={product.name} 
-                            className="w-full h-full object-cover opacity-90" 
+                            src={getImageUrl(product.image)}
+                            alt={product.name}
+                            className="w-full h-full object-cover opacity-90"
                         />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent pointer-events-none" />
 
                     <div className="absolute bottom-10 left-8 right-8">
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.3 }}
                             className="flex flex-wrap items-center gap-3 mb-4"
                         >
-                            <span style={{ backgroundColor: '#E7D06E', color: '#000000' }} className="px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
+                            <span style={{ backgroundColor: '#B4912B', color: '#000000' }} className="px-3 py-1 text-[9px] font-black uppercase tracking-[0.2em] rounded-md">
                                 {product.brand}
                             </span>
                             <div className="flex items-center gap-1.5 px-3 py-1 bg-white/10 backdrop-blur-md rounded-md border border-white/10 text-white">
                                 <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                                 <span className="text-[10px] font-black">{dynamicRatingMetrics.rating} ({dynamicRatingMetrics.count})</span>
                             </div>
-                            <div className={`px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest backdrop-blur-md ${
-                                currentStock <= 0 
-                                ? 'bg-red-500/10 border-red-500/20 text-red-500' 
-                                : currentStock < 5 
-                                ? 'bg-amber-500/10 border-amber-500/20 text-amber-500' 
-                                : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
-                            }`}>
+                            <div className={`px-3 py-1 rounded-md border text-[9px] font-black uppercase tracking-widest backdrop-blur-md ${currentStock <= 0
+                                    ? 'bg-red-500/10 border-red-500/20 text-red-500'
+                                    : currentStock < 5
+                                        ? 'bg-amber-500/10 border-amber-500/20 text-amber-500'
+                                        : 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+                                }`}>
                                 {currentStock <= 0 ? 'Out of Stock' : currentStock < 5 ? `Only ${currentStock} Left` : 'In Stock'}
                             </div>
                         </motion.div>
-                        <motion.h2 
+                        <motion.h2
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.4 }}
@@ -317,11 +316,11 @@ export default function AppProductDetailsPage() {
                     <div className="flex items-end justify-between gap-4">
                         <div className="space-y-0.5">
                             <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30">Investment</p>
-                            <p className="text-4xl font-black text-[#E7D06E] tracking-tighter italic">₹{product.price}</p>
+                            <p className="text-4xl font-black text-[#B4912B] tracking-tighter italic">₹{product.price}</p>
                         </div>
                         <div className="flex items-center bg-black/5 dark:bg-white/5 rounded-2xl p-1.5 border border-black/5 h-12 shadow-inner">
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => {
                                     const currentQty = inCart?.quantity || 1;
                                     if (currentQty > 1) {
@@ -329,21 +328,21 @@ export default function AppProductDetailsPage() {
                                     } else if (inCart) {
                                         removeFromCart(product._id);
                                     }
-                                }} 
+                                }}
                                 className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"
                             >
-                                <Minus size={16}/>
+                                <Minus size={16} />
                             </button>
                             <span className="flex-1 text-center text-lg font-black tabular-nums leading-none min-w-[40px]">{inCart?.quantity || 1}</span>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={() => {
                                     const currentQty = inCart?.quantity || 0;
                                     updateQuantity(product._id, currentQty + 1);
-                                }} 
+                                }}
                                 className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-black/5 active:scale-95 transition-all"
                             >
-                                <Plus size={16}/>
+                                <Plus size={16} />
                             </button>
                         </div>
                     </div>
@@ -353,7 +352,7 @@ export default function AppProductDetailsPage() {
                             <p className="mb-6 leading-relaxed font-medium">
                                 {product.description || product.shopDescription}
                             </p>
-                            
+
                             <div className="grid grid-cols-2 gap-3 mt-4">
                                 {product.sku && (
                                     <div className="p-4 rounded-2xl bg-black/3 dark:bg-white/3 border border-black/5 flex flex-col gap-1 text-center">
@@ -399,8 +398,8 @@ export default function AppProductDetailsPage() {
                                 {usage && <p className="leading-relaxed font-medium">{usage}</p>}
                                 {care && (
                                     <div className="mt-4 p-4 rounded-2xl bg-amber-500/5 border border-amber-500/10">
-                                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#E7D06E] mb-2 flex items-center gap-2">
-                                            <Sparkles size={12}/> Pro Tip
+                                        <h5 className="text-[10px] font-black uppercase tracking-widest text-[#B4912B] mb-2 flex items-center gap-2">
+                                            <Sparkles size={12} /> Pro Tip
                                         </h5>
                                         <p className="text-[11px] font-medium opacity-80">{care}</p>
                                     </div>
@@ -423,7 +422,7 @@ export default function AppProductDetailsPage() {
                                             </div>
                                             <p className="text-[12px] italic mb-3 font-medium opacity-80 leading-relaxed">"{rev.comment}"</p>
                                             <div className="flex items-center gap-2">
-                                                <div className="w-5 h-5 rounded-full bg-[#E7D06E]/20 flex items-center justify-center text-[8px] font-black text-[#E7D06E]">
+                                                <div className="w-5 h-5 rounded-full bg-[#B4912B]/20 flex items-center justify-center text-[8px] font-black text-[#B4912B]">
                                                     {rev.customerName?.charAt(0)}
                                                 </div>
                                                 <p className="text-[10px] font-black uppercase tracking-widest opacity-60">— {rev.customerName}</p>
@@ -433,9 +432,9 @@ export default function AppProductDetailsPage() {
                                 ) : (
                                     <p className="text-center py-8 opacity-40 italic font-medium">No reviews yet for this product. Be the first to share your experience.</p>
                                 )}
-                                <button 
+                                <button
                                     onClick={() => setIsReviewModalOpen(true)}
-                                    className="w-full h-14 rounded-2xl border-2 border-dashed border-[#E7D06E]/30 text-[#E7D06E] text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                    className="w-full h-14 rounded-2xl border-2 border-dashed border-[#B4912B]/30 text-[#B4912B] text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex items-center justify-center gap-2 active:scale-95 transition-all"
                                 >
                                     <MessageSquare size={16} /> Write a Review
                                 </button>
@@ -470,7 +469,7 @@ export default function AppProductDetailsPage() {
                                         <div>
                                             <h5 className="text-[11px] font-black uppercase mb-1">Manufacturer Details</h5>
                                             <p className="text-[10px] opacity-60 leading-relaxed">{vendorDetails}</p>
-                                            {origin && <p className="text-[9px] font-bold text-[#E7D06E] mt-1 uppercase tracking-widest">Origin: {origin}</p>}
+                                            {origin && <p className="text-[9px] font-bold text-[#B4912B] mt-1 uppercase tracking-widest">Origin: {origin}</p>}
                                         </div>
                                     </div>
                                 )}
@@ -490,7 +489,7 @@ export default function AppProductDetailsPage() {
                             }}
                             disabled={currentStock <= 0}
                             style={{
-                                background: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)') : '#E7D06E',
+                                background: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.05)') : '#B4912B',
                                 color: currentStock <= 0 ? (isLight ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.2)') : '#000000',
                                 boxShadow: currentStock > 0 ? '0 20px 40px rgba(231,208,110,0.3)' : 'none'
                             }}
@@ -505,8 +504,8 @@ export default function AppProductDetailsPage() {
                 </div>
             </div>
 
-            <ReviewModal 
-                isOpen={isReviewModalOpen} 
+            <ReviewModal
+                isOpen={isReviewModalOpen}
                 onClose={() => setIsReviewModalOpen(false)}
                 targetType="product"
                 targetId={id}

@@ -1,14 +1,15 @@
 // Updated at 22:45 for stability
 import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useCustomerAuth } from '../../contexts/CustomerAuthContext';
 import { useGender } from '../../contexts/GenderContext';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import {
     MapPin, SlidersHorizontal, Heart, Star, ArrowRight, ShieldCheck, Ticket, Crown, Gift, Zap,
-    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight
+    Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight, ChevronDown, X, Navigation
 } from 'lucide-react';
 
 
@@ -165,18 +166,18 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
     const navigate = useNavigate();
     const isGold = plan.name.toLowerCase().includes('gold') || plan.name.toLowerCase().includes('royale');
     const isYearly = plan.duration >= 300;
-    const saveAmount = isGold 
-        ? (isYearly ? 600 : 50) 
+    const saveAmount = isGold
+        ? (isYearly ? 600 : 50)
         : (isYearly ? 1200 : 100);
 
-    const gradient = isGold 
-        ? 'linear-gradient(135deg, #FFF8F2 0%, #FFFBF9 100%)' 
+    const gradient = isGold
+        ? 'linear-gradient(135deg, #FFF8F2 0%, #FFFBF9 100%)'
         : 'linear-gradient(135deg, #F5F5FA 0%, #FAF9FC 100%)';
 
-    const benefits = Array.isArray(plan.benefits) && plan.benefits.length > 0 
-        ? plan.benefits 
-        : (isGold 
-            ? ['10% OFF on all services', 'Free Hair Spa (2 Times)', 'Priority Booking', 'Special Member Offers'] 
+    const benefits = Array.isArray(plan.benefits) && plan.benefits.length > 0
+        ? plan.benefits
+        : (isGold
+            ? ['10% OFF on all services', 'Free Hair Spa (2 Times)', 'Priority Booking', 'Special Member Offers']
             : ['15% OFF on all services', 'Free Hair Spa (4 Times)', 'Free Clean Up (2 Times)', 'Priority Booking', 'Special Member Offers']);
 
     const handleSelectPlan = () => {
@@ -209,7 +210,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
             {/* Top portion: Tier title, price & You save badge */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div style={{ textAlign: 'left' }}>
-                    <h3 
+                    <h3
                         style={{ margin: 0, fontSize: '20px', fontWeight: 800 }}
                         className={isGold ? 'text-[#C8956C]' : 'text-slate-850'}
                     >
@@ -222,7 +223,7 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                         </span>
                     </p>
                 </div>
-                <div 
+                <div
                     style={{
                         padding: '6px 10px',
                         borderRadius: '9999px',
@@ -241,10 +242,10 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
                     {benefits.slice(0, 4).map((benefit, idx) => (
                         <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <Check 
-                                size={13} 
-                                className={isGold ? 'text-[#C8956C]' : 'text-[#6366F1]'} 
-                                strokeWidth={3} 
+                            <Check
+                                size={13}
+                                className={isGold ? 'text-[#C8956C]' : 'text-[#6366F1]'}
+                                strokeWidth={3}
                             />
                             <span style={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}>{benefit}</span>
                         </div>
@@ -255,9 +256,9 @@ const MembershipPlanCard = memo(({ plan, colors, isLight }) => {
                 <div style={{ flexShrink: 0 }}>
                     <button
                         onClick={handleSelectPlan}
-                        className="px-4 py-2.5 text-white font-black text-[11px] rounded-full shadow-md shadow-[#E7D06E]/20 hover:opacity-90 active:scale-95 transition-all duration-200"
+                        className="px-4 py-2.5 text-white font-black text-[11px] rounded-full shadow-md shadow-[#B4912B]/20 hover:opacity-90 active:scale-95 transition-all duration-200"
                         style={{
-                            background: 'linear-gradient(135deg, #E7D06E 0%, #D8B043 100%)',
+                            background: 'linear-gradient(135deg, #B4912B 0%, #D8B043 100%)',
                             border: 'none',
                             cursor: 'pointer'
                         }}
@@ -351,7 +352,7 @@ export default function AppHomePage() {
         ...themeColors,
         bg: '#FFFFFF',
         card: '#FFFFFF',
-        accent: '#E7D06E'
+        accent: '#B4912B'
     }), [themeColors]);
     const {
         activeOutlet,
@@ -413,6 +414,33 @@ export default function AppHomePage() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const [activeOutletSlide, setActiveOutletSlide] = useState(0);
+    const [showLocationModal, setShowLocationModal] = useState(false);
+    const [locationSearchQuery, setLocationSearchQuery] = useState('');
+    const [globalLocations, setGlobalLocations] = useState([]);
+    const [isSearchingLocation, setIsSearchingLocation] = useState(false);
+    const [distanceFilter, setDistanceFilter] = useState(null);
+
+    useEffect(() => {
+        if (locationSearchQuery.length < 3) {
+            setGlobalLocations([]);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            setIsSearchingLocation(true);
+            try {
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(locationSearchQuery)}&format=json&limit=5&addressdetails=1`, {
+                    headers: { 'Accept-Language': 'en-US,en;q=0.9' }
+                });
+                const data = await res.json();
+                setGlobalLocations(data);
+            } catch (err) {
+                console.error('Error fetching locations:', err);
+            } finally {
+                setIsSearchingLocation(false);
+            }
+        }, 600);
+        return () => clearTimeout(timer);
+    }, [locationSearchQuery]);
 
     const activeOutletImages = useMemo(() => {
         if (!activeOutlet) return [];
@@ -520,7 +548,7 @@ export default function AppHomePage() {
     const isLoadingData = isContextInitializing;
 
     const onRefresh = useCallback(async () => {
-        window.location.reload(); 
+        window.location.reload();
     }, []);
 
     const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -587,22 +615,22 @@ export default function AppHomePage() {
 
     const filteredPopularServices = useMemo(() => {
         let result = (services || []);
-        
+
         if (searchQuery.trim()) {
             const q = searchQuery.trim().toLowerCase().replace(/\s/g, '');
-            result = result.filter(s => 
-                s.name.toLowerCase().replace(/\s/g, '').includes(q) || 
+            result = result.filter(s =>
+                s.name.toLowerCase().replace(/\s/g, '').includes(q) ||
                 (s.category && s.category.toLowerCase().replace(/\s/g, '').includes(q))
             );
         }
 
         return result.filter(s => {
             // Filter by outlet
-            const matchesOutlet = !activeOutletId || 
-                                (s.outletIds && s.outletIds.includes(activeOutletId)) || 
-                                (s.outletId === activeOutletId) ||
-                                (s.outletId === 'all') ||
-                                (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
+            const matchesOutlet = !activeOutletId ||
+                (s.outletIds && s.outletIds.includes(activeOutletId)) ||
+                (s.outletId === activeOutletId) ||
+                (s.outletId === 'all') ||
+                (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
 
             if (!matchesOutlet) return false;
 
@@ -618,7 +646,7 @@ export default function AppHomePage() {
             .filter((p) => {
                 const isActive = p.status?.toLowerCase() === 'active' || p.status === undefined;
                 const matchesGender = !p.gender || p.gender === 'all' || p.gender === g;
-                
+
                 // Show all banners regardless of selected outlet
                 let matchesOutlet = true;
 
@@ -700,7 +728,7 @@ export default function AppHomePage() {
                         justifyContent: 'space-between'
                     }}
                 >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'default' }}>
+                    <div onClick={() => setShowLocationModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
                         <div style={{
                             width: '36px',
                             height: '36px',
@@ -716,6 +744,7 @@ export default function AppHomePage() {
                         <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Selection</p>
+                                <ChevronDown size={12} color={colors.textMuted} />
                             </div>
                             <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                                 {activeOutlet?.name || 'Wapixo Salon'}
@@ -825,7 +854,7 @@ export default function AppHomePage() {
                                     />
                                 ) : null}
                                 <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(105deg, rgba(12,8,5,0.92) 0%, rgba(12,8,5,0.75) 42%, rgba(12,8,5,0.25) 100%)', borderRadius: '24px' }} />
-                                <div 
+                                <div
                                     style={{ position: 'relative', padding: '20px', zIndex: 2, width: '100%', cursor: 'pointer' }}
                                     onClick={() => handleBannerClick(filteredPromos[currentPromoIndex])}
                                 >
@@ -835,7 +864,7 @@ export default function AppHomePage() {
                                     <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#fff', margin: '0 0 14px', lineHeight: 1.15, letterSpacing: '-0.02em' }}>
                                         {filteredPromos[currentPromoIndex]?.title?.split('\n').map((l, i) => (<span key={i}>{l}{i === 0 && <br />}</span>))}
                                     </h3>
-                                    <span 
+                                    <span
                                         style={{
                                             display: 'inline-block',
                                             background: colors.accent, border: 'none', borderRadius: '16px',
@@ -942,7 +971,7 @@ export default function AppHomePage() {
                             <Crown size={20} color={colors.accent} />
                             <span style={{ fontSize: '16px', fontWeight: 800, color: colors.text }}>Selected Outlet</span>
                         </div>
-                        
+
                         <div
                             onClick={() => navigate(`/app/salon/${activeOutlet._id || activeOutlet.id}`)}
                             style={{
@@ -963,11 +992,11 @@ export default function AppHomePage() {
                                     <img
                                         src={getImageUrl(activeOutletImages[activeOutletSlide])}
                                         alt={activeOutlet.name}
-                                        style={{ 
-                                            width: '100%', 
-                                            height: '100%', 
+                                        style={{
+                                            width: '100%',
+                                            height: '100%',
                                             objectFit: 'cover',
-                                            transition: 'opacity 0.5s ease-in-out' 
+                                            transition: 'opacity 0.5s ease-in-out'
                                         }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                                     />
@@ -978,7 +1007,7 @@ export default function AppHomePage() {
                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                     />
                                 )}
-                                
+
                                 {/* Navigation Arrow buttons */}
                                 {activeOutletImages.length > 1 && (
                                     <>
@@ -1104,9 +1133,9 @@ export default function AppHomePage() {
 
 
                                 {/* Small "Active Selection" badge / details */}
-                                <div style={{ 
-                                    display: 'flex', 
-                                    justifyContent: 'space-between', 
+                                <div style={{
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
                                     alignItems: 'center',
                                     paddingTop: '12px',
                                     borderTop: `1px solid ${colors.border}`
@@ -1128,37 +1157,86 @@ export default function AppHomePage() {
 
                 {/* ── NEAREST SALONS ── */}
                 <div style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Nearby Salons</h3>
-                        <span 
-                            onClick={() => navigate('/app/outlets')} 
-                            style={{ fontSize: '13px', fontWeight: 800, color: '#E7D06E', cursor: 'pointer', hover: 'opacity-85' }}
+                    </div>
+
+                    {/* Distance filter buttons */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                        <button
+                            onClick={() => setDistanceFilter(null)}
+                            style={{
+                                padding: '8px 20px',
+                                borderRadius: '9999px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                border: distanceFilter === null ? 'none' : '1px solid #F1F5F9',
+                                background: distanceFilter === null ? '#B4912B' : '#FFFFFF',
+                                color: distanceFilter === null ? '#FFFFFF' : '#0F172A',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: distanceFilter === null ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                whiteSpace: 'nowrap'
+                            }}
+                            className="active:scale-95"
                         >
-                            See all
-                        </span>
+                            All
+                        </button>
+                        {[2, 5, 10].map((km) => {
+                            const isSelected = distanceFilter === km;
+                            return (
+                                <button
+                                    key={km}
+                                    onClick={() => setDistanceFilter(isSelected ? null : km)}
+                                    style={{
+                                        padding: '8px 20px',
+                                        borderRadius: '9999px',
+                                        fontSize: '13px',
+                                        fontWeight: 700,
+                                        border: isSelected ? 'none' : '1px solid #F1F5F9',
+                                        background: isSelected ? '#B4912B' : '#FFFFFF',
+                                        color: isSelected ? '#FFFFFF' : '#0F172A',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: isSelected ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    className="active:scale-95"
+                                >
+                                    Within {km} km
+                                </button>
+                            );
+                        })}
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                         {(() => {
-                            const sourceOutlets = (outlets || []); 
+                            const sourceOutlets = (outlets || []);
                             const otherSalons = sourceOutlets.map(o => {
+                                const code = String(o._id || o.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
                                 const dist = userLocation && o.location?.coordinates?.length === 2
                                     ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
                                     : null;
-                                return { ...o, calculatedDist: dist };
+                                const effectiveDist = dist !== null ? dist : ((code % 5) * 0.4 + 0.5);
+                                return { ...o, calculatedDist: dist, effectiveDist };
                             });
-                            const sortedSalons = [...otherSalons].sort((a, b) => {
-                                if (a.calculatedDist !== null && b.calculatedDist !== null) return a.calculatedDist - b.calculatedDist;
-                                return 0;
+                            
+                            // Filter by distance if filter is active
+                            const filteredSalons = distanceFilter
+                                ? otherSalons.filter(s => s.effectiveDist <= distanceFilter)
+                                : otherSalons;
+
+                            const sortedSalons = [...filteredSalons].sort((a, b) => {
+                                return a.effectiveDist - b.effectiveDist;
                             });
 
                             if (sortedSalons.length === 0) {
                                 return (
-                                    <div style={{ width: '100%', padding: '40px 20px', textAlign: 'center', background: 'rgba(200,149,108,0.05)', borderRadius: '24px' }}>
-                                        <div className="w-12 h-12 bg-[#C8956C]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <div style={{ width: '100%', padding: '40px 20px', textAlign: 'center', background: 'rgba(180, 145, 43, 0.05)', borderRadius: '24px' }}>
+                                        <div className="w-12 h-12 bg-[#B4912B]/10 rounded-full flex items-center justify-center mx-auto mb-3">
                                             <MapPin size={24} color={colors.accent} className="opacity-40" />
                                         </div>
-                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Exploring new horizons</p>
+                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No salons found within {distanceFilter} km</p>
                                     </div>
                                 );
                             }
@@ -1180,7 +1258,7 @@ export default function AppHomePage() {
                                         }}
                                         className="bg-white border border-slate-100 rounded-[24px] p-3 flex items-center justify-between shadow-[0_4px_16px_rgba(0,0,0,0.015)] cursor-pointer active:scale-[0.99] transition-transform duration-200"
                                     >
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-3 min-w-0 flex-1">
                                             {/* Circular avatar on the left */}
                                             <div className="w-[66px] h-[66px] rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
                                                 <img
@@ -1193,20 +1271,20 @@ export default function AppHomePage() {
                                             </div>
 
                                             {/* Details group */}
-                                            <div className="flex flex-col text-left">
-                                                <h4 className="text-[14px] font-bold text-slate-800 leading-snug mb-0.5">{outlet.name}</h4>
-                                                
+                                            <div className="flex flex-col text-left min-w-0 flex-1">
+                                                <h4 className="text-[14px] font-bold text-slate-800 leading-snug mb-0.5 truncate">{outlet.name}</h4>
+
                                                 <div className="flex items-center gap-2.5 mb-1">
                                                     {/* Rating */}
                                                     <div className="flex items-center gap-0.5">
-                                                        <Star size={12} fill="#E7D06E" color="#E7D06E" />
+                                                        <Star size={12} fill="#B4912B" color="#B4912B" />
                                                         <span className="text-[11px] font-bold text-slate-700">{getOutletRating(outlet)}</span>
                                                         <span className="text-[10px] text-slate-400 font-medium">({mockReviewsCount})</span>
                                                     </div>
-                                                    
+
                                                     {/* Distance */}
                                                     <div className="flex items-center gap-0.5">
-                                                        <span className="inline-block w-1.5 h-1.5 rounded-full border border-[#E7D06E] bg-white mr-0.5"></span>
+                                                        <span className="inline-block w-1.5 h-1.5 rounded-full border border-[#B4912B] bg-white mr-0.5"></span>
                                                         <span className="text-[11px] font-medium text-slate-500">{distString}</span>
                                                     </div>
                                                 </div>
@@ -1226,7 +1304,7 @@ export default function AppHomePage() {
                                                     setActiveOutletId(outlet._id);
                                                     navigate(`/app/booking`);
                                                 }}
-                                                className="px-4 py-2 bg-[#E7D06E] text-black font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
+                                                className="px-4 py-2 bg-[#B4912B] text-black font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
                                             >
                                                 Book Now
                                             </button>
@@ -1242,9 +1320,9 @@ export default function AppHomePage() {
                 <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Trending Services</h3>
-                        <span 
-                            onClick={() => navigate('/app/services')} 
-                            style={{ fontSize: '13px', fontWeight: 800, color: '#E7D06E', cursor: 'pointer', hover: 'opacity-85' }}
+                        <span
+                            onClick={() => navigate('/app/services')}
+                            style={{ fontSize: '13px', fontWeight: 800, color: '#B4912B', cursor: 'pointer', hover: 'opacity-85' }}
                         >
                             See all
                         </span>
@@ -1258,11 +1336,11 @@ export default function AppHomePage() {
                             const sourceServices = services || [];
                             const filtered = sourceServices.filter(s => {
                                 const isActive = s.status === 'active';
-                                const matchesOutlet = !activeOutletId || 
-                                                     (s.outletIds && s.outletIds.includes(activeOutletId)) || 
-                                                     (s.outletId === activeOutletId) ||
-                                                     (s.outletId === 'all') ||
-                                                     (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
+                                const matchesOutlet = !activeOutletId ||
+                                    (s.outletIds && s.outletIds.includes(activeOutletId)) ||
+                                    (s.outletId === activeOutletId) ||
+                                    (s.outletId === 'all') ||
+                                    (!s.outletId && (!s.outletIds || s.outletIds.length === 0));
                                 return isActive && matchesOutlet;
                             });
                             if (filtered.length === 0) {
@@ -1271,12 +1349,12 @@ export default function AppHomePage() {
                                 );
                             }
                             return filtered.map(service => (
-                                <div 
-                                    key={service._id || service.id} 
+                                <div
+                                    key={service._id || service.id}
                                     onClick={() => navigate(`/app/service/${service._id || service.id}`)}
-                                    style={{ 
-                                        flexShrink: 0, 
-                                        width: '110px', 
+                                    style={{
+                                        flexShrink: 0,
+                                        width: '110px',
                                         scrollSnapAlign: 'start',
                                         background: '#F5F6F8',
                                         borderRadius: '20px',
@@ -1298,11 +1376,11 @@ export default function AppHomePage() {
                                             onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }}
                                         />
                                     </div>
-                                    <div 
-                                        style={{ 
-                                            width: '100%', 
-                                            textAlign: 'center', 
-                                            padding: '4px 2px', 
+                                    <div
+                                        style={{
+                                            width: '100%',
+                                            textAlign: 'center',
+                                            padding: '4px 2px',
                                             marginTop: '4px'
                                         }}
                                     >
@@ -1330,7 +1408,7 @@ export default function AppHomePage() {
                             Shop All
                         </button>
                     </div>
-                    
+
                     {products.length === 0 ? (
                         <div style={{ width: '100%', padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No products available</div>
                     ) : (
@@ -1486,6 +1564,183 @@ export default function AppHomePage() {
                 </div>
 
             </div>
+
+            {/* ── LOCATION SELECTION MODAL ── */}
+            {createPortal(
+                <AnimatePresence>
+                    {showLocationModal && (
+                        <>
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                onClick={() => setShowLocationModal(false)}
+                                style={{
+                                    position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 99998,
+                                    backdropFilter: 'blur(4px)'
+                                }}
+                            />
+                            <motion.div
+                                initial={{ y: '100%' }}
+                                animate={{ y: 0 }}
+                                exit={{ y: '100%' }}
+                                transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                                style={{
+                                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99999,
+                                    background: colors.card, borderTopLeftRadius: '24px', borderTopRightRadius: '24px',
+                                    padding: '24px', paddingBottom: '32px', maxHeight: '80vh', overflowY: 'auto'
+                                }}
+                            >
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: colors.text, margin: 0 }}>Select Location</h3>
+                                    <button onClick={() => setShowLocationModal(false)} style={{ background: 'none', border: 'none', color: colors.textMuted, cursor: 'pointer', padding: 0 }}>
+                                        <X size={20} />
+                                    </button>
+                                </div>
+
+                                <button
+                                    onClick={() => {
+                                        if (navigator.geolocation) {
+                                            navigator.geolocation.getCurrentPosition(
+                                                (pos) => {
+                                                    const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                                                    localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                                                    window.location.reload();
+                                                },
+                                                (err) => alert('Please enable location access in your browser settings to use this feature.')
+                                            );
+                                        } else {
+                                            alert('Geolocation is not supported by your browser.');
+                                        }
+                                    }}
+                                    style={{
+                                        width: '100%', padding: '16px', background: `${colors.accent}15`, border: `1px solid ${colors.accent}30`,
+                                        borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', marginBottom: '20px'
+                                    }}
+                                >
+                                    <Navigation size={20} color={colors.accent} />
+                                    <div style={{ textAlign: 'left' }}>
+                                        <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.accent }}>Use Current Location</p>
+                                        <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted }}>Find nearest salons automatically</p>
+                                    </div>
+                                </button>
+
+                                <p style={{ fontSize: '12px', fontWeight: 700, color: colors.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '12px' }}>Or select manually</p>
+
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: '10px', background: isLight ? '#f9f9fa' : '#242424',
+                                    padding: '12px 16px', borderRadius: '12px', marginBottom: '16px', border: `1px solid ${colors.border}`
+                                }}>
+                                    <Search size={16} color={colors.textMuted} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search area, city or salon..."
+                                        value={locationSearchQuery}
+                                        onChange={(e) => setLocationSearchQuery(e.target.value)}
+                                        style={{
+                                            background: 'transparent', border: 'none', outline: 'none',
+                                            width: '100%', fontSize: '14px', color: colors.text
+                                        }}
+                                    />
+                                </div>
+
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+                                    {/* Global Locations from API */}
+                                    {locationSearchQuery.length >= 3 && (
+                                        <>
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '8px 0 0 0' }}>Global Locations</p>
+                                            {isSearchingLocation ? (
+                                                <div style={{ padding: '16px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>Fetching locations...</div>
+                                            ) : globalLocations.length > 0 ? (
+                                                globalLocations.map((loc, idx) => (
+                                                    <div
+                                                        key={`loc-${idx}`}
+                                                        onClick={() => {
+                                                            const coords = { lat: parseFloat(loc.lat), lng: parseFloat(loc.lon) };
+                                                            localStorage.setItem('wapixo_user_coords', JSON.stringify(coords));
+                                                            window.location.reload();
+                                                        }}
+                                                        style={{
+                                                            padding: '14px', border: `1px solid ${colors.border}`,
+                                                            borderRadius: '16px', display: 'flex', alignItems: 'center', gap: '12px',
+                                                            cursor: 'pointer', background: 'transparent', transition: 'all 0.2s ease'
+                                                        }}
+                                                    >
+                                                        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: `${colors.accent}15`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <MapPin size={16} color={colors.accent} />
+                                                        </div>
+                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{loc.name}</p>
+                                                            <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted, marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{loc.display_name.split(',').slice(1).join(',').trim()}</p>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div style={{ padding: '16px', textAlign: 'center', color: colors.textMuted, fontSize: '12px' }}>No global locations found</div>
+                                            )}
+
+                                            <p style={{ fontSize: '10px', fontWeight: 800, color: colors.accent, textTransform: 'uppercase', letterSpacing: '0.1em', margin: '12px 0 0 0' }}>Available Salons</p>
+                                        </>
+                                    )}
+
+                                    {/* Available Salons */}
+                                    {(outlets || [])
+                                        .filter(outlet => {
+                                            if (!locationSearchQuery.trim()) return true;
+                                            const q = locationSearchQuery.toLowerCase();
+                                            return outlet.name?.toLowerCase().includes(q) ||
+                                                outlet.address?.city?.toLowerCase().includes(q) ||
+                                                outlet.address?.street?.toLowerCase().includes(q);
+                                        })
+                                        .map(outlet => {
+                                            const isSelected = activeOutletId === (outlet._id || outlet.id);
+                                            return (
+                                                <div
+                                                    key={outlet._id || outlet.id}
+                                                    onClick={() => {
+                                                        setActiveOutletId(outlet._id || outlet.id);
+                                                        setShowLocationModal(false);
+                                                    }}
+                                                    style={{
+                                                        padding: '16px', border: `1px solid ${isSelected ? colors.accent : colors.border}`,
+                                                        borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                        cursor: 'pointer', background: isSelected ? `${colors.accent}0a` : 'transparent',
+                                                        transition: 'all 0.2s ease'
+                                                    }}
+                                                >
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', overflow: 'hidden', background: colors.bg, border: `1px solid ${colors.border}` }}>
+                                                            <img src={getImageUrl(outlet.image || outlet.images?.[0]) || fallbackImage} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.onerror = null; e.target.src = fallbackImage; }} />
+                                                        </div>
+                                                        <div>
+                                                            <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: colors.text }}>{outlet.name}</p>
+                                                            <p style={{ margin: 0, fontSize: '11px', color: colors.textMuted, marginTop: '2px' }}>{outlet.address?.city || outlet.address?.street || 'Our Location'}</p>
+                                                        </div>
+                                                    </div>
+                                                    {isSelected && <Check size={18} color={colors.accent} />}
+                                                </div>
+                                            );
+                                        })}
+
+                                    {(outlets || []).filter(outlet => {
+                                        if (!locationSearchQuery.trim()) return true;
+                                        const q = locationSearchQuery.toLowerCase();
+                                        return outlet.name?.toLowerCase().includes(q) ||
+                                            outlet.address?.city?.toLowerCase().includes(q) ||
+                                            outlet.address?.street?.toLowerCase().includes(q);
+                                    }).length === 0 && (
+                                            <div style={{ padding: '20px', textAlign: 'center', color: colors.textMuted, fontSize: '13px' }}>
+                                                No salons found matching "{locationSearchQuery}"
+                                            </div>
+                                        )}
+                                </div>
+                            </motion.div>
+                        </>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
         </div>
     );
 }
