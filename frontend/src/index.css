@@ -1004,6 +1004,15 @@ html:not(.dark) .sa-panel [class*="bg-[#F3E8FF]"]:not([class*="hover:"]):not([cl
   stroke: #6d28d9 !important;
 }
 
+html:not(.dark) .admin-panel [class*="bg-orange-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .admin-panel [class*="bg-[#ffedd5]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-orange-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
+html:not(.dark) .sa-panel [class*="bg-[#ffedd5]"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
+  color: #ea580c !important;
+  stroke: #ea580c !important;
+}
+
+
 html:not(.dark) .admin-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg,
 html:not(.dark) .sa-panel [class*="bg-cyan-"]:not([class*="hover:"]):not([class*="group-hover:"]) svg {
   color: #0891b2 !important;
