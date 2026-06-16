@@ -1670,7 +1670,7 @@ export default function POSBillingPage() {
                     </div>
                 </div>
 
-             
+
             </div>
         );
     }
@@ -1797,8 +1797,8 @@ export default function POSBillingPage() {
                     </div>
 
                     <div className={`flex-1 overflow-y-auto gap-3 p-1 pr-2 custom-scrollbar content-start ${serviceMode === 'bookings' || serviceMode === 'orders'
-                            ? 'grid grid-cols-1 md:grid-cols-2'
-                            : 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
+                        ? 'grid grid-cols-1 md:grid-cols-2'
+                        : 'grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4'
                         }`}>
                         {filteredItems.map((item, idx) => {
                             const isSelected = item.isAppointment
@@ -1823,8 +1823,8 @@ export default function POSBillingPage() {
                                         key={item._id}
                                         onClick={() => addToCart(item)}
                                         className={`relative bg-white text-left transition-all duration-200 group rounded-2xl overflow-hidden shadow-sm hover:shadow-md active:scale-[0.98] border ${isSelected
-                                                ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
-                                                : 'border-slate-100 hover:border-[#cca839]/50'
+                                            ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
+                                            : 'border-slate-100 hover:border-[#cca839]/50'
                                             }`}
                                     >
 
@@ -1882,14 +1882,14 @@ export default function POSBillingPage() {
                                                     <p className="text-base font-black text-slate-900">₹{item.price}</p>
                                                     {Number(b.advancePaid || 0) > 0 && (
                                                         <div className="text-[10px] font-bold text-slate-500 mt-1 space-y-0.5">
-                                                            <div className="text-emerald-600 dark:text-emerald-400 font-extrabold">Advance: ₹{b.advancePaid}</div>
-                                                            <div className="text-rose-600 dark:text-rose-400 font-black">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
+                                                            <div className="text-amber-600 dark:text-amber-400">Advance: ₹{b.advancePaid}</div>
+                                                            <div className="text-[#cca839] font-extrabold">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
                                                         </div>
                                                     )}
                                                 </div>
                                                 <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${item.isInclusiveTax
-                                                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                        : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                                    : 'bg-blue-50 text-blue-600 border border-blue-200'
                                                     }`}>{item.isInclusiveTax ? 'Incl. GST' : 'Excl. GST'}</span>
                                             </div>
                                         </div>
@@ -1911,8 +1911,8 @@ export default function POSBillingPage() {
                                         key={item._id}
                                         onClick={() => addToCart(item)}
                                         className={`relative bg-white text-left transition-all duration-200 group rounded-2xl overflow-hidden shadow-sm hover:shadow-md active:scale-[0.98] border ${isSelected
-                                                ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
-                                                : 'border-slate-100 hover:border-[#cca839]/50'
+                                            ? 'border-[#cca839] ring-2 ring-[#cca839]/25'
+                                            : 'border-slate-100 hover:border-[#cca839]/50'
                                             }`}
                                     >
 
@@ -1985,8 +1985,8 @@ export default function POSBillingPage() {
                                     key={item.id || item._id}
                                     onClick={() => addToCart(item)}
                                     className={`relative bg-white dark:bg-slate-900/50 border rounded-2xl text-left transition-all duration-200 group flex flex-col overflow-hidden shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98] ${isSelected
-                                            ? 'border-[#cca839] ring-1 ring-[#cca839]/40'
-                                            : 'border-slate-100 dark:border-slate-800/80 hover:border-[#cca839]/40'
+                                        ? 'border-[#cca839] ring-1 ring-[#cca839]/40'
+                                        : 'border-slate-100 dark:border-slate-800/80 hover:border-[#cca839]/40'
                                         }`}
                                 >
                                     {/* Image thumbnail */}
@@ -2027,8 +2027,8 @@ export default function POSBillingPage() {
                                         <div className="flex items-center justify-between gap-1 mt-auto pt-1 border-t border-dashed border-slate-100 dark:border-slate-800/60">
                                             <p className="text-sm font-black text-slate-900 dark:text-slate-100">₹{item.price}</p>
                                             <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase tracking-wider ${item.isInclusiveTax
-                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                                                    : 'bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400'
+                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
+                                                : 'bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400'
                                                 }`}>{item.isInclusiveTax ? 'Incl' : 'Excl'}</span>
                                         </div>
                                     </div>
@@ -2079,11 +2079,10 @@ export default function POSBillingPage() {
                                         {selectedClient ? (
                                             <>
                                                 {/* Avatar */}
-                                                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-[12px] font-black shrink-0 shadow-sm ${
-                                                    activeMembership
+                                                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-[12px] font-black shrink-0 shadow-sm ${activeMembership
                                                         ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
                                                         : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
-                                                }`}>
+                                                    }`}>
                                                     {selectedClient.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CL'}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
@@ -2232,11 +2231,10 @@ export default function POSBillingPage() {
                                                         </div>
                                                         <div className="text-right shrink-0">
                                                             <p className="text-[12px] font-black text-slate-900 dark:text-white">₹{lineTotal.toFixed(2)}</p>
-                                                            <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase ${
-                                                                (item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
+                                                            <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
                                                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30'
                                                                     : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30'
-                                                            }`}>
+                                                                }`}>
                                                                 {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl. GST' : 'Excl. GST'}
                                                             </span>
                                                         </div>
@@ -2258,7 +2256,7 @@ export default function POSBillingPage() {
                                             {/* Subtotal */}
                                             <div className="flex items-center justify-between">
                                                 <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400">Subtotal</span>
-                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.subtotal?.toFixed(2) ?? cart.reduce((s,i) => s + (Number(i.price)||0)*(Number(i.quantity)||1), 0).toFixed(2)}</span>
+                                                <span className="text-[11px] font-black text-slate-800 dark:text-slate-200">₹{totals.subtotal?.toFixed(2) ?? cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 1), 0).toFixed(2)}</span>
                                             </div>
 
                                             {/* Membership discount */}
@@ -2295,7 +2293,7 @@ export default function POSBillingPage() {
                                                 </div>
                                             )}
                                             {bookingAdvancePaid > 0 && (
-                                                <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                                                <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
                                                     <span className="text-[11px] font-semibold flex items-center gap-1">
                                                         <Wallet className="w-3 h-3" /> Advance Paid
                                                     </span>
@@ -2481,7 +2479,7 @@ export default function POSBillingPage() {
                                 <div className="bg-[#f8fafc] dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4">
                                     <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mb-2">
                                         <span>Subtotal</span>
-                                        <span>₹{(totals.subtotal ?? cart.reduce((s,i) => s + (Number(i.price)||0)*(Number(i.quantity)||1), 0)).toFixed(2)}</span>
+                                        <span>₹{(totals.subtotal ?? cart.reduce((s, i) => s + (Number(i.price) || 0) * (Number(i.quantity) || 1), 0)).toFixed(2)}</span>
                                     </div>
                                     {(totals.discount + totals.membershipDiscount) > 0 && (
                                         <div className="flex items-center justify-between text-[10px] font-semibold text-[#16a34a] mb-2">
@@ -2537,11 +2535,10 @@ export default function POSBillingPage() {
                                         <button
                                             onClick={handleRedeemWallet}
                                             title={`Wallet: ₹${clientWalletBalance.toFixed(2)}`}
-                                            className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${
-                                                redeemWallet > 0
+                                            className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${redeemWallet > 0
                                                     ? 'bg-[#cca839] border-[#cca839] text-white shadow-md'
                                                     : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-[#cca839]/60 hover:text-[#cca839]'
-                                            }`}
+                                                }`}
                                         >
                                             <Wallet className="w-4 h-4" />
                                         </button>
@@ -2550,11 +2547,10 @@ export default function POSBillingPage() {
                                     <button
                                         onClick={() => setShowDiscountModal(true)}
                                         title="Discount / Offers"
-                                        className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${
-                                            (manualDiscount?.value > 0 || appliedPromotion)
+                                        className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${(manualDiscount?.value > 0 || appliedPromotion)
                                                 ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
                                                 : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600'
-                                        }`}
+                                            }`}
                                     >
                                         <Tag className="w-4 h-4" />
                                     </button>
@@ -2596,9 +2592,8 @@ export default function POSBillingPage() {
                                 <div className="rounded-xl border border-border bg-white dark:bg-slate-900 overflow-hidden">
                                     <div className="flex items-center gap-2.5 p-2.5 relative">
                                         {selectedClient ? (
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${
-                                                activeMembership ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white' : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
-                                            }`}>
+                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 shadow-sm ${activeMembership ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white' : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
+                                                }`}>
                                                 {selectedClient.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)}
                                             </div>
                                         ) : (
@@ -2752,7 +2747,7 @@ export default function POSBillingPage() {
                                                             const val = Math.min(Math.ceil(Number(selectedClient.dueAmount)), Math.max(0, Number(e.target.value) || 0));
                                                             setPreviousDuePaidAmount(val);
                                                             if (!isManualPayment && payments.length === 1) {
-                                                                    setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
+                                                                setPayments([{ ...payments[0], amount: totals.currentBillTotal + val }]);
                                                             }
                                                         }} className="w-full h-8 rounded-lg border border-border px-2 text-right text-xs font-bold outline-none focus:border-primary transition-all pr-8 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                                                         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[8px] font-bold text-slate-400">₹</span>
@@ -2856,7 +2851,7 @@ export default function POSBillingPage() {
             {showDiscountModal && (
                 <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-all duration-300">
                     <div className="bg-white dark:bg-slate-900 w-full max-w-md p-0 animate-in zoom-in-95 duration-250 border border-slate-100 dark:border-slate-800 shadow-2xl overflow-hidden rounded-3xl">
-                        
+
                         {/* Header */}
                         <div className="flex bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800 px-6 py-4 items-center justify-between border-b border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-2">
@@ -2865,8 +2860,8 @@ export default function POSBillingPage() {
                                 </span>
                                 <h3 className="text-xs font-black uppercase tracking-widest text-slate-800 dark:text-slate-100">Offers & Adjustments</h3>
                             </div>
-                            <button 
-                                onClick={() => setShowDiscountModal(false)} 
+                            <button
+                                onClick={() => setShowDiscountModal(false)}
                                 className="text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 p-1.5 rounded-full transition-all"
                             >
                                 <X className="w-4 h-4" />
@@ -2876,14 +2871,14 @@ export default function POSBillingPage() {
                         {/* Body */}
                         <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar max-h-[60vh]">
                             <div className="space-y-6">
-                                
+
                                 {/* Discount Selector Section */}
                                 <div className="bg-slate-50 dark:bg-slate-800/40 p-5 border border-slate-100 dark:border-slate-800/60 rounded-2xl transition-all hover:border-[#cca839]/20">
                                     <div className="flex items-center gap-1.5 mb-3">
                                         <Tag className="w-3.5 h-3.5 text-[#cca839]" />
                                         <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest block">Flat or Percentage Discount</label>
                                     </div>
-                                    
+
                                     <div className="flex border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-[#cca839]/20 focus-within:border-[#cca839] transition-all">
                                         <select
                                             className="bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 text-[10px] font-black p-3.5 text-[#cca839] dark:text-[#cca839] outline-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
@@ -2930,11 +2925,10 @@ export default function POSBillingPage() {
                                             />
                                             <button
                                                 onClick={handleRedeemWallet}
-                                                className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${
-                                                    redeemWallet > 0 
-                                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/10' 
+                                                className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${redeemWallet > 0
+                                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/10'
                                                         : 'bg-[#cca839] hover:bg-[#b59533] text-white shadow-md shadow-[#cca839]/10'
-                                                }`}
+                                                    }`}
                                             >
                                                 {redeemWallet > 0 ? 'Reset' : 'Use Max'}
                                             </button>
@@ -2950,8 +2944,8 @@ export default function POSBillingPage() {
                                 <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Total Reductions</p>
                                 <p className="text-xl font-black text-slate-900 dark:text-white">₹{(Number(totals.discount) + Number(totals.membershipDiscount) + Number(totals.redeemWallet || 0)).toFixed(0)}</p>
                             </div>
-                            <button 
-                                onClick={() => setShowDiscountModal(false)} 
+                            <button
+                                onClick={() => setShowDiscountModal(false)}
                                 disabled={manualDiscount.type === 'percentage' ? manualDiscount.value > 100 : manualDiscount.value > (totals.subtotal || 0)}
                                 className="px-8 py-3.5 bg-[#cca839] hover:bg-[#b59533] text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg shadow-[#cca839]/20 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
@@ -4335,7 +4329,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         <span className="text-[16px] font-black font-mono mt-0.5 text-center" style={{ color: '#1e293b' }}>&#8377;{totals.sgst.toFixed(2)}</span>
                                     </div>
                                 )}
-                            
+
                                 {/* Payment Date */}
                                 <div className="flex flex-col flex-1 px-4 min-w-[145px] items-center">
                                     <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: !qPaymentDate ? '#e11d48' : '#64748b' }}>Payment Date</span>
@@ -4545,7 +4539,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         const itemTaxPercent = Number(item.gstPercent !== undefined ? item.gstPercent : rateSetting) || 0;
                                         const cgstPercent = itemTaxPercent / 2;
                                         const sgstPercent = itemTaxPercent / 2;
-                                        
+
                                         const cgstVal = calculatedItem ? calculatedItem.cgst : 0;
                                         const sgstVal = calculatedItem ? calculatedItem.sgst : 0;
                                         const igstVal = calculatedItem ? calculatedItem.igst : 0;
