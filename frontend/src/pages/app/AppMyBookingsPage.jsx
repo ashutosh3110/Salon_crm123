@@ -48,7 +48,7 @@ export default function AppMyBookingsPage() {
     const [selectedReviewBooking, setSelectedReviewBooking] = useState(null);
     
     const navigate = useNavigate();
-    const { theme } = useCustomerTheme();
+    const { colors: themeColors, theme } = useCustomerTheme();
     const isLight = theme === 'light';
 
     // FETCH GUARD
@@ -89,12 +89,13 @@ export default function AppMyBookingsPage() {
     }, [fetchBookings]);
 
     const colors = {
-        bg: isLight ? '#FCF9F6' : '#0F0F0F',
-        card: isLight ? '#FFFFFF' : '#1A1A1A',
-        text: isLight ? '#1A1A1A' : '#ffffff',
-        textMuted: isLight ? '#666' : 'rgba(255,255,255,0.4)',
-        border: isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.05)',
-        toggle: isLight ? '#EDF0F2' : '#1A1A1A',
+        bg: '#FFFFFF',
+        card: '#FFFFFF',
+        text: themeColors.text || '#1A1A1A',
+        textMuted: themeColors.textMuted || '#666',
+        border: themeColors.border || 'rgba(0,0,0,0.07)',
+        toggle: isLight ? '#F3F4F6' : '#1A1A1A',
+        accent: themeColors.accent || '#E7D06E',
     };
 
     const { upcoming, past } = useMemo(() => {
@@ -125,11 +126,11 @@ export default function AppMyBookingsPage() {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                style={{ background: colors.bg, minHeight: '100svh' }}
+                style={{ background: '#FFFFFF', minHeight: '100svh' }}
                 className="pb-10"
             >
                 {/* Header */}
-                <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: colors.bg, backdropFilter: 'blur(20px)' }}>
+                <div className="sticky top-0 z-50 px-4 pt-6 pb-4 flex items-center justify-between" style={{ background: '#FFFFFF', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
                     <div className="flex items-center gap-3">
                         <AppBackButton />
                         <h1 className="text-xl font-black italic tracking-tight" style={{ color: colors.text }}>My Bookings</h1>
@@ -148,7 +149,8 @@ export default function AppMyBookingsPage() {
                             {activeTab === tab && (
                                 <motion.div
                                     layoutId="bookingsTab"
-                                    className="absolute inset-0 bg-[#C8956C] rounded-xl shadow-lg shadow-[#C8956C]/20"
+                                    style={{ background: colors.accent }}
+                                    className="absolute inset-0 rounded-xl"
                                     transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                 />
                             )}
@@ -182,7 +184,8 @@ export default function AppMyBookingsPage() {
                             <motion.button
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => navigate('/app/booking')}
-                                className="mt-8 px-8 py-3 bg-[#C8956C] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg shadow-[#C8956C]/20"
+                                style={{ background: colors.accent, boxShadow: `0 8px 20px ${colors.accent}40` }}
+                                className="mt-8 px-8 py-3 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl"
                             >
                                 Book Now
                             </motion.button>
