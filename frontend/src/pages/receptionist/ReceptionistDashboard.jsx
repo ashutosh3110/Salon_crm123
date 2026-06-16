@@ -41,10 +41,8 @@ export default function ReceptionistDashboard() {
 
     // Live States
     const [stats, setStats] = useState([]);
-    const [performance, setPerformance] = useState({ revenue: 0, avgTicket: 0 });
     const [hourlyFootfall, setHourlyFootfall] = useState([]);
     const [liveFeed, setLiveFeed] = useState([]);
-    const [recentActivity, setRecentActivity] = useState([]);
     const navigate = useNavigate();
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
@@ -52,7 +50,6 @@ export default function ReceptionistDashboard() {
     const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [isWalkinOpen, setIsWalkinOpen] = useState(false);
-    const [reporting, setReporting] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [activeTab, setActiveTab] = useState('booking'); // 'booking' | 'order'
@@ -110,12 +107,6 @@ export default function ReceptionistDashboard() {
                         ...s,
                         icon: iconMap[s.label] || AlertCircle
                     })));
-                    if (statsRes.data.data?.performance) {
-                        setPerformance(statsRes.data.data.performance);
-                    }
-                    if (statsRes.data.data?.recentActivity) {
-                        setRecentActivity(statsRes.data.data.recentActivity);
-                    }
                     if (statsRes.data.data?.hourlyFootfall) {
                         setHourlyFootfall(statsRes.data.data.hourlyFootfall);
                     }
@@ -188,13 +179,6 @@ export default function ReceptionistDashboard() {
         if (protocol === 'Client Registration') setIsRegistrationOpen(true);
         if (protocol === 'Booking') setIsBookingOpen(true);
         if (protocol === 'Walk-in') setIsWalkinOpen(true);
-        if (protocol === 'Day End') {
-            setReporting(true);
-            setTimeout(() => {
-                setReporting(false);
-                alert('Shift Finalization Protocol: EOD Report generated and synchronized with core vault.');
-            }, 2000);
-        }
     };
 
     const handleCheckIn = async (id) => {
@@ -433,24 +417,6 @@ export default function ReceptionistDashboard() {
                             icon={Store}
                         />
                     )}
-                    <button
-                        onClick={() => handleAction('Client Registration')}
-                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm hover:border-[#B4912B] hover:text-[#B4912B] transition-all"
-                    >
-                        <UserPlus className="w-3.5 h-3.5" /> New Client
-                    </button>
-                    <button
-                        onClick={() => handleAction('Walk-in')}
-                        className="flex items-center gap-2 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-bold text-slate-500 dark:text-slate-400 cursor-pointer shadow-sm hover:border-emerald-400 hover:text-emerald-500 transition-all"
-                    >
-                        <Zap className="w-3.5 h-3.5" /> Walk-in
-                    </button>
-                    <button
-                        onClick={() => handleAction('Booking')}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#B4912B] hover:bg-[#9f8025] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
-                    >
-                        <Plus className="w-3.5 h-3.5 text-white" /> New Booking
-                    </button>
                 </div>
             </div>
 
@@ -499,231 +465,12 @@ export default function ReceptionistDashboard() {
                 })}
             </div>
 
-            {/* ═══════════════════════════════════════════
-                BOOKING / ORDER FORM — Inline 2-column
-            ═══════════════════════════════════════════ */}
-            <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden">
-                {/* Tab Switcher */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-start">
-                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800/60 rounded-xl gap-1 w-full sm:w-auto">
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('booking')}
-                            className={`flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer ${activeTab === 'booking'
-                                    ? 'shadow-sm text-white-force'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-primary-foreground'
-                                }`}
-                            style={{
-                                backgroundColor: activeTab === 'booking' ? '#B4912B' : undefined,
-                                color: activeTab === 'booking' ? '#ffffff' : '#64748B'
-                            }}
-                        >
-                            <CalendarPlus
-                                className={`w-3.5 h-3.5 ${activeTab === 'booking' ? 'icon-white-outline-force' : 'text-primary-foreground'}`}
-                                style={{ color: activeTab === 'booking' ? '#ffffff' : '#64748B' }}
-                            /> Book Appointment
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('order')}
-                            className={`flex items-center justify-center gap-2 px-5 py-2 rounded-lg text-xs font-extrabold uppercase tracking-wider transition-all duration-200 cursor-pointer ${activeTab === 'order'
-                                    ? 'shadow-sm text-white-force'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 text-primary-foreground'
-                                }`}
-                            style={{
-                                backgroundColor: activeTab === 'order' ? '#B4912B' : undefined,
-                                color: activeTab === 'order' ? '#ffffff' : '#64748B'
-                            }}
-                        >
-                            <ShoppingCart
-                                className={`w-3.5 h-3.5 ${activeTab === 'order' ? 'icon-white-outline-force' : 'text-primary-foreground'}`}
-                                style={{ color: activeTab === 'order' ? '#ffffff' : '#64748B' }}
-                            /> Book Order
-                        </button>
-                    </div>
-                </div>
 
-                {/* Booking Tab */}
-                {activeTab === 'booking' && (
-                    <form onSubmit={handleManualBookingSubmit} className="p-5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client Name</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        required
-                                        type="text"
-                                        value={newBooking.clientName}
-                                        onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                        placeholder="Enter client name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        required
-                                        type="tel"
-                                        value={newBooking.phone}
-                                        onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                        placeholder="Enter phone number"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Service</label>
-                                <CustomDropdown
-                                    value={newBooking.serviceId}
-                                    onChange={(val) => setNewBooking({ ...newBooking, serviceId: val })}
-                                    options={services.map(s => ({ label: `${s.name} - ₹${s.price}`, value: s.id || s._id }))}
-                                    placeholder="Select service..."
-                                    className="w-full"
-                                    triggerClassName="!py-2.5"
-                                    icon={Scissors}
-                                />
-                            </div>
-                            <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Staff Assignment</label>
-                                <CustomDropdown
-                                    value={newBooking.staffId}
-                                    onChange={(val) => setNewBooking({ ...newBooking, staffId: val })}
-                                    options={staff.filter(s => s.isAvailable).map(s => ({ label: `${s.name} - ${s.role}`, value: s.id || s._id }))}
-                                    placeholder="Select stylist..."
-                                    className="w-full"
-                                    triggerClassName="!py-2.5"
-                                    icon={Users}
-                                />
-                            </div>
-                            <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</label>
-                                <input
-                                    type="date"
-                                    value={newBooking.date}
-                                    onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[12px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                />
-                            </div>
-                            <div className="space-y-1.5 text-left">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Time Slot</label>
-                                <CustomDropdown
-                                    value={newBooking.time}
-                                    onChange={(val) => setNewBooking({ ...newBooking, time: val })}
-                                    options={[
-                                        '10:00 AM', '11:00 AM', '12:00 PM', '01:00 PM', '02:00 PM',
-                                        '03:00 PM', '04:00 PM', '05:00 PM', '06:00 PM', '07:00 PM'
-                                    ].map(t => ({ label: t, value: t }))}
-                                    placeholder="Select time..."
-                                    className="w-full"
-                                    triggerClassName="!py-2.5"
-                                    icon={Clock}
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                            <button
-                                type="submit"
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#B4912B] hover:bg-[#9f8025] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
-                            >
-                                <Calendar className="w-4 h-4 text-white" /> Confirm Appointment
-                            </button>
-                        </div>
-                    </form>
-                )}
-
-                {/* Order Tab */}
-                {activeTab === 'order' && (
-                    <form onSubmit={handleOrderSubmit} className="p-5">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Client Name</label>
-                                <div className="relative">
-                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        required
-                                        type="text"
-                                        value={newOrder.clientName}
-                                        onChange={(e) => setNewOrder({ ...newOrder, clientName: e.target.value })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                        placeholder="Enter client name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phone Number</label>
-                                <div className="relative">
-                                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        required
-                                        type="tel"
-                                        value={newOrder.phone}
-                                        onChange={(e) => setNewOrder({ ...newOrder, phone: e.target.value })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                        placeholder="Enter phone number"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Product / Service</label>
-                                <div className="relative">
-                                    <Package className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        required
-                                        type="text"
-                                        value={newOrder.products}
-                                        onChange={(e) => setNewOrder({ ...newOrder, products: e.target.value })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                        placeholder="Enter product name"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quantity</label>
-                                <div className="relative">
-                                    <Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#9CA3AF]" />
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        value={newOrder.quantity}
-                                        onChange={(e) => setNewOrder({ ...newOrder, quantity: parseInt(e.target.value) || 1 })}
-                                        className="w-full pl-10 pr-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
-                            <div className="sm:col-span-2 space-y-1.5">
-                                <label className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes (Optional)</label>
-                                <input
-                                    type="text"
-                                    value={newOrder.notes}
-                                    onChange={(e) => setNewOrder({ ...newOrder, notes: e.target.value })}
-                                    className="w-full px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[13px] font-medium rounded-xl focus:border-[#B4912B] focus:outline-none transition-all"
-                                    placeholder="Add any special notes..."
-                                />
-                            </div>
-                        </div>
-                        <div className="flex justify-end mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
-                            <button
-                                type="submit"
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#B4912B] hover:bg-[#9f8025] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer"
-                            >
-                                <ShoppingCart className="w-4 h-4 text-white" /> Place Order
-                            </button>
-                        </div>
-                    </form>
-                )}
-            </div>
 
             {/* ═══════════════════════════════════════════
-                MAIN CONTENT: 70/30 GRID
+                MAIN CONTENT
             ═══════════════════════════════════════════ */}
-            <div className="grid grid-cols-1 lg:grid-cols-10 gap-4">
-
-                {/* ═══ LEFT COLUMN (70%) ═══ */}
-                <div className="lg:col-span-7 space-y-4">
+            <div className="space-y-4">
 
                     {/* Today's Traffic & Footfall Chart */}
                     <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden p-5">
@@ -892,157 +639,6 @@ export default function ReceptionistDashboard() {
                             </table>
                         </div>
                     </div>
-                </div>
-
-                {/* ═══ RIGHT COLUMN (30%) ═══ */}
-                <div className="lg:col-span-3 space-y-4">
-
-                    {/* Daily Performance Card */}
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-[#B4912B]/20 dark:!border-[#B4912B]/15 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md hover:!border-[#B4912B]/35 dark:hover:!border-[#B4912B]/30 transition-all !overflow-hidden p-4">
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-4">Daily Performance</h3>
-
-                        {/* Target Achievement */}
-                        <div className="mb-4">
-                            <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Target Achievement</span>
-                                <span className="text-[12px] font-bold text-[#B4912B]">{performance.targetFulfillment || 0}%</span>
-                            </div>
-                            <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-gradient-to-r from-[#B4912B] to-[#D4A930] rounded-full transition-all duration-700 ease-out"
-                                    style={{ width: `${performance.targetFulfillment || 0}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Metrics Grid */}
-                        <div className="grid grid-cols-2 gap-2.5">
-                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#059669]/15 dark:border-[#059669]/10 rounded-xl p-3 text-left">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                    <DollarSign className="w-3 h-3 text-emerald-500" />
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</span>
-                                </div>
-                                <p className="text-[15px] font-black text-slate-800 dark:text-white">₹{performance.revenue?.toLocaleString('en-IN')}</p>
-                            </div>
-                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#2563EB]/15 dark:border-[#2563EB]/10 rounded-xl p-3 text-left">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                    <BarChart3 className="w-3 h-3 text-blue-500" />
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Avg Ticket</span>
-                                </div>
-                                <p className="text-[15px] font-black text-slate-800 dark:text-white">₹{performance.avgTicket?.toLocaleString('en-IN')}</p>
-                            </div>
-                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#7C3AED]/15 dark:border-[#7C3AED]/10 rounded-xl p-3 text-left">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                    <Users className="w-3 h-3 text-violet-500" />
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Walk-ins</span>
-                                </div>
-                                <p className="text-[15px] font-black text-slate-800 dark:text-white">
-                                    {hourlyFootfall.reduce((sum, h) => sum + (h.walkins || 0), 0)}
-                                </p>
-                            </div>
-                            <div className="bg-slate-50/50 dark:bg-slate-800/30 border border-[#059669]/15 dark:border-[#059669]/10 rounded-xl p-3 text-left">
-                                <div className="flex items-center gap-1.5 mb-1">
-                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Completed</span>
-                                </div>
-                                <p className="text-[15px] font-black text-slate-800 dark:text-white">
-                                    {liveFeed.filter(a => a.status.toLowerCase() === 'completed' || a.status.toLowerCase() === 'arrived').length}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Shift Summary Card */}
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-all !overflow-hidden p-4">
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">Shift Summary</h3>
-                        <div className="space-y-2.5">
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
-                                    <Clock className="w-3 h-3" /> Shift Start
-                                </span>
-                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">
-                                    {currentHour < 14 ? '09:00 AM' : '02:00 PM'}
-                                </span>
-                            </div>
-                            <div className="h-px bg-slate-100 dark:bg-slate-800" />
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
-                                    <Banknote className="w-3 h-3" /> Cash Collection
-                                </span>
-                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.4).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
-                                    <CreditCard className="w-3 h-3" /> Online Payments
-                                </span>
-                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.45).toLocaleString('en-IN')}</span>
-                            </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-[11px] font-medium text-[#6B7280] dark:text-slate-400 flex items-center gap-1.5">
-                                    <Wallet className="w-3 h-3" /> Wallet Payments
-                                </span>
-                                <span className="text-[12px] font-semibold text-[#1F2937] dark:text-white">₹{Math.round(performance.revenue * 0.15).toLocaleString('en-IN')}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Finalize Shift Button */}
-                    <button
-                        onClick={() => handleAction('Day End')}
-                        disabled={reporting}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-[#B4912B] hover:bg-[#9f8025] text-white text-xs font-extrabold shadow-md transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-50"
-                    >
-                        {reporting ? (
-                            <>
-                                <Loader2 className="w-4 h-4 animate-spin text-white" />
-                                Synchronizing...
-                            </>
-                        ) : (
-                            <>
-                                <Shield className="w-4 h-4 text-white" /> Finalize Day Shift
-                            </>
-                        )}
-                    </button>
-
-                    {/* Recent Bookings Card */}
-                    <div className="!bg-white dark:!bg-slate-900 !rounded-[24px] !border !border-slate-100 dark:!border-slate-800 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-all !overflow-hidden p-4">
-                        <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 tracking-tight mb-3">Recent Bookings</h3>
-                        <div className="space-y-2">
-                            {recentActivity.length === 0 ? (
-                                <div className="flex flex-col items-center py-6 gap-2">
-                                    <Calendar className="w-7 h-7 text-[#E5E7EB] dark:text-slate-600" />
-                                    <p className="text-[11px] font-medium text-[#9CA3AF]">No recent bookings</p>
-                                </div>
-                            ) : (
-                                recentActivity.map((activity) => {
-                                    const aStyle = getStatusStyle(activity.status);
-                                    return (
-                                        <div key={activity.id} className="flex items-center gap-2.5 p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all group cursor-pointer">
-                                            <div className="w-8 h-8 rounded-lg bg-[#B4912B]/10 flex items-center justify-center text-[11px] font-bold text-[#B4912B] shrink-0">
-                                                {activity.client[0]}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between">
-                                                    <p className="text-[12px] font-semibold text-[#1F2937] dark:text-white truncate">{activity.client}</p>
-                                                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded border ${aStyle.bg} ${aStyle.text} ${aStyle.border}`}>
-                                                        {activity.status}
-                                                    </span>
-                                                </div>
-                                                <p className="text-[10px] font-medium text-[#6B7280] dark:text-slate-400 truncate">{activity.service} · {activity.time}</p>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
-                        </div>
-                        <button
-                            onClick={() => navigate('/receptionist/appointments')}
-                            className="w-full mt-3 py-2 text-[11px] font-bold text-slate-400 hover:text-[#B4912B] rounded-xl border border-dashed border-slate-200 dark:border-slate-700 hover:border-[#B4912B]/30 transition-all"
-                        >
-                            View All Appointments
-                        </button>
-                    </div>
-                </div>
             </div>
 
             {/* ═══════════════════════════════════════════
