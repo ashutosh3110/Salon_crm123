@@ -28,7 +28,7 @@ export default function ReceptionistLayout() {
                 }
                 
                 html:not(.dark) .admin-panel {
-                    --primary: #C89B2B !important;
+                    --primary: #B4912B !important;
                     --primary-foreground: #ffffff !important;
                     --font-serif: 'Inter', sans-serif !important;
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
@@ -266,7 +266,7 @@ export default function ReceptionistLayout() {
                 html:not(.dark) .admin-panel input:focus, 
                 html:not(.dark) .admin-panel select:focus, 
                 html:not(.dark) .admin-panel textarea:focus {
-                    border-color: #C89B2B !important;
+                    border-color: #B4912B !important;
                     box-shadow: 0 0 0 3px rgba(200, 155, 43, 0.1) !important;
                     outline: none !important;
                 }
@@ -390,8 +390,8 @@ export default function ReceptionistLayout() {
                 .dark .admin-panel [class*="bg-surface-alt/50"] button:not(aside *):hover,
                 .dark .admin-panel .bg-surface-alt\\/50 button:not(aside *):hover,
                 .dark .admin-panel [class*="border-t"] button:not(aside *):hover {
-                    border-color: #C89B2B !important;
-                    color: #C89B2B !important;
+                    border-color: #B4912B !important;
+                    color: #B4912B !important;
                     background-color: rgba(200, 155, 43, 0.15) !important;
                 }
 
@@ -421,7 +421,7 @@ export default function ReceptionistLayout() {
                    🎨 DARK MODE OVERRIDES
                    ========================================== */
                 .dark .admin-panel {
-                    --primary: #C89B2B !important;
+                    --primary: #B4912B !important;
                     --primary-foreground: #ffffff !important;
                     background-color: #0F172A !important;
                     color: #e2e8f0 !important;
@@ -464,7 +464,7 @@ export default function ReceptionistLayout() {
                 .dark .admin-panel input:focus, 
                 .dark .admin-panel select:focus, 
                 .dark .admin-panel textarea:focus {
-                    border-color: #C89B2B !important;
+                    border-color: #B4912B !important;
                     box-shadow: 0 0 0 3px rgba(200, 155, 43, 0.2) !important;
                 }
 
@@ -492,9 +492,9 @@ export default function ReceptionistLayout() {
                 .dark .admin-panel .bg-primary,
                 .dark .admin-panel button[type="submit"],
                 .dark .admin-panel button:has(svg.lucide-plus) {
-                    background: #C89B2B !important;
+                    background: #B4912B !important;
                     color: #ffffff !important;
-                    border: 1px solid #C89B2B !important;
+                    border: 1px solid #B4912B !important;
                 }
                 .dark .admin-panel button.bg-primary:hover,
                 .dark .admin-panel a.bg-primary:hover,
@@ -605,8 +605,8 @@ export default function ReceptionistLayout() {
                 html:not(.dark) .admin-panel svg[class*="text-amber"] *,
                 html:not(.dark) .admin-panel [class*="text-primary"] svg,
                 html:not(.dark) .admin-panel [class*="text-primary"] svg * {
-                    color: #C89B2B !important;
-                    stroke: #C89B2B !important;
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
                 }
 
                 /* Blue SVGs */
@@ -616,6 +616,20 @@ export default function ReceptionistLayout() {
                 html:not(.dark) .admin-panel svg[class*="text-blue"] * {
                     color: #2563eb !important;
                     stroke: #2563eb !important;
+                }
+
+                /* Topbar Header Icons Visibility Override in Light Mode */
+                html:not(.dark) .admin-panel header svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-amber-"]):not([class*="text-primary-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-red-"]) {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                    fill: none !important;
+                    opacity: 1 !important;
+                }
+                html:not(.dark) .admin-panel header svg:not(.recharts-surface):not([class*="recharts"]):not([style*="color"]):not([style*="stroke"]):not([class*="text-amber-"]):not([class*="text-primary-"]):not([class*="text-emerald-"]):not([class*="text-rose-"]):not([class*="text-red-"]) * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                    fill: none !important;
+                    opacity: 1 !important;
                 }
 
                 /* Rounded icon containers */

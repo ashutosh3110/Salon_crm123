@@ -114,7 +114,7 @@ export default function SupportPage() {
         try {
             setLoading(true);
             const endpoint = activeTab === 'customer' ? '/support/admin/tickets' : '/tickets';
-            
+
             let params = {};
             if (['receptionist', 'stylist', 'manager'].includes(userRole)) {
                 const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
@@ -271,7 +271,7 @@ export default function SupportPage() {
                             onClick={() => setShowModal(true)}
                             className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shadow-lg hover:bg-primary hover:text-white transition-all rounded-xl"
                         >
-                            <Plus className="w-4 h-4" /> New Support Request
+                            <Plus className="w-4 h-4" style={{ color: '#ffffff' }} /> New Support Request
                         </button>
                     )}
                 </div>
@@ -298,7 +298,9 @@ export default function SupportPage() {
                 <div className="lg:col-span-2 space-y-5">
                     <div className="flex flex-col md:flex-row gap-3">
                         <div className={`relative flex-1 bg-white border transition-all duration-300 rounded-xl ${isSearchFocused ? 'border-[#B58E29] shadow-[0_0_15px_rgba(181,142,41,0.25)] ring-1 ring-[#B58E29]/50' : 'border-border shadow-sm'}`}>
-                            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-[#B58E29]' : 'text-text-muted'}`} />
+                            <Search
+                                className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-primary' : ''}`}
+                            />
                             <input
                                 type="text"
                                 value={search}
@@ -314,11 +316,15 @@ export default function SupportPage() {
                             className={`relative flex items-center px-5 bg-white border transition-all duration-300 rounded-xl cursor-pointer hover:bg-gray-50 ${isFilterOpen ? 'border-[#B58E29] ring-1 ring-[#B58E29]/50 shadow-[0_0_15px_rgba(181,142,41,0.15)]' : 'border-border shadow-sm'}`}
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
                         >
-                            <Filter className={`w-4 h-4 mr-2 transition-colors ${isFilterOpen ? 'text-[#B58E29]' : 'text-text-muted'}`} />
+                            <Filter
+                                className={`w-4 h-4 mr-2 transition-colors ${isFilterOpen ? 'text-primary' : ''}`}
+                            />
                             <div className="text-[12px] font-bold uppercase tracking-wider py-3.5 pr-8 min-w-[120px] select-none text-text">
                                 {filterStatus === 'All' ? 'ALL STATUS' : filterStatus}
                             </div>
-                            <ChevronDown className="w-4 h-4 text-text-muted absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                            <ChevronDown
+                                className="w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none"
+                            />
 
                             {/* Custom Dropdown Menu */}
                             <AnimatePresence>
@@ -340,7 +346,7 @@ export default function SupportPage() {
                                         ].map((opt) => (
                                             <div
                                                 key={opt.value}
-                                                className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider cursor-pointer hover:bg-primary/5 transition-colors ${filterStatus === opt.value ? 'text-primary bg-primary/5' : 'text-text-muted'}`}
+                                                className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${filterStatus === opt.value ? 'bg-primary/10 dark:bg-primary/20 text-[#B4912B]' : 'text-text-muted hover:bg-slate-50 dark:hover:bg-white/5'}`}
                                                 onClick={() => setFilterStatus(opt.value)}
                                             >
                                                 {opt.label}
@@ -535,7 +541,7 @@ export default function SupportPage() {
                             {[1, 2].map((_, i) => (
                                 <div key={i} className="group cursor-help border border-border p-4 rounded-xl flex items-start justify-between">
                                     <div className="flex gap-3">
-                                        <ChevronDown className="w-4 h-4 text-text mt-0.5" />
+                                        <ChevronDown className="w-4 h-4 mt-0.5" />
                                         <div>
                                             <p className="text-[13px] font-bold text-text transition-colors">
                                                 New Question?
@@ -543,7 +549,7 @@ export default function SupportPage() {
                                             <p className="text-[12px] text-text-muted mt-1 leading-relaxed">Answer goes here... {i === 0 ? '#gffrtffffff#jkjkrt;kjv' : 'n.b'}</p>
                                         </div>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-text" />
+                                    <ChevronRight className="w-4 h-4" />
                                 </div>
                             ))}
                         </div>
@@ -582,7 +588,7 @@ export default function SupportPage() {
             <div className="bg-surface border border-border rounded-2xl p-6 mt-8 flex items-center justify-between relative overflow-hidden">
                 <div className="flex items-center gap-4 relative z-10">
                     <div className="w-14 h-14 rounded-xl bg-[#B4912B]/10 flex items-center justify-center shrink-0">
-                        <Shield className="w-7 h-7 text-[#B4912B]" />
+                        <Shield className="w-7 h-7 text-primary" />
                     </div>
                     <div>
                         <h3 className="text-[16px] font-bold text-text">We're here to help!</h3>

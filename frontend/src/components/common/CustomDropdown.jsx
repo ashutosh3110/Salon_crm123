@@ -75,42 +75,48 @@ export default function CustomDropdown({
                     className="custom-dropdown-panel absolute z-[999] w-full mt-1 bg-white dark:bg-slate-800 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-xl"
                 >
                     <div className="py-1 max-h-48 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent hover:scrollbar-thumb-slate-300">
-                        {normalizedOptions.map((opt, idx) => {
-                            const isSelected = value === opt.value;
-                            return (
-                                <button
-                                    key={opt.value}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(opt.value);
-                                        setIsOpen(false);
-                                    }}
-                                    className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group !border-0 !rounded-none last:!border-0
-                                        ${isSelected
-                                            ? 'bg-[#cca839]/10 text-[#cca839] hover:bg-[#cca839]/20 dark:bg-[#cca839]/20 dark:text-[#cca839]'
-                                            : 'text-text-secondary hover:bg-slate-50 hover:text-text dark:hover:bg-slate-800/80'
-                                        }
-                                    `}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {/* Left accent icon or dot */}
-                                        {opt.icon ? (
-                                            <opt.icon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#cca839]' : 'text-text-muted group-hover:text-[#cca839]'}`} />
-                                        ) : (
-                                            <span
-                                                className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isSelected ? 'bg-[#cca839]' : 'bg-border group-hover:bg-[#cca839]/40'}`}
-                                            />
+                        {normalizedOptions.length === 0 ? (
+                            <div className="px-3 py-2.5 text-center text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                                No options available
+                            </div>
+                        ) : (
+                            normalizedOptions.map((opt, idx) => {
+                                const isSelected = value === opt.value;
+                                return (
+                                    <button
+                                        key={opt.value}
+                                        type="button"
+                                        onClick={() => {
+                                            onChange(opt.value);
+                                            setIsOpen(false);
+                                        }}
+                                        className={`custom-dropdown-option w-full flex items-center justify-between px-3 py-1.5 text-left transition-colors duration-150 group !border-0 !rounded-none last:!border-0
+                                            ${isSelected
+                                                ? 'bg-[#cca839]/10 text-[#cca839] hover:bg-[#cca839]/20 dark:bg-[#cca839]/20 dark:text-[#cca839]'
+                                                : 'text-text-secondary hover:bg-slate-50 hover:text-text dark:hover:bg-slate-800/80'
+                                            }
+                                        `}
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            {/* Left accent icon or dot */}
+                                            {opt.icon ? (
+                                                <opt.icon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#cca839]' : 'text-text-muted group-hover:text-[#cca839]'}`} />
+                                            ) : (
+                                                <span
+                                                    className={`w-1 h-1 rounded-full shrink-0 transition-colors ${isSelected ? 'bg-[#cca839]' : 'bg-border group-hover:bg-[#cca839]/40'}`}
+                                                />
+                                            )}
+                                            <span className="text-[10px] font-bold tracking-wider leading-none">
+                                                {opt.label}
+                                            </span>
+                                        </div>
+                                        {isSelected && (
+                                            <Check className="w-3.5 h-3.5 text-[#cca839] shrink-0" strokeWidth={3} />
                                         )}
-                                        <span className="text-[10px] font-bold tracking-wider leading-none">
-                                            {opt.label}
-                                        </span>
-                                    </div>
-                                    {isSelected && (
-                                        <Check className="w-3.5 h-3.5 text-[#cca839] shrink-0" strokeWidth={3} />
-                                    )}
-                                </button>
-                            );
-                        })}
+                                    </button>
+                                );
+                            })
+                        )}
                     </div>
 
                     {/* Bottom label */}

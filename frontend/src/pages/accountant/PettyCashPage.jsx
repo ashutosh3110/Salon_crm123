@@ -16,12 +16,14 @@ import {
     X,
     FileText,
     Banknote,
-    Lock
+    Lock,
+    Store
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePettyCash } from '../../contexts/PettyCashContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import CustomDropdown from '../../components/common/CustomDropdown';
 
 export default function PettyCashPage() {
     const {
@@ -86,7 +88,7 @@ export default function PettyCashPage() {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {error ? (
                 <div
                     role="alert"
@@ -102,51 +104,57 @@ export default function PettyCashPage() {
                     </button>
                 </div>
             ) : null}
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <header className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
-                    <h1 className="text-2xl font-black text-text tracking-tight uppercase">Petty Cash Terminal</h1>
-                    <p className="text-sm text-text-muted font-medium italic">Operational Small-Item Finance & Reconciliation</p>
+                    <h1 className="text-lg font-black text-text tracking-tight uppercase">Petty Cash Terminal</h1>
+                    <p className="text-[10px] text-text-muted font-medium uppercase tracking-widest opacity-60 mt-0.5">Operational Small-Item Finance & Reconciliation</p>
                 </div>
-                <div className="flex items-center gap-3 flex-wrap">
-                    <div className="flex items-center gap-2 bg-surface border border-border/40 p-1 rounded-xl">
+                <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-2">
                         <input
                             type="date"
                             value={selectedDate}
                             onChange={(e) => setSelectedDate(e.target.value)}
-                            className="px-3 py-1.5 bg-background border border-border/40 rounded-lg text-[10px] font-black uppercase outline-none focus:border-primary/50 text-text"
+                            className="px-2 py-1.5 bg-surface border border-border/40 rounded-lg text-[10px] font-black uppercase outline-none focus:border-[#B4912B]/50 text-text"
                         />
                         {!isReceptionist && (
-                            <select
+                            <CustomDropdown
                                 value={selectedOutlet}
-                                onChange={(e) => setSelectedOutlet(e.target.value)}
-                                className="px-3 py-1.5 bg-background border border-border/40 rounded-lg text-[10px] font-black uppercase outline-none focus:border-primary/50 text-text"
-                            >
-                                <option value="">Global (All Outlets)</option>
-                                {outlets.map((o) => (
-                                    <option key={o._id} value={o._id}>{o.name}</option>
-                                ))}
-                            </select>
+                                onChange={(val) => setSelectedOutlet(val)}
+                                options={[
+                                    { label: 'All Outlets', value: '' },
+                                    ...outlets.map(o => ({ label: o.name, value: o._id }))
+                                ]}
+                                placeholder="All Outlets"
+                                className="min-w-[160px]"
+                                triggerClassName="!py-1.5"
+                                icon={Store}
+                            />
                         )}
                     </div>
                     {!isClosedToday && isOpenedToday && (
                         <>
                             <button
                                 onClick={() => setShowTopUp(true)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all shadow-lg shadow-primary/5"
+                                className="flex items-center gap-1.5 px-3.5 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-lg border"
+                                style={{ backgroundColor: '#B4912B1A', color: '#B4912B', borderColor: '#B4912B40' }}
+                                onMouseEnter={e => { e.currentTarget.style.backgroundColor = '#B4912B'; e.currentTarget.style.color = '#fff'; }}
+                                onMouseLeave={e => { e.currentTarget.style.backgroundColor = '#B4912B1A'; e.currentTarget.style.color = '#B4912B'; }}
                             >
-                                <Plus className="w-3.5 h-3.5" /> Top-Up Fund
+                                <Plus className="w-3 h-3" style={{ color: 'inherit' }} /> Top-Up
                             </button>
                             <button
                                 onClick={() => setShowExpense(true)}
-                                className="flex items-center gap-2 px-5 py-2.5 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all shadow-lg shadow-rose-500/5"
+                                className="flex items-center gap-1.5 px-3.5 py-2 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-lg text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white transition-all"
                             >
-                                <Minus className="w-3.5 h-3.5" /> Record Bill
+                                <Minus className="w-3 h-3" style={{ color: 'inherit' }} /> Record Bill
                             </button>
                             <button
                                 onClick={() => setShowClosing(true)}
-                                className="flex items-center gap-2 px-6 py-3 bg-primary text-background border border-primary rounded-xl text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-all whitespace-nowrap shadow-xl shadow-primary/20"
+                                className="bg-primary flex items-center gap-1.5 px-4 py-2 text-white rounded-lg text-[9px] font-black uppercase tracking-widest hover:opacity-90 transition-all whitespace-nowrap"
+                                style={{ backgroundColor: '#B4912B' }}
                             >
-                                <Lock className="w-4 h-4" /> Closing
+                                <Lock className="w-3 h-3" style={{ color: '#ffffff' }} /> Closing
                             </button>
                         </>
                     )}
@@ -168,7 +176,7 @@ export default function PettyCashPage() {
                         </div>
                         <h2 className="text-3xl font-black text-text uppercase tracking-tighter max-w-md mx-auto">Petty Cash Terminal Standby</h2>
                         <p className="text-sm text-text-muted font-bold mt-3 mb-10 max-w-sm mx-auto uppercase italic tracking-widest leading-relaxed">System requires a verified day opening to begin financial logging.</p>
-                        
+
                         <div className="bg-background/50 border border-border/20 p-6 rounded-3xl mb-10 text-left w-full max-w-xs">
                             <div className="flex justify-between items-center mb-2">
                                 <span className="text-[10px] font-black text-text-muted uppercase">Opening Estimator</span>
@@ -178,11 +186,12 @@ export default function PettyCashPage() {
                             <p className="text-[9px] text-text-muted font-bold uppercase mt-1 italic italic">Current Balance in system vault</p>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => openDay(user?.name)}
-                            className="px-12 py-5 bg-primary text-background rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-primary/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center gap-3"
+                            className="bg-primary px-10 py-4 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl hover:opacity-90 active:scale-95 transition-all flex items-center gap-3"
+                            style={{ backgroundColor: '#B4912B' }}
                         >
-                            <Calendar className="w-5 h-5" /> Initialize Daily Session
+                            <Calendar className="w-5 h-5" style={{ color: '#ffffff' }} /> Initialize Daily Session
                         </button>
                     </motion.div>
                 ) : isClosedToday ? (
@@ -225,298 +234,301 @@ export default function PettyCashPage() {
                         exit={{ opacity: 0 }}
                         className="space-y-6"
                     >
-                         {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden group min-h-[160px] flex flex-col justify-between">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
-                        <Wallet className="w-24 h-24 text-text" />
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 text-left">Cash Hand Balance</p>
-                        <div className="flex items-baseline gap-2">
-                            <h3 className="text-4xl font-black text-text tracking-tighter">₹{currentBalance.toLocaleString()}</h3>
-                            <div className="flex items-center gap-1 px-2 py-0.5 bg-emerald-500/10 text-emerald-500 rounded-md text-[9px] font-black">
-                                <TrendingUp className="w-2.5 h-2.5" /> Live
-                            </div>
-                        </div>
-                    </div>
-
-                    {closingLogs.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-border/10">
-                            <details className="group/notes">
-                                <summary className="flex items-center justify-between cursor-pointer list-none">
-                                    <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
-                                        <Banknote className="w-3 h-3" /> Last Note Audit
-                                    </span>
-                                    <ArrowRight className="w-3 h-3 text-text-muted group-open/notes:rotate-90 transition-transform" />
-                                </summary>
-                                <div className="mt-3 grid grid-cols-4 gap-2">
-                                    {Object.entries(closingLogs[0].denominations)
-                                        .filter(([_, count]) => count && count > 0)
-                                        .map(([d, count]) => (
-                                            <div key={d} className="bg-background/50 border border-border/5 p-1.5 rounded-lg text-center">
-                                                <p className="text-[8px] font-black text-text-muted">₹{d}</p>
-                                                <p className="text-[10px] font-black text-primary leading-none">x{count}</p>
-                                            </div>
-                                        ))
-                                    }
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="bg-surface p-4 rounded-2xl border border-border/40 relative overflow-hidden group min-h-[100px] flex flex-col justify-between">
+                                <div className="absolute top-0 right-0 p-8 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+                                    <Wallet className="w-24 h-24 text-text" />
                                 </div>
-                            </details>
-                        </div>
-                    )}
-                </div>
+                                <div>
+                                    <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2 text-left">Cash Hand Balance</p>
+                                    <div className="flex items-baseline gap-2">
+                                        <h3 className="text-2xl font-black text-text tracking-tighter">₹{currentBalance.toLocaleString()}</h3>
+                                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-emerald-500/10 text-emerald-500 rounded text-[8px] font-black">
+                                            <TrendingUp className="w-2 h-2" /> Live
+                                        </div>
+                                    </div>
+                                </div>
 
-                <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden">
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4">Daily Inflow</p>
-                    <h3 className="text-3xl font-black text-emerald-500">
-                        ₹{transactions.filter(t => t.date === new Date().toISOString().split('T')[0] && t.type === 'FUND_ADDED').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-                    </h3>
-                    <p className="text-[10px] text-text-muted font-bold mt-2 uppercase italic tracking-widest text-left">Total funds injected today</p>
-                </div>
-
-                <div className="bg-surface p-6 rounded-[2rem] border border-border/40 relative overflow-hidden">
-                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] mb-4">Daily Outflow</p>
-                    <h3 className="text-3xl font-black text-rose-500">
-                        ₹{transactions.filter(t => t.date === businessDate && t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
-                    </h3>
-                    <p className="text-[10px] text-text-muted font-bold mt-2 uppercase italic tracking-widest text-left">Total expenses logged today</p>
-                </div>
-            </div>
-
-            {/* Main Content Area */}
-            <div className="flex flex-col min-h-[500px] bg-surface rounded-[2.5rem] border border-border/40 overflow-hidden text-left">
-                <div className="px-8 py-6 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-surface/50 backdrop-blur-xl">
-                    <div className="flex items-center gap-6">
-                        {['Transactions', 'Closing Logs', 'Category Audit'].map(tab => (
-                            <button
-                                key={tab}
-                                onClick={() => setActiveTab(tab)}
-                                className={`text-[11px] font-black uppercase tracking-widest py-1 transition-all relative ${activeTab === tab ? 'text-primary' : 'text-text-muted hover:text-text'}`}
-                            >
-                                {tab}
-                                {activeTab === tab && (
-                                    <motion.div layoutId="tab-underline" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                    {activeTab === 'Transactions' && (
-                        <div className="flex items-center gap-3">
-                            <div className="relative">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
-                                <input
-                                    type="text"
-                                    placeholder="Search ledger..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-9 pr-4 py-2 bg-background/50 border border-border/40 rounded-xl text-xs font-bold focus:border-primary/50 outline-none w-48"
-                                />
-                            </div>
-                            <select
-                                value={filterCategory}
-                                onChange={(e) => setFilterCategory(e.target.value)}
-                                className="px-3 py-2 bg-background/50 border border-border/40 rounded-xl text-[10px] font-black uppercase outline-none focus:border-primary/50 appearance-none min-w-[120px]"
-                            >
-                                <option>All</option>
-                                {categories.map(c => <option key={c}>{c}</option>)}
-                            </select>
-                        </div>
-                    )}
-                </div>
-
-                <div className="p-8 flex-1 overflow-x-auto">
-                    {activeTab === 'Transactions' && (
-                        <table className="w-full">
-                            <thead>
-                                <tr className="text-[10px] font-black text-text-muted uppercase tracking-widest">
-                                    <th className="pb-4 font-black">Transaction ID</th>
-                                    <th className="pb-4 font-black">Entity / Category</th>
-                                    <th className="pb-4 font-black text-right">Debit / Credit</th>
-                                    <th className="pb-4 font-black text-center">Reference</th>
-                                    <th className="pb-4 font-black text-right">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-border/10">
-                                {filteredTransactions.map((txn) => (
-                                    <tr key={txn.id} className="group hover:bg-primary/5 transition-colors">
-                                        <td className="py-5">
-                                            <p className="text-xs font-black text-text">{txn.id}</p>
-                                                            <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic">{txn.timestamp?.split('T')[0] || txn.date}</p>
-                                        </td>
-                                        <td className="py-5">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${txn.type === 'FUND_ADDED' ? 'bg-emerald-500/10 text-emerald-500' : txn.type === 'DAY_OPEN' ? 'bg-primary/10 text-primary' : 'bg-rose-500/10 text-rose-500'}`}>
-                                                    {txn.type === 'FUND_ADDED' ? <TrendingUp className="w-4 h-4" /> : txn.type === 'DAY_OPEN' ? <Calendar className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-text">{txn.description}</p>
-                                                    <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">{txn.category}</p>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="py-5 text-right">
-                                            {txn.type !== 'DAY_OPEN' && (
-                                                <p className={`text-sm font-black ${txn.type === 'FUND_ADDED' ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                    {txn.type === 'FUND_ADDED' ? '+' : '-'} ₹{txn.amount.toLocaleString()}
-                                                </p>
-                                            )}
-                                        </td>
-                                        <td className="py-5 text-center">
-                                            <div className="flex flex-col items-center gap-1.5">
-                                                <span className="text-[9px] font-black px-2 py-1 bg-surface font-mono rounded border border-border/20 text-text-muted uppercase">
-                                                    {txn.staff}
+                                {closingLogs.length > 0 && (
+                                    <div className="mt-4 pt-4 border-t border-border/10">
+                                        <details className="group/notes">
+                                            <summary className="flex items-center justify-between cursor-pointer list-none">
+                                                <span className="text-[9px] font-black text-primary uppercase tracking-widest flex items-center gap-2">
+                                                    <Banknote className="w-3 h-3" /> Last Note Audit
                                                 </span>
-                                                {txn.attachment && (
-                                                    <div className="flex items-center gap-1 text-emerald-500 font-black text-[8px] uppercase tracking-tighter">
-                                                        <FileText className="w-2.5 h-2.5" /> Bill Attached
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="py-5 text-right">
-                                            <span className={`text-[10px] font-black ${txn.type === 'DAY_OPEN' ? 'text-primary bg-primary/10' : 'text-emerald-500 bg-emerald-500/10'} px-2 py-0.5 rounded-md uppercase tracking-tighter`}>
-                                                {txn.type === 'DAY_OPEN' ? 'Initialized' : 'Verified'}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-
-                    {activeTab === 'Closing Logs' && (
-                        <div className="py-10 text-left px-8">
-                            <div className="w-16 h-16 bg-surface border border-border/20 rounded-2xl flex items-center justify-center mb-4">
-                                <History className="w-8 h-8 text-text-muted/30" />
-                            </div>
-                            <h3 className="text-sm font-black text-text uppercase italic">Historical Reconciliation</h3>
-                            <p className="text-xs text-text-muted font-medium mt-1 uppercase tracking-widest">Audit logs with denomination breakdown</p>
-
-                            <div className="mt-8 space-y-4 max-w-2xl">
-                                {closingLogs.length === 0 ? (
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-10">No logs recorded yet</p>
-                                ) : (
-                                    closingLogs.map(log => {
-                                        const isExpanded = expandedLogId === log.id;
-                                        return (
-                                            <div key={log.id} className="bg-background border border-border/10 rounded-[2rem] overflow-hidden transition-all duration-300">
-                                                <button
-                                                    onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
-                                                    className="w-full flex items-center justify-between p-5 hover:bg-surface/50 transition-colors"
-                                                >
-                                                    <div className="flex items-center gap-4">
-                                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${log.discrepancy === 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
-                                                            {log.discrepancy === 0 ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                                                <ArrowRight className="w-3 h-3 text-text-muted group-open/notes:rotate-90 transition-transform" />
+                                            </summary>
+                                            <div className="mt-3 grid grid-cols-4 gap-2">
+                                                {Object.entries(closingLogs[0].denominations)
+                                                    .filter(([_, count]) => count && count > 0)
+                                                    .map(([d, count]) => (
+                                                        <div key={d} className="bg-background/50 border border-border/5 p-1.5 rounded-lg text-center">
+                                                            <p className="text-[8px] font-black text-text-muted">₹{d}</p>
+                                                            <p className="text-[10px] font-black text-primary leading-none">x{count}</p>
                                                         </div>
-                                                        <div className="text-left">
-                                                            <p className="text-xs font-black text-text">{log.date} <span className="text-[9px] text-text-muted ml-2">{log.timestamp?.slice(11, 16) || '—'}</span></p>
-                                                            <p className="text-[10px] text-text-muted font-black uppercase tracking-wider mt-1">
-                                                                Balance: ₹{log.closingBalance.toLocaleString()}
-                                                                {log.discrepancy !== 0 && (
-                                                                    <span className="text-rose-500 ml-2">// Diff: ₹{log.discrepancy.toLocaleString()}</span>
+                                                    ))
+                                                }
+                                            </div>
+                                        </details>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="bg-surface p-4 rounded-2xl border border-border/40 relative overflow-hidden">
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2">Daily Inflow</p>
+                                <h3 className="text-2xl font-black text-emerald-500">
+                                    ₹{transactions.filter(t => t.date === new Date().toISOString().split('T')[0] && t.type === 'FUND_ADDED').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                                </h3>
+                                <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic tracking-widest text-left">Funds injected today</p>
+                            </div>
+
+                            <div className="bg-surface p-4 rounded-2xl border border-border/40 relative overflow-hidden">
+                                <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2">Daily Outflow</p>
+                                <h3 className="text-2xl font-black text-rose-500">
+                                    ₹{transactions.filter(t => t.date === businessDate && t.type === 'EXPENSE').reduce((sum, t) => sum + t.amount, 0).toLocaleString()}
+                                </h3>
+                                <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic tracking-widest text-left">Expenses logged today</p>
+                            </div>
+                        </div>
+
+                        {/* Main Content Area */}
+                        <div className="flex flex-col min-h-[400px] bg-surface rounded-2xl border border-border/40 overflow-hidden text-left">
+                            <div className="px-5 py-3 border-b border-border/40 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface/50 backdrop-blur-xl">
+                                <div className="flex items-center gap-6">
+                                    {['Transactions', 'Closing Logs', 'Category Audit'].map(tab => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`text-[11px] font-black uppercase tracking-widest py-1 transition-all relative ${activeTab === tab ? 'text-primary' : 'text-text-muted hover:text-text'}`}
+                                        >
+                                            {tab}
+                                            {activeTab === tab && (
+                                                <motion.div layoutId="tab-underline" className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary" />
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                                {activeTab === 'Transactions' && (
+                                    <div className="flex items-center gap-3">
+                                        <div className="relative">
+                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted" />
+                                            <input
+                                                type="text"
+                                                placeholder="Search ledger..."
+                                                value={searchQuery}
+                                                onChange={(e) => setSearchQuery(e.target.value)}
+                                                className="pl-9 pr-4 py-2 bg-background/50 border border-border/40 rounded-xl text-xs font-bold focus:border-[#B4912B]/50 outline-none w-48"
+                                            />
+                                        </div>
+                                        <CustomDropdown
+                                            value={filterCategory}
+                                            onChange={(val) => setFilterCategory(val)}
+                                            options={[
+                                                { label: 'All Categories', value: 'All' },
+                                                ...categories.map(c => ({ label: c, value: c }))
+                                            ]}
+                                            placeholder="All Categories"
+                                            className="min-w-[140px]"
+                                            triggerClassName="!py-2"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="p-4 flex-1 overflow-x-auto">
+                                {activeTab === 'Transactions' && (
+                                    <table className="w-full">
+                                        <thead>
+                                            <tr className="text-[10px] font-black text-text-muted uppercase tracking-widest">
+                                                <th className="pb-4 font-black">Transaction ID</th>
+                                                <th className="pb-4 font-black">Entity / Category</th>
+                                                <th className="pb-4 font-black text-right">Debit / Credit</th>
+                                                <th className="pb-4 font-black text-center">Reference</th>
+                                                <th className="pb-4 font-black text-right">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-border/10">
+                                            {filteredTransactions.map((txn) => (
+                                                <tr key={txn.id} className="group hover:bg-primary/5 transition-colors">
+                                                    <td className="py-5">
+                                                        <p className="text-xs font-black text-text">{txn.id}</p>
+                                                        <p className="text-[9px] text-text-muted font-bold mt-1 uppercase italic">{txn.timestamp?.split('T')[0] || txn.date}</p>
+                                                    </td>
+                                                    <td className="py-5">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${txn.type === 'FUND_ADDED' ? 'bg-emerald-500/10 text-emerald-500' : txn.type === 'DAY_OPEN' ? 'bg-primary/10 text-primary' : 'bg-rose-500/10 text-rose-500'}`}>
+                                                                {txn.type === 'FUND_ADDED' ? <TrendingUp className="w-4 h-4" /> : txn.type === 'DAY_OPEN' ? <Calendar className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-xs font-bold text-text">{txn.description}</p>
+                                                                <p className="text-[9px] text-text-muted font-black uppercase tracking-wider">{txn.category}</p>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-5 text-right">
+                                                        {txn.type !== 'DAY_OPEN' && (
+                                                            <p className={`text-sm font-black ${txn.type === 'FUND_ADDED' ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                                {txn.type === 'FUND_ADDED' ? '+' : '-'} ₹{txn.amount.toLocaleString()}
+                                                            </p>
+                                                        )}
+                                                    </td>
+                                                    <td className="py-5 text-center">
+                                                        <div className="flex flex-col items-center gap-1.5">
+                                                            <span className="text-[9px] font-black px-2 py-1 bg-surface font-mono rounded border border-border/20 text-text-muted uppercase">
+                                                                {txn.staff}
+                                                            </span>
+                                                            {txn.attachment && (
+                                                                <div className="flex items-center gap-1 text-emerald-500 font-black text-[8px] uppercase tracking-tighter">
+                                                                    <FileText className="w-2.5 h-2.5" /> Bill Attached
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                    <td className="py-5 text-right">
+                                                        <span className={`text-[10px] font-black ${txn.type === 'DAY_OPEN' ? 'text-primary bg-primary/10' : 'text-emerald-500 bg-emerald-500/10'} px-2 py-0.5 rounded-md uppercase tracking-tighter`}>
+                                                            {txn.type === 'DAY_OPEN' ? 'Initialized' : 'Verified'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                )}
+
+                                {activeTab === 'Closing Logs' && (
+                                    <div className="py-10 text-left px-8">
+                                        <div className="w-16 h-16 bg-surface border border-border/20 rounded-2xl flex items-center justify-center mb-4">
+                                            <History className="w-8 h-8 text-text-muted/30" />
+                                        </div>
+                                        <h3 className="text-sm font-black text-text uppercase italic">Historical Reconciliation</h3>
+                                        <p className="text-xs text-text-muted font-medium mt-1 uppercase tracking-widest">Audit logs with denomination breakdown</p>
+
+                                        <div className="mt-8 space-y-4 max-w-2xl">
+                                            {closingLogs.length === 0 ? (
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mt-10">No logs recorded yet</p>
+                                            ) : (
+                                                closingLogs.map(log => {
+                                                    const isExpanded = expandedLogId === log.id;
+                                                    return (
+                                                        <div key={log.id} className="bg-background border border-border/10 rounded-[2rem] overflow-hidden transition-all duration-300">
+                                                            <button
+                                                                onClick={() => setExpandedLogId(isExpanded ? null : log.id)}
+                                                                className="w-full flex items-center justify-between p-5 hover:bg-surface/50 transition-colors"
+                                                            >
+                                                                <div className="flex items-center gap-4">
+                                                                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${log.discrepancy === 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}`}>
+                                                                        {log.discrepancy === 0 ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+                                                                    </div>
+                                                                    <div className="text-left">
+                                                                        <p className="text-xs font-black text-text">{log.date} <span className="text-[9px] text-text-muted ml-2">{log.timestamp?.slice(11, 16) || '—'}</span></p>
+                                                                        <p className="text-[10px] text-text-muted font-black uppercase tracking-wider mt-1">
+                                                                            Balance: ₹{log.closingBalance.toLocaleString()}
+                                                                            {log.discrepancy !== 0 && (
+                                                                                <span className="text-rose-500 ml-2">// Diff: ₹{log.discrepancy.toLocaleString()}</span>
+                                                                            )}
+                                                                        </p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className={`p-2 rounded-lg bg-surface border border-border/20 transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
+                                                                    <ArrowRight className="w-4 h-4 text-text-muted" />
+                                                                </div>
+                                                            </button>
+
+                                                            <AnimatePresence>
+                                                                {isExpanded && (
+                                                                    <motion.div
+                                                                        initial={{ height: 0, opacity: 0 }}
+                                                                        animate={{ height: 'auto', opacity: 1 }}
+                                                                        exit={{ height: 0, opacity: 0 }}
+                                                                        className="px-6 pb-6 border-t border-border/5 pt-4 bg-surface/20"
+                                                                    >
+                                                                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 text-left">Denomination Audit</p>
+                                                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                                                            {Object.entries(log.denominations).filter(([_, count]) => count && count > 0).map(([d, count]) => (
+                                                                                <div key={d} className="flex items-center justify-between p-2.5 bg-background/40 border border-border/5 rounded-xl">
+                                                                                    <span className="text-[10px] font-black text-text">₹{d}</span>
+                                                                                    <div className="flex items-center gap-1.5">
+                                                                                        <span className="text-[9px] text-text-muted font-bold">x</span>
+                                                                                        <span className="text-[10px] font-black text-primary">{count}</span>
+                                                                                    </div>
+                                                                                    <span className="text-[10px] font-black text-text-muted ml-1">₹{(Number(d) * Number(count)).toLocaleString()}</span>
+                                                                                </div>
+                                                                            ))}
+                                                                            {Object.values(log.denominations).every(c => !c || c === 0) && (
+                                                                                <p className="col-span-full text-[9px] font-bold text-text-muted italic py-2">No individual note mapping recorded.</p>
+                                                                            )}
+                                                                        </div>
+                                                                        <div className="mt-4 pt-4 border-t border-border/5 flex justify-between items-center">
+                                                                            <p className="text-[9px] font-black text-text-muted uppercase italic">Verified By: {log.verifiedBy}</p>
+                                                                            <div className="px-3 py-1 bg-surface border border-border/40 rounded-lg text-[9px] font-black uppercase">Official Record</div>
+                                                                        </div>
+                                                                    </motion.div>
                                                                 )}
+                                                            </AnimatePresence>
+                                                        </div>
+                                                    );
+                                                })
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                                {activeTab === 'Category Audit' && (
+                                    <div className="py-10">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                            {categories.map(cat => {
+                                                const catTransactions = transactions.filter(t => t.category === cat && t.type === 'EXPENSE');
+                                                const catTotal = catTransactions.reduce((sum, t) => sum + t.amount, 0);
+                                                const percentage = totalSpent > 0 ? (catTotal / totalSpent) * 100 : 0;
+
+                                                return (
+                                                    <motion.div
+                                                        initial={{ opacity: 0, y: 10 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        key={cat}
+                                                        className="p-6 bg-background/40 border border-border/10 rounded-[2rem] hover:border-primary/30 transition-all group"
+                                                    >
+                                                        <div className="flex items-center justify-between mb-4">
+                                                            <div className="p-3 bg-surface border border-border/20 rounded-xl">
+                                                                <FileText className="w-5 h-5 text-primary" />
+                                                            </div>
+                                                            <div className="text-right">
+                                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">{cat}</p>
+                                                                <p className="text-lg font-black text-text mt-0.5">₹{catTotal.toLocaleString()}</p>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="space-y-3">
+                                                            <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-tighter">
+                                                                <span className="text-text-muted">Budget Utilization</span>
+                                                                <span className="text-primary">{percentage.toFixed(1)}%</span>
+                                                            </div>
+                                                            <div className="h-1.5 w-full bg-surface rounded-full overflow-hidden border border-border/5">
+                                                                <motion.div
+                                                                    initial={{ width: 0 }}
+                                                                    animate={{ width: `${percentage}%` }}
+                                                                    className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
+                                                                />
+                                                            </div>
+                                                            <p className="text-[9px] text-text-muted font-bold italic text-right mt-1">
+                                                                {catTransactions.length} Recorded Transactions
                                                             </p>
                                                         </div>
-                                                    </div>
-                                                    <div className={`p-2 rounded-lg bg-surface border border-border/20 transition-transform ${isExpanded ? 'rotate-90' : ''}`}>
-                                                        <ArrowRight className="w-4 h-4 text-text-muted" />
-                                                    </div>
-                                                </button>
+                                                    </motion.div>
+                                                );
+                                            })}
+                                        </div>
 
-                                                <AnimatePresence>
-                                                    {isExpanded && (
-                                                        <motion.div
-                                                            initial={{ height: 0, opacity: 0 }}
-                                                            animate={{ height: 'auto', opacity: 1 }}
-                                                            exit={{ height: 0, opacity: 0 }}
-                                                            className="px-6 pb-6 border-t border-border/5 pt-4 bg-surface/20"
-                                                        >
-                                                            <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-4 text-left">Denomination Audit</p>
-                                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                                                {Object.entries(log.denominations).filter(([_, count]) => count && count > 0).map(([d, count]) => (
-                                                                    <div key={d} className="flex items-center justify-between p-2.5 bg-background/40 border border-border/5 rounded-xl">
-                                                                        <span className="text-[10px] font-black text-text">₹{d}</span>
-                                                                        <div className="flex items-center gap-1.5">
-                                                                            <span className="text-[9px] text-text-muted font-bold">x</span>
-                                                                            <span className="text-[10px] font-black text-primary">{count}</span>
-                                                                        </div>
-                                                                        <span className="text-[10px] font-black text-text-muted ml-1">₹{(Number(d) * Number(count)).toLocaleString()}</span>
-                                                                    </div>
-                                                                ))}
-                                                                {Object.values(log.denominations).every(c => !c || c === 0) && (
-                                                                    <p className="col-span-full text-[9px] font-bold text-text-muted italic py-2">No individual note mapping recorded.</p>
-                                                                )}
-                                                            </div>
-                                                            <div className="mt-4 pt-4 border-t border-border/5 flex justify-between items-center">
-                                                                <p className="text-[9px] font-black text-text-muted uppercase italic">Verified By: {log.verifiedBy}</p>
-                                                                <div className="px-3 py-1 bg-surface border border-border/40 rounded-lg text-[9px] font-black uppercase">Official Record</div>
-                                                            </div>
-                                                        </motion.div>
-                                                    )}
-                                                </AnimatePresence>
+                                        {totalSpent === 0 && (
+                                            <div className="text-center py-20">
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Neural spending data not found</p>
+                                                <p className="text-xs text-text-muted font-medium mt-1 italic">Record your first bill to begin categorical analysis.</p>
                                             </div>
-                                        );
-                                    })
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
-                    )}
-                    {activeTab === 'Category Audit' && (
-                        <div className="py-10">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                                {categories.map(cat => {
-                                    const catTransactions = transactions.filter(t => t.category === cat && t.type === 'EXPENSE');
-                                    const catTotal = catTransactions.reduce((sum, t) => sum + t.amount, 0);
-                                    const percentage = totalSpent > 0 ? (catTotal / totalSpent) * 100 : 0;
-
-                                    return (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            key={cat}
-                                            className="p-6 bg-background/40 border border-border/10 rounded-[2rem] hover:border-primary/30 transition-all group"
-                                        >
-                                            <div className="flex items-center justify-between mb-4">
-                                                <div className="p-3 bg-surface border border-border/20 rounded-xl">
-                                                    <FileText className="w-5 h-5 text-primary" />
-                                                </div>
-                                                <div className="text-right">
-                                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-widest">{cat}</p>
-                                                    <p className="text-lg font-black text-text mt-0.5">₹{catTotal.toLocaleString()}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-3">
-                                                <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-tighter">
-                                                    <span className="text-text-muted">Budget Utilization</span>
-                                                    <span className="text-primary">{percentage.toFixed(1)}%</span>
-                                                </div>
-                                                <div className="h-1.5 w-full bg-surface rounded-full overflow-hidden border border-border/5">
-                                                    <motion.div
-                                                        initial={{ width: 0 }}
-                                                        animate={{ width: `${percentage}%` }}
-                                                        className="h-full bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)]"
-                                                    />
-                                                </div>
-                                                <p className="text-[9px] text-text-muted font-bold italic text-right mt-1">
-                                                    {catTransactions.length} Recorded Transactions
-                                                </p>
-                                            </div>
-                                        </motion.div>
-                                    );
-                                })}
-                            </div>
-
-                            {totalSpent === 0 && (
-                                <div className="text-center py-20">
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.3em]">Neural spending data not found</p>
-                                    <p className="text-xs text-text-muted font-medium mt-1 italic">Record your first bill to begin categorical analysis.</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            </div>
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -595,9 +607,10 @@ function TopUpModal({ onClose, onSave }) {
                     </div>
                     <button
                         onClick={() => onSave({ amount: Number(amount), description: `Fund injection from ${source}`, category: 'Top-Up', staff: source })}
-                        className="w-full py-4 bg-primary text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all mt-4"
+                        className="w-full py-3.5 text-white rounded-xl font-black text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all mt-4 flex items-center justify-center gap-2"
+                        style={{ backgroundColor: '#B4912B' }}
                     >
-                        Inject Funds
+                        <Plus className="w-4 h-4" style={{ color: '#ffffff' }} /> Inject Funds
                     </button>
                 </div>
             </motion.div>
@@ -706,9 +719,9 @@ function ExpenseModal({ categories, onClose, onSave }) {
                     <button
                         disabled={!form.amount || !form.description || uploading}
                         onClick={() => onSave({ ...form, amount: Number(form.amount), attachment: file?.name || null })}
-                        className="w-full py-4 bg-rose-500 text-white rounded-2xl font-black text-[11px] uppercase tracking-widest shadow-xl shadow-rose-500/20 hover:scale-[1.01] active:scale-95 transition-all mt-4 disabled:opacity-50"
+                        className="w-full py-3.5 bg-rose-500 text-white rounded-xl font-black text-[11px] uppercase tracking-widest hover:opacity-90 active:scale-95 transition-all mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                     >
-                        Save Transaction
+                        <Receipt className="w-4 h-4" style={{ color: '#ffffff' }} /> Save Transaction
                     </button>
                 </div>
             </motion.div>
@@ -801,7 +814,7 @@ function ClosingModal({ denominations, currentBalance, onClose, onSave, user }) 
                             disabled={physicalTotal === 0}
                             className={`w-full py-3.5 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg transition-all active:scale-95 disabled:opacity-30 flex items-center justify-center gap-2 ${isMatched ? 'bg-emerald-500 text-white shadow-emerald-500/20' : 'bg-text text-background'}`}
                         >
-                            {isMatched ? <CheckCircle2 className="w-3.5 h-3.5" /> : null}
+                            {isMatched ? <CheckCircle2 className="w-3.5 h-3.5" style={{ color: '#ffffff' }} /> : null}
                             Verify & Close
                         </button>
                         <button onClick={onClose} className="w-full py-2 text-text-muted text-[9px] font-black uppercase tracking-widest hover:text-text">Cancel</button>

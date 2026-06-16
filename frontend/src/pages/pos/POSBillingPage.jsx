@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { toast } from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
@@ -1881,8 +1882,8 @@ export default function POSBillingPage() {
                                                     <p className="text-base font-black text-slate-900">₹{item.price}</p>
                                                     {Number(b.advancePaid || 0) > 0 && (
                                                         <div className="text-[10px] font-bold text-slate-500 mt-1 space-y-0.5">
-                                                            <div className="text-amber-600 dark:text-amber-400">Advance: ₹{b.advancePaid}</div>
-                                                            <div className="text-[#cca839] font-extrabold">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
+                                                            <div className="text-emerald-600 dark:text-emerald-400 font-extrabold">Advance: ₹{b.advancePaid}</div>
+                                                            <div className="text-rose-600 dark:text-rose-400 font-black">Remaining: ₹{Math.max(0, item.price - b.advancePaid)}</div>
                                                         </div>
                                                     )}
                                                 </div>
@@ -2294,7 +2295,7 @@ export default function POSBillingPage() {
                                                 </div>
                                             )}
                                             {bookingAdvancePaid > 0 && (
-                                                <div className="flex items-center justify-between text-amber-600 dark:text-amber-400">
+                                                <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
                                                     <span className="text-[11px] font-semibold flex items-center gap-1">
                                                         <Wallet className="w-3 h-3" /> Advance Paid
                                                     </span>
@@ -3081,7 +3082,7 @@ export default function POSBillingPage() {
             )}
 
             {/* Quick Invoice Modal */}
-            {showQuickInvoice && (
+            {showQuickInvoice && createPortal(
                 <QuickInvoiceModal
                     invoiceToEdit={editInvoiceData}
                     onClose={() => {
@@ -3105,7 +3106,8 @@ export default function POSBillingPage() {
                     fiscal={fiscal}
                     platformSettings={platformSettings}
                     allWallets={allWallets}
-                />
+                />,
+                document.body
             )}
         </div>
     );
@@ -3759,12 +3761,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
     }, [showClientDropdown, qFilteredClients, qFocusedClientIndex, qSelectedCategory, qActiveTab, qFilteredServices, qFilteredProducts, qFocusedItemIndex, showNewClient, openStaffIdx, qFilteredStaff, qFocusedStaffIndex]);
 
     return (
-        <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[100] flex items-center justify-center p-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:p-4 overflow-hidden">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[99999] flex items-center justify-center p-2 sm:p-4 md:p-6 overflow-y-auto">
             <motion.div
-                initial={{ opacity: 0, scale: 0.97, y: 16 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
+                initial={{ opacity: 0, scale: 0.97 }}
+                animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full max-w-[99vw] h-[calc(100dvh-max(2.5rem,env(safe-area-inset-bottom)))] sm:h-[95dvh] shadow-2xl flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E]"
+                className="w-full max-w-7xl h-[92vh] flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E] border border-slate-200 dark:border-white/10 shadow-2xl"
                 style={{ fontFamily: 'inherit' }}
             >
                 <style>{`
