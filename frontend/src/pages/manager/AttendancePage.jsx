@@ -12,7 +12,7 @@ import {
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import { useBusiness } from '../../contexts/BusinessContext';
 ;
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const STATUS_META = {
     present: { label: 'Present', cls: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20', color: '#10b981' },
@@ -66,9 +66,9 @@ export default function AttendancePage() {
     const fetchAttendance = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await mockApi.get('/attendance', { params: { date: selectedDate } });
-            const payload = res.data?.data ?? res.data;
-            const records = payload?.records ?? [];
+            const res = await api.get('/hr/attendance', { params: { date: selectedDate } });
+            const records = res.data?.data || [];
+            // Backend returns populated staffId objects: { _id, name, role }
             setRawAttendance(records);
         } catch (e) {
             showToast('Failed to load attendance logs');
@@ -80,8 +80,27 @@ export default function AttendancePage() {
     const loadLeaves = useCallback(async () => {
         setLeavesLoading(true);
         try {
-            const res = await mockApi.get('/attendance/leaves', { params: { status: 'PENDING' } });
-            setLeaveRequests(res.data?.data || []);
+            const res = await api.get('/hr/leaves', { params: { status: 'PENDING' } });
+            const raw = res.data?.data || [];
+            
+            // Format to what UI expects
+            const formatted = raw
+                .filter(lv => lv.status?.toLowerCase() === 'pending')
+                .map(lv => {
+                    const startStr = lv.startDate ? new Date(lv.startDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+                    const endStr = lv.endDate ? new Date(lv.endDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) : '';
+                    const dates = startStr === endStr ? startStr : `${startStr} - ${endStr}`;
+                    
+                    return {
+                        id: lv._id,
+                        userName: lv.staffId?.name || 'Unknown Staff',
+                        userRole: lv.staffId?.role || 'Staff',
+                        type: lv.leaveType || 'other',
+                        dates: dates,
+                        reason: lv.reason || ''
+                    };
+                });
+            setLeaveRequests(formatted);
         } catch (e) {
             console.error('Failed to load leaves', e);
         } finally {
@@ -96,7 +115,8 @@ export default function AttendancePage() {
         
         const byUser = {};
         rawAttendance.forEach((row) => {
-            const uid = row.userId?._id || row.userId;
+            // Real API: staffId is populated as { _id, name, role } or just an ID
+            const uid = row.staffId?._id || row.staffId?.toString?.() || row.staffId;
             if (uid) byUser[String(uid)] = row;
         });
 
@@ -107,14 +127,14 @@ export default function AttendancePage() {
                 name: u.name || 'Unknown',
                 role: u.role || 'Staff',
                 outlet: u.outletId?.name || 'Main',
-                checkIn: formatDisplayTime(entry?.checkInAt),
-                checkOut: formatDisplayTime(entry?.checkOutAt),
-                checkInAt: entry?.checkInAt,
-                checkOutAt: entry?.checkOutAt,
+                checkIn: formatDisplayTime(entry?.checkIn),
+                checkOut: formatDisplayTime(entry?.checkOut),
+                checkInAt: entry?.checkIn,
+                checkOutAt: entry?.checkOut,
                 status: entry?.status || 'absent',
                 hours: entry?.hoursWorked ?? 0,
                 location: entry?.location || 'Salon',
-                remark: entry?.remark || '',
+                remark: entry?.notes || entry?.remark || '',
             };
         });
     }, [staff, rawAttendance, loading]);
@@ -162,12 +182,12 @@ export default function AttendancePage() {
         e.preventDefault();
         if (!editModal) return;
         try {
-            await mockApi.post('/attendance', {
-                userId: editModal.id,
+            await api.post('/hr/attendance', {
+                staffId: editModal.id,
                 date: selectedDate,
                 status: newStatus,
-                checkIn: editCheckIn || undefined,
-                checkOut: editCheckOut || undefined,
+                checkIn: editCheckIn ? new Date(`${selectedDate}T${editCheckIn}:00`).toISOString() : undefined,
+                checkOut: editCheckOut ? new Date(`${selectedDate}T${editCheckOut}:00`).toISOString() : undefined,
             });
             showToast(`Updated: ${editModal.name}`);
             setEditModal(null);
@@ -179,10 +199,10 @@ export default function AttendancePage() {
 
     const handleBulkAction = async (status) => {
         try {
-            await mockApi.post('/attendance/bulk', {
+            const bulkData = records.map(r => ({ staffId: r.id, status }));
+            await api.post('/hr/attendance', {
                 date: selectedDate,
-                status,
-                defaultCheckIn: status === 'present' ? '09:00' : undefined
+                bulk: bulkData,
             });
             showToast(`All staff marked as ${status}`);
             fetchAttendance();
@@ -193,10 +213,10 @@ export default function AttendancePage() {
 
     const handleLeaveAction = async (id, status) => {
         try {
-            await mockApi.patch(`/attendance/leaves/${id}`, { status });
-            showToast(`Leave ${status.toLowerCase()}ed`);
+            await api.put(`/hr/leaves/${id}`, { status });
+            showToast(`Leave ${status === 'APPROVED' ? 'approved' : 'rejected'}`);
             loadLeaves();
-            fetchAttendance(); // Refresh registry as status might change
+            fetchAttendance();
         } catch (err) {
             showToast('Action failed');
         }

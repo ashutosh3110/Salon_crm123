@@ -15,7 +15,7 @@ import {
     Cell,
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 export default function ManagerDashboard() {
     const [data, setData] = useState(null);
@@ -26,7 +26,7 @@ export default function ManagerDashboard() {
         setError(null);
         setLoading(true);
         try {
-            const res = await mockApi.get('/dashboard/manager');
+            const res = await api.get('/dashboard/manager');
             const body = res.data?.data ?? res.data;
             setData(body || null);
         } catch (e) {

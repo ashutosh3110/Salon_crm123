@@ -6,6 +6,7 @@ const LeaveRequest = require('../Models/LeaveRequest');
 const Booking = require('../Models/Booking');
 const Service = require('../Models/Service');
 const SalaryAdvance = require('../Models/SalaryAdvance');
+const Invoice = require('../Models/Invoice');
 const mongoose = require('mongoose');
 
 // @desc    Get all staff with HR profiles
@@ -31,6 +32,29 @@ exports.updateStaffHR = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff not found' });
         }
         res.status(200).json({ success: true, data: staff });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Update staff monthly revenue target
+// @route   PATCH /api/hr/staff/:id/target
+// @access  Private/Admin,Manager
+exports.updateStaffRevenueTarget = async (req, res) => {
+    try {
+        const { goal } = req.body;
+        if (goal === undefined || isNaN(Number(goal))) {
+            return res.status(400).json({ success: false, message: 'A valid goal amount is required' });
+        }
+        const staff = await Staff.findByIdAndUpdate(
+            req.params.id,
+            { $set: { 'hrProfile.revenueTarget': Number(goal) } },
+            { new: true, runValidators: true }
+        );
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff not found' });
+        }
+        res.status(200).json({ success: true, data: staff, message: 'Revenue target updated successfully' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -1042,4 +1066,620 @@ exports.getMyWorksite = async (req, res) => {
     }
 };
 
+// @desc    Get my commissions dashboard data
+// @route   GET /api/hr/commissions/me
+// @access  Private/Staff
+exports.getMyCommissions = async (req, res) => {
+    try {
+        const { period } = req.query;
+        const staffId = req.user._id;
 
+        // Date range
+        let startDate = new Date();
+        let endDate = new Date();
+
+        if (period === 'PREVIOUS_CYCLE') {
+            const d = new Date();
+            startDate = new Date(d.getFullYear(), d.getMonth() - 1, 1);
+            endDate = new Date(d.getFullYear(), d.getMonth(), 0, 23, 59, 59);
+        } else if (period === 'FISCAL_YTD') {
+            const d = new Date();
+            const currentYear = d.getFullYear();
+            const fiscalStartYear = d.getMonth() >= 3 ? currentYear : currentYear - 1;
+            startDate = new Date(fiscalStartYear, 3, 1, 0, 0, 0);
+            endDate = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+        } else {
+            // CURRENT_CYCLE
+            const d = new Date();
+            startDate = new Date(d.getFullYear(), d.getMonth(), 1);
+            endDate = new Date(d.getFullYear(), d.getMonth() + 1, 0, 23, 59, 59);
+        }
+
+        const staff = await Staff.findById(staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff not found' });
+        }
+
+        // Fetch bookings for this month to compute target revenue progress
+        const bookings = await Booking.find({
+            salonId: staff.salonId,
+            staffId: staff._id,
+            status: 'completed',
+            appointmentDate: { $gte: startDate, $lte: endDate }
+        });
+
+        const bookingRevenue = bookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+        const goal = staff.hrProfile?.revenueTarget || 35000;
+        const progressPercent = goal > 0 ? Math.round((bookingRevenue / goal) * 100) : 0;
+
+        let quotaLabel = 'Bronze Active';
+        if (bookingRevenue >= 50000) quotaLabel = 'Platinum Active';
+        else if (bookingRevenue >= 30000) quotaLabel = 'Gold Active';
+        else if (bookingRevenue >= 15000) quotaLabel = 'Silver Active';
+
+        const performance = {
+            progressPercent,
+            bookingRevenue,
+            goal,
+            quotaLabel
+        };
+
+        const incentiveSlabs = [
+            { tier: 'PLATINUM', range: '₹50,000+', yield: '15%', status: bookingRevenue >= 50000 ? 'REACHED_UNIT' : 'TARGET_UNIT' },
+            { tier: 'GOLD', range: '₹30,000+', yield: '12%', status: bookingRevenue >= 50000 ? 'REACHED_UNIT' : (bookingRevenue >= 30000 ? 'CURRENT_UNIT' : 'TARGET_UNIT') },
+            { tier: 'SILVER', range: '₹15,000+', yield: '10%', status: bookingRevenue >= 30000 ? 'REACHED_UNIT' : (bookingRevenue >= 15000 ? 'CURRENT_UNIT' : 'TARGET_UNIT') }
+        ];
+
+        // Fetch matching active invoices in the cycle
+        const invoices = await Invoice.find({
+            salonId: staff.salonId,
+            status: 'active',
+            'items.stylistIds': staff._id,
+            createdAt: { $gte: startDate, $lte: endDate }
+        }).sort({ createdAt: -1 });
+
+        // Fetch services to build mapping
+        const services = await Service.find({ salonId: staff.salonId });
+        const serviceMap = {};
+        services.forEach(s => {
+            serviceMap[s._id.toString()] = s;
+        });
+
+        // Fetch payroll records for settlement status
+        const payrolls = await Payroll.find({ staffId: staff._id });
+        const payrollStatusMap = {};
+        payrolls.forEach(p => {
+            payrollStatusMap[`${p.year}_${p.month}`] = p.status;
+        });
+
+        const formatDate = (dateObj) => {
+            const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            const d = new Date(dateObj);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = months[d.getMonth()];
+            const year = d.getFullYear();
+            return `${day} ${month} ${year}`;
+        };
+
+        const earningsHistory = invoices.map(invoice => {
+            const matchedItems = invoice.items.filter(item =>
+                item.stylistIds && item.stylistIds.some(sid => sid.toString() === staff._id.toString())
+            );
+
+            const servicesNames = matchedItems.map(item => item.name).join(' + ');
+
+            let invoiceRevenue = 0;
+            let invoiceCommission = 0;
+
+            matchedItems.forEach(item => {
+                const stylistsCount = item.stylistIds.length || 1;
+                invoiceRevenue += (item.price * item.quantity);
+
+                let baseCommission = 0;
+                if (item.type === 'service') {
+                    const service = serviceMap[item.itemId.toString()];
+                    if (service) {
+                        if (service.commissionApplicable) {
+                            if (service.commissionType === 'fixed') {
+                                baseCommission = (service.commissionValue || 0) * item.quantity;
+                            } else {
+                                baseCommission = (item.price * item.quantity * (service.commissionValue || 0)) / 100;
+                            }
+                        } else {
+                            const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                            baseCommission = (item.price * item.quantity * staffPct) / 100;
+                        }
+                    } else {
+                        const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                        baseCommission = (item.price * item.quantity * staffPct) / 100;
+                    }
+                } else {
+                    const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                    baseCommission = (item.price * item.quantity * staffPct) / 100;
+                }
+
+                invoiceCommission += (baseCommission / stylistsCount);
+            });
+
+            const invoiceDate = new Date(invoice.createdAt);
+            const year = invoiceDate.getFullYear();
+            const month = invoiceDate.getMonth() + 1;
+            const payrollStatus = payrollStatusMap[`${year}_${month}`];
+
+            return {
+                id: invoice._id.toString(),
+                date: formatDate(invoice.createdAt),
+                services: servicesNames || 'POS Billing',
+                revenue: Math.round(invoiceRevenue),
+                commission: Math.round(invoiceCommission),
+                status: payrollStatus === 'paid' ? 'SETTLED' : 'PENDING'
+            };
+        });
+
+        let totalEarned = 0;
+        let yieldUnits = 0;
+        earningsHistory.forEach(item => {
+            totalEarned += item.commission;
+        });
+
+        invoices.forEach(invoice => {
+            invoice.items.forEach(item => {
+                if (item.stylistIds && item.stylistIds.some(sid => sid.toString() === staff._id.toString())) {
+                    yieldUnits += (item.quantity || 1);
+                }
+            });
+        });
+
+        const baseSalary = staff.hrProfile?.baseSalary || 0;
+
+        const stats = [
+            { key: 'totalEarned', value: `₹${totalEarned.toLocaleString('en-IN')}`, sub: 'Calculated this cycle' },
+            { key: 'yieldUnits', value: String(yieldUnits), sub: 'Total items processed' },
+            { key: 'repIndex', value: '4.8', sub: 'Quality unit rating' },
+            { key: 'baseAllocation', value: `₹${baseSalary.toLocaleString('en-IN')}`, sub: 'Fixed monthly base' }
+        ];
+
+        res.status(200).json({
+            success: true,
+            data: {
+                stats,
+                earningsHistory,
+                performance,
+                incentiveSlabs,
+                period: { label: period || 'CURRENT_CYCLE' },
+                protocolNote: 'POS commissions are live from actual database calculations.'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get logged in user's leave requests
+// @route   GET /api/hr/leaves/me
+// @access  Private/Staff
+exports.getMyLeaves = async (req, res) => {
+    try {
+        const staffId = req.user._id;
+
+        const staff = await Staff.findById(staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff not found' });
+        }
+
+        // Fetch all leave requests for this staff
+        const requests = await LeaveRequest.find({ staffId }).sort({ createdAt: -1 });
+
+        // Map database records to frontend expected formats
+        const formatDateRange = (start, end) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const s = new Date(start);
+            const e = new Date(end);
+            const sDay = s.getDate();
+            const sMonth = months[s.getMonth()];
+            const eDay = e.getDate();
+            const eMonth = months[e.getMonth()];
+            if (s.getMonth() === e.getMonth() && s.getFullYear() === e.getFullYear()) {
+                return `${sDay} - ${eDay} ${sMonth}`;
+            }
+            return `${sDay} ${sMonth} - ${eDay} ${eMonth}`;
+        };
+
+        const formatAppliedDate = (dateObj) => {
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            const d = new Date(dateObj);
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        };
+
+        const formattedRequests = requests.map(r => {
+            let typeLabel = 'CASUAL_LEAVE';
+            if (r.leaveType === 'sick') typeLabel = 'MEDICAL_LEAVE';
+            else if (r.leaveType === 'vacation') typeLabel = 'PAID_LEAVE';
+            else if (r.leaveType === 'other') typeLabel = 'SICK_BUFFER';
+
+            return {
+                id: r._id.toString(),
+                type: typeLabel,
+                dates: formatDateRange(r.startDate, r.endDate),
+                appliedOn: formatAppliedDate(r.createdAt),
+                status: (r.status || 'pending').toUpperCase(),
+                reason: r.reason
+            };
+        });
+
+        // Calculate leave quotas for current year (Jan 1 to Dec 31)
+        const currentYear = new Date().getFullYear();
+        const yearStart = new Date(currentYear, 0, 1);
+        const yearEnd = new Date(currentYear, 11, 31, 23, 59, 59);
+
+        const approvedLeaves = await LeaveRequest.find({
+            staffId,
+            status: 'approved',
+            startDate: { $gte: yearStart, $lte: yearEnd }
+        });
+
+        let casualUsed = 0;
+        let sickUsed = 0;
+        let vacationUsed = 0;
+        let otherUsed = 0;
+
+        approvedLeaves.forEach(leave => {
+            const diffTime = Math.abs(leave.endDate - leave.startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            if (leave.leaveType === 'casual') casualUsed += diffDays;
+            else if (leave.leaveType === 'sick') sickUsed += diffDays;
+            else if (leave.leaveType === 'vacation') vacationUsed += diffDays;
+            else otherUsed += diffDays;
+        });
+
+        const quotas = [
+            { label: 'Casual Leaves', used: casualUsed, total: 12, colorClass: 'text-primary' },
+            { label: 'Medical Leaves', used: sickUsed, total: 10, colorClass: 'text-rose-500' },
+            { label: 'Earned Leaves', used: vacationUsed, total: 15, colorClass: 'text-emerald-500' },
+            { label: 'Short Leaves', used: otherUsed, total: 5, colorClass: 'text-amber-500' }
+        ];
+
+        const leaveTypes = ['CASUAL_LEAVE', 'MEDICAL_LEAVE', 'PAID_LEAVE', 'SICK_BUFFER'];
+
+        res.status(200).json({
+            success: true,
+            data: {
+                requests: formattedRequests,
+                quotas,
+                leaveTypes
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Apply for leave
+// @route   POST /api/hr/leaves/me
+// @access  Private/Staff
+exports.applyLeave = async (req, res) => {
+    try {
+        const { type, startDate, endDate, reason } = req.body;
+        const staffId = req.user._id;
+
+        if (!type || !startDate || !endDate || !reason) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
+        }
+
+        const staff = await Staff.findById(staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff not found' });
+        }
+
+        let dbType = 'casual';
+        if (type === 'MEDICAL_LEAVE' || type === 'SICK_BUFFER') dbType = 'sick';
+        else if (type === 'PAID_LEAVE') dbType = 'vacation';
+        else if (type === 'other') dbType = 'other';
+
+        const newLeave = new LeaveRequest({
+            staffId: staff._id,
+            salonId: staff.salonId,
+            leaveType: dbType,
+            startDate: new Date(startDate),
+            endDate: new Date(endDate),
+            reason: reason.trim(),
+            status: 'pending'
+        });
+
+        await newLeave.save();
+
+        res.status(201).json({
+            success: true,
+            data: newLeave
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get stylist dashboard overview
+// @route   GET /api/hr/overview/me
+// @access  Private/Staff
+exports.getStylistOverview = async (req, res) => {
+    try {
+        const staffId = req.user._id;
+        const salonId = req.user.salonId;
+        
+        const staff = await Staff.findById(staffId);
+        if (!staff) {
+            return res.status(404).json({ success: false, message: 'Staff not found' });
+        }
+
+        // 1. Resolve selected date or default to today
+        const queryDate = req.query.date ? new Date(req.query.date) : new Date();
+        const startOfDay = new Date(queryDate);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(queryDate);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        // 2. Fetch today's schedule for this stylist
+        const bookings = await Booking.find({
+            salonId,
+            staffId: staffId,
+            appointmentDate: { $gte: startOfDay, $lte: endOfDay }
+        }).populate('clientId', 'name').populate('serviceId', 'name duration');
+
+        const schedule = bookings.map(b => ({
+            id: b._id.toString(),
+            time: b.time || new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            customer: b.clientId ? b.clientId.name : 'Walk-in Customer',
+            service: b.serviceId ? b.serviceId.name : 'Unknown Service',
+            duration: `${b.duration || 30} MIN`,
+            bookingStatus: b.status
+        }));
+
+        // 3. Current calendar month start/end for MTD KPIs
+        const now = new Date();
+        const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+
+        // MTD Revenue (Invoices)
+        const invoices = await Invoice.find({
+            salonId,
+            status: 'active',
+            createdAt: { $gte: monthStart, $lte: monthEnd },
+            'items.stylistIds': staffId
+        });
+
+        let revenue = 0;
+        invoices.forEach(inv => {
+            inv.items.forEach(item => {
+                if (item.stylistIds && item.stylistIds.some(sid => sid.toString() === staffId.toString())) {
+                    const stylistsCount = item.stylistIds.length || 1;
+                    revenue += (item.price * item.quantity) / stylistsCount;
+                }
+            });
+        });
+
+        // MTD Completed Bookings Revenue & Count for progress / goal checking
+        const monthlyBookings = await Booking.find({
+            salonId,
+            staffId,
+            status: 'completed',
+            appointmentDate: { $gte: monthStart, $lte: monthEnd }
+        });
+
+        const bookingRevenue = monthlyBookings.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+        const target = staff.hrProfile?.revenueTarget || 35000;
+        const progressPercent = target > 0 ? Math.min(100, Math.round((bookingRevenue / target) * 100)) : 0;
+        const servicesDone = monthlyBookings.length;
+
+        // Calculate all-time stats for the stylist cards
+        const totalAssigned = await Booking.countDocuments({ salonId, staffId });
+        const totalCompleted = await Booking.countDocuments({ salonId, staffId, status: 'completed' });
+
+        // Calculate total commission of all time
+        const allInvoices = await Invoice.find({
+            salonId,
+            status: 'active',
+            'items.stylistIds': staffId
+        });
+
+        const services = await Service.find({ salonId });
+        const serviceMap = {};
+        services.forEach(s => {
+            serviceMap[s._id.toString()] = s;
+        });
+
+        let totalCommission = 0;
+        allInvoices.forEach(inv => {
+            inv.items.forEach(item => {
+                if (item.stylistIds && item.stylistIds.some(sid => sid.toString() === staffId.toString())) {
+                    const stylistsCount = item.stylistIds.length || 1;
+                    let baseCommission = 0;
+                    if (item.type === 'service') {
+                        const service = serviceMap[item.itemId.toString()];
+                        if (service) {
+                            if (service.commissionApplicable) {
+                                if (service.commissionType === 'fixed') {
+                                    baseCommission = (service.commissionValue || 0) * item.quantity;
+                                } else {
+                                    baseCommission = (item.price * item.quantity * (service.commissionValue || 0)) / 100;
+                                }
+                            } else {
+                                const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                                baseCommission = (item.price * item.quantity * staffPct) / 100;
+                            }
+                        } else {
+                            const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                            baseCommission = (item.price * item.quantity * staffPct) / 100;
+                        }
+                    } else {
+                        const staffPct = staff.hrProfile?.commissionPercentage || 10;
+                        baseCommission = (item.price * item.quantity * staffPct) / 100;
+                    }
+                    totalCommission += (baseCommission / stylistsCount);
+                }
+            });
+        });
+
+        const avgCommission = totalCompleted > 0 ? (totalCommission / totalCompleted) : 0;
+
+        // 4. Performance Data (7-day trend ending today)
+        const performanceData = [];
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        
+        for (let i = 6; i >= 0; i--) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const dayStart = new Date(d);
+            dayStart.setHours(0, 0, 0, 0);
+            const dayEnd = new Date(d);
+            dayEnd.setHours(23, 59, 59, 999);
+
+            const dayInvoices = await Invoice.find({
+                salonId,
+                status: 'active',
+                createdAt: { $gte: dayStart, $lte: dayEnd },
+                'items.stylistIds': staffId
+            });
+
+            let dayRevenue = 0;
+            dayInvoices.forEach(inv => {
+                inv.items.forEach(item => {
+                    if (item.stylistIds && item.stylistIds.some(sid => sid.toString() === staffId.toString())) {
+                        const stylistsCount = item.stylistIds.length || 1;
+                        dayRevenue += (item.price * item.quantity) / stylistsCount;
+                    }
+                });
+            });
+
+            performanceData.push({
+                label: dayNames[d.getDay()],
+                value: Math.round(dayRevenue)
+            });
+        }
+
+        // 5. Attendance Log & Shift Status
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const todayDate = new Date(todayStr).setHours(0, 0, 0, 0);
+        const attendance = await Attendance.findOne({ staffId, date: todayDate });
+
+        const attendanceLog = [];
+        if (attendance) {
+            const formatTimeOnly = (isoString) => {
+                if (!isoString) return '';
+                return new Date(isoString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            };
+            const formatDateOnly = (isoString) => {
+                if (!isoString) return '';
+                const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+                const d = new Date(isoString);
+                return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]}`;
+            };
+
+            if (attendance.checkOut) {
+                attendanceLog.push({
+                    type: 'PUNCH_OUT',
+                    statusLabel: 'Punched Out',
+                    time: formatTimeOnly(attendance.checkOut),
+                    date: formatDateOnly(attendance.checkOut)
+                });
+            }
+            if (attendance.checkIn) {
+                attendanceLog.push({
+                    type: 'PUNCH_IN',
+                    statusLabel: 'Punched In',
+                    time: formatTimeOnly(attendance.checkIn),
+                    date: formatDateOnly(attendance.checkIn)
+                });
+            }
+        }
+
+        const shiftActive = attendance ? (!!attendance.checkIn && !attendance.checkOut) : false;
+
+        res.status(200).json({
+            success: true,
+            data: {
+                schedule,
+                stats: {
+                    revenue: Math.round(revenue),
+                    target,
+                    progressPercent,
+                    servicesDone,
+                    highestDaily: Math.max(...performanceData.map(d => d.value), 0),
+                    rating: 4.8,
+                    totalAssigned,
+                    totalCompleted,
+                    totalCommission: Math.round(totalCommission),
+                    avgCommission: Math.round(avgCommission)
+                },
+                performanceData,
+                attendanceLog,
+                shiftActive
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// @desc    Get overall performance for all staff (used by manager targets + performance pages)
+// @route   GET /api/hr/performance
+// @access  Private/Admin,Manager
+exports.getOverallPerformance = async (req, res) => {
+    try {
+        const salonId = req.user.salonId;
+        const { startDate, endDate } = req.query;
+
+        const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const end = endDate ? new Date(new Date(endDate).setHours(23, 59, 59, 999)) : new Date();
+
+        const allStaff = await Staff.find({ salonId }).select('name role hrProfile');
+
+        // Aggregate completed bookings per staff in the period
+        const bookingAgg = await Booking.aggregate([
+            {
+                $match: {
+                    salonId: mongoose.Types.ObjectId.isValid(salonId) ? new mongoose.Types.ObjectId(salonId) : salonId,
+                    status: 'completed',
+                    createdAt: { $gte: start, $lte: end }
+                }
+            },
+            { $unwind: '$staffId' },
+            {
+                $group: {
+                    _id: '$staffId',
+                    revenue: { $sum: '$totalPrice' },
+                    services: { $count: {} }
+                }
+            }
+        ]);
+
+        const bookingMap = {};
+        bookingAgg.forEach(b => {
+            bookingMap[b._id.toString()] = { revenue: b.revenue, services: b.services };
+        });
+
+        const staffPerformance = allStaff.map(s => {
+            const sid = s._id.toString();
+            const bm = bookingMap[sid] || { revenue: 0, services: 0 };
+            const goal = s.hrProfile?.revenueTarget || 50000;
+            return {
+                id: sid,
+                staff: s.name,
+                role: s.role,
+                revenue: bm.revenue,
+                services: bm.services,
+                goal,
+                rating: 4.5,
+                contribution: bm.revenue > goal * 0.8 ? 'High' : bm.revenue > goal * 0.5 ? 'Medium' : 'Low'
+            };
+        });
+
+        res.status(200).json({
+            success: true,
+            data: {
+                staff: staffPerformance,
+                period: { startDate: start, endDate: end }
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

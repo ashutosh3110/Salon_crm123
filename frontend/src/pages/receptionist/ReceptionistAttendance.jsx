@@ -143,144 +143,166 @@ export default function ReceptionistAttendance() {
     const isCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto">
+        <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto text-left font-sans">
             <style>{`
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                html:not(.dark) .attendance-stat-label-present {
+                    color: #047857 !important;
+                }
+                html:not(.dark) .attendance-stat-label-absent {
+                    color: #b91c1c !important;
+                }
             `}</style>
 
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Attendance & Timesheet</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your daily presence and track historical records</p>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
+                <div className="text-left">
+                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Attendance & Timesheet</h1>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">Manage your daily presence and track historical records</p>
                 </div>
-            </div>
+            </div>             {/* Daily Punch Card */}
+             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 md:p-5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] relative overflow-hidden group">
+                 <div className="absolute -top-10 -right-10 opacity-[0.05] dark:opacity-8 transition-opacity pointer-events-none">
+                     <Activity className="w-48 h-48 text-emerald-500" />
+                 </div>
+                 
+                 <div className="relative z-10 flex flex-col md:flex-row gap-5 justify-between items-center">
+                     <div className="space-y-4 flex-1 w-full text-left">
+                         <div className="flex items-center gap-3">
+                             <div className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
+                                 status === 'ACTIVE_RUN' 
+                                     ? 'bg-emerald-50 dark:bg-emerald-950/30' 
+                                     : status === 'COMPLETED'
+                                     ? 'bg-blue-50 dark:bg-blue-950/30'
+                                     : 'bg-rose-50 dark:bg-rose-950/30'
+                             }`}>
+                                 {status === 'ACTIVE_RUN' ? (
+                                     <Clock className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-450 animate-pulse" style={{ color: '#059669' }} />
+                                 ) : status === 'COMPLETED' ? (
+                                     <CheckCircle2 className="w-4.5 h-4.5 text-blue-650 dark:text-blue-400" style={{ color: '#2563eb' }} />
+                                 ) : (
+                                     <Clock className="w-4.5 h-4.5 text-rose-600 dark:text-rose-450" style={{ color: '#dc2626' }} />
+                                 )}
+                             </div>
+                             <div className="text-left">
+                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</p>
+                                 <p className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">
+                                     {status === 'ACTIVE_RUN' ? 'Punched In (Active)' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
+                                 </p>
+                             </div>
+                         </div>
 
-            {/* Daily Punch Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 shadow-sm relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                    <Activity className="w-64 h-64 text-blue-600 dark:text-blue-400" />
-                </div>
-                
-                <div className="relative z-10 flex flex-col md:flex-row gap-8 justify-between">
-                    <div className="space-y-6 flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700`}>
-                                {status === 'ACTIVE_RUN' ? <Clock className="w-5 h-5 text-blue-500 animate-pulse" /> : <Clock className="w-5 h-5 text-slate-500" />}
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Status</p>
-                                <p className="text-xl font-bold text-slate-900 dark:text-white">
-                                    {status === 'ACTIVE_RUN' ? 'Punched In (Active)' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
-                                </p>
-                            </div>
-                        </div>
+                         <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-150 dark:border-slate-800 space-y-1.5 text-left">
+                             <div className="flex items-center justify-between">
+                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location Status</span>
+                                 {loadingLocation ? (
+                                     <span className="text-[10px] font-bold text-blue-500 animate-pulse">Detecting...</span>
+                                 ) : location ? (
+                                     <span className="text-[10px] font-bold text-emerald-600">Verified</span>
+                                 ) : (
+                                     <span className="text-[10px] font-bold text-rose-500">Not Available</span>
+                                 )}
+                             </div>
+                             {location && (
+                                 <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
+                                     <MapPin className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" style={{ color: '#3b82f6' }} />
+                                     <span className="font-semibold">{locationName || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}</span>
+                                 </div>
+                             )}
+                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-2">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Location Status</span>
-                                {loadingLocation ? (
-                                    <span className="text-xs text-blue-500 animate-pulse">Detecting...</span>
-                                ) : location ? (
-                                    <span className="text-xs font-bold text-emerald-600">Verified</span>
-                                ) : (
-                                    <span className="text-xs font-bold text-rose-500">Not Available</span>
-                                )}
-                            </div>
-                            {location && (
-                                <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-                                    <MapPin className="w-4 h-4 text-blue-500" />
-                                    <span>{locationName || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}</span>
-                                </div>
-                            )}
-                        </div>
+                         {error && <p className="text-xs text-rose-600 dark:text-rose-450 bg-rose-50 dark:bg-rose-500/10 p-2.5 rounded-xl font-medium">{error}</p>}
+                         {actionMsg && <p className="text-xs text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-xl font-medium">{actionMsg}</p>}
+                     </div>
 
-                        {error && <p className="text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 p-3 rounded-lg">{error}</p>}
-                        {actionMsg && <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg">{actionMsg}</p>}
-                    </div>
+                     <div className="flex flex-row md:flex-col justify-center gap-3 w-full md:w-auto min-w-[200px]">
+                         <button
+                             onClick={() => handlePunch('IN')}
+                             disabled={status !== 'OFFLINE' || !location || loadingLocation}
+                             className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
+                                 ${status !== 'OFFLINE' || !location
+                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                     : 'bg-[#B4912B] hover:bg-[#9f8025] text-white-force shadow-sm hover:shadow active:scale-95'}`}
+                         >
+                             <Zap className={`w-4 h-4 ${status !== 'OFFLINE' || !location ? 'text-slate-400' : 'icon-white-outline-force'}`} /> Punch In
+                         </button>
+                         <button
+                             onClick={() => handlePunch('OUT')}
+                             disabled={status !== 'ACTIVE_RUN' || !location || loadingLocation}
+                             className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
+                                 ${status !== 'ACTIVE_RUN' || !location
+                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
+                                     : 'bg-[#B4912B] hover:bg-[#9f8025] text-white-force shadow-sm hover:shadow active:scale-95'}`}
+                         >
+                             <CheckCircle2 className={`w-4 h-4 ${status !== 'ACTIVE_RUN' || !location ? 'text-slate-400' : 'icon-white-outline-force'}`} /> Punch Out
+                         </button>
+                     </div>
+                 </div>
+             </div>
 
-                    <div className="flex flex-col justify-center gap-4 min-w-[240px]">
-                        <button
-                            onClick={() => handlePunch('IN')}
-                            disabled={status !== 'OFFLINE' || !location || loadingLocation}
-                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
-                                ${status !== 'OFFLINE' || !location
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-emerald-500/20 active:scale-95'}`}
-                        >
-                            <Zap className="w-5 h-5" /> Punch In
+             {/* History Section */}
+             <div className="space-y-3">
+                 <div className="flex flex-row items-center justify-between gap-4 text-left">
+                     <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
+                         <CalendarIcon className="w-4.5 h-4.5 text-violet-500" style={{ color: '#8b5cf6' }} />
+                         Monthly History
+                     </h2>
+
+                    <div className="flex items-center bg-white dark:bg-slate-900 rounded-xl p-0.5 shadow-sm border border-slate-200 dark:border-slate-850">
+                        <button onClick={prevMonth} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400 cursor-pointer">
+                            <ChevronLeft className="w-4 h-4" />
                         </button>
-                        <button
-                            onClick={() => handlePunch('OUT')}
-                            disabled={status !== 'ACTIVE_RUN' || !location || loadingLocation}
-                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
-                                ${status !== 'ACTIVE_RUN' || !location
-                                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-rose-500 hover:bg-rose-600 text-white shadow-rose-500/20 active:scale-95'}`}
-                        >
-                            <CheckCircle2 className="w-5 h-5" /> Punch Out
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            {/* History Section */}
-            <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <CalendarIcon className="w-5 h-5 text-blue-500" />
-                        Monthly History
-                    </h2>
-
-                    <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
-                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors text-slate-600 dark:text-slate-300">
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <span className="px-4 font-bold text-sm min-w-[140px] text-center text-slate-800 dark:text-slate-100">{monthName}</span>
+                        <span className="px-3 font-bold text-xs min-w-[120px] text-center text-slate-700 dark:text-slate-200">{monthName}</span>
                         <button 
                             onClick={nextMonth} 
                             disabled={isCurrentMonth}
-                            className={`p-2 rounded-lg transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300'}`}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                         >
-                            <ChevronRight className="w-5 h-5" />
+                            <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     {[
-                        { label: 'Present', val: historyStats.present, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
-                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
-                    ].map((stat, i) => (
-                        <div key={i} className={`p-4 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
-                            <span className="text-2xl font-black mb-1">{stat.val}</span>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider ${stat.color}`}>{stat.label}</span>
+                        { label: 'Present', val: historyStats.present, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
+                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-600 dark:text-rose-450', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
+                     ].map((stat, i) => (
+                        <div key={i} className={`p-2.5 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
+                            <span className="text-xl font-black text-slate-800 dark:text-white mb-0.5">{stat.val}</span>
+                            <span 
+                                className={`text-[9px] font-black uppercase tracking-wider ${stat.color} ${
+                                    stat.label === 'Present' ? 'attendance-stat-label-present' : 'attendance-stat-label-absent'
+                                }`}
+                            >
+                                {stat.label}
+                            </span>
                         </div>
                     ))}
                 </div>
 
                 {/* History List */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
+                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch In</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch Out</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes</th>
+                                <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Punch In</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Punch Out</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notes</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {historyLoading ? (
                                     <tr>
-                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">Loading history...</td>
+                                        <td colSpan={5} className="py-8 text-center text-xs text-slate-500">Loading history...</td>
                                     </tr>
                                 ) : historyData.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">No attendance records found for this month.</td>
+                                        <td colSpan={5} className="py-8 text-center text-xs text-slate-500">No attendance records found for this month.</td>
                                     </tr>
                                 ) : (
                                     historyData.map((record, i) => {
@@ -292,28 +314,28 @@ export default function ReceptionistAttendance() {
                                         const styleClass = statusColors[record.status] || 'bg-slate-50 text-slate-600';
 
                                         return (
-                                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{displayDate}</span>
+                                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{displayDate}</span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${styleClass}`}>
+                                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                                    <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-lg border ${styleClass}`}>
                                                         {record.status.replace('_', ' ')}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                                                         {formatTime(record.checkInAt)}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                                                         {formatTime(record.checkOutAt)}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm text-slate-500 dark:text-slate-400 italic">
-                                                        {record.notes || '-'}
+                                                <td className="py-2.5 px-4 whitespace-nowrap">
+                                                    <span className="text-xs text-slate-500 dark:text-slate-400 italic">
+                                                        {record.notes || '—'}
                                                     </span>
                                                 </td>
                                             </tr>

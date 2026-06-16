@@ -1,17 +1,18 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import {
     Calendar, Users, Clock, Star, TrendingUp,
     CheckCircle2, ArrowRight, Activity, Search, X, 
     Scissors, Shield, Target, Award, Plus, CalendarPlus,
-    UserCheck, Loader2
+    UserCheck, Loader2, DollarSign
 } from 'lucide-react';
 import {
     AreaChart, Area, XAxis, YAxis, Tooltip,
     ResponsiveContainer, CartesianGrid
 } from 'recharts';
-import mockApi from '../../services/mock/mockApi';
+
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const statusColors = {
@@ -58,7 +59,7 @@ export default function StylistDashboard() {
         setError(null);
         setLoading(true);
         try {
-            const res = await mockApi.get('/stylist/overview', { params: { date: scheduleDate } });
+            const res = await api.get('/hr/overview/me', { params: { date: scheduleDate } });
             const data = res.data?.data ?? res.data;
             setOverview(data || null);
         } catch (e) {
@@ -72,7 +73,7 @@ export default function StylistDashboard() {
     const loadAllBookings = useCallback(async () => {
         setBookingsLoading(true);
         try {
-            const res = await mockApi.get('/bookings', { params: { staffId: user?._id || user?.id, limit: 100 } });
+            const res = await api.get('/bookings', { params: { staffId: user?._id || user?.id, limit: 100 } });
             const data = res.data?.data ?? res.data ?? [];
             setAllBookings(Array.isArray(data) ? data : data.results || []);
         } catch (e) {
@@ -112,7 +113,7 @@ export default function StylistDashboard() {
 
     const updateBooking = async (id, nextStatus) => {
         try {
-            await mockApi.patch(`/bookings/${id}`, { status: nextStatus });
+            await api.patch(`/bookings/${id}/status`, { status: nextStatus });
             showToast('Booking updated successfully');
             await loadOverview();
         } catch (e) {
@@ -136,37 +137,37 @@ export default function StylistDashboard() {
 
     const statCards = [
         {
-            label: 'Revenue (Month)',
-            value: `₹${Math.round(stats.revenue || 0).toLocaleString()}`,
-            subtitle: 'Total earnings',
-            icon: TrendingUp,
+            label: 'Total Assigned',
+            value: stats.totalAssigned ?? 0,
+            subtitle: 'Assigned appointments',
+            icon: CalendarPlus,
             colorClass: 'text-[#7C3AED] dark:text-[#A78BFA]',
             bgClass: 'bg-[#EDE9FE] dark:bg-[#7C3AED]/20',
             cardClass: 'bg-[#FAF5FF] dark:bg-[#7C3AED]/5 border-[#F3E8FF] dark:border-[#7C3AED]/15'
         },
         {
-            label: 'Goal Progress',
-            value: `${stats.progressPercent ?? 0}%`,
-            subtitle: 'Monthly target',
-            icon: Target,
+            label: 'Completed Appointments',
+            value: stats.totalCompleted ?? 0,
+            subtitle: 'Successfully served',
+            icon: CheckCircle2,
             colorClass: 'text-[#059669] dark:text-[#34D399]',
             bgClass: 'bg-[#D1FAE5] dark:bg-[#059669]/20',
             cardClass: 'bg-[#F0FDF4] dark:bg-[#059669]/5 border-[#DCFCE7] dark:border-[#059669]/15'
         },
         {
-            label: 'Services Done',
-            value: stats.servicesDone ?? 0,
-            subtitle: 'Completed appointments',
-            icon: Scissors,
+            label: 'Total Commission',
+            value: `₹${(stats.totalCommission ?? 0).toLocaleString('en-IN')}`,
+            subtitle: 'All-time earnings',
+            icon: DollarSign,
             colorClass: 'text-[#2563EB] dark:text-[#60A5FA]',
             bgClass: 'bg-[#DBEAFE] dark:bg-[#2563EB]/20',
             cardClass: 'bg-[#EFF6FF] dark:bg-[#2563EB]/5 border-[#DBEAFE] dark:border-[#2563EB]/15'
         },
         {
-            label: 'Average Rating',
-            value: stats.rating || 'N/A',
-            subtitle: 'Client feedback',
-            icon: Star,
+            label: 'Avg Commission',
+            value: `₹${(stats.avgCommission ?? 0).toLocaleString('en-IN')}`,
+            subtitle: 'Per completed job',
+            icon: Award,
             colorClass: 'text-[#EA580C] dark:text-[#FB923C]',
             bgClass: 'bg-[#FFEDD5] dark:bg-[#EA580C]/20',
             cardClass: 'bg-[#FFF7ED] dark:bg-[#EA580C]/5 border-[#FFEDD5] dark:border-[#EA580C]/15'
@@ -234,7 +235,7 @@ export default function StylistDashboard() {
                                     {stat.label}
                                 </p>
                                 <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 leading-none">
-                                    {stat.label.includes('Services') ? <AnimatedCounter value={stat.value} /> : stat.value}
+                                    {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
                                 </h3>
                                 <p className="text-[12px] font-medium text-slate-500 dark:text-slate-400 mt-2">
                                     {stat.subtitle}

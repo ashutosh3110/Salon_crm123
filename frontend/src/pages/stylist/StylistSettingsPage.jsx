@@ -5,7 +5,7 @@ import PasswordField from '../../components/common/PasswordField';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const WEEK_DAYS = [
     { key: 'monday', label: 'Monday' },
@@ -19,14 +19,42 @@ const WEEK_DAYS = [
 
 const DEFAULT_DAY = { on: true, start: '10:00', end: '20:00' };
 
+const getAvatarUrl = (avatarPath) => {
+    if (!avatarPath) return '';
+    if (avatarPath.startsWith('http://') || avatarPath.startsWith('https://') || avatarPath.startsWith('data:')) {
+        return avatarPath;
+    }
+    const baseUrl = import.meta.env.VITE_API_URL || '';
+    const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+    return `${cleanBaseUrl}/${avatarPath.startsWith('/') ? avatarPath.slice(1) : avatarPath}`;
+};
+
 function normalizeWeekly(raw) {
     const out = {};
+    const daysSource = raw?.days || raw;
     WEEK_DAYS.forEach(({ key }) => {
-        const d = raw?.[key];
+        const d = daysSource?.[key];
+        
+        let startVal = DEFAULT_DAY.start;
+        let endVal = DEFAULT_DAY.end;
+        let onVal = false;
+        
+        if (Array.isArray(d)) {
+            if (d.length > 0 && d[0]) {
+                startVal = d[0].start || DEFAULT_DAY.start;
+                endVal = d[0].end || DEFAULT_DAY.end;
+                onVal = true;
+            }
+        } else if (d && typeof d === 'object') {
+            startVal = d.start || DEFAULT_DAY.start;
+            endVal = d.end || DEFAULT_DAY.end;
+            onVal = d.on !== false;
+        }
+        
         out[key] = {
-            on: d?.on !== false,
-            start: typeof d?.start === 'string' && d.start ? d.start : DEFAULT_DAY.start,
-            end: typeof d?.end === 'string' && d.end ? d.end : DEFAULT_DAY.end,
+            on: onVal,
+            start: startVal,
+            end: endVal,
         };
     });
     return out;
@@ -64,6 +92,7 @@ export default function StylistSettingsPage() {
 
     const [skills, setSkills] = useState([]);
     const [weekly, setWeekly] = useState(() => normalizeWeekly({}));
+    const [isAvailable, setIsAvailable] = useState(true);
     const [newSkill, setNewSkill] = useState({ name: '', level: 'expert', icon: '✂️' });
     const [showAddSkill, setShowAddSkill] = useState(false);
 
@@ -76,30 +105,30 @@ export default function StylistSettingsPage() {
 
     const hydrateFromUser = useCallback((u) => {
         if (!u) return;
-        const specs = Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations : [];
+        const specs = Array.isArray(u.specializations) ? u.specializations : (Array.isArray(u.stylistSpecializations) ? u.stylistSpecializations : []);
         setProfileForm({
             name: u.name || '',
             email: u.email || '',
             phone: u.phone || '',
-            specialist: u.specialist || '',
+            specialist: u.role || '',
             outletId: outletIdStr(u),
             avatar: u.avatar || '',
-            stylistBio: u.stylistBio || '',
-            stylistExperience: u.stylistExperience || '',
+            stylistBio: u.bio || u.stylistBio || '',
+            stylistExperience: u.experience || u.stylistExperience || '',
             stylistClientsLabel: u.stylistClientsLabel || '',
             stylistSpecializations: specs,
             specText: specs.join(', '),
         });
+        const rawSkills = Array.isArray(u.skills) ? u.skills : (Array.isArray(u.stylistSkills) ? u.stylistSkills : []);
         setSkills(
-            Array.isArray(u.stylistSkills) && u.stylistSkills.length
-                ? u.stylistSkills.map((s) => ({
-                      name: s.name || '',
-                      level: s.level === 'intermediate' ? 'intermediate' : 'expert',
-                      icon: s.icon || '✂️',
-                  }))
-                : []
+            rawSkills.map((s) => ({
+                name: s.name || '',
+                level: s.level === 'intermediate' ? 'intermediate' : 'expert',
+                icon: s.icon || '✂️',
+            }))
         );
-        setWeekly(normalizeWeekly(u.stylistWeeklyAvailability));
+        setWeekly(normalizeWeekly(u.availability || u.stylistWeeklyAvailability));
+        setIsAvailable(u.isActive !== false);
     }, []);
 
     useEffect(() => {
@@ -107,7 +136,7 @@ export default function StylistSettingsPage() {
         (async () => {
             try {
                 setLoadError(null);
-                const res = await mockApi.get('/users/me');
+                const res = await api.get('/auth/me');
                 const u = res.data?.data ?? res.data;
                 if (!cancelled) hydrateFromUser(u);
             } catch (e) {
@@ -141,23 +170,20 @@ export default function StylistSettingsPage() {
                 .split(',')
                 .map((s) => s.trim())
                 .filter(Boolean);
-            const res = await mockApi.patch('/users/me', {
+            const res = await api.patch('/auth/updatedetails', {
                 name: profileForm.name.trim(),
-                email: profileForm.email.trim(),
+                email: profileForm.email.toLowerCase().trim(),
                 phone: profileForm.phone.trim(),
-                specialist: profileForm.specialist.trim(),
-                outletId: profileForm.outletId || null,
                 avatar: profileForm.avatar,
-                stylistBio: profileForm.stylistBio.trim(),
-                stylistExperience: profileForm.stylistExperience.trim(),
-                stylistClientsLabel: profileForm.stylistClientsLabel.trim(),
-                stylistSpecializations: specs,
+                bio: profileForm.stylistBio.trim(),
+                experience: profileForm.stylistExperience.trim(),
+                specializations: specs,
             });
             const updated = res.data?.data ?? res.data;
             hydrateFromUser(updated);
             showToast('Profile saved');
         } catch (e) {
-            showToast(e.message || 'Save failed', true);
+            showToast(e?.response?.data?.message || e?.message || 'Save failed', true);
         } finally {
             setIsSaving(false);
         }
@@ -181,7 +207,7 @@ export default function StylistSettingsPage() {
         formData.append('image', file);
 
         try {
-            const res = await mockApi.post('/uploads', formData, {
+            const res = await api.post('/uploads', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
             if (res.data.success) {
@@ -196,8 +222,8 @@ export default function StylistSettingsPage() {
     const saveSkills = async () => {
         setIsSaving(true);
         try {
-            const res = await mockApi.patch('/users/me', {
-                stylistSkills: skills.map((s) => ({
+            const res = await api.patch('/auth/updatedetails', {
+                skills: skills.map((s) => ({
                     name: s.name.trim(),
                     level: s.level,
                     icon: (s.icon || '✂️').slice(0, 8),
@@ -208,7 +234,7 @@ export default function StylistSettingsPage() {
             showToast('Skills saved');
             setShowAddSkill(false);
         } catch (e) {
-            showToast(e.message || 'Save failed', true);
+            showToast(e?.response?.data?.message || e?.message || 'Save failed', true);
         } finally {
             setIsSaving(false);
         }
@@ -227,12 +253,26 @@ export default function StylistSettingsPage() {
     const saveAvailability = async () => {
         setIsSaving(true);
         try {
-            const res = await mockApi.patch('/users/me', { stylistWeeklyAvailability: weekly });
+            const formattedDays = {};
+            WEEK_DAYS.forEach(({ key }) => {
+                const dayData = weekly[key];
+                const start = dayData?.start || DEFAULT_DAY.start;
+                const end = dayData?.end || DEFAULT_DAY.end;
+                formattedDays[key] = [{ start, end }];
+            });
+
+            const res = await api.patch('/auth/updatedetails', {
+                availability: {
+                    mode: 'different',
+                    days: formattedDays
+                },
+                isActive: isAvailable
+            });
             const updated = res.data?.data ?? res.data;
             hydrateFromUser(updated);
             showToast('Availability saved');
         } catch (e) {
-            showToast(e.message || 'Save failed', true);
+            showToast(e?.response?.data?.message || e?.message || 'Save failed', true);
         } finally {
             setIsSaving(false);
         }
@@ -245,11 +285,11 @@ export default function StylistSettingsPage() {
         }
         setIsSaving(true);
         try {
-            await mockApi.post('/users/change-password', { currentPassword: pwd.current, newPassword: pwd.next });
+            await api.put('/auth/updatepassword', { currentPassword: pwd.current, newPassword: pwd.next });
             showToast('Password updated');
             setPwd({ current: '', next: '', confirm: '' });
         } catch (e) {
-            showToast(e.message || 'Password update failed', true);
+            showToast(e?.response?.data?.message || e?.message || 'Password update failed', true);
         } finally {
             setIsSaving(false);
         }
@@ -282,7 +322,7 @@ export default function StylistSettingsPage() {
                                     className="w-28 h-28 bg-background border border-border flex items-center justify-center text-4xl font-black text-primary group-hover:border-primary/50 transition-all shadow-[inset_0_0_20px_rgba(var(--primary-rgb),0.05)] cursor-pointer overflow-hidden"
                                 >
                                     {profileForm.avatar ? (
-                                        <img src={profileForm.avatar} alt="" className="w-full h-full object-cover" />
+                                        <img src={getAvatarUrl(profileForm.avatar)} alt="" className="w-full h-full object-cover" />
                                     ) : (
                                         <User className="w-12 h-12 text-text-muted" />
                                     )}
@@ -321,12 +361,10 @@ export default function StylistSettingsPage() {
                             <div className="space-y-3">
                                 <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Account status</label>
                                 <div
-                                    className={`w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 ${
-                                        user?.status === 'active' ? 'text-emerald-500' : 'text-amber-500'
-                                    }`}
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest flex items-center gap-2 text-emerald-500 opacity-60 cursor-not-allowed"
                                 >
                                     <div
-                                        className={`w-2 h-2 rounded-full ${user?.status === 'active' ? 'bg-emerald-500' : 'bg-amber-500'}`}
+                                        className="w-2 h-2 rounded-full bg-emerald-500"
                                     />
                                     {user?.status === 'active' ? 'Active' : user?.status === 'inactive' ? 'Inactive' : '—'}
                                 </div>
@@ -354,13 +392,13 @@ export default function StylistSettingsPage() {
                                 />
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Title (shown to clients)</label>
+                                <label className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] pl-1">Title (Profession)</label>
                                 <input
                                     type="text"
                                     value={profileForm.specialist}
-                                    onChange={(e) => setProfileForm({ ...profileForm, specialist: e.target.value })}
-                                    placeholder="e.g. Senior hair stylist"
-                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all"
+                                    readOnly
+                                    disabled
+                                    className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest opacity-60 cursor-not-allowed focus:outline-none"
                                 />
                             </div>
                             <div className="space-y-3">
@@ -368,8 +406,8 @@ export default function StylistSettingsPage() {
                                 <div className="relative group">
                                     <select
                                         value={profileForm.outletId}
-                                        onChange={(e) => setProfileForm({ ...profileForm, outletId: e.target.value })}
-                                        className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all appearance-none cursor-pointer"
+                                        disabled
+                                        className="w-full px-5 py-4 bg-background border border-border text-[10px] font-black uppercase tracking-widest opacity-60 cursor-not-allowed appearance-none"
                                     >
                                         <option value="">Select outlet</option>
                                         {(outlets || []).map((o) => (
@@ -577,7 +615,29 @@ export default function StylistSettingsPage() {
                             </span>
                         </div>
 
-                        <div className="grid gap-4">
+                        {/* Single Global Availability Toggle Switch */}
+                        <div className="bg-background border border-border p-6 rounded-xl flex items-center justify-between">
+                            <div className="text-left">
+                                <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em] mb-1">Available for Bookings</h4>
+                                <p className="text-[9px] text-text-muted uppercase font-bold tracking-tight">Enable this to allow clients to schedule appointments with you</p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsAvailable(v => !v)}
+                                className={`w-11 h-6 rounded-full transition-colors relative shrink-0 p-1 flex items-center ${
+                                    isAvailable ? 'bg-[#C89B2B]' : 'bg-slate-200 dark:bg-slate-800'
+                                }`}
+                                aria-label="Toggle availability status"
+                            >
+                                <div
+                                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                                        isAvailable ? 'translate-x-5' : 'translate-x-0'
+                                    }`}
+                                />
+                            </button>
+                        </div>
+
+                        <div className={`grid gap-4 transition-all duration-200 ${isAvailable ? 'opacity-100' : 'opacity-50'}`}>
                             {WEEK_DAYS.map(({ key, label }) => {
                                 const d = weekly[key];
                                 return (
@@ -586,17 +646,6 @@ export default function StylistSettingsPage() {
                                         className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-background border border-border gap-4"
                                     >
                                         <div className="flex items-center gap-6">
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setWeekly((w) => ({
-                                                        ...w,
-                                                        [key]: { ...w[key], on: !w[key].on },
-                                                    }))
-                                                }
-                                                className={`w-3 h-3 rounded-full ${d.on ? 'bg-emerald-500' : 'bg-border'}`}
-                                                aria-label="Toggle day"
-                                            />
                                             <span className="text-[10px] font-black text-text uppercase tracking-widest min-w-[100px]">
                                                 {label}
                                             </span>
@@ -606,7 +655,7 @@ export default function StylistSettingsPage() {
                                                 <p className="text-[8px] text-text-muted uppercase font-bold mb-1">Start</p>
                                                 <input
                                                     type="time"
-                                                    disabled={!d.on}
+                                                    disabled={!isAvailable}
                                                     value={d.start}
                                                     onChange={(e) =>
                                                         setWeekly((w) => ({
@@ -621,7 +670,7 @@ export default function StylistSettingsPage() {
                                                 <p className="text-[8px] text-text-muted uppercase font-bold mb-1">End</p>
                                                 <input
                                                     type="time"
-                                                    disabled={!d.on}
+                                                    disabled={!isAvailable}
                                                     value={d.end}
                                                     onChange={(e) =>
                                                         setWeekly((w) => ({
@@ -761,7 +810,6 @@ export default function StylistSettingsPage() {
                 <nav className="flex flex-wrap gap-2 mb-10 border-b border-border/20 pb-4">
                     {[
                         { id: 'profile', label: 'Profile', icon: User },
-                        { id: 'skills', label: 'Skills', icon: Scissors },
                         { id: 'availability', label: 'Hours', icon: Bell },
                         { id: 'security', label: 'Security', icon: Shield },
                     ].map(({ id, label, icon: Icon }) => (

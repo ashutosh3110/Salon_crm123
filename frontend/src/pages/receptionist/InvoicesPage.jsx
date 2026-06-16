@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
     Calendar,
     ClipboardList,
@@ -346,7 +347,7 @@ export default function InvoicesPage() {
                     <button
                         onClick={() => fetchData()}
                         disabled={refreshing}
-                        className="p-2.5 bg-surface border border-border text-text-muted hover:text-primary transition-all active:rotate-180"
+                        className="p-2.5 bg-surface border border-border text-text/70 hover:text-primary transition-all active:rotate-180"
                         title="Refresh Data"
                     >
                         <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
@@ -370,49 +371,78 @@ export default function InvoicesPage() {
                         disabled={isPrinting}
                         className="px-5 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2 disabled:opacity-50"
                     >
-                        {isPrinting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Printer className="w-4 h-4" />} {isPrinting ? 'PRINTING...' : 'Day End Report'}
+                        {isPrinting ? <Loader2 className="w-4 h-4 animate-spin" style={{ color: '#ffffff' }} /> : <Printer className="w-4 h-4" style={{ color: '#ffffff' }} />} {isPrinting ? 'PRINTING...' : 'Day End Report'}
                     </button>
                 </div>
             </div>
 
             {/* Stats Bar */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                {statsCards.map((stat, i) => (
-                    <div key={i} className="bg-surface py-6 px-8 border border-border group hover:border-primary/20 transition-all relative overflow-hidden">
-                        {/* Soft Glow */}
-                        <div className={`absolute -right-4 -top-4 w-24 h-24 ${stat.glow} rounded-none blur-2xl group-hover:opacity-100 transition-opacity opacity-50`} />
-
-                        <div className="relative z-10">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className="flex items-center gap-2.5">
-                                    <stat.icon className={`w-4 h-4 text-text-muted transition-colors group-hover:${stat.color}`} />
-                                    <p className="text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{stat.label}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {statsCards.map((stat, i) => {
+                    const cardConfigs = [
+                        {
+                            iconColorClass: 'text-emerald-600 dark:text-[#34D399]',
+                            iconBgClass: 'bg-emerald-100 dark:bg-emerald-950/30',
+                            cardBgClass: 'bg-emerald-50/30 dark:bg-emerald-950/10',
+                            cardBorderClass: 'border-emerald-100 dark:border-emerald-900/30 hover:border-emerald-300 dark:hover:border-emerald-800',
+                        },
+                        {
+                            iconColorClass: 'text-[#B4912B] dark:text-[#D4AF37]',
+                            iconBgClass: 'bg-amber-100 dark:bg-amber-950/30',
+                            cardBgClass: 'bg-amber-50/30 dark:bg-amber-950/10',
+                            cardBorderClass: 'border-amber-100 dark:border-amber-900/30 hover:border-amber-300 dark:hover:border-amber-800',
+                        },
+                        {
+                            iconColorClass: 'text-blue-600 dark:text-[#60A5FA]',
+                            iconBgClass: 'bg-blue-100 dark:bg-blue-950/30',
+                            cardBgClass: 'bg-blue-50/30 dark:bg-blue-950/10',
+                            cardBorderClass: 'border-blue-100 dark:border-blue-900/30 hover:border-blue-300 dark:hover:border-blue-800',
+                        },
+                    ];
+                    const config = cardConfigs[i % cardConfigs.length];
+                    return (
+                        <div
+                            key={i}
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${config.cardBgClass} ${config.cardBorderClass}`}
+                        >
+                            <div className="flex !items-start gap-3 !text-left">
+                                <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${config.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                    <stat.icon className={`w-4 h-4 ${config.iconColorClass}`} strokeWidth={2} />
                                 </div>
-                                <div className={`flex items-center gap-1 text-[11px] font-bold ${stat.positive ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                    {stat.positive ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                                    {stat.trend}
+                                <div className="flex flex-col !items-start !text-left">
+                                    <span
+                                        style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                        className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                                    >
+                                        {stat.label}
+                                    </span>
+                                    <h3
+                                        style={{ fontSize: '24px', fontWeight: 850 }}
+                                        className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left"
+                                    >
+                                        <AnimatedCounter value={Math.round(stat.value)} prefix={stat.prefix} />
+                                    </h3>
                                 </div>
                             </div>
-
-                            <div className="flex items-end justify-between mt-auto">
-                                <h3 className={`text-2xl font-black ${stat.label.includes('Unpaid') ? 'text-amber-500' : 'text-text'} uppercase tracking-tight`}>
-                                    <AnimatedCounter value={Math.round(stat.value)} prefix={stat.prefix} />
-                                </h3>
-                                <div className="-mb-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <svg width="60" height="20" viewBox="0 0 60 20" fill="none" xmlns="http://www.w3.org/2000/svg" className={stat.positive ? "text-emerald-400" : "text-rose-400"}>
-                                        <path d="M1 15C1 15 8.5 12 11.5 10C14.5 8 18.5 14 22.5 15C26.5 16 30.5 8 34.5 6C38.5 4 43.5 10 47.5 11C51.5 12 59 7 59 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </div>
+                            <div
+                                style={{ fontSize: '11px', fontWeight: 700 }}
+                                className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-80 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
+                            >
+                                <span className={`flex items-center gap-0.5 ${stat.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-450'}`}>
+                                    {stat.positive ? <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <ArrowDownRight className="w-3 h-3 text-rose-500 dark:text-rose-450" />}
+                                    {stat.trend}
+                                </span>
+                                <span className="text-slate-400 dark:text-slate-500 ml-1">vs last period</span>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {/* Filter & Search */}
             <div className="bg-surface border border-border p-3 flex flex-col md:flex-row items-center justify-between gap-4">
                 <div className="relative w-full md:w-96">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text/60 z-10 pointer-events-none" />
                     <input
                         type="text"
                         value={searchQuery}
@@ -488,10 +518,21 @@ export default function InvoicesPage() {
                                 </td>
                                 <td className="px-6 py-4">
                                     <div className="flex items-center justify-center gap-2">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${inv.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
-                                            (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid') ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
-                                                'bg-rose-500/10 border-rose-500/20 text-rose-600'
-                                            }`}>
+                                        <span
+                                            className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${inv.paymentStatus === 'paid'
+                                                ? 'bg-emerald-500/10 border-emerald-500/20'
+                                                : (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid')
+                                                    ? 'bg-amber-500/10 border-amber-500/20'
+                                                    : 'bg-rose-500/10 border-rose-500/20'
+                                                }`}
+                                            style={{
+                                                color: inv.paymentStatus === 'paid'
+                                                    ? '#16a34a'
+                                                    : (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid')
+                                                        ? '#d97706'
+                                                        : '#dc2626'
+                                            }}
+                                        >
                                             {inv.paymentStatus === 'paid' ? <CheckCircle2 className="w-3 h-3" /> :
                                                 (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid') ? <Clock className="w-3 h-3" /> : <XCircle className="w-3 h-3" />}
                                             {inv.paymentStatus?.toUpperCase() || 'UNKNOWN'}
@@ -504,22 +545,24 @@ export default function InvoicesPage() {
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2">
                                         <button onClick={() => handleAction('View', inv._id)} className="p-2 border border-border hover:bg-surface-alt transition-all group" title="View Detail">
-                                            <Eye className="w-4 h-4 text-text-muted group-hover:text-primary" />
+                                            <Eye className="w-4 h-4 text-text/70 group-hover:text-primary" />
                                         </button>
                                         <button onClick={() => handleAction('Download', inv._id)} className="p-2 border border-border hover:bg-surface-alt transition-all group" title="Download">
-                                            <Download className="w-4 h-4 text-text-muted group-hover:text-primary" />
+                                            <Download className="w-4 h-4 text-text/70 group-hover:text-primary" />
                                         </button>
-                                        <button onClick={() => handleAction('Options', inv._id)} className="p-2 border border-border hover:bg-surface-alt transition-all group relative" title="Options">
-                                            <MoreVertical className="w-4 h-4 text-text-muted group-hover:text-primary" />
+                                        <div className="relative">
+                                            <button onClick={() => handleAction('Options', inv._id)} className="p-2 border border-border hover:bg-surface-alt transition-all group" title="Options">
+                                                <MoreVertical className="w-4 h-4 text-text/70 group-hover:text-primary" />
+                                            </button>
                                             {actionMenuOpen === inv._id && (
                                                 <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-border shadow-2xl z-50 py-2 animate-in slide-in-from-top-2 duration-200">
-                                                    <button onClick={() => alert('Sending as Email...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase hover:bg-surface-alt transition-colors">Send Email</button>
-                                                    <button onClick={() => alert('Sharing Link...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase hover:bg-surface-alt transition-colors">Copy Link</button>
+                                                    <button onClick={() => alert('Sending as Email...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase text-text hover:bg-surface-alt transition-colors">Send Email</button>
+                                                    <button onClick={() => alert('Sharing Link...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase text-text hover:bg-surface-alt transition-colors">Copy Link</button>
                                                     <div className="border-t border-border my-1" />
-                                                    <button onClick={() => alert('Void Request Sent...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase text-rose-500 hover:bg-rose-50 transition-colors">Void Invoice</button>
+                                                    <button onClick={() => alert('Void Request Sent...')} className="w-full px-4 py-2 text-left text-[9px] font-black uppercase hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors" style={{ color: '#dc2626' }}>Void Invoice</button>
                                                 </div>
                                             )}
-                                        </button>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -562,15 +605,15 @@ export default function InvoicesPage() {
             </div>
 
             {/* Modals Interface */}
-            {isPreviewOpen && selectedInvoice && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-                    <div className="bg-surface border border-border w-full max-w-2xl relative animate-in zoom-in-95 duration-300">
+            {isPreviewOpen && selectedInvoice && createPortal(
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/65 backdrop-blur-md p-4 animate-in fade-in duration-300">
+                    <div className="bg-surface border border-border w-full max-w-2xl relative rounded-2xl overflow-hidden animate-in zoom-in-95 duration-300">
                         <div className="px-8 py-5 border-b border-border bg-surface-alt/50 flex items-center justify-between">
                             <h3 className="text-[12px] font-black text-text uppercase tracking-widest flex items-center gap-2">
                                 <FileText className="w-4 h-4 text-primary" /> INVOICE PREVIEW: {selectedInvoice.invoiceNumber || selectedInvoice._id}
                             </h3>
-                            <button onClick={() => setIsPreviewOpen(false)} className="p-1 hover:bg-surface-alt transition-all">
-                                <X className="w-5 h-5 text-text-muted" />
+                            <button onClick={() => setIsPreviewOpen(false)} className="p-1 hover:bg-surface-alt transition-all rounded-full">
+                                <X className="w-5 h-5 text-text/70" />
                             </button>
                         </div>
                         <div className="p-12 space-y-8 bg-white text-black font-mono">
@@ -610,12 +653,13 @@ export default function InvoicesPage() {
                             </div>
                             <p className="text-[8px] text-center pt-8 opacity-40">*** THIS IS A DIGITALLY AUTHORIZED INVOICE DOCUMENT ***</p>
                             <div className="flex gap-4 pt-8 no-print justify-center">
-                                <button onClick={() => { window.print(); }} className="px-6 py-2 bg-black text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90">PRINT HARDCOPY</button>
-                                <button onClick={() => setIsPreviewOpen(false)} className="px-6 py-2 border border-black text-[10px] font-black uppercase tracking-widest hover:bg-black/5">CLOSE PREVIEW</button>
+                                <button onClick={() => { window.print(); }} className="px-6 py-2 text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all rounded-lg" style={{ backgroundColor: '#B4912B' }}>PRINT HARDCOPY</button>
+                                <button onClick={() => setIsPreviewOpen(false)} className="px-6 py-2 border border-black text-[10px] font-black uppercase tracking-widest hover:bg-black/5 transition-all rounded-lg">CLOSE PREVIEW</button>
                             </div>
                         </div>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

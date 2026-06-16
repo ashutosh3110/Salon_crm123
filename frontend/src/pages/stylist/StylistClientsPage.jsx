@@ -3,7 +3,7 @@ import { Search, User, Mail, Calendar, Star, ChevronRight, History, Heart, UserP
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { maskPhone } from '../../utils/phoneUtils';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 function mapStatusBadge(c) {
     if (c.tags?.includes('VIP')) return 'VIP_CLIENT';
@@ -64,7 +64,7 @@ export default function StylistClientsPage() {
         setLoading(true);
         setLoadError(null);
         try {
-            const res = await mockApi.get('/clients/stylist-roster', {
+            const res = await api.get('/clients/stylist-roster', {
                 params: { limit: 100, page: 1, name: searchTerm.trim() || undefined },
             });
             const payload = res.data;
@@ -93,7 +93,7 @@ export default function StylistClientsPage() {
         setHistoryLoading(true);
         setServiceHistory([]);
         try {
-            const res = await mockApi.get(`/clients/${clientId}/stylist-history`);
+            const res = await api.get(`/clients/${clientId}/stylist-history`);
             const rows = res.data?.data ?? res.data ?? [];
             setServiceHistory(Array.isArray(rows) ? rows : []);
         } catch {
@@ -142,7 +142,7 @@ export default function StylistClientsPage() {
         }
         setEnrollSubmitting(true);
         try {
-            await mockApi.post('/clients', {
+            await api.post('/clients', {
                 name: name.trim(),
                 phone: phone.trim(),
                 email: (email || '').trim() || undefined,

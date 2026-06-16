@@ -349,22 +349,25 @@ export default function AppointmentsPage() {
                         <div className="flex bg-surface border border-border p-1">
                             <button
                                 onClick={() => setView('list')}
-                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'list' ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'list' ? 'text-white' : 'text-text-muted hover:text-text'}`}
+                                style={{ backgroundColor: view === 'list' ? '#B4912B' : undefined }}
                             >
                                 List
                             </button>
                             <button
                                 onClick={() => setView('calendar')}
-                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'calendar' ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest transition-all ${view === 'calendar' ? 'text-white' : 'text-text-muted hover:text-text'}`}
+                                style={{ backgroundColor: view === 'calendar' ? '#B4912B' : undefined }}
                             >
                                 Calendar
                             </button>
                         </div>
                         <button
                             onClick={() => setIsBookingOpen(true)}
-                            className="px-5 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
+                            className="px-5 py-2.5 text-white text-[10px] font-black uppercase tracking-widest hover:opacity-90 transition-all flex items-center gap-2"
+                            style={{ backgroundColor: '#B4912B' }}
                         >
-                            <Plus className="w-4 h-4" /> Book Appointment
+                            <Plus className="w-4 h-4 text-white-force" /> Book Appointment
                         </button>
                     </div>
                 </div>
@@ -373,13 +376,21 @@ export default function AppointmentsPage() {
                 <div className="flex border-b border-border">
                     <button
                         onClick={() => setActiveTab('bookings')}
-                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'bookings' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2`}
+                        style={{ 
+                            color: activeTab === 'bookings' ? '#B4912B' : '#6b7280',
+                            borderBottomColor: activeTab === 'bookings' ? '#B4912B' : 'transparent'
+                        }}
                     >
                         Bookings
                     </button>
                     <button
                         onClick={() => setActiveTab('orders')}
-                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === 'orders' ? 'text-primary border-b-2 border-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`px-6 py-3 text-[11px] font-black uppercase tracking-widest transition-all border-b-2`}
+                        style={{ 
+                            color: activeTab === 'orders' ? '#B4912B' : '#6b7280',
+                            borderBottomColor: activeTab === 'orders' ? '#B4912B' : 'transparent'
+                        }}
                     >
                         Orders
                     </button>
@@ -511,9 +522,10 @@ export default function AppointmentsPage() {
                                                     {apt.status === 'Arrived' && (
                                                         <button
                                                             onClick={() => handleBill(apt)}
-                                                            className="px-3 py-1.5 bg-primary text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-all border border-primary shadow-sm shadow-primary/20"
+                                                            className="px-3 py-1.5 text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-all shadow-sm"
+                                                            style={{ backgroundColor: '#B4912B', borderColor: '#B4912B' }}
                                                         >
-                                                            <CreditCard className="w-3 h-3" /> Bill
+                                                            <CreditCard className="w-3 h-3 text-white-force" /> Bill
                                                         </button>
                                                     )}
                                                     {apt.status === 'Upcoming' && (
@@ -695,7 +707,7 @@ export default function AppointmentsPage() {
                                         </select>
                                     </div>
                                 </div>
-                                <button type="submit" className="w-full py-4 bg-primary text-white text-[11px] font-black uppercase tracking-widest hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+                                <button type="submit" className="w-full py-4 text-white text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg" style={{ backgroundColor: '#B4912B' }}>
                                     Submit Appointment Protocol
                                 </button>
                             </form>

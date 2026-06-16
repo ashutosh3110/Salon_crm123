@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { TrendingUp, DollarSign, Calendar, ArrowUpRight, Award, Zap, CreditCard, Activity, Target, Shield, X, CheckCircle2, ChevronDown, Award as AwardIcon, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const PERIODS = ['CURRENT_CYCLE', 'PREVIOUS_CYCLE', 'FISCAL_YTD', 'CUSTOM_RANGE'];
 
@@ -19,7 +19,7 @@ export default function StylistCommissionsPage() {
         setLoading(true);
         setError(null);
         try {
-            const res = await mockApi.get('/stylist/commissions', {
+            const res = await api.get('/hr/commissions/me', {
                 params: { period },
             });
             const body = res.data;
