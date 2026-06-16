@@ -503,9 +503,11 @@ export default function AppointmentsPage() {
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center justify-center">
                                                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.paymentStatus === 'paid'
-                                                                ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600'
-                                                                : 'bg-primary/5 border-primary/20 text-primary'
-                                                                }`}>
+                                                                ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600'
+                                                                : 'bg-primary/5 border-primary/20 !text-[#B4912B]'
+                                                                }`}
+                                                                style={{ color: apt.paymentStatus === 'paid' ? '#059669' : '#B4912B' }}
+                                                            >
                                                                 {apt.paymentStatus === 'paid' ? (
                                                                     <>
                                                                         <CheckCircle2 className="w-3 h-3" />
@@ -595,16 +597,21 @@ export default function AppointmentsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <p className="text-[11px] font-bold text-text uppercase tracking-widest">₹{order.total}</p>
+                                                 <p className="text-[11px] font-bold text-text uppercase tracking-widest text-center">₹{order.total}</p>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                 <div className="flex items-center justify-center">
+                                                     <span 
+                                                         className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${order.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 !text-amber-700'}`}
+                                                         style={{ color: order.paymentStatus === 'paid' ? '#059669' : '#b45309' }}
+                                                     >
+                                                         <div className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                                                         {order.paymentStatus}
+                                                     </span>
+                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${order.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 text-amber-600'}`}>
-                                                    <div className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                                    {order.paymentStatus}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em]">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] text-center">{new Date(order.createdAt).toLocaleDateString()}</p>
                                             </td>
                                         </tr>
                                     )) : (

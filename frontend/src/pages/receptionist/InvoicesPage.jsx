@@ -520,16 +520,16 @@ export default function InvoicesPage() {
                                     <div className="flex items-center justify-center gap-2">
                                         <span
                                             className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${inv.paymentStatus === 'paid'
-                                                ? 'bg-emerald-500/10 border-emerald-500/20'
+                                                ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600'
                                                 : (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid')
-                                                    ? 'bg-amber-500/10 border-amber-500/20'
-                                                    : 'bg-rose-500/10 border-rose-500/20'
+                                                    ? 'bg-amber-500/10 border-amber-500/20 !text-amber-700'
+                                                    : 'bg-rose-500/10 border-rose-500/20 !text-rose-600'
                                                 }`}
                                             style={{
                                                 color: inv.paymentStatus === 'paid'
                                                     ? '#16a34a'
                                                     : (inv.paymentStatus === 'pending' || inv.paymentStatus === 'unpaid')
-                                                        ? '#d97706'
+                                                        ? '#b45309'
                                                         : '#dc2626'
                                             }}
                                         >
