@@ -443,7 +443,7 @@ export default function ReceptionistDashboard() {
                                 const route = routeMap[stat.label];
                                 if (route) navigate(route);
                             }}
-                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md cursor-pointer ${config.cardBgClass} ${config.cardBorderClass}`}
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-center min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md cursor-pointer ${config.cardBgClass} ${config.cardBorderClass}`}
                         >
                             <div className="flex !items-start gap-3 !text-left">
                                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${config.iconBgClass}`} style={{ borderRadius: '12px' }}>
@@ -463,16 +463,6 @@ export default function ReceptionistDashboard() {
                                         <AnimatedCounter value={stat.value} />
                                     </h3>
                                 </div>
-                            </div>
-                            <div
-                                style={{ fontSize: '11px', fontWeight: 700 }}
-                                className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-80 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
-                            >
-                                <span className={`flex items-center gap-0.5 ${stat.positive ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'}`}>
-                                    {stat.positive ? <ArrowUpRight className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> : <ArrowDownRight className="w-3 h-3 text-rose-500 dark:text-rose-450" />}
-                                    {stat.trend}
-                                </span>
-                                <span className="text-slate-400 dark:text-slate-500 ml-1">vs last period</span>
                             </div>
                         </div>
                     );

@@ -1386,6 +1386,31 @@ export default function AdminLayout() {
                     stroke: #7c3aed !important;
                 }
 
+                /* EXCEPT if the SVG or its parent has an orange text class, force it to orange */
+                html:not(.dark) .admin-panel [class*="text-orange"] svg,
+                html:not(.dark) .admin-panel [class*="text-orange"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-orange"],
+                html:not(.dark) .admin-panel svg[class*="text-orange"] * {
+                    color: #ea580c !important;
+                    stroke: #ea580c !important;
+                }
+
+                /* EXCEPT if the SVG or its parent has a slate/gray text class, force it to slate/gray */
+                html:not(.dark) .admin-panel [class*="text-slate"] svg,
+                html:not(.dark) .admin-panel [class*="text-slate"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-slate"],
+                html:not(.dark) .admin-panel svg[class*="text-slate"] * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+                html:not(.dark) .admin-panel [class*="text-gray"] svg,
+                html:not(.dark) .admin-panel [class*="text-gray"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-gray"],
+                html:not(.dark) .admin-panel svg[class*="text-gray"] * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+
                 /* EXCEPT if the SVG is inside a soft colored background container, force matching color */
                 html:not(.dark) .admin-panel [class*="bg-emerald-"] svg,
                 html:not(.dark) .admin-panel [class*="bg-emerald-"] svg *,
@@ -1437,6 +1462,13 @@ export default function AdminLayout() {
                 html:not(.dark) .admin-panel [class*="bg-[#F3E8FF]"] svg * {
                     color: #6d28d9 !important;
                     stroke: #6d28d9 !important;
+                }
+                html:not(.dark) .admin-panel [class*="bg-orange-"] svg,
+                html:not(.dark) .admin-panel [class*="bg-orange-"] svg *,
+                html:not(.dark) .admin-panel [class*="bg-[#ffedd5]"] svg,
+                html:not(.dark) .admin-panel [class*="bg-[#ffedd5]"] svg * {
+                    color: #ea580c !important;
+                    stroke: #ea580c !important;
                 }
                 html:not(.dark) .admin-panel [class*="bg-cyan-"] svg,
                 html:not(.dark) .admin-panel [class*="bg-cyan-"] svg * {
