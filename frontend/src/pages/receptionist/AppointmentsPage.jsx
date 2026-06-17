@@ -313,6 +313,12 @@ export default function AppointmentsPage() {
         apt.phone?.replace(/\D/g, '').includes(searchQuery.replace(/\D/g, ''))
     );
 
+    const filteredOrders = orders.filter(order =>
+        (order.invoiceNumber || order._id).toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (order.clientId?.name || 'Walk-in').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (order.clientId?.phone || '').replace(/\D/g, '').includes(searchQuery.replace(/\D/g, ''))
+    );
+
     const handleBill = (apt) => {
         navigate('/pos', {
             state: {
