@@ -395,7 +395,7 @@ export default function AppProfilePage() {
             {/* Redesigned Premium Header Card with Gradient */}
             <div
                 style={{
-                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0.9) 85%, #ffffff 100%), linear-gradient(135deg, #c59341 0%, #9e59b2 50%, #6924ab 100%)',
+                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0.9) 85%, #ffffff 100%), linear-gradient(135deg, #784824 0%, #C8956C 100%)',
                     borderRadius: '0px',
                     padding: '36px 24px 0px 24px',
                     position: 'relative',
@@ -693,45 +693,45 @@ export default function AppProfilePage() {
                         ) : (
                             <form onSubmit={handleEnquirySubmit} className="space-y-4">
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Name *</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Name *</label>
                                     <input
                                         type="text"
                                         required
                                         value={enquiryForm.name}
                                         onChange={(e) => setEnquiryForm({ ...enquiryForm, name: e.target.value })}
                                         style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                        className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                        className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors"
                                         placeholder="Enter your name"
                                     />
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Phone *</label>
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Phone *</label>
                                         <input
                                             type="tel"
                                             required
                                             value={enquiryForm.phone}
                                             onChange={(e) => setEnquiryForm({ ...enquiryForm, phone: e.target.value })}
                                             style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors"
                                             placeholder="Enter phone number"
                                         />
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Email</label>
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Email</label>
                                         <input
                                             type="email"
                                             value={enquiryForm.email}
                                             onChange={(e) => setEnquiryForm({ ...enquiryForm, email: e.target.value })}
                                             style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                            className="w-full h-12 px-4 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors"
                                             placeholder="Enter email address"
                                         />
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Outlet *</label>
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Outlet *</label>
                                         <div className="relative w-full">
                                             <select
                                                 required
@@ -739,7 +739,7 @@ export default function AppProfilePage() {
                                                 value={enquiryForm.outletId}
                                                 onChange={(e) => setEnquiryForm({ ...enquiryForm, outletId: e.target.value, interestedService: '', serviceInterest: '' })}
                                                 style={{ backgroundColor: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors uppercase appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors uppercase appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
                                             >
                                                 <option value="" style={{ backgroundColor: colors.card, color: colors.text }}>Select Outlet</option>
                                                 {outlets.map(o => (
@@ -750,14 +750,14 @@ export default function AppProfilePage() {
                                         </div>
                                     </div>
                                     <div className="space-y-1">
-                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Service of Interest</label>
+                                        <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Service of Interest</label>
                                         <div className="relative w-full">
                                             <select
                                                 value={enquiryForm.interestedService}
                                                 onChange={handleEnquiryServiceChange}
                                                 disabled={!enquiryForm.outletId}
                                                 style={{ backgroundColor: enquiryForm.outletId ? colors.input : 'transparent', color: colors.text, border: `1px solid ${colors.border}` }}
-                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors disabled:opacity-40 uppercase appearance-none cursor-pointer !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                                className="w-full h-12 px-4 pr-10 rounded-2xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors disabled:opacity-40 uppercase appearance-none cursor-pointer"
                                             >
                                                 <option value="" style={{ backgroundColor: colors.card, color: colors.text }}>{!enquiryForm.outletId ? 'Select Outlet First' : 'Select Service'}</option>
                                                 {filteredServices.map(s => (
@@ -769,13 +769,13 @@ export default function AppProfilePage() {
                                     </div>
                                 </div>
                                 <div className="space-y-1">
-                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-40 ml-2">Message / Notes</label>
+                                    <label className="text-[9px] font-black uppercase tracking-widest opacity-60 ml-2" style={{ color: colors.text }}>Message / Notes</label>
                                     <textarea
                                         rows={3}
                                         value={enquiryForm.notes}
                                         onChange={(e) => setEnquiryForm({ ...enquiryForm, notes: e.target.value })}
                                         style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                        className="w-full p-4 rounded-2xl text-xs font-bold resize-none outline-none focus:border-[#C8956C] !bg-[#141414] dark:!bg-[#141414] !text-white dark:!text-white"
+                                        className="w-full p-4 rounded-2xl text-xs font-bold resize-none outline-none focus:border-[#C8956C]"
                                         placeholder="Describe your query..."
                                     />
                                 </div>

@@ -445,8 +445,8 @@ export default function SupportPage() {
                                                     <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
                                                         <div className="flex items-center gap-2 mb-1">
                                                             <div className="text-[12px] font-bold text-text tracking-tight uppercase">#{t._id?.slice(-6) || '1AD301'}</div>
-                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(t._id); showToast('Copied to clipboard'); }} className="text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-colors">
-                                                                <Copy className="w-3.5 h-3.5" />
+                                                            <button onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(t._id); showToast('Copied to clipboard'); }} className="hover:opacity-85 transition-opacity">
+                                                                <Copy className="w-3.5 h-3.5" style={{ color: '#D4AF37', stroke: '#D4AF37' }} />
                                                             </button>
                                                             {['admin', 'manager'].includes(user?.role) && t.userId && (
                                                                 <div className="text-[8px] font-black bg-primary/10 text-primary px-1.5 py-0.5 rounded uppercase tracking-tighter ml-2">
@@ -547,10 +547,10 @@ export default function SupportPage() {
                                                                     showToast('Copied to clipboard');
                                                                 }}
                                                                 className="p-1 rounded-full transition-transform hover:scale-110"
-                                                                style={{ background: 'transparent', border: 'none', boxShadow: 'none', color: '#f59e0b' }}
+                                                                style={{ background: 'transparent', border: 'none', boxShadow: 'none', color: '#D4AF37' }}
                                                                 title="Copy ID"
                                                             >
-                                                                <Copy className="w-4 h-4" strokeWidth={2.5} />
+                                                                <Copy className="w-4 h-4" strokeWidth={2.5} style={{ color: '#D4AF37', stroke: '#D4AF37' }} />
                                                             </button>
                                                             {['admin', 'manager', 'superadmin'].includes(userRole) && t.status !== 'resolved' && (
                                                                 <button
@@ -620,8 +620,8 @@ export default function SupportPage() {
                                     <div className="text-blue-500 dark:text-blue-400"><MessageSquare className="w-4 h-4" /></div>
                                     support@wapixo.com
                                 </div>
-                                <button onClick={() => { navigator.clipboard.writeText('support@wapixo.com'); showToast('Email copied!'); }} className="text-amber-500 hover:text-amber-600 dark:text-amber-400 dark:hover:text-amber-300 transition-colors">
-                                    <Copy className="w-4 h-4" />
+                                <button onClick={() => { navigator.clipboard.writeText('support@wapixo.com'); showToast('Email copied!'); }} className="hover:opacity-85 transition-opacity">
+                                    <Copy className="w-4 h-4" style={{ color: '#D4AF37', stroke: '#D4AF37' }} />
                                 </button>
                             </div>
                             <div className="flex items-center gap-3 text-[12px] font-bold text-text p-3 border border-border rounded-xl shadow-sm">

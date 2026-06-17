@@ -163,12 +163,12 @@ export default function ServiceApprovalManager() {
 
             {/* Matrix List */}
             <div className="bg-surface border border-border overflow-hidden shadow-2xl shadow-primary/5 !rounded-[16px]">
-                <div className="px-8 py-4 border-b border-border/20 bg-background/50 flex items-center justify-between">
+                <div className="px-4 py-2.5 border-b border-border/20 bg-background/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-1.5 h-6 bg-primary" />
+                        <div className="w-1 h-4 bg-primary" />
                         <h2 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Pending Service Approvals</h2>
                     </div>
-                    <span className="text-[8px] font-black text-primary uppercase bg-primary/10 px-3 py-1 border border-primary/20">Action Required</span>
+                    <span className="text-[8px] font-black text-primary uppercase bg-primary/10 px-2 py-0.5 border border-primary/20">Action Required</span>
                 </div>
                 
                 <div className="divide-y divide-border/10">
@@ -180,48 +180,48 @@ export default function ServiceApprovalManager() {
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: 20 }}
                                 key={b._id} 
-                                className="p-8 flex flex-col md:flex-row items-center justify-between hover:bg-surface-alt/30 transition-all group relative overflow-hidden"
+                                className="p-3.5 flex flex-col md:flex-row items-center justify-between hover:bg-surface-alt/30 transition-all group relative overflow-hidden"
                             >
                                 {/* Hover background effect */}
                                 <div className="absolute top-0 left-0 w-[2px] h-0 bg-primary transition-all duration-500 group-hover:h-full" />
 
-                                <div className="flex items-center gap-6 w-full md:w-auto">
-                                    <div className="w-14 h-14 flex items-center justify-center bg-background border border-border text-primary shrink-0 relative group-hover:border-primary transition-colors !rounded-[16px]">
-                                        <Scissors className="w-7 h-7" />
-                                        <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 border-2 border-surface animate-pulse" />
+                                <div className="flex items-center gap-4 w-full md:w-auto">
+                                    <div className="w-10 h-10 flex items-center justify-center bg-background border border-border text-primary shrink-0 relative group-hover:border-primary transition-colors !rounded-[12px]">
+                                        <Scissors className="w-5 h-5" />
+                                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-orange-500 border border-surface animate-pulse !rounded-full" />
                                     </div>
-                                    <div className="space-y-1 text-left">
-                                        <div className="flex items-center gap-3">
-                                            <p className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{b.staffId?.name || 'Staff Member'}</p>
-                                            <span className="text-[8px] px-2 py-0.5 bg-surface-alt border border-border text-text-muted font-black tracking-widest uppercase italic">Service Provider</span>
+                                    <div className="space-y-0.5 text-left">
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-xs font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{b.staffId?.name || 'Staff Member'}</p>
+                                            <span className="text-[8px] px-1.5 py-0.5 bg-surface-alt border border-border text-text-muted font-black tracking-widest uppercase italic">Service Provider</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <p className="text-[11px] font-black text-text-secondary uppercase tracking-widest">{b.serviceId?.name || 'Service Not Specified'}</p>
-                                            <ArrowRight className="w-3 h-3 text-text-muted opacity-30" />
-                                            <p className="text-[11px] font-black text-primary uppercase tracking-widest">₹{b.price?.toLocaleString()}</p>
+                                            <p className="text-[10px] font-black text-text-secondary uppercase tracking-widest">{b.serviceId?.name || 'Service Not Specified'}</p>
+                                            <ArrowRight className="w-2.5 h-2.5 text-text-muted opacity-30" />
+                                            <p className="text-[10px] font-black text-primary uppercase tracking-widest">₹{b.price?.toLocaleString()}</p>
                                         </div>
-                                        <div className="flex items-center gap-4 text-[9px] text-text-muted font-bold tracking-widest uppercase mt-2">
-                                            <span className="flex items-center gap-1.5"><User className="w-3 h-3 opacity-50" /> {b.clientId?.name || 'Guest Client'}</span>
+                                        <div className="flex items-center gap-3 text-[9px] text-text-muted font-bold tracking-widest uppercase mt-1">
+                                            <span className="flex items-center gap-1"><User className="w-3 h-3 opacity-50" /> {b.clientId?.name || 'Guest Client'}</span>
                                             <span className="opacity-20">|</span>
-                                            <span className="flex items-center gap-1.5"><Clock className="w-3 h-3 opacity-50" /> {new Date(b.appointmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} {b.time}</span>
+                                            <span className="flex items-center gap-1"><Clock className="w-3 h-3 opacity-50" /> {new Date(b.appointmentDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} {b.time}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex flex-wrap items-center gap-3 mt-6 md:mt-0 w-full md:w-auto justify-end">
+                                <div className="flex flex-wrap items-center gap-3 mt-4 md:mt-0 w-full md:w-auto justify-end">
                                     <button
                                         disabled={processingId === b._id}
                                         onClick={() => handleApprove(b._id)}
-                                        className={`group/btn flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white shadow-xl shadow-emerald-500/10 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 whitespace-nowrap flex items-center gap-3 disabled:opacity-50 !rounded-[16px] ${processingId === b._id ? 'animate-pulse' : ''}`}
+                                        className={`group/btn flex-1 sm:flex-none px-4 py-2 bg-emerald-500 text-white shadow-xl shadow-emerald-500/10 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 whitespace-nowrap flex items-center gap-2 disabled:opacity-50 !rounded-[12px] ${processingId === b._id ? 'animate-pulse' : ''}`}
                                     >
                                         {processingId === b._id ? (
                                             <>
-                                                <Activity className="w-4 h-4 animate-spin" />
+                                                <Activity className="w-3.5 h-3.5 animate-spin" />
                                                 Processing...
                                             </>
                                         ) : (
                                             <>
-                                                <CheckCircle2 className="w-4 h-4 transition-transform group-hover/btn:scale-125" />
+                                                <CheckCircle2 className="w-3.5 h-3.5 transition-transform group-hover/btn:scale-125" />
                                                 Approve Service
                                             </>
                                         )}
