@@ -17,7 +17,7 @@ const checkImageLimit = require('../Middleware/imageLimit');
 
 router
     .route('/')
-    .get(getUsers) // Public, but filtered by salonId in controller
+    .get(protect, getUsers) // Require authentication to get user context (salonId)
     .post(protect, authorize('admin', 'manager', 'p:setup'), optimizedUpload.single('avatar'), checkImageLimit, processToWebP('staff'), createUser);
 
 router

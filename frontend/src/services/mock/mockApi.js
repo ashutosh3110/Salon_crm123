@@ -645,11 +645,56 @@ export const mockGet = async (url, config = {}) => {
         return { data: { success: true, data: { records: filtered } } };
     }
 
-    if (url === '/users') {
-        const staff = getLocal('hr_staff', [
-            { _id: 'u_1', name: 'Alina Khan', role: 'stylist', specialist: 'Senior Stylist', email: 'alina@salon.com', phone: '9876543210', status: 'active', joinedDate: '2024-01-10', salary: 35000, appointments: 142, rating: 4.8 },
-            { _id: 'u_2', name: 'Rahul Sharma', role: 'manager', email: 'rahul@salon.com', phone: '9876543211', status: 'active', joinedDate: '2023-11-15', salary: 55000, appointments: 12, rating: 4.5 }
-        ]);
+    if (url.startsWith('/users') && (url === '/users' || url.startsWith('/users?'))) {
+        let staff = getLocal('hr_staff', []);
+        if (staff.length === 0) {
+            staff = [
+                { _id: 'u_1', name: 'Alina Khan', role: 'stylish', specialist: 'Senior Stylist', email: 'alina@salon.com', phone: '9876543210', status: 'active', joinedDate: '2024-01-10', salary: 35000, appointments: 142, rating: 4.8, outletId: '1' },
+                { _id: 'u_2', name: 'Rahul Sharma', role: 'manager', email: 'rahul@salon.com', phone: '9876543211', status: 'active', joinedDate: '2023-11-15', salary: 55000, appointments: 12, rating: 4.5, outletId: '1' },
+                { _id: 'u_3', name: 'Anita Verma', role: 'stylish', specialist: 'Junior Stylist', email: 'anita@salon.com', phone: '9876543212', status: 'active', joinedDate: '2024-02-15', salary: 25000, appointments: 80, rating: 4.2, outletId: '2' }
+            ];
+            saveLocal('hr_staff', staff);
+        } else {
+            let updated = false;
+            staff = staff.map(s => {
+                let sUpdated = { ...s };
+                let needUpdate = false;
+                if (!s.outletId) {
+                    needUpdate = true;
+                    if (s.name === 'Anita Verma') sUpdated.outletId = '2';
+                    else sUpdated.outletId = '1';
+                }
+                if (s.role === 'stylist') {
+                    needUpdate = true;
+                    sUpdated.role = 'stylish';
+                }
+                if (needUpdate) {
+                    updated = true;
+                    return sUpdated;
+                }
+                return s;
+            });
+            if (updated) {
+                saveLocal('hr_staff', staff);
+            }
+        }
+
+        const urlParams = new URLSearchParams(url.split('?')[1] || '');
+        const role = urlParams.get('role');
+        if (role) {
+            const normalizedQueryRole = role === 'stylist' ? 'stylish' : role;
+            staff = staff.filter(s => {
+                const normalizedStaffRole = s.role === 'stylist' ? 'stylish' : s.role;
+                return normalizedStaffRole === normalizedQueryRole;
+            });
+        }
+        const outletId = urlParams.get('outletId');
+        if (outletId) {
+            staff = staff.filter(s => {
+                const sOutletId = s.outletId?._id || s.outletId;
+                return !sOutletId || String(sOutletId) === String(outletId);
+            });
+        }
         return { data: { success: true, data: staff, results: staff } };
     }
 
@@ -823,52 +868,42 @@ export const mockGet = async (url, config = {}) => {
 
             const realPunch = realPunches.find(p => p.date === dateStr);
             if (realPunch) {
+                const pStatus = realPunch.status || 'PRESENT';
                 history.push({
                     date: dateStr,
-                    status: 'PRESENT',
+                    status: pStatus,
                     checkInAt: realPunch.checkInAt,
                     checkOutAt: realPunch.checkOutAt,
-                    notes: null
+                    notes: realPunch.notes || null
                 });
-                presentCount++;
+                if (pStatus === 'PRESENT') {
+                    presentCount++;
+                } else if (pStatus === 'ABSENT') {
+                    absentCount++;
+                }
                 continue;
             }
 
-            // If it's today and no real punch exists, we mark as absent (or pending)
+            // If it's today and no real punch exists, we mark as UNMARKED
             if (dateStr === todayStr) {
                 history.push({
                     date: dateStr,
-                    status: 'ABSENT',
+                    status: 'UNMARKED',
                     checkInAt: null,
                     checkOutAt: null,
                     notes: null
                 });
-                absentCount++;
                 continue;
             }
 
-            let status = 'PRESENT';
+            let status = 'UNMARKED';
             if (isWeekend) status = 'WEEKOFF';
-            else {
-                const rand = Math.random();
-                if (rand < 0.15) status = 'ABSENT';
-            }
-
-            let checkIn = null;
-            let checkOut = null;
-            if (status === 'PRESENT') {
-                checkIn = `${dateStr}T09:00:00Z`;
-                checkOut = `${dateStr}T18:00:00Z`;
-                presentCount++;
-            } else if (status === 'ABSENT') {
-                absentCount++;
-            }
 
             history.push({
                 date: dateStr,
                 status,
-                checkInAt: checkIn,
-                checkOutAt: checkOut,
+                checkInAt: null,
+                checkOutAt: null,
                 notes: null
             });
         }
@@ -877,7 +912,7 @@ export const mockGet = async (url, config = {}) => {
             data: {
                 success: true,
                 data: history,
-                stats: { present: presentCount, absent: absentCount, total: daysInMonth }
+                stats: { present: presentCount, absent: absentCount, late: 0, halfDay: 0, total: daysInMonth }
             }
         };
     }
@@ -1067,14 +1102,22 @@ export const mockGet = async (url, config = {}) => {
 
     if (url.startsWith('/bookings')) {
         let bookings = getLocal('app_bookings', [
-            { id: 'bk_1', clientId: { name: 'Anita Roy' }, serviceId: { name: 'Haircut' }, staffId: { name: 'Rahul Sharma' }, time: '10:30 AM', status: 'confirmed', source: 'APP', outletId: '1' },
-            { id: 'bk_2', clientId: { name: 'Vikram Singh' }, serviceId: { name: 'Beard Trim' }, staffId: { name: 'Alina Khan' }, time: '11:15 AM', status: 'arrived', source: 'RECEPTION', outletId: '2' }
+            { id: 'bk_1', clientId: { name: 'Anita Roy' }, serviceId: { name: 'Haircut' }, staffId: { name: 'Rahul Sharma' }, time: '10:30 AM', status: 'confirmed', source: 'APP', outletId: '1', appointmentDate: new Date().toISOString().split('T')[0] },
+            { id: 'bk_2', clientId: { name: 'Vikram Singh' }, serviceId: { name: 'Beard Trim' }, staffId: { name: 'Alina Khan' }, time: '11:15 AM', status: 'arrived', source: 'RECEPTION', outletId: '2', appointmentDate: new Date().toISOString().split('T')[0] }
         ]);
         const urlParams = new URLSearchParams(url.split('?')[1] || '');
         const outletId = urlParams.get('outletId');
         if (outletId) {
             // Keep bookings that match the outlet, or if they have no outletId assigned yet (for backward compatibility of mock)
             bookings = bookings.filter(b => String(b.outletId) === String(outletId) || !b.outletId);
+        }
+        const dateParam = urlParams.get('date');
+        if (dateParam) {
+            bookings = bookings.filter(b => {
+                if (!b.appointmentDate) return true;
+                const bDateStr = b.appointmentDate.split('T')[0];
+                return bDateStr === dateParam;
+            });
         }
         return { data: { success: true, results: bookings, data: bookings } };
     }
@@ -1177,7 +1220,41 @@ export const mockPost = async (url, data) => {
     }
     if (url === '/bookings') {
         const bookings = getLocal('app_bookings', []);
-        const newB = { ...data, _id: 'bk_' + Date.now(), createdAt: new Date().toISOString() };
+        
+        // Find matched service
+        const services = getLocal('app_services', [
+            { id: 'ser_1', name: 'Global Hair Coloring', price: 4500, duration: 90 },
+            { id: 'ser_2', name: 'Premium Haircut', price: 950, duration: 45 },
+            { id: 'ser_3', name: 'HydraFacial', price: 5500, duration: 60 }
+        ]);
+        const matchedService = services.find(s => s.id === data.serviceId || s._id === data.serviceId);
+
+        // Find matched staff
+        const staff = getLocal('hr_staff', [
+            { _id: 'u_1', name: 'Alina Khan', role: 'stylist', specialist: 'Senior Stylist', email: 'alina@salon.com', phone: '9876543210', status: 'active', joinedDate: '2024-01-10', salary: 35000, appointments: 142, rating: 4.8 },
+            { _id: 'u_2', name: 'Rahul Sharma', role: 'manager', email: 'rahul@salon.com', phone: '9876543211', status: 'active', joinedDate: '2023-11-15', salary: 55000, appointments: 12, rating: 4.5 }
+        ]);
+        const matchedStaff = staff.find(s => s._id === data.staffId || s.id === data.staffId);
+
+        const newB = { 
+            ...data, 
+            _id: 'bk_' + Date.now(), 
+            id: 'bk_' + Date.now(),
+            clientId: {
+                name: data.clientName || 'Walk-in',
+                phone: data.phone || ''
+            },
+            serviceId: matchedService ? {
+                _id: matchedService.id || matchedService._id,
+                name: matchedService.name,
+                price: matchedService.price
+            } : { name: 'Unknown Service' },
+            staffId: matchedStaff ? {
+                _id: matchedStaff._id || matchedStaff.id,
+                name: matchedStaff.name
+            } : { name: 'Unassigned' },
+            createdAt: new Date().toISOString() 
+        };
         bookings.push(newB);
         saveLocal('app_bookings', bookings);
         return { data: newB, success: true };
@@ -1281,12 +1358,32 @@ export const mockPost = async (url, data) => {
         const today = new Date().toLocaleDateString('en-CA');
         let record = punches.find(p => p.date === today);
         if (!record) {
-            record = { date: today, checkInAt: null, checkOutAt: null, location: data.location };
+            record = { date: today, checkInAt: null, checkOutAt: null, location: data.location, status: 'PRESENT' };
             punches.push(record);
         }
         
-        if (data.type === 'in') record.checkInAt = new Date().toISOString();
-        else record.checkOutAt = new Date().toISOString();
+        if (data.status) {
+            record.status = data.status.toUpperCase();
+            if (data.status === 'present') {
+                record.checkInAt = new Date().toISOString();
+            } else {
+                record.checkInAt = null;
+                record.checkOutAt = null;
+            }
+            if (data.location) {
+                record.notes = `Marked present at ${data.location}`;
+            } else {
+                record.notes = `Marked ${data.status}`;
+            }
+        } else {
+            if (data.type === 'in') {
+                record.checkInAt = new Date().toISOString();
+                record.status = 'PRESENT';
+                if (data.location) record.notes = `Punched at ${data.location}`;
+            } else {
+                record.checkOutAt = new Date().toISOString();
+            }
+        }
         
         saveLocal('stylist_attendance', punches);
         return { data: { success: true, message: 'Punched successfully (Mock).' } };

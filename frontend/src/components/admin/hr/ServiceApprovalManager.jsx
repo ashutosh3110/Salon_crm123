@@ -14,6 +14,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
+import AnimatedCounter from '../../common/AnimatedCounter';
 
 export default function ServiceApprovalManager() {
     const [bookings, setBookings] = useState([]);
@@ -80,41 +81,88 @@ export default function ServiceApprovalManager() {
             {/* Header Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[
-                    { label: 'Services to Approve', value: bookings.length, color: 'text-orange-500' },
-                    { label: 'Approval Status', value: 'ACTIVE', color: 'text-emerald-500' },
-                    { label: 'Current Branch', value: 'Main Outlet', color: 'text-primary' },
-                ].map((s) => (
-                    <div key={s.label} className="bg-surface border border-border p-6 relative overflow-hidden group hover:border-primary/50 transition-colors">
-                        <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
-                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.2em] mb-2">{s.label}</p>
-                        <p className={`text-3xl font-black ${s.color} tracking-tighter`}>{s.value}</p>
-                    </div>
+                    { 
+                        label: 'Services to Approve', value: bookings.length, sub: 'Pending Verification', icon: Clock, trend: '',
+                        iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
+                        iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+                        cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+                        cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50',
+                    },
+                    { 
+                        label: 'Approval Status', value: 'ACTIVE', sub: 'System Health', icon: CheckCircle2, trend: '',
+                        iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
+                        iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+                        cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+                        cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
+                    },
+                    { 
+                        label: 'Current Branch', value: 'Main Outlet', sub: 'Active Location', icon: User, trend: '',
+                        iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
+                        iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+                        cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+                        cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
+                    },
+                ].map((s, idx) => (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: idx * 0.1 }}
+                        key={s.label} 
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${s.cardBgClass} ${s.cardBorderClass}`}
+                    >
+                        <div className="flex !items-start gap-3 !text-left">
+                            <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${s.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                <s.icon className={`w-4 h-4 ${s.iconColorClass}`} strokeWidth={2} />
+                            </div>
+
+                            <div className="flex flex-col !items-start !text-left">
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                    className="uppercase text-slate-500 dark:text-slate-455 leading-none mb-1.5 !text-left"
+                                >
+                                    {s.label}
+                                </span>
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
+                                    className="text-slate-800 dark:text-slate-55 leading-none tracking-tight !text-left flex items-baseline"
+                                >
+                                    {s.label === 'Services to Approve' ? <AnimatedCounter value={s.value} /> : s.value}
+                                </h3>
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 500 }}
+                                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
+                                >
+                                    {s.sub}
+                                </span>
+                            </div>
+                        </div>
+                    </motion.div>
                 ))}
             </div>
 
             {/* Toolbar */}
-            <div className="bg-surface p-5 border border-border flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="bg-surface p-5 border border-border flex flex-col md:flex-row items-center justify-between gap-6 !rounded-[16px]">
                 <div className="relative flex-1 max-w-sm w-full">
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                         type="text"
                         placeholder="Search by stylist, client, or service..."
-                        className="w-full pl-12 pr-4 py-3 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all"
+                        className="w-full pl-12 pr-4 py-3 bg-background border border-border text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all !rounded-[16px]"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
                 <button 
                     onClick={fetchPending}
-                    className="px-6 py-3 bg-surface-alt border border-border text-[9px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all flex items-center gap-2"
+                    className="px-6 py-3 bg-surface-alt border border-border text-[9px] font-black uppercase tracking-[0.2em] hover:bg-primary hover:text-white transition-all flex items-center gap-2 !rounded-[16px]"
                 >
-                    <Activity className="w-4 h-4" />
+                    <Activity className="w-4 h-4 text-white" />
                     Refresh List
                 </button>
             </div>
 
             {/* Matrix List */}
-            <div className="bg-surface border border-border overflow-hidden shadow-2xl shadow-primary/5">
+            <div className="bg-surface border border-border overflow-hidden shadow-2xl shadow-primary/5 !rounded-[16px]">
                 <div className="px-8 py-4 border-b border-border/20 bg-background/50 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="w-1.5 h-6 bg-primary" />
@@ -138,7 +186,7 @@ export default function ServiceApprovalManager() {
                                 <div className="absolute top-0 left-0 w-[2px] h-0 bg-primary transition-all duration-500 group-hover:h-full" />
 
                                 <div className="flex items-center gap-6 w-full md:w-auto">
-                                    <div className="w-14 h-14 flex items-center justify-center bg-background border border-border text-primary shrink-0 relative group-hover:border-primary transition-colors">
+                                    <div className="w-14 h-14 flex items-center justify-center bg-background border border-border text-primary shrink-0 relative group-hover:border-primary transition-colors !rounded-[16px]">
                                         <Scissors className="w-7 h-7" />
                                         <div className="absolute -top-1 -right-1 w-3 h-3 bg-orange-500 border-2 border-surface animate-pulse" />
                                     </div>
@@ -164,7 +212,7 @@ export default function ServiceApprovalManager() {
                                     <button
                                         disabled={processingId === b._id}
                                         onClick={() => handleApprove(b._id)}
-                                        className={`group/btn flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white shadow-xl shadow-emerald-500/10 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 whitespace-nowrap flex items-center gap-3 disabled:opacity-50 ${processingId === b._id ? 'animate-pulse' : ''}`}
+                                        className={`group/btn flex-1 sm:flex-none px-8 py-3 bg-emerald-500 text-white shadow-xl shadow-emerald-500/10 text-[9px] font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all active:scale-95 whitespace-nowrap flex items-center gap-3 disabled:opacity-50 !rounded-[16px] ${processingId === b._id ? 'animate-pulse' : ''}`}
                                     >
                                         {processingId === b._id ? (
                                             <>
@@ -185,7 +233,7 @@ export default function ServiceApprovalManager() {
                                 <motion.div 
                                     initial={{ opacity: 0, scale: 0.8 }}
                                     animate={{ opacity: 1, scale: 1 }}
-                                    className="inline-block p-6 bg-primary/5 border border-primary/10 mb-6"
+                                    className="inline-block p-6 bg-primary/5 border border-primary/10 mb-6 !rounded-[16px]"
                                 >
                                     <CheckCircle2 className="w-12 h-12 text-primary opacity-30 mx-auto" />
                                 </motion.div>
@@ -198,8 +246,8 @@ export default function ServiceApprovalManager() {
             </div>
 
             {/* Footer Alert */}
-            <div className="bg-primary/5 border border-primary/20 p-6 flex items-center gap-4 group">
-                <div className="w-10 h-10 flex items-center justify-center bg-primary/10 border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all">
+            <div className="bg-primary/5 border border-primary/20 p-6 flex items-center gap-4 group !rounded-[16px]">
+                <div className="w-10 h-10 flex items-center justify-center bg-primary/10 border border-primary/20 group-hover:bg-primary group-hover:text-white transition-all !rounded-[16px]">
                     <AlertCircle className="w-5 h-5" />
                 </div>
                 <div className="flex-1">

@@ -13,16 +13,16 @@ const settingsSections = [
     {
         title: 'Account Settings',
         items: [
-            { id: 'profile', label: 'Edit Profile', sub: 'Name, email, and photo', icon: User },
-            { id: 'security', label: 'Security', sub: 'Password and 2FA', icon: Shield },
-            { id: 'notifications', label: 'Notifications', sub: 'How you want to be alerted', icon: Bell },
+            { id: 'profile', label: 'Edit Profile', sub: 'Name, email, and photo', icon: User, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+            { id: 'security', label: 'Security', sub: 'Password and 2FA', icon: Shield, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+            { id: 'notifications', label: 'Notifications', sub: 'How you want to be alerted', icon: Bell, color: 'text-amber-500', bg: 'bg-amber-500/10' },
         ]
     },
     {
         title: 'Support',
         items: [
-            { id: 'help', label: 'Help Center', sub: 'FAQs and support guides', icon: HelpCircle },
-            { id: 'privacy', label: 'Privacy Policy', sub: 'Data collection and usage', icon: Lock },
+            { id: 'help', label: 'Help Center', sub: 'FAQs and support guides', icon: HelpCircle, color: 'text-purple-500', bg: 'bg-purple-500/10' },
+            { id: 'privacy', label: 'Privacy Policy', sub: 'Data collection and usage', icon: Lock, color: 'text-rose-500', bg: 'bg-rose-500/10' },
         ]
     }
 ];
@@ -191,22 +191,22 @@ export default function ManagerSettingsPage() {
                         </div>
 
                         {/* Profile Brief */}
-                        <div className="bg-primary p-5 sm:p-6 text-white flex flex-col sm:flex-row items-center gap-5 sm:gap-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full blur-3xl -translate-y-8 translate-x-8" />
-                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl sm:text-3xl font-black border border-white/20 shadow-lg">
+                        <div className="bg-surface border border-border/80 p-5 sm:p-6 text-text flex flex-col sm:flex-row items-center gap-5 sm:gap-6 relative overflow-hidden !rounded-[16px]">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-3xl -translate-y-8 translate-x-8" />
+                            <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-background border border-border/60 flex items-center justify-center text-2xl sm:text-3xl font-black shadow-sm !rounded-[16px] text-primary">
                                 {(user?.name || 'M').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                             </div>
                             <div className="flex-1 text-center sm:text-left relative">
                                 <h2 className="text-lg sm:text-xl font-black tracking-tight leading-none uppercase">{user?.name || 'Manager'}</h2>
-                                <p className="text-white/70 text-[10px] sm:text-sm mt-1.5 font-bold uppercase tracking-widest capitalize">{user?.role || 'Manager'}</p>
+                                <p className="text-text-muted text-[10px] sm:text-sm mt-1.5 font-bold uppercase tracking-widest capitalize">{user?.role || 'Manager'}</p>
                                 <div className="flex flex-wrap justify-center sm:justify-start gap-2 sm:gap-4 mt-4">
-                                    <div className="bg-black/20 backdrop-blur-sm px-2.5 py-1 border border-white/10 text-[8px] sm:text-[10px] font-black uppercase tracking-widest">{user?.email || ''}</div>
-                                    <div className="bg-black/20 backdrop-blur-sm px-2.5 py-1 border border-white/10 text-[8px] sm:text-[10px] font-black uppercase tracking-widest">Active</div>
+                                    <div className="bg-surface-alt px-2.5 py-1 border border-border/60 text-text-muted text-[8px] sm:text-[10px] font-black uppercase tracking-widest !rounded-[8px]">{user?.email || 'manager@gmail.com'}</div>
+                                    <div className="bg-emerald-500/10 px-2.5 py-1 border border-emerald-500/20 text-emerald-600 text-[8px] sm:text-[10px] font-black uppercase tracking-widest !rounded-[8px]">Active</div>
                                 </div>
                             </div>
                             <button 
                                 onClick={() => setActiveTab('profile')}
-                                className="w-full sm:w-auto relative px-5 py-2.5 bg-white text-primary text-[9px] sm:text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all"
+                                className="w-full sm:w-auto relative px-5 py-2.5 bg-primary text-white text-[9px] sm:text-xs font-black uppercase tracking-widest shadow-lg hover:scale-105 active:scale-95 transition-all !rounded-[16px]"
                             >
                                 Edit Profile
                             </button>
@@ -225,8 +225,8 @@ export default function ManagerSettingsPage() {
                                                 className="w-full flex items-center justify-between p-4 sm:p-5 hover:bg-surface-alt transition-colors text-left group"
                                             >
                                                 <div className="flex items-center gap-4">
-                                                    <div className="shrink-0 group-hover:scale-110 transition-transform">
-                                                        <item.icon className="w-5 h-5 text-text-secondary group-hover:text-primary transition-colors" />
+                                                    <div className={`w-10 h-10 flex items-center justify-center !rounded-[12px] shrink-0 group-hover:scale-110 transition-transform ${item.bg}`}>
+                                                        <item.icon className={`w-5 h-5 ${item.color}`} />
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-bold text-text mb-0.5">{item.label}</p>
@@ -288,12 +288,12 @@ export default function ManagerSettingsPage() {
                                     </>
                                 ) : saveSuccess ? (
                                     <>
-                                        <CheckCircle2 className="w-4 h-4" />
+                                        <CheckCircle2 className="w-4 h-4 text-white" />
                                         Updated
                                     </>
                                 ) : (
                                     <>
-                                        <Save className="w-4 h-4" />
+                                        <Save className="w-4 h-4 text-white" />
                                         Commit Changes
                                     </>
                                 )}

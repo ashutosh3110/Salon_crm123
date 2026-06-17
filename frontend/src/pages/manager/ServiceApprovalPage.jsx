@@ -6,7 +6,7 @@ export default function ServiceApprovalPage() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-4 rounded-none bg-primary/5 border border-primary/10 shadow-sm transition-transform hover:scale-105">
+                    <div className="p-4 !rounded-[16px] bg-primary/5 border border-primary/10 shadow-sm transition-transform hover:scale-105">
                         <CheckCircle2 className="w-6 h-6 text-primary" />
                     </div>
                     <div>

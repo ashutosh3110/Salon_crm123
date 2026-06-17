@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import { useBusiness } from '../../contexts/BusinessContext';
+import CustomDropdown from '../../components/common/CustomDropdown';
 ;
 import api from '../../services/api';
 
@@ -242,7 +243,7 @@ export default function AttendancePage() {
 
             {/* Analytics & Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 bg-surface p-6 sm:p-8 border border-border shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
+                <div className="lg:col-span-2 bg-surface p-6 sm:p-8 !rounded-[16px] border border-border shadow-sm flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
                     <div className="absolute -right-10 -top-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl" />
                     
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 w-full md:w-auto relative z-10">
@@ -278,14 +279,14 @@ export default function AttendancePage() {
                     </div>
                 </div>
 
-                <div className="bg-text p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden border border-text">
+                <div className="bg-surface p-6 sm:p-8 !rounded-[16px] flex flex-col justify-between relative overflow-hidden border border-border shadow-sm">
                     <div className="relative z-10">
-                        <p className="text-[9px] font-black text-background/60 uppercase tracking-[0.3em]">Quick Actions</p>
-                        <h3 className="text-lg font-black text-background mt-1 uppercase tracking-tight">Bulk Management</h3>
+                        <p className="text-[9px] font-black text-text-muted uppercase tracking-[0.3em]">Quick Actions</p>
+                        <h3 className="text-lg font-black text-text mt-1 uppercase tracking-tight">Bulk Management</h3>
                     </div>
                     <div className="grid grid-cols-2 gap-2 mt-6 relative z-10">
-                        <button onClick={() => handleBulkAction('present')} className="py-3 bg-background text-text text-[9px] font-black uppercase tracking-widest hover:bg-primary hover:text-white transition-all">Mark All Present</button>
-                        <button onClick={() => handleBulkAction('absent')} className="py-3 bg-background/10 border border-background/20 text-background text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all">Mark All Absent</button>
+                        <button onClick={() => handleBulkAction('present')} className="py-3 !rounded-[12px] bg-primary text-white text-[9px] font-black uppercase tracking-widest hover:bg-black transition-all">Mark All Present</button>
+                        <button onClick={() => handleBulkAction('absent')} className="py-3 !rounded-[12px] bg-white border border-border text-text text-[9px] font-black uppercase tracking-widest hover:bg-rose-500 hover:text-white hover:border-rose-500 transition-all">Mark All Absent</button>
                     </div>
                 </div>
             </div>
@@ -294,7 +295,7 @@ export default function AttendancePage() {
             <AnimatePresence>
                 {leaveRequests.length > 0 && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-                        <div className="bg-surface border border-border p-6 sm:p-8 relative">
+                        <div className="bg-surface border border-border !rounded-[16px] p-6 sm:p-8 relative">
                             <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-[10px] font-black text-text uppercase tracking-widest flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-violet-500 animate-pulse" /> Pending Requests
@@ -306,7 +307,7 @@ export default function AttendancePage() {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                 {leaveRequests.map((lv) => (
-                                    <div key={lv.id} className="bg-white border border-border p-5 group hover:border-violet-500 transition-all">
+                                    <div key={lv.id} className="bg-white border border-border !rounded-[16px] p-5 group hover:border-violet-500 transition-all">
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
                                                 <h4 className="text-[11px] font-black text-text uppercase leading-none">{lv.userName}</h4>
@@ -345,7 +346,7 @@ export default function AttendancePage() {
             </AnimatePresence>
 
             {/* Registry Table */}
-            <div className="bg-white border border-border shadow-sm overflow-hidden text-left relative min-h-[400px]">
+            <div className="bg-white border border-border !rounded-[16px] shadow-sm overflow-hidden text-left relative min-h-[400px]">
                 {loading && (
                     <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
                         <div className="flex flex-col items-center gap-3">
@@ -365,37 +366,44 @@ export default function AttendancePage() {
                             <input type="text" placeholder="Search registry..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
                                 className="pl-9 pr-4 py-2 bg-white border border-border text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary w-full sm:w-64" />
                         </div>
-                        <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
-                            className="bg-white border border-border px-3 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:border-primary">
-                            <option value="All">All Status</option>
-                            {Object.entries(STATUS_META).map(([key, val]) => (
-                                <option key={key} value={key}>{val.label.toUpperCase()}</option>
-                            ))}
-                        </select>
+                        <div className="w-40 z-20">
+                            <CustomDropdown 
+                                value={filterStatus}
+                                onChange={setFilterStatus}
+                                options={[
+                                    { label: 'ALL STATUS', value: 'All' },
+                                    ...Object.entries(STATUS_META).map(([key, val]) => ({
+                                        label: val.label.toUpperCase(),
+                                        value: key
+                                    }))
+                                ]}
+                                className="!h-[34px]"
+                            />
+                        </div>
                     </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
+                    <table className="w-full text-left min-w-[700px] table-fixed">
                         <thead>
                             <tr className="border-b border-border bg-white">
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest font-black">Employee</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-center font-black">Check In</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-center font-black">Check Out</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-center font-black">Hours</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-right font-black">Status</th>
-                                <th className="px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest text-right font-black font-black">Actions</th>
+                                <th className="w-[30%] !text-left px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Employee</th>
+                                <th className="w-[15%] !text-center px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Check In</th>
+                                <th className="w-[15%] !text-center px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Check Out</th>
+                                <th className="w-[15%] !text-center px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Hours</th>
+                                <th className="w-[15%] !text-center px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Status</th>
+                                <th className="w-[10%] !text-center px-6 py-4 text-[9px] font-black text-text-muted uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-border/40">
                             {filteredRecords.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="px-6 py-12 text-center text-[10px] font-black text-text-muted uppercase tracking-widest">No matching records found.</td>
+                                    <td colSpan={6} className="px-6 py-12 !text-center text-[10px] font-black text-text-muted uppercase tracking-widest">No matching records found.</td>
                                 </tr>
                             ) : filteredRecords.map((r) => (
                                 <tr key={r.id} className="hover:bg-surface-alt/30 transition-colors group">
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-3">
+                                    <td className="px-6 py-4 !text-left">
+                                        <div className="flex items-center gap-3 !text-left">
                                             <div className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
                                                 {r.name.charAt(0)}
                                             </div>
@@ -405,33 +413,37 @@ export default function AttendancePage() {
                                             </div>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center justify-center gap-2 text-[10px] font-black text-text-secondary uppercase">
+                                    <td className="px-6 py-4 !text-center">
+                                        <div className="flex items-center !justify-center gap-2 text-[10px] font-black text-text-secondary uppercase">
                                             <Clock className="w-3 h-3 text-text-muted" /> {r.checkIn}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
-                                        <div className="flex items-center justify-center gap-2 text-[10px] font-black text-text-secondary uppercase">
+                                    <td className="px-6 py-4 !text-center">
+                                        <div className="flex items-center !justify-center gap-2 text-[10px] font-black text-text-secondary uppercase">
                                             <Clock className="w-3 h-3 text-text-muted" /> {r.checkOut}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 text-center">
+                                    <td className="px-6 py-4 !text-center">
                                         <span className="text-[10px] font-black text-primary uppercase">{r.hours}h</span>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <span className={`px-2 py-1 text-[8px] font-black border uppercase tracking-widest ${STATUS_META[r.status]?.cls}`}>
-                                            {STATUS_META[r.status]?.label}
-                                        </span>
+                                    <td className="px-6 py-4 !text-center">
+                                        <div className="flex items-center !justify-center">
+                                            <span className={`px-2 py-1 text-[8px] font-black border uppercase tracking-widest ${STATUS_META[r.status]?.cls}`}>
+                                                {STATUS_META[r.status]?.label}
+                                            </span>
+                                        </div>
                                     </td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button onClick={() => {
-                                            setEditModal(r);
-                                            setNewStatus(r.status);
-                                            setEditCheckIn(toTimeInput(r.checkInAt));
-                                            setEditCheckOut(toTimeInput(r.checkOutAt));
-                                        }} className="p-2 text-text-muted hover:text-primary transition-colors">
-                                            <MoreVertical className="w-4 h-4" />
-                                        </button>
+                                    <td className="px-6 py-4 !text-center">
+                                        <div className="flex items-center !justify-center">
+                                            <button onClick={() => {
+                                                setEditModal(r);
+                                                setNewStatus(r.status);
+                                                setEditCheckIn(toTimeInput(r.checkInAt));
+                                                setEditCheckOut(toTimeInput(r.checkOutAt));
+                                            }} className="p-2 text-text-muted hover:text-primary transition-colors">
+                                                <MoreVertical className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
@@ -445,7 +457,7 @@ export default function AttendancePage() {
                 {editModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-sm border border-border shadow-2xl relative p-8">
+                        <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-sm border border-border !rounded-[16px] shadow-2xl relative p-8">
                             <h2 className="text-sm font-black text-text uppercase tracking-widest mb-1">Modify Registry</h2>
                             <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-8">{editModal.name}</p>
                             
@@ -479,7 +491,7 @@ export default function AttendancePage() {
             <AnimatePresence>
                 {toast && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                        className="fixed bottom-6 right-6 z-50 bg-text text-background px-6 py-3 border border-border shadow-2xl flex items-center gap-3">
+                        className="fixed bottom-6 right-6 z-50 bg-text text-background px-6 py-3 border border-border !rounded-[16px] shadow-2xl flex items-center gap-3">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         <p className="text-[10px] font-black uppercase tracking-widest">{toast}</p>
                     </motion.div>

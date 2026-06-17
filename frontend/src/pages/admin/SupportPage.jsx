@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import api from '../../services/api';
+import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 /* ─── Constants ───────────────────────────────────────────────────────── */
 
@@ -139,10 +140,34 @@ export default function SupportPage() {
         const open = tickets.filter(t => t.status === 'open' || t.status === 'in-progress').length;
         const resolved = tickets.filter(t => t.status === 'resolved').length;
         return [
-            { label: 'Total Tickets', value: total, subtitle: 'All time tickets raised', icon: Ticket, bgColor: 'bg-amber-100 dark:bg-amber-500/20', iconColor: 'text-amber-600 dark:text-amber-400' },
-            { label: 'Active Issues', value: open, subtitle: 'Currently open', icon: Bell, bgColor: 'bg-purple-100 dark:bg-purple-500/20', iconColor: 'text-purple-600 dark:text-purple-400' },
-            { label: 'Resolved', value: resolved, subtitle: 'Successfully resolved', icon: CheckCircle, bgColor: 'bg-emerald-100 dark:bg-emerald-500/20', iconColor: 'text-emerald-600 dark:text-emerald-400' },
-            { label: 'Avg. Help Time', value: '< 4hrs', subtitle: 'Average response time', icon: Clock, bgColor: 'bg-blue-100 dark:bg-blue-500/20', iconColor: 'text-blue-600 dark:text-blue-400' },
+            { 
+                label: 'Total Tickets', value: total, subtitle: 'All time tickets raised', icon: Ticket, 
+                iconColorClass: '!text-[#F59E0B] dark:!text-[#FBBF24]',
+                iconBgClass: '!bg-[#FEF3C7] dark:!bg-[#F59E0B]/20',
+                cardBgClass: '!bg-[#FFFBEB] dark:!bg-[#F59E0B]/5',
+                cardBorderClass: '!border-[#FEF3C7] dark:!border-[#F59E0B]/15 hover:!border-[#FCD34D] dark:hover:!border-[#FBBF24]/50',
+            },
+            { 
+                label: 'Active Issues', value: open, subtitle: 'Currently open', icon: Bell, 
+                iconColorClass: '!text-[#A855F7] dark:!text-[#C084FC]',
+                iconBgClass: '!bg-[#F3E8FF] dark:!bg-[#A855F7]/20',
+                cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#A855F7]/5',
+                cardBorderClass: '!border-[#F3E8FF] dark:!border-[#A855F7]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#C084FC]/50',
+            },
+            { 
+                label: 'Resolved', value: resolved, subtitle: 'Successfully resolved', icon: CheckCircle, 
+                iconColorClass: '!text-[#10B981] dark:!text-[#34D399]',
+                iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#10B981]/20',
+                cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#10B981]/5',
+                cardBorderClass: '!border-[#D1FAE5] dark:!border-[#10B981]/15 hover:!border-[#6EE7B7] dark:hover:!border-[#34D399]/50',
+            },
+            { 
+                label: 'Avg. Help Time', value: '< 4hrs', subtitle: 'Average response time', icon: Clock, 
+                iconColorClass: '!text-[#3B82F6] dark:!text-[#60A5FA]',
+                iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#3B82F6]/20',
+                cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#3B82F6]/5',
+                cardBorderClass: '!border-[#DBEAFE] dark:!border-[#3B82F6]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
+            },
         ];
     }, [tickets]);
 
@@ -280,16 +305,40 @@ export default function SupportPage() {
             {/* Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {stats.map((stat, i) => (
-                    <div key={i} className="bg-white p-5 border border-border flex items-center gap-4 rounded-2xl shadow-sm">
-                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 ${stat.bgColor}`}>
-                            <stat.icon className={`w-5 h-5 ${stat.iconColor}`} />
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.1 }}
+                        key={stat.label} 
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${stat.cardBgClass} ${stat.cardBorderClass}`}
+                    >
+                        <div className="flex !items-start gap-3 !text-left">
+                            <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${stat.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
+                            </div>
+
+                            <div className="flex flex-col !items-start !text-left">
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                    className="uppercase text-slate-500 dark:text-slate-455 leading-none mb-1.5 !text-left"
+                                >
+                                    {stat.label}
+                                </span>
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
+                                    className="text-slate-800 dark:text-slate-55 leading-none tracking-tight !text-left flex items-baseline"
+                                >
+                                    {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
+                                </h3>
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 500 }}
+                                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
+                                >
+                                    {stat.subtitle}
+                                </span>
+                            </div>
                         </div>
-                        <div className="flex flex-col">
-                            <p className="text-[10px] font-bold text-text uppercase tracking-wider mb-1">{stat.label}</p>
-                            <h3 className="text-2xl font-bold text-text leading-none mb-1">{stat.value}</h3>
-                            <p className="text-[11px] text-text-muted">{stat.subtitle}</p>
-                        </div>
-                    </div>
+                    </motion.div>
                 ))}
             </div>
 

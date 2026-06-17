@@ -34,13 +34,14 @@ import mockApi from '../../services/mock/mockApi';
 
 export default function AppointmentsPage() {
     const { user } = useAuth();
-    const { activeOutletId } = useBusiness();
+    const { activeOutletId, outlets = [] } = useBusiness();
     const navigate = useNavigate();
 
     // Live States
     const [appointments, setAppointments] = useState([]);
     const [services, setServices] = useState([]);
     const [staff, setStaff] = useState([]);
+    const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [view, setView] = useState('list'); // 'list' or 'calendar'
     const [activeTab, setActiveTab] = useState('bookings'); // 'bookings' or 'orders'
@@ -50,11 +51,21 @@ export default function AppointmentsPage() {
     const [isBookingOpen, setIsBookingOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+    const [showClientDropdown, setShowClientDropdown] = useState(false);
+    const [selectedClientId, setSelectedClientId] = useState('');
+
+    // Coupon & Payment States
+    const [couponCode, setCouponCode] = useState('');
+    const [promoDiscount, setPromoDiscount] = useState(0);
+    const [isPromoApplied, setIsPromoApplied] = useState(false);
+    const [advancePayment, setAdvancePayment] = useState(0);
+    const [advancePaymentMethod, setAdvancePaymentMethod] = useState('cash');
 
     // Manual Booking Form State
     const [newBooking, setNewBooking] = useState({
         clientName: '',
         phone: '',
+        outletId: user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId || '',
         serviceId: '',
         staffId: '',
         time: '10:00 AM',
@@ -63,6 +74,112 @@ export default function AppointmentsPage() {
             return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
         })()
     });
+
+    const filteredClients = useMemo(() => {
+        if (!newBooking.clientName) return clients;
+        return clients.filter(c =>
+            (c.name || '').toLowerCase().includes(newBooking.clientName.toLowerCase()) ||
+            (c.phone || '').includes(newBooking.clientName)
+        );
+    }, [clients, newBooking.clientName]);
+
+    const filteredServicesForBooking = useMemo(() => {
+        if (!newBooking.outletId) return services;
+        return services.filter(s => !s.outletIds || s.outletIds.length === 0 || s.outletIds.includes(newBooking.outletId));
+    }, [services, newBooking.outletId]);
+
+    const filteredStaffForBooking = useMemo(() => {
+        if (!newBooking.outletId) return staff;
+        return staff.filter(s => {
+            const staffOutletId = s.outletId?._id || s.outletId;
+            return !staffOutletId || staffOutletId === newBooking.outletId;
+        });
+    }, [staff, newBooking.outletId]);
+
+    const selectedService = useMemo(() => {
+        return services.find(s => s._id === newBooking.serviceId || s.id === newBooking.serviceId);
+    }, [services, newBooking.serviceId]);
+
+    const priceCalculation = useMemo(() => {
+        if (!selectedService) return { original: 0, discount: 0, promoDiscount: 0, subtotal: 0, tax: 0, total: 0, gstRate: 18, isInclusive: false, cgst: 0, sgst: 0 };
+
+        const original = selectedService.price || 0;
+        const discount = 0;
+
+        const gstRate = selectedService.gst !== undefined ? selectedService.gst : 18;
+        const isInclusive = selectedService.isInclusiveTax === true || String(selectedService.isInclusiveTax) === 'true';
+
+        const netAfterPromo = Math.max(0, original - promoDiscount);
+
+        let subtotal = 0;
+        let tax = 0;
+        let total = 0;
+        let cgst = 0;
+        let sgst = 0;
+
+        if (isInclusive) {
+            total = Number(netAfterPromo.toFixed(2));
+            subtotal = Number((netAfterPromo / (1 + (gstRate / 100))).toFixed(2));
+            tax = Number((netAfterPromo - subtotal).toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
+        } else {
+            subtotal = Number(netAfterPromo.toFixed(2));
+            tax = Number((subtotal * (gstRate / 100)).toFixed(2));
+            cgst = Number((tax / 2).toFixed(2));
+            sgst = Number((tax - cgst).toFixed(2));
+            total = Number((subtotal + tax).toFixed(2));
+        }
+
+        return { original, discount, promoDiscount, subtotal, tax, total, gstRate, isInclusive, cgst, sgst };
+    }, [selectedService, promoDiscount]);
+
+    useEffect(() => {
+        if (priceCalculation.total) {
+            setAdvancePayment(Math.round(priceCalculation.total * 0.4));
+        } else {
+            setAdvancePayment(0);
+        }
+    }, [priceCalculation.total]);
+
+    const applyPromo = () => {
+        const code = String(couponCode || '').trim().toUpperCase();
+        if (!code) return;
+        const original = selectedService?.price || 0;
+        const discount = Math.round(original * 0.15); // 15% discount
+        setPromoDiscount(discount);
+        setIsPromoApplied(true);
+        alert(`Coupon applied! Discount of ₹${discount} added.`);
+    };
+
+    const [busySlots, setBusySlots] = useState([]);
+    const [fetchingSlots, setFetchingSlots] = useState(false);
+
+    useEffect(() => {
+        const updateBusySlots = async () => {
+            if (!newBooking.date || !newBooking.staffId) {
+                setBusySlots([]);
+                return;
+            }
+            setFetchingSlots(true);
+            try {
+                const res = await mockApi.get(`/bookings?date=${newBooking.date}&outletId=${newBooking.outletId}`);
+                const dateBookings = res.data?.results || [];
+                const busy = dateBookings
+                    .filter(b => {
+                        const bStaffId = b.staffId?._id || b.staffId?.id || b.staffId;
+                        return bStaffId === newBooking.staffId;
+                    })
+                    .map(b => b.time);
+                setBusySlots(busy);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                setFetchingSlots(false);
+            }
+        };
+        updateBusySlots();
+    }, [newBooking.date, newBooking.staffId, newBooking.outletId]);
 
     // Load Data
     const fetchData = async () => {
@@ -73,15 +190,20 @@ export default function AppointmentsPage() {
             const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
             const outletToFetch = isReceptionistMode ? userOutletId : (activeOutletId || '');
 
-            const [bookingsRes, servicesRes, staffRes, invoicesRes] = await Promise.all([
+            const [bookingsRes, servicesRes, staffRes, invoicesRes, clientsRes] = await Promise.all([
                 mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${outletToFetch}`),
                 mockApi.get('/services?limit=100'),
-                mockApi.get('/users?role=stylist'),
-                mockApi.get('/invoices', { params: { limit: 100, outletId: outletToFetch } })
+                mockApi.get('/users?role=stylish'),
+                mockApi.get('/invoices', { params: { limit: 100, outletId: outletToFetch } }),
+                mockApi.get('/client')
             ]);
 
             if (invoicesRes?.data?.results) {
                 setOrders(invoicesRes.data.results);
+            }
+
+            if (clientsRes?.data?.results) {
+                setClients(clientsRes.data.results);
             }
 
             if (bookingsRes.data.results) {
@@ -109,8 +231,18 @@ export default function AppointmentsPage() {
                     .filter(Boolean);
 
                 if (staffRes?.data?.success) {
+                    console.log("hvsvahv", staffRes)
                     const staffList = staffRes.data.data?.results || staffRes.data.results || [];
-                    setStaff(staffList.map(s => ({
+                    const mappedStaffList = staffList.map(s => {
+                        let staffOutletId = s.outletId;
+                        if (s.name === 'Alina Khan' || s.name === 'Rahul Sharma') {
+                            staffOutletId = outlets[0]?._id || outlets[0]?.id || '1';
+                        } else if (s.name === 'Anita Verma') {
+                            staffOutletId = outlets[1]?._id || outlets[1]?.id || '2';
+                        }
+                        return { ...s, outletId: staffOutletId };
+                    });
+                    setStaff(mappedStaffList.map(s => ({
                         ...s,
                         isAvailable: !busyStaffIds.includes(s._id || s.id)
                     })));
@@ -146,30 +278,40 @@ export default function AppointmentsPage() {
         };
     }, [isBookingOpen, isDetailsOpen]);
 
-    const filteredAppointments = useMemo(() => {
-        return appointments.filter(apt => {
-            const cleanQuery = searchQuery.replace(/\D/g, '');
-            return searchQuery === '' ||
-                apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (cleanQuery !== '' && apt.phone?.replace(/\D/g, '').includes(cleanQuery));
-        });
-    }, [appointments, searchQuery]);
+    useEffect(() => {
+        if (!isBookingOpen) {
+            setSelectedClientId('');
+            setNewBooking({
+                clientName: '',
+                phone: '',
+                outletId: user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId || '',
+                serviceId: '',
+                staffId: '',
+                time: '10:00 AM',
+                date: (() => {
+                    const d = new Date();
+                    return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+                })()
+            });
+            setCouponCode('');
+            setPromoDiscount(0);
+            setIsPromoApplied(false);
+            setAdvancePayment(0);
+            setAdvancePaymentMethod('cash');
+        } else {
+            setNewBooking(prev => ({
+                ...prev,
+                outletId: user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId || ''
+            }));
+        }
+    }, [isBookingOpen, user, activeOutletId]);
 
-    const filteredOrders = useMemo(() => {
-        return orders.filter(order => {
-            const clientName = order.clientId?.name || 'Walk-in';
-            const phone = order.clientId?.phone || '';
-            const orderId = order.invoiceNumber || order._id || '';
-            
-            const cleanQuery = searchQuery.replace(/\D/g, '');
-            return searchQuery === '' ||
-                clientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (cleanQuery !== '' && phone.replace(/\D/g, '').includes(cleanQuery));
-        });
-    }, [orders, searchQuery]);
+    const filteredAppointments = appointments.filter(apt =>
+        apt.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.service.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        apt.phone?.replace(/\D/g, '').includes(searchQuery.replace(/\D/g, ''))
+    );
 
     const handleBill = (apt) => {
         navigate('/pos', {
@@ -218,7 +360,7 @@ export default function AppointmentsPage() {
     const handleManualBookingSubmit = async (e) => {
         e.preventDefault();
 
-        if (!newBooking.serviceId || !newBooking.staffId || !newBooking.clientName || !newBooking.phone) {
+        if (!newBooking.serviceId || !newBooking.staffId || !newBooking.clientName || !newBooking.phone || !newBooking.outletId) {
             alert('Missing Required Protocols: Please complete all fields.');
             return;
         }
@@ -229,11 +371,16 @@ export default function AppointmentsPage() {
                 phone: newBooking.phone,
                 serviceId: newBooking.serviceId,
                 staffId: newBooking.staffId,
-                outletId: user?.role === 'receptionist' ? (user?.outletId || user?.outlet?._id || user?.outlet) : (activeOutletId || user?.outletId),
+                outletId: newBooking.outletId,
                 appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
                 time: newBooking.time,
                 status: 'upcoming',
-                source: 'RECEPTION'
+                source: 'RECEPTION',
+                advancePaid: Number(advancePayment),
+                advancePaymentMethod,
+                couponCode: isPromoApplied ? couponCode : undefined,
+                totalPrice: priceCalculation.total,
+                price: priceCalculation.total
             };
 
             await mockApi.post('/bookings', bookingData);
@@ -245,11 +392,18 @@ export default function AppointmentsPage() {
             setNewBooking({
                 clientName: '',
                 phone: '',
+                outletId: user?.outletId || user?.outlet?._id || user?.outlet || activeOutletId || '',
                 serviceId: '',
                 staffId: '',
                 time: '10:00 AM',
                 date: new Date().toISOString().split('T')[0]
             });
+            setSelectedClientId('');
+            setCouponCode('');
+            setPromoDiscount(0);
+            setIsPromoApplied(false);
+            setAdvancePayment(0);
+            setAdvancePaymentMethod('cash');
             alert('Internal Protocol: Manual booking successfully registered.');
         } catch (err) {
             alert('Registry Write Error: Failed to save booking.');
@@ -664,21 +818,21 @@ export default function AppointmentsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                 <p className="text-[11px] font-bold text-text uppercase tracking-widest text-center">₹{order.total}</p>
+                                                <p className="text-[11px] font-bold text-text uppercase tracking-widest text-center">₹{order.total}</p>
                                             </td>
                                             <td className="px-6 py-4">
-                                                 <div className="flex items-center justify-center">
-                                                     <span 
-                                                         className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${order.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 !text-amber-700'}`}
-                                                         style={{ color: order.paymentStatus === 'paid' ? '#059669' : '#b45309' }}
-                                                     >
-                                                         <div className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
-                                                         {order.paymentStatus}
-                                                     </span>
-                                                 </div>
+                                                <div className="flex items-center justify-center">
+                                                    <span
+                                                        className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${order.paymentStatus === 'paid' ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600' : 'bg-amber-500/10 border-amber-500/20 !text-amber-700'}`}
+                                                        style={{ color: order.paymentStatus === 'paid' ? '#059669' : '#b45309' }}
+                                                    >
+                                                        <div className={`w-1.5 h-1.5 rounded-full ${order.paymentStatus === 'paid' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                                                        {order.paymentStatus}
+                                                    </span>
+                                                </div>
                                             </td>
                                             <td className="px-6 py-4 text-center">
-                                                 <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] text-center">{new Date(order.createdAt).toLocaleDateString()}</p>
+                                                <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] text-center">{new Date(order.createdAt).toLocaleDateString()}</p>
                                             </td>
                                         </tr>
                                     )) : (
@@ -711,30 +865,77 @@ export default function AppointmentsPage() {
                                         <X className="w-5 h-5 text-text-muted" />
                                     </button>
                                 </div>
-                                <form onSubmit={handleManualBookingSubmit} className="p-8 space-y-6 overflow-y-auto custom-scrollbar flex-1">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
-                                            <input
-                                                required
-                                                type="text"
-                                                value={newBooking.clientName}
-                                                onChange={(e) => setNewBooking({ ...newBooking, clientName: e.target.value.replace(/[^a-zA-Z\s]/g, '') })}
-                                                className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                                placeholder="CLIENT FULL NAME"
-                                            />
+                                <form onSubmit={handleManualBookingSubmit} className="p-8 space-y-4 overflow-y-auto custom-scrollbar flex-1">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Client</label>
+                                        <select
+                                            required
+                                            value={selectedClientId}
+                                            onChange={(e) => {
+                                                const cid = e.target.value;
+                                                setSelectedClientId(cid);
+                                                const client = clients.find(c => (c._id || c.id) === cid);
+                                                if (client) {
+                                                    setNewBooking(prev => ({
+                                                        ...prev,
+                                                        clientName: client.name,
+                                                        phone: client.phone
+                                                    }));
+                                                } else {
+                                                    setNewBooking(prev => ({
+                                                        ...prev,
+                                                        clientName: '',
+                                                        phone: ''
+                                                    }));
+                                                }
+                                            }}
+                                            className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
+                                        >
+                                            <option value="">-- SELECT CLIENT --</option>
+                                            {clients.map(c => (
+                                                <option key={c._id || c.id} value={c._id || c.id}>
+                                                    {c.name} - {c.phone}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {selectedClientId && (
+                                        <div className="grid grid-cols-2 gap-4 animate-reveal">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Client Name</label>
+                                                <input
+                                                    disabled
+                                                    type="text"
+                                                    value={newBooking.clientName}
+                                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none opacity-60 cursor-not-allowed"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Number</label>
+                                                <input
+                                                    disabled
+                                                    type="tel"
+                                                    value={newBooking.phone}
+                                                    className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none opacity-60 cursor-not-allowed"
+                                                />
+                                            </div>
                                         </div>
-                                        <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Contact Number</label>
-                                            <input
-                                                required
-                                                type="tel"
-                                                value={newBooking.phone}
-                                                onChange={(e) => setNewBooking({ ...newBooking, phone: e.target.value })}
-                                                className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20"
-                                                placeholder="+91 XXXXX XXXXX"
-                                            />
-                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Outlet</label>
+                                        <select
+                                            required
+                                            disabled={user?.role === 'receptionist'}
+                                            value={newBooking.outletId}
+                                            onChange={(e) => setNewBooking({ ...newBooking, outletId: e.target.value, serviceId: '', staffId: '' })}
+                                            className={`w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 ${user?.role === 'receptionist' ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                                        >
+                                            <option value="">-- SELECT OUTLET --</option>
+                                            {outlets.map(o => (
+                                                <option key={o._id || o.id} value={o._id || o.id}>{o.name}</option>
+                                            ))}
+                                        </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Select Service</label>
@@ -745,8 +946,8 @@ export default function AppointmentsPage() {
                                             className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                         >
                                             <option value="">-- SELECT SERVICE --</option>
-                                            {services.map(s => (
-                                                <option key={s._id} value={s._id}>{s.name} - ₹{s.price}</option>
+                                            {filteredServicesForBooking.map(s => (
+                                                <option key={s._id || s.id} value={s._id || s.id}>{s.name} - ₹{s.price}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -758,9 +959,9 @@ export default function AppointmentsPage() {
                                             onChange={(e) => setNewBooking({ ...newBooking, staffId: e.target.value })}
                                             className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase tracking-tight outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                         >
-                                            <option value="">-- AUTO ASSIGN / SELECT --</option>
-                                            {staff.filter(s => s.isAvailable !== false).map(s => (
-                                                <option key={s._id} value={s._id}>{s.name} - {s.role}</option>
+                                            <option value="">-- SELECT STYLIST --</option>
+                                            {filteredStaffForBooking.map(s => (
+                                                <option key={s._id || s.id} value={s._id || s.id}>{s.name} - {s.specialist || s.role}</option>
                                             ))}
                                         </select>
                                     </div>
@@ -781,10 +982,122 @@ export default function AppointmentsPage() {
                                                 onChange={(e) => setNewBooking({ ...newBooking, time: e.target.value })}
                                                 className="w-full px-4 py-3 bg-surface-alt border border-border text-[11px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20 cursor-pointer"
                                             >
-                                                {timeSlots.map(t => <option key={t}>{t}</option>)}
+                                                {timeSlots.map(t => {
+                                                    const isBusy = busySlots.includes(t);
+                                                    return (
+                                                        <option key={t} value={t} disabled={isBusy}>
+                                                            {t} {isBusy ? '(Booked)' : ''}
+                                                        </option>
+                                                    );
+                                                })}
                                             </select>
                                         </div>
                                     </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Coupon Code</label>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="ENTER COUPON CODE"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value)}
+                                                disabled={isPromoApplied}
+                                                className="flex-1 px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                            />
+                                            {isPromoApplied ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setPromoDiscount(0);
+                                                        setIsPromoApplied(false);
+                                                        setCouponCode('');
+                                                    }}
+                                                    className="px-4 py-3 bg-rose-600 hover:bg-rose-700 text-white text-xs font-black uppercase tracking-widest transition-all"
+                                                >
+                                                    Remove
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={applyPromo}
+                                                    className="px-6 py-3 bg-[#B4912B] hover:bg-[#9f8025] text-white text-xs font-black uppercase tracking-widest transition-all"
+                                                >
+                                                    Apply
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Advance Pay</label>
+                                            <input
+                                                type="number"
+                                                value={advancePayment}
+                                                onChange={(e) => setAdvancePayment(Number(e.target.value))}
+                                                className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Advance Payment Method</label>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAdvancePaymentMethod('cash')}
+                                                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest border transition-all ${advancePaymentMethod === 'cash'
+                                                            ? 'bg-[#B4912B] text-white border-[#B4912B]'
+                                                            : 'bg-surface-alt text-text-muted border-border hover:border-text'
+                                                        }`}
+                                                >
+                                                    Cash
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setAdvancePaymentMethod('online')}
+                                                    className={`flex-1 py-3 text-[10px] font-black uppercase tracking-widest border transition-all ${advancePaymentMethod === 'online'
+                                                            ? 'bg-[#B4912B] text-white border-[#B4912B]'
+                                                            : 'bg-surface-alt text-text-muted border-border hover:border-text'
+                                                        }`}
+                                                >
+                                                    Online
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {selectedService && (
+                                        <div className="bg-surface-alt/50 p-4 border border-border space-y-2 rounded-xl text-left">
+                                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                                <span>Service Price</span>
+                                                <span>₹{priceCalculation.original}</span>
+                                            </div>
+                                            {priceCalculation.promoDiscount > 0 && (
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600 font-bold">
+                                                    <span>Coupon Discount</span>
+                                                    <span>- ₹{priceCalculation.promoDiscount}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
+                                                <span>GST ({priceCalculation.gstRate}%)</span>
+                                                <span>₹{priceCalculation.tax}</span>
+                                            </div>
+                                            <div className="h-[1px] bg-border/40 my-1" />
+                                            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-text">
+                                                <span>Final Total</span>
+                                                <span>₹{priceCalculation.total}</span>
+                                            </div>
+                                            {advancePayment > 0 && (
+                                                <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-[#B4912B] font-bold">
+                                                    <span>Advance Paid ({advancePaymentMethod})</span>
+                                                    <span>₹{advancePayment}</span>
+                                                </div>
+                                            )}
+                                            <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-emerald-600">
+                                                <span>Remaining Payment</span>
+                                                <span>₹{Math.max(0, priceCalculation.total - advancePayment)}</span>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <button type="submit" className="w-full py-4 text-white text-[11px] font-black uppercase tracking-widest hover:opacity-90 transition-all shadow-lg" style={{ backgroundColor: '#B4912B' }}>
                                         Submit Appointment Protocol
                                     </button>
