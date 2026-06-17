@@ -68,8 +68,11 @@ const BookingCard = memo(({ booking, onTap, index = 0 }) => {
             onClick={() => onTap?.(booking)}
             style={{
                 background: colors.card,
-                borderBottom: `1px solid ${colors.border}`,
-                padding: '12px 0'
+                border: `1px solid ${colors.border}`,
+                borderRadius: '16px',
+                padding: '16px',
+                boxShadow: isLight ? '0 4px 16px -4px rgba(0, 0, 0, 0.04)' : 'none',
+                marginBottom: '4px'
             }}
             className="w-full text-left"
         >
