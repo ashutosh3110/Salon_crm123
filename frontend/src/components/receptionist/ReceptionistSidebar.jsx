@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -9,18 +9,7 @@ import {
     UserCheck, Settings, LogOut, ChevronLeft, ChevronRight, X, Zap, LifeBuoy,
     MessageSquare, FileText, Banknote, User, Wallet
 } from 'lucide-react';
-
-const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/receptionist' },
-    { label: 'Attendance', icon: Calendar, path: '/receptionist/attendance' },
-    { label: 'Appointments & Orders', icon: ClipboardList, path: '/receptionist/appointments' },
-    { label: 'Lead & Enquiry', icon: MessageSquare, path: '/receptionist/leads' },
-    { label: 'Quick Bill', icon: Zap, path: '/receptionist/pos/billing', accent: true },
-    { label: 'Invoice & Payments', icon: FileText, path: '/receptionist/invoices' },
-    { label: 'Support', icon: LifeBuoy, path: '/receptionist/support' },
-    { label: 'Wallet / Petty Cash', icon: Wallet, path: '/receptionist/petty-cash' },
-    { label: 'Profile', icon: User, path: '/receptionist/profile' },
-];
+import { buildDynamicSidebar } from '../../config/sidebarConfig';
 
 export default function ReceptionistSidebar({ collapsed, setCollapsed, isHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
@@ -28,6 +17,10 @@ export default function ReceptionistSidebar({ collapsed, setCollapsed, isHovered
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
+
+    const menuItems = useMemo(() => {
+        return buildDynamicSidebar('receptionist', user);
+    }, [user]);
 
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 

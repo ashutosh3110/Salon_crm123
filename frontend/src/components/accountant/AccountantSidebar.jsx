@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -6,24 +6,17 @@ import {
     LayoutDashboard, TrendingUp, DollarSign, FileText,
     Users, Wallet, Calculator, Settings, LogOut, ChevronLeft, ChevronRight, X, ClipboardList
 } from 'lucide-react';
-
-const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/accountant' },
-    { label: 'Revenue Stream', icon: TrendingUp, path: '/accountant/revenue' },
-    { label: 'Expense Matrix', icon: DollarSign, path: '/accountant/expenses' },
-    { label: 'Supplier Invoices', icon: FileText, path: '/accountant/invoices' },
-    { label: 'Payroll Protocol', icon: Users, path: '/accountant/payroll' },
-    { label: 'Petty Cash', icon: Wallet, path: '/accountant/petty-cash' },
-    { label: 'Taxation / GST', icon: Calculator, path: '/accountant/tax' },
-    { label: 'Reconciliation', icon: ClipboardList, path: '/accountant/reconciliation' },
-    { label: 'System Prefs', icon: Settings, path: '/accountant/settings' },
-];
+import { buildDynamicSidebar } from '../../config/sidebarConfig';
 
 export default function AccountantSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
+
+    const menuItems = useMemo(() => {
+        return buildDynamicSidebar('accountant', user);
+    }, [user]);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
     useEffect(() => {

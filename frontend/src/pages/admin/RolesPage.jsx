@@ -220,11 +220,89 @@ PERMISSION_STRUCTURE.forEach(p => {
     }
 });
 
+const ROLE_SIDEBAR_ITEMS = {
+    stylist: [
+        { id: 'stylist_overview', label: 'Overview' },
+        { id: 'stylist_attendance', label: 'Attendance' },
+        { id: 'stylist_clients', label: 'My clients' },
+        { id: 'stylist_commissions', label: 'Earnings' },
+        { id: 'stylist_timeoff', label: 'Time off' },
+        { id: 'stylist_settings', label: 'Settings' },
+        { id: 'stylist_support', label: 'Support' }
+    ],
+    receptionist: [
+        { id: 'receptionist_dashboard', label: 'Dashboard' },
+        { id: 'receptionist_attendance', label: 'Attendance' },
+        { id: 'receptionist_appointments', label: 'Appointments & Orders' },
+        { id: 'receptionist_leads', label: 'Lead & Enquiry' },
+        { id: 'receptionist_billing', label: 'Quick Bill' },
+        { id: 'receptionist_invoices', label: 'Invoice & Payments' },
+        { id: 'receptionist_petty_cash', label: 'Wallet / Petty Cash' },
+        { id: 'receptionist_profile', label: 'Profile' },
+        { id: 'receptionist_support', label: 'Support' }
+    ],
+    manager: [
+        { id: 'manager_dashboard', label: 'Dashboard' },
+        { id: 'manager_performance', label: 'Performance' },
+        { id: 'manager_attendance', label: 'Attendance' },
+        { id: 'manager_targets', label: 'Targets' },
+        { id: 'manager_feedback', label: 'Feedback' },
+        { id: 'manager_approvals', label: 'Service Approvals' },
+        { id: 'manager_settings', label: 'Settings' },
+        { id: 'manager_support', label: 'Support' }
+    ],
+    accountant: [
+        { id: 'accountant_dashboard', label: 'Dashboard' },
+        { id: 'accountant_revenue', label: 'Revenue Stream' },
+        { id: 'accountant_expenses', label: 'Expense Matrix' },
+        { id: 'accountant_invoices', label: 'Supplier Invoices' },
+        { id: 'accountant_payroll', label: 'Payroll Protocol' },
+        { id: 'accountant_petty_cash', label: 'Petty Cash' },
+        { id: 'accountant_tax', label: 'Taxation / GST' },
+        { id: 'accountant_reconciliation', label: 'Reconciliation' },
+        { id: 'accountant_settings', label: 'System Prefs' }
+    ],
+    inventory: [
+        { id: 'inventory_dashboard', label: 'Operational Dashboard' },
+        { id: 'inventory_stock', label: 'Asset Ledger' },
+        { id: 'inventory_purchase', label: 'Procurement Matrix' },
+        { id: 'inventory_transfer', label: 'Deployment Logs' },
+        { id: 'inventory_alerts', label: 'Depletion Alerts' },
+        { id: 'inventory_reports', label: 'Analysis Vectors' },
+        { id: 'inventory_settings', label: 'System Prefs' }
+    ],
+    custom: []
+};
+
+const ROLE_DEFAULT_PERMISSIONS = {
+    manager: [
+        'dashboard', 'setup_outlets', 'setup_staff', 'services_list', 'services_categories', 
+        'reports_sales', 'reports_bookings', 'reports_staff', 'reports_customer', 'reports_expenses', 
+        'hr_attendance', 'hr_payroll', 'crm_directory', 'crm_inquiries', 'crm_wallets', 
+        'crm_feedback', 'crm_reengage', 'crm_bridal', 'crm_birthday_anniversary', 'support'
+    ],
+    receptionist: [
+        'pos_dashboard', 'pos_billing', 'pos_invoices', 'pos_reminders', 
+        'bookings_registry', 'bookings_new', 'crm_directory', 'crm_inquiries'
+    ],
+    accountant: [
+        'finance_dashboard', 'finance_transactions', 'finance_cash_book', 'finance_expenses', 
+        'reports_sales', 'reports_expenses'
+    ],
+    inventory: [
+        'inventory_products', 'inventory_shop_orders', 'inventory_categories', 
+        'inventory_stock_overview', 'inventory_transfer', 'suppliers_directory', 'suppliers_invoices'
+    ],
+    stylist: ['support'],
+    custom: []
+};
+
 export default function RolesPage() {
     const { staff, fetchStaff } = useBusiness();
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
+    const [activeTab, setActiveTab] = useState('sidebar'); // 'sidebar' | 'admin'
 
     const [editingRole, setEditingRole] = useState(null);
     const [viewMode, setViewMode] = useState(false);
@@ -234,6 +312,9 @@ export default function RolesPage() {
     const [form, setForm] = useState({
         name: '',
         description: '',
+        roleType: 'custom',
+        hiddenSidebarItems: [],
+        adminMenuAccess: [],
         permissions: []
     });
 
@@ -253,13 +334,28 @@ export default function RolesPage() {
         }
     };
 
+    const handleRoleTypeChange = (selectedType) => {
+        const defaults = ROLE_DEFAULT_PERMISSIONS[selectedType] || [];
+        setForm(prev => ({
+            ...prev,
+            roleType: selectedType,
+            permissions: defaults,
+            adminMenuAccess: defaults,
+            hiddenSidebarItems: []
+        }));
+    };
+
     const handleEdit = (role) => {
         setEditingRole(role);
         setForm({
             name: role.name,
             description: role.description || '',
+            roleType: role.roleType || 'custom',
+            hiddenSidebarItems: role.hiddenSidebarItems || [],
+            adminMenuAccess: role.adminMenuAccess || [],
             permissions: role.permissions || []
         });
+        setActiveTab('sidebar');
         setViewMode(false);
         setShowModal(true);
     };
@@ -269,8 +365,12 @@ export default function RolesPage() {
         setForm({
             name: role.name,
             description: role.description || '',
+            roleType: role.roleType || 'custom',
+            hiddenSidebarItems: role.hiddenSidebarItems || [],
+            adminMenuAccess: role.adminMenuAccess || [],
             permissions: role.permissions || []
         });
+        setActiveTab('sidebar');
         setViewMode(true);
         setShowModal(true);
     };
@@ -309,9 +409,17 @@ export default function RolesPage() {
     };
 
     const resetForm = () => {
-        setForm({ name: '', description: '', permissions: [] });
+        setForm({
+            name: '',
+            description: '',
+            roleType: 'custom',
+            hiddenSidebarItems: [],
+            adminMenuAccess: [],
+            permissions: []
+        });
         setEditingRole(null);
         setViewMode(false);
+        setActiveTab('sidebar');
     };
 
     // Disable body scroll when modal is open
@@ -765,7 +873,245 @@ export default function RolesPage() {
                                 </div>
                             </div>
 
-                            {/* Permissions configuration has been removed */}
+                            {/* Role Type Dropdown */}
+                            <div className="space-y-2.5 text-left">
+                                <label className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest pl-1">Role Type</label>
+                                <CustomDropdown
+                                    value={form.roleType}
+                                    onChange={(val) => !viewMode && handleRoleTypeChange(val)}
+                                    options={[
+                                        { label: 'STYLIST', value: 'stylist' },
+                                        { label: 'RECEPTIONIST', value: 'receptionist' },
+                                        { label: 'MANAGER', value: 'manager' },
+                                        { label: 'ACCOUNTANT', value: 'accountant' },
+                                        { label: 'INVENTORY', value: 'inventory' },
+                                        { label: 'CREATE NEW ROLE (CUSTOM)', value: 'custom' }
+                                    ]}
+                                    disabled={viewMode}
+                                    className="w-full"
+                                />
+                                <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 pl-1 leading-relaxed">
+                                    Determines the default workspace layout, default sidebar items, and default permissions.
+                                </p>
+                            </div>
+
+                            {/* Permissions & Sidebar Configuration Tabs */}
+                            <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                                {/* Tab Headers */}
+                                <div className="flex gap-2 p-1 bg-slate-50 dark:bg-slate-900 rounded-xl">
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTab('sidebar')}
+                                        className={`flex-1 py-2 px-3 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                                            activeTab === 'sidebar'
+                                                ? 'bg-white dark:bg-[#0f172a] text-[#B4912B] shadow-sm'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                                        }`}
+                                    >
+                                        1. Role Sidebar Items
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTab('admin')}
+                                        className={`flex-1 py-2 px-3 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                                            activeTab === 'admin'
+                                                ? 'bg-white dark:bg-[#0f172a] text-[#B4912B] shadow-sm'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
+                                        }`}
+                                    >
+                                        2. Admin Dashboard Pages
+                                    </button>
+                                </div>
+
+                                {/* Tab 1 Content: Role Sidebar Items */}
+                                {activeTab === 'sidebar' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between pl-1">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#B4912B]">Sidebar Item Visibility</h4>
+                                            <span className="text-[9px] text-slate-400 font-bold uppercase">
+                                                {ROLE_SIDEBAR_ITEMS[form.roleType]?.length || 0} Default Items
+                                            </span>
+                                        </div>
+
+                                        {form.roleType === 'custom' ? (
+                                            <div className="p-6 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                                                <Info className="w-8 h-8 text-slate-300 dark:text-slate-700 mx-auto mb-2" />
+                                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-wider leading-relaxed">
+                                                    Custom Role Type Selected
+                                                </p>
+                                                <p className="text-[9px] text-slate-400 dark:text-slate-500 mt-1 leading-relaxed max-w-sm mx-auto">
+                                                    Custom roles don't have default sidebar items. You can grant them access to Admin menu pages in the next tab.
+                                                </p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                                {(ROLE_SIDEBAR_ITEMS[form.roleType] || []).map(item => {
+                                                    const isVisible = !form.hiddenSidebarItems.includes(item.id);
+                                                    return (
+                                                        <div
+                                                            key={item.id}
+                                                            className={`p-3.5 border-[1.5px] rounded-xl flex items-center justify-between transition-all bg-slate-50/30 dark:bg-slate-800/10 ${
+                                                                isVisible
+                                                                    ? 'border-[#B4912B]/20 bg-[#B4912B]/[0.02]'
+                                                                    : 'border-slate-200 dark:border-slate-800'
+                                                            }`}
+                                                        >
+                                                            <div className="flex flex-col text-left">
+                                                                <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">{item.label}</span>
+                                                                <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">
+                                                                    {isVisible ? 'Visible in sidebar' : 'Hidden from sidebar'}
+                                                                </span>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                disabled={viewMode}
+                                                                onClick={() => {
+                                                                    const isCurrentlyHidden = form.hiddenSidebarItems.includes(item.id);
+                                                                    setForm(prev => {
+                                                                        const nextHidden = isCurrentlyHidden
+                                                                            ? prev.hiddenSidebarItems.filter(id => id !== item.id)
+                                                                            : [...prev.hiddenSidebarItems, item.id];
+                                                                        return { ...prev, hiddenSidebarItems: nextHidden };
+                                                                    });
+                                                                }}
+                                                                className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none cursor-pointer ${
+                                                                    isVisible ? 'bg-[#B4912B]' : 'bg-slate-200 dark:bg-slate-800'
+                                                                } ${viewMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                            >
+                                                                <div
+                                                                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform transform ${
+                                                                        isVisible ? 'translate-x-4' : 'translate-x-0'
+                                                                    }`}
+                                                                />
+                                                            </button>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Tab 2 Content: Admin Dashboard Pages */}
+                                {activeTab === 'admin' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between pl-1">
+                                            <h4 className="text-[10px] font-black uppercase tracking-widest text-[#B4912B]">Admin Dashboard Access</h4>
+                                            <span className="text-[9px] text-slate-400 font-bold uppercase">
+                                                {form.adminMenuAccess.length} Permissions Active
+                                            </span>
+                                        </div>
+
+                                        <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+                                            {PERMISSION_STRUCTURE.map(group => {
+                                                const hasSub = group.subPermissions && group.subPermissions.length > 0;
+                                                const isParentChecked = form.adminMenuAccess.includes(group.id);
+                                                
+                                                return (
+                                                    <div key={group.id} className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden bg-slate-50/20 dark:bg-slate-800/5">
+                                                        {/* Parent Row */}
+                                                        <div className="p-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/20 border-b border-slate-100 dark:border-slate-800/40">
+                                                            <div className="flex items-center gap-3 text-left">
+                                                                <div className="w-8 h-8 rounded-full bg-[#B4912B]/10 flex items-center justify-center text-[#B4912B]">
+                                                                    <group.icon className="w-4 h-4" />
+                                                                </div>
+                                                                <div>
+                                                                    <span className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">{group.label}</span>
+                                                                    <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{group.description}</p>
+                                                                </div>
+                                                            </div>
+                                                            <button
+                                                                type="button"
+                                                                disabled={viewMode}
+                                                                onClick={() => {
+                                                                    const subIds = (group.subPermissions || []).map(sp => sp.id);
+                                                                    const allGroupIds = [group.id, ...subIds];
+                                                                    
+                                                                    setForm(prev => {
+                                                                        let nextAccess = [...prev.adminMenuAccess];
+                                                                        if (isParentChecked) {
+                                                                            nextAccess = nextAccess.filter(id => !allGroupIds.includes(id));
+                                                                        } else {
+                                                                            allGroupIds.forEach(id => {
+                                                                                if (!nextAccess.includes(id)) nextAccess.push(id);
+                                                                            });
+                                                                        }
+                                                                        return { 
+                                                                            ...prev, 
+                                                                            adminMenuAccess: nextAccess,
+                                                                            permissions: nextAccess
+                                                                        };
+                                                                    });
+                                                                }}
+                                                                className={`w-9 h-5 rounded-full p-0.5 transition-colors relative focus:outline-none cursor-pointer ${
+                                                                    isParentChecked ? 'bg-[#B4912B]' : 'bg-slate-200 dark:bg-slate-800'
+                                                                } ${viewMode ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                            >
+                                                                <div
+                                                                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform transform ${
+                                                                        isParentChecked ? 'translate-x-4' : 'translate-x-0'
+                                                                    }`}
+                                                                />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Sub Permissions Grid */}
+                                                        {hasSub && (
+                                                            <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white dark:bg-[#0f172a]/20">
+                                                                {group.subPermissions.map(sub => {
+                                                                    const isSubChecked = form.adminMenuAccess.includes(sub.id);
+                                                                    return (
+                                                                        <div 
+                                                                            key={sub.id} 
+                                                                            onClick={() => {
+                                                                                if (viewMode) return;
+                                                                                setForm(prev => {
+                                                                                    let nextAccess = [...prev.adminMenuAccess];
+                                                                                    if (isSubChecked) {
+                                                                                        nextAccess = nextAccess.filter(id => id !== sub.id);
+                                                                                    } else {
+                                                                                        nextAccess.push(sub.id);
+                                                                                        if (!nextAccess.includes(group.id)) nextAccess.push(group.id);
+                                                                                    }
+                                                                                    return { 
+                                                                                        ...prev, 
+                                                                                        adminMenuAccess: nextAccess,
+                                                                                        permissions: nextAccess
+                                                                                    };
+                                                                                });
+                                                                            }}
+                                                                            className={`p-3 border-[1.5px] rounded-xl flex items-center justify-between cursor-pointer transition-all ${
+                                                                                isSubChecked 
+                                                                                    ? 'border-[#B4912B]/20 bg-[#B4912B]/[0.01]' 
+                                                                                    : 'border-slate-100 hover:border-slate-200 dark:border-slate-800/40 dark:hover:border-slate-800'
+                                                                            }`}
+                                                                        >
+                                                                            <div className="flex items-center gap-2.5 min-w-0 flex-1 text-left">
+                                                                                <sub.icon className={`w-3.5 h-3.5 shrink-0 ${isSubChecked ? 'text-[#B4912B]' : 'text-slate-400'}`} />
+                                                                                <div className="min-w-0">
+                                                                                    <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide truncate">{sub.label}</p>
+                                                                                    <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest truncate">{sub.description}</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all ${
+                                                                                isSubChecked 
+                                                                                    ? 'bg-[#B4912B] border-[#B4912B] text-white' 
+                                                                                    : 'border-slate-300 dark:border-slate-700'
+                                                                            }`}>
+                                                                                {isSubChecked && <span className="text-[8px] font-black">✓</span>}
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Actions Footer */}

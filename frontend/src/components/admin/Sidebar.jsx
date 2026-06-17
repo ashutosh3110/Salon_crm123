@@ -485,6 +485,26 @@ export default function Sidebar({ collapsed, setCollapsed, isHovered, setIsHover
 
             {/* Nav Links */}
             <nav className="flex-1 py-3 px-3 space-y-0.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
+                {/* Back to Role/Staff Dashboard for Staff with Admin Menu Access */}
+                {user && !['admin', 'superadmin'].includes(user.role) && (
+                    <div className="pb-2 mb-2 border-b border-[#e2e8f0] dark:border-slate-700/50">
+                        <NavLink
+                            to={
+                                user.roleType === 'stylist' ? '/stylist' :
+                                user.roleType === 'receptionist' ? '/receptionist' :
+                                user.roleType === 'manager' ? '/manager' :
+                                user.roleType === 'accountant' ? '/accountant' :
+                                user.roleType === 'inventory' ? '/inventory' : '/'
+                            }
+                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all duration-200 border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/20 dark:text-amber-300 hover:shadow-sm ${effectiveCollapsed ? 'justify-center' : ''}`}
+                            title="Back to Staff Workspace"
+                        >
+                            <ArrowLeftRight className="w-4 h-4 shrink-0" />
+                            {!effectiveCollapsed && <span>Back to Workspace</span>}
+                        </NavLink>
+                    </div>
+                )}
+
                 {menuItems.map((item) => {
                     const isSubscriptionPath = item.path === '/admin/subscription';
                     const isSupportPath = item.path === '/admin/support';
