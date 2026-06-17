@@ -18,8 +18,12 @@ exports.getFaqs = async (req, res) => {
 // @access  Private
 exports.createTicket = async (req, res) => {
     try {
-        const { subject, description, category, tenantId, outletId } = req.body;
+        let { subject, description, category, tenantId, outletId } = req.body;
         const customerId = req.user ? req.user.id : null; 
+
+        if (!tenantId && req.user) {
+            tenantId = req.user.salonId || req.user.tenantId;
+        }
 
         const ticket = await Ticket.create({
             subject,
@@ -83,8 +87,12 @@ exports.getAdminTickets = async (req, res) => {
         const tenantId = req.user.salonId || req.user.tenantId;
         const { outletId } = req.query;
 
-        let query = { tenantId };
-        if (outletId) query.outletId = outletId;
+        let query = { tenantId, customerId: { $ne: null } };
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+        } else if (outletId) {
+            query.outletId = outletId;
+        }
 
         const tickets = await Ticket.find(query)
             .populate('customerId', 'name email phone')

@@ -5,9 +5,13 @@ const Ticket = require('../Models/Ticket');
 // @access  Private
 exports.getTickets = async (req, res) => {
     try {
-        let query = {};
+        let query = { customerId: null };
         if (req.user && req.user.role !== 'superadmin') {
-            query.tenantId = req.user.salonId;
+            if (req.user.role === 'admin') {
+                query.tenantId = req.user.salonId;
+            } else {
+                query.userId = req.user._id;
+            }
         }
 
         const tickets = await Ticket.find(query)

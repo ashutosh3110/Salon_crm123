@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { HelpCircle, MessageSquare, MessageCircle, ChevronRight, Search, Mail, FileText, Plus, Loader2, AlertCircle, Clock, CheckCircle2, X } from 'lucide-react';
 import AppBackButton from '../../components/app/AppBackButton';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
-import api from '../../services/mock/mockApi';
+import api from '../../services/api';
 
 const FAQ_ITEMS = [
     { question: "How do I book an appointment?", answer: "You can book an appointment by selecting a service, choosing your preferred expert, and picking a time slot that works for you." },
