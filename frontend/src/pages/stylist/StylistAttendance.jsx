@@ -22,11 +22,12 @@ function formatTime(iso) {
 }
 
 const statusColors = {
-    PRESENT: 'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-500/15 dark:text-emerald-300 dark:border-emerald-500/30',
-    ABSENT: 'bg-rose-50 text-rose-700 border-rose-300 dark:bg-rose-500/15 dark:text-rose-300 dark:border-rose-500/30',
-    LATE: 'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30',
-    HALF_DAY: 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-500/15 dark:text-blue-300 dark:border-blue-500/30',
-    WEEKOFF: 'bg-slate-50 text-slate-700 border-slate-300 dark:bg-slate-500/15 dark:text-slate-300 dark:border-slate-500/30',
+    PRESENT: 'bg-emerald-100 !text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:!text-emerald-300 dark:border-emerald-800',
+    ABSENT: 'bg-rose-100 !text-rose-800 border-rose-300 dark:bg-rose-950/40 dark:!text-rose-300 dark:border-rose-800',
+    LATE: 'bg-amber-100 !text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:!text-amber-300 dark:border-amber-800',
+    HALF_DAY: 'bg-blue-100 !text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:!text-blue-300 dark:border-blue-800',
+    WEEKOFF: 'bg-indigo-100 !text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:!text-indigo-300 dark:border-indigo-800',
+    UNMARKED: 'bg-violet-100 !text-violet-800 border-violet-300 dark:bg-violet-950/40 dark:!text-violet-300 dark:border-violet-800',
 };
 
 export default function StylistAttendance() {
@@ -239,7 +240,7 @@ export default function StylistAttendance() {
     const canPunch = !worksiteLoading && location && (!worksite?.geofenceEnforced || withinGeofence);
 
     return (
-        <div className="p-4 md:p-6 lg:p-8 space-y-6 max-w-6xl mx-auto font-sans">
+        <div className="p-3 md:p-4 lg:p-5 space-y-4 max-w-6xl mx-auto font-sans">
             <style>{`
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -254,10 +255,10 @@ export default function StylistAttendance() {
 
             {/* Geofence Info Card */}
             {!worksiteLoading && worksite && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            <Building2 className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                            <Building2 className="w-4 h-4" stroke="#C89B2B" color="#C89B2B" />
                             Assigned Outlet
                         </div>
                         {worksite.outlet ? (
@@ -276,7 +277,7 @@ export default function StylistAttendance() {
                         )}
                     </div>
                     {worksite.geofenceEnforced && (
-                        <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold px-3 py-1.5 rounded-lg border border-blue-500/20 uppercase tracking-widest">
+                        <div className="bg-[#C89B2B]/10 text-[#a47a18] dark:text-[#e4be5b] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#C89B2B]/30 uppercase tracking-widest">
                             Geofence Enabled ({radiusMeters}m radius)
                         </div>
                     )}
@@ -284,16 +285,13 @@ export default function StylistAttendance() {
             )}
 
             {/* Daily Punch Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-6 md:p-8 shadow-sm relative overflow-hidden group">
-                <div className="absolute -top-10 -right-10 opacity-[0.03] dark:opacity-[0.06] group-hover:opacity-[0.08] transition-opacity pointer-events-none">
-                    <Activity className="w-64 h-64 text-blue-600 dark:text-blue-300" />
-                </div>
+            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 md:p-5 shadow-sm relative overflow-hidden group">
                 
-                <div className="relative z-10 flex flex-col md:flex-row gap-8 justify-between">
-                    <div className="space-y-6 flex-1">
+                <div className="relative z-10 flex flex-col md:flex-row gap-4 justify-between">
+                    <div className="space-y-4 flex-1">
                         <div className="flex items-center gap-3">
-                            <div className={`flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700`}>
-                                {status === 'ACTIVE_RUN' ? <Clock className="w-5 h-5 text-blue-500 animate-pulse" /> : <Clock className="w-5 h-5 text-slate-500" />}
+                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#C89B2B]/10 dark:bg-[#C89B2B]/20">
+                                <Clock className={`w-5 h-5 ${status === 'ACTIVE_RUN' ? 'animate-pulse' : ''}`} stroke="#C89B2B" color="#C89B2B" />
                             </div>
                             <div>
                                 <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Status</p>
@@ -303,13 +301,13 @@ export default function StylistAttendance() {
                             </div>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-700/50 space-y-3">
+                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Location Status</span>
                                 {loadingLocation ? (
-                                    <span className="text-xs text-blue-500 animate-pulse">Detecting...</span>
+                                    <span className="text-xs text-[#C89B2B] animate-pulse">Detecting...</span>
                                 ) : location ? (
-                                    <span className={`text-xs font-bold ${worksite?.geofenceEnforced ? (withinGeofence ? 'text-emerald-600' : 'text-rose-500') : 'text-emerald-600'}`}>
+                                    <span className={`text-xs font-bold ${worksite?.geofenceEnforced ? (withinGeofence ? 'text-[#C89B2B]' : 'text-rose-500') : 'text-[#C89B2B]'}`}>
                                         {worksite?.geofenceEnforced ? (withinGeofence ? 'Verified' : 'Outside Geofence') : 'Available'}
                                     </span>
                                 ) : (
@@ -320,7 +318,7 @@ export default function StylistAttendance() {
                             {location && (
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-                                        <MapPin className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                                        <MapPin className="w-4 h-4" stroke="#C89B2B" color="#C89B2B" />
                                         <span>{isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}</span>
                                     </div>
                                     <div className="flex items-center gap-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest pl-6">
@@ -335,9 +333,9 @@ export default function StylistAttendance() {
                             <button
                                 type="button"
                                 onClick={fetchLocation}
-                                className="flex items-center gap-1.5 text-xs font-bold text-blue-500 hover:text-blue-400 dark:text-blue-400 dark:hover:text-blue-300 uppercase tracking-widest pl-6 pt-1 transition-colors"
+                                className="flex items-center gap-1.5 text-xs font-bold text-[#C89B2B] hover:text-[#b48a25] uppercase tracking-widest pl-6 pt-1 transition-colors"
                             >
-                                <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} /> Refresh location
+                                <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} stroke="#C89B2B" color="#C89B2B" /> Refresh location
                             </button>
                         </div>
 
@@ -346,26 +344,26 @@ export default function StylistAttendance() {
                         {actionMsg && <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg">{actionMsg}</p>}
                     </div>
 
-                    <div className="flex flex-col justify-center gap-4 min-w-[240px]">
+                    <div className="grid grid-cols-2 sm:flex sm:flex-col justify-center gap-3 sm:gap-4 w-full sm:w-auto sm:min-w-[240px]">
                         <button
                             onClick={() => handlePunch('IN')}
                             disabled={status !== 'OFFLINE' || !canPunch || loadingLocation}
-                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
-                                ${status !== 'OFFLINE' || !canPunch
-                                    ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white shadow-emerald-500/25 active:scale-95'}`}
+                            className={`py-2.5 rounded-lg font-bold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-1 sm:gap-2
+                                ${status !== 'OFFLINE'
+                                    ? 'bg-[#C89B2B]/10 text-[#C89B2B]/40 border border-[#C89B2B]/20 cursor-not-allowed shadow-none'
+                                    : 'bg-[#C89B2B] hover:bg-[#b48a25] text-white shadow-[#C89B2B]/20 shadow-lg active:scale-95'}`}
                         >
-                            <Zap className="w-5 h-5" /> Punch In
+                            <Zap className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: status !== 'OFFLINE' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff', stroke: status !== 'OFFLINE' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff' }} /> <span className="whitespace-nowrap">Punch In</span>
                         </button>
                         <button
                             onClick={() => handlePunch('OUT')}
                             disabled={status !== 'ACTIVE_RUN' || !canPunch || loadingLocation}
-                            className={`py-4 rounded-xl font-bold tracking-wide uppercase text-sm transition-all shadow-lg flex items-center justify-center gap-2
-                                ${status !== 'ACTIVE_RUN' || !canPunch
-                                    ? 'bg-slate-100 dark:bg-slate-800/60 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                    : 'bg-rose-500 hover:bg-rose-600 dark:bg-rose-600 dark:hover:bg-rose-500 text-white shadow-rose-500/25 active:scale-95'}`}
+                            className={`py-2.5 rounded-lg font-bold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-1 sm:gap-2
+                                ${status !== 'ACTIVE_RUN'
+                                    ? 'bg-[#C89B2B]/10 text-[#C89B2B]/40 border border-[#C89B2B]/20 cursor-not-allowed shadow-none'
+                                    : 'bg-[#C89B2B] hover:bg-[#b48a25] text-white shadow-[#C89B2B]/20 shadow-lg active:scale-95'}`}
                         >
-                            <CheckCircle2 className="w-5 h-5" /> Punch Out
+                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: status !== 'ACTIVE_RUN' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff', stroke: status !== 'ACTIVE_RUN' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff' }} /> <span className="whitespace-nowrap">Punch Out</span>
                         </button>
                     </div>
                 </div>
@@ -375,7 +373,7 @@ export default function StylistAttendance() {
             <div className="space-y-4">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <CalendarIcon className="w-5 h-5 text-blue-500 dark:text-blue-400" />
+                        <CalendarIcon className="w-5 h-5" stroke="#C89B2B" color="#C89B2B" />
                         Monthly History
                     </h2>
 
@@ -397,12 +395,17 @@ export default function StylistAttendance() {
                 {/* Stat Cards */}
                 <div className="grid grid-cols-2 gap-4">
                     {[
-                        { label: 'Present', val: historyStats.present, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
-                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
+                        { label: 'Present', val: historyStats.present, hex: '#059669', darkHex: '#34d399', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
+                        { label: 'Absent', val: historyStats.absent, hex: '#e11d48', darkHex: '#fb7185', bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
                     ].map((stat, i) => (
-                        <div key={i} className={`p-4 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
-                            <span className="text-2xl font-black mb-1">{stat.val}</span>
-                            <span className={`text-[10px] font-bold uppercase tracking-wider ${stat.color}`}>{stat.label}</span>
+                        <div key={i} className={`p-2 rounded-lg border ${stat.bg} flex flex-col items-center justify-center text-center`}>
+                            <span className="text-xl font-black mb-0.5 text-slate-800 dark:text-slate-100">{stat.val}</span>
+                            <span 
+                                className="text-[10px] font-black uppercase tracking-wider" 
+                                style={{ color: stat.hex }}
+                            >
+                                {stat.label}
+                            </span>
                         </div>
                     ))}
                 </div>
@@ -413,11 +416,11 @@ export default function StylistAttendance() {
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch In</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch Out</th>
-                                    <th className="py-4 px-6 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes</th>
+                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch In</th>
+                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch Out</th>
+                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
@@ -436,30 +439,30 @@ export default function StylistAttendance() {
                                         if (isFuture) return null;
                                         
                                         const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
-                                        const styleClass = statusColors[record.status] || 'bg-slate-50 text-slate-600';
+                                        const styleClass = statusColors[record.status] || 'bg-slate-50 !text-slate-600';
 
                                         return (
                                             <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                <td className="py-2 px-4 whitespace-nowrap">
                                                     <span className="text-sm font-semibold text-slate-900 dark:text-white">{displayDate}</span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${styleClass}`}>
+                                                <td className="py-2 px-4 whitespace-nowrap">
+                                                    <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full border ${styleClass}`}>
                                                         {record.status.replace('_', ' ')}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                <td className="py-2 px-4 whitespace-nowrap">
+                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                                                         {formatTime(record.checkInAt)}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                                                <td className="py-2 px-4 whitespace-nowrap">
+                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
                                                         {formatTime(record.checkOutAt)}
                                                     </span>
                                                 </td>
-                                                <td className="py-4 px-6 whitespace-nowrap">
-                                                    <span className="text-sm text-slate-500 dark:text-slate-400 italic">
+                                                <td className="py-2 px-4 whitespace-nowrap">
+                                                    <span className="text-xs text-slate-500 dark:text-slate-400 italic">
                                                         {record.notes || '-'}
                                                     </span>
                                                 </td>

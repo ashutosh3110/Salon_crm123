@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 
-export default function PasswordField({ 
-    containerClassName = '', 
-    inputClassName = '', 
+export default function PasswordField({
+    containerClassName = '',
+    inputClassName = '',
     iconClassName = 'w-4 h-4',
     buttonClassName = '',
     inputStyle = {},
     style = {},
     children,
-    ...props 
+    ...props
 }) {
     const [showPassword, setShowPassword] = useState(false);
 

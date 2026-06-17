@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
@@ -51,6 +51,18 @@ export default function StylistDashboard() {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [toast, setToast] = useState(null);
+    const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+    const dropdownRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowStatusDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const [allBookings, setAllBookings] = useState([]);
     const [bookingsLoading, setBookingsLoading] = useState(false);
@@ -141,6 +153,7 @@ export default function StylistDashboard() {
             value: stats.totalAssigned ?? 0,
             subtitle: 'Assigned appointments',
             icon: CalendarPlus,
+            hex: '#7C3AED',
             colorClass: 'text-[#7C3AED] dark:text-[#A78BFA]',
             bgClass: 'bg-[#EDE9FE] dark:bg-[#7C3AED]/20',
             cardClass: 'bg-[#FAF5FF] dark:bg-[#7C3AED]/5 border-[#F3E8FF] dark:border-[#7C3AED]/15'
@@ -150,6 +163,7 @@ export default function StylistDashboard() {
             value: stats.totalCompleted ?? 0,
             subtitle: 'Successfully served',
             icon: CheckCircle2,
+            hex: '#059669',
             colorClass: 'text-[#059669] dark:text-[#34D399]',
             bgClass: 'bg-[#D1FAE5] dark:bg-[#059669]/20',
             cardClass: 'bg-[#F0FDF4] dark:bg-[#059669]/5 border-[#DCFCE7] dark:border-[#059669]/15'
@@ -159,6 +173,7 @@ export default function StylistDashboard() {
             value: `₹${(stats.totalCommission ?? 0).toLocaleString('en-IN')}`,
             subtitle: 'All-time earnings',
             icon: DollarSign,
+            hex: '#2563EB',
             colorClass: 'text-[#2563EB] dark:text-[#60A5FA]',
             bgClass: 'bg-[#DBEAFE] dark:bg-[#2563EB]/20',
             cardClass: 'bg-[#EFF6FF] dark:bg-[#2563EB]/5 border-[#DBEAFE] dark:border-[#2563EB]/15'
@@ -168,6 +183,7 @@ export default function StylistDashboard() {
             value: `₹${(stats.avgCommission ?? 0).toLocaleString('en-IN')}`,
             subtitle: 'Per completed job',
             icon: Award,
+            hex: '#EA580C',
             colorClass: 'text-[#EA580C] dark:text-[#FB923C]',
             bgClass: 'bg-[#FFEDD5] dark:bg-[#EA580C]/20',
             cardClass: 'bg-[#FFF7ED] dark:bg-[#EA580C]/5 border-[#FFEDD5] dark:border-[#EA580C]/15'
@@ -195,17 +211,17 @@ export default function StylistDashboard() {
             )}
 
             {/* Header section */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+            <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
+                <div className="min-w-0">
+                    <h1 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-1 sm:gap-2 truncate">
                         Welcome Back, {user?.name?.split(' ')[0] || 'Stylist'} <span className="animate-bounce inline-block">👋</span>
                     </h1>
-                    <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${shiftActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-                        {shiftActive ? 'You are currently punched in and on duty.' : 'You are currently punched out.'}
+                    <p className="text-[10px] sm:text-[13px] text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1 flex items-center gap-1.5 truncate">
+                        <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 shrink-0 rounded-full ${shiftActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
+                        {shiftActive ? 'Punched in and on duty.' : 'Currently punched out.'}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center shrink-0">
                     <Link
                         to="/stylist/attendance"
                         className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold shadow-sm transition-all
@@ -213,7 +229,7 @@ export default function StylistDashboard() {
                                 ? 'bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200'
                                 : 'bg-[#C89B2B] text-white hover:bg-[#B48A25] shadow-[#C89B2B]/20 shadow-lg hover:-translate-y-0.5'}`}
                     >
-                        {shiftActive ? <Clock className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
+                        {shiftActive ? <Clock className="w-4 h-4" style={{ color: '#b45309', stroke: '#b45309' }} /> : <UserCheck className="w-4 h-4" style={{ color: '#ffffff', stroke: '#ffffff' }} />}
                         {shiftActive ? 'Punch Out' : 'Punch In'}
                     </Link>
                 </div>
@@ -228,7 +244,7 @@ export default function StylistDashboard() {
                     >
                         <div className="flex items-start gap-4">
                             <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${stat.bgClass}`}>
-                                <stat.icon className={`w-5 h-5 ${stat.colorClass}`} />
+                                <stat.icon size={22} className="shrink-0" color={stat.hex} />
                             </div>
                             <div>
                                 <p className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1">
@@ -255,7 +271,7 @@ export default function StylistDashboard() {
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <Activity className="w-4 h-4 text-[#C89B2B]" />
+                                <Activity className="w-4 h-4 text-[#C89B2B]" style={{ color: '#C89B2B', stroke: '#C89B2B' }} />
                                 Revenue Performance
                             </h2>
                         </div>
@@ -304,7 +320,7 @@ export default function StylistDashboard() {
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] p-6 shadow-sm overflow-hidden flex flex-col min-h-[400px]">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <Calendar className="w-4 h-4 text-[#C89B2B]" />
+                                <Calendar className="w-4 h-4 text-[#C89B2B]" style={{ color: '#C89B2B', stroke: '#C89B2B' }} />
                                 Today's Schedule
                             </h2>
                             <div className="flex items-center gap-2">
@@ -318,18 +334,45 @@ export default function StylistDashboard() {
                                         className="pl-9 pr-4 py-2 w-full sm:w-48 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#C89B2B]"
                                     />
                                 </div>
-                                <div className="relative">
-                                    <select
-                                        value={statusFilter}
-                                        onChange={e => setStatusFilter(e.target.value)}
-                                        className="py-2 pl-3 pr-8 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl font-medium focus:outline-none focus:ring-1 focus:ring-[#C89B2B] appearance-none"
+                                <div className="relative" ref={dropdownRef}>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                                        className="py-2 pl-3 pr-8 w-36 text-left text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-xl font-medium focus:outline-none focus:ring-1 focus:ring-[#C89B2B] hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
                                     >
-                                        <option value="ALL" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">All Status</option>
-                                        <option value="upcoming" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Upcoming</option>
-                                        <option value="in-progress" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">In Progress</option>
-                                        <option value="completed" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100">Completed</option>
-                                    </select>
-                                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400 dark:text-slate-500" />
+                                        <span className="truncate block">
+                                            {statusFilter === 'ALL' ? 'All Status' :
+                                                statusFilter === 'upcoming' ? 'Upcoming' :
+                                                    statusFilter === 'in-progress' ? 'In Progress' : 'Completed'}
+                                        </span>
+                                        <ChevronDown className={`absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform duration-200 ${showStatusDropdown ? 'rotate-180' : ''}`} />
+                                    </button>
+
+                                    {showStatusDropdown && (
+                                        <div className="absolute z-50 w-full mt-1.5 bg-white dark:bg-[#1e293b] border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl overflow-hidden py-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                                            {[
+                                                { id: 'ALL', label: 'All Status' },
+                                                { id: 'upcoming', label: 'Upcoming' },
+                                                { id: 'in-progress', label: 'In Progress' },
+                                                { id: 'completed', label: 'Completed' }
+                                            ].map(opt => (
+                                                <button
+                                                    key={opt.id}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setStatusFilter(opt.id);
+                                                        setShowStatusDropdown(false);
+                                                    }}
+                                                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${statusFilter === opt.id
+                                                            ? 'bg-amber-50 dark:bg-slate-800 text-[#C89B2B] font-bold'
+                                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                        }`}
+                                                >
+                                                    {opt.label}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -405,7 +448,7 @@ export default function StylistDashboard() {
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] p-6 shadow-sm">
                         <div className="flex items-center justify-between mb-5">
                             <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                                <Clock className="w-4 h-4 text-[#C89B2B]" />
+                                <Clock className="w-4 h-4 text-[#C89B2B]" style={{ color: '#C89B2B', stroke: '#C89B2B' }} />
                                 Shift Activity
                             </h2>
                         </div>
@@ -422,7 +465,7 @@ export default function StylistDashboard() {
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 border-2 z-10 bg-white dark:bg-slate-900
                                             ${log.type === 'PUNCH_IN' ? 'border-emerald-500 text-emerald-500' : 'border-rose-500 text-rose-500'}`}
                                         >
-                                            {log.type === 'PUNCH_IN' ? <ArrowRight className="w-3.5 h-3.5" /> : <X className="w-3.5 h-3.5" />}
+                                            {log.type === 'PUNCH_IN' ? <ArrowRight className="w-3.5 h-3.5" style={{ color: '#10b981', stroke: '#10b981' }} /> : <X className="w-3.5 h-3.5" style={{ color: '#f43f5e', stroke: '#f43f5e' }} />}
                                         </div>
                                         <div className="pt-1.5">
                                             <p className="text-sm font-bold text-slate-800 dark:text-slate-100">
@@ -441,14 +484,14 @@ export default function StylistDashboard() {
                     {/* Quick Actions */}
                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[24px] p-6 shadow-sm">
                         <h2 className="text-[15px] font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4">
-                            <Shield className="w-4 h-4 text-[#C89B2B]" />
+                            <Shield className="w-4 h-4 text-[#C89B2B]" style={{ color: '#C89B2B', stroke: '#C89B2B' }} />
                             Quick Links
                         </h2>
                         <div className="space-y-2">
                             <Link to="/stylist/clients" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors group">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 dark:bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Users className="w-4 h-4" />
+                                        <Users className="w-4 h-4" style={{ color: '#2563eb', stroke: '#2563eb' }} />
                                     </div>
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">My Clients</span>
                                 </div>
@@ -457,7 +500,7 @@ export default function StylistDashboard() {
                             <Link to="/stylist/commissions" className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 transition-colors group">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                                        <Award className="w-4 h-4" />
+                                        <Award className="w-4 h-4" style={{ color: '#059669', stroke: '#059669' }} />
                                     </div>
                                     <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Earnings Report</span>
                                 </div>

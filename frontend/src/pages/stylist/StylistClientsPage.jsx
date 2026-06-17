@@ -189,7 +189,7 @@ export default function StylistClientsPage() {
                 <button
                     type="button"
                     onClick={() => setShowEnrollModal(true)}
-                    className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black !font-sans text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
+                    className="flex items-center justify-center gap-2 px-5 py-3.5 bg-primary text-white font-black !font-sans text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95 w-full md:w-auto rounded-2xl"
                 >
                     <UserPlus className="w-4 h-4" /> Add Client
                 </button>
@@ -201,50 +201,52 @@ export default function StylistClientsPage() {
                 </div>
             )}
 
-            <div className="flex flex-col lg:flex-row gap-3">
-                <div className="relative flex-1">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted dark:text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="Search by name or phone..."
-                        className={`w-full pl-11 pr-4 py-3.5 bg-surface border border-border ${csStrong} !font-sans tracking-widest focus:outline-none focus:border-primary transition-all shadow-inner placeholder:text-text-muted/50`}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                </div>
-                <div className="flex gap-1.5 bg-surface border border-border p-1 flex-wrap">
-                    {clientStatuses.map((status) => (
+            <div className="flex flex-col gap-3">
+                <div className="flex flex-row gap-2 w-full">
+                    <div className="relative flex-1 min-w-0">
+                        <Search className="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted dark:text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Search by name or phone..."
+                            className={`w-full pl-9 lg:pl-11 pr-3 lg:pr-4 py-2.5 lg:py-3.5 bg-surface border border-border rounded-2xl ${csStrong} !font-sans tracking-widest focus:outline-none focus:border-primary transition-all shadow-inner placeholder:text-text-muted/50 text-[9px] lg:text-[10px]`}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <div className="flex gap-1 bg-surface border border-border p-1 rounded-2xl items-center shrink-0">
+                        {clientStatuses.map((status) => (
+                            <button
+                                key={status}
+                                type="button"
+                                onClick={() => setStatusFilter(status)}
+                                className={`px-3 lg:px-4 py-1.5 lg:py-2.5 rounded-xl ${csText} tracking-widest transition-all ${statusFilter === status ? 'bg-primary text-white shadow-lg !text-white' : 'hover:text-text hover:bg-background'} text-[9px] lg:text-[10px]`}
+                            >
+                                {status.replace(/_/g, ' ')}
+                            </button>
+                        ))}
                         <button
-                            key={status}
                             type="button"
-                            onClick={() => setStatusFilter(status)}
-                            className={`px-3 py-2 ${csText} tracking-widest transition-all ${statusFilter === status ? 'bg-primary text-white shadow-lg !text-white' : 'hover:text-text'}`}
+                            onClick={() => {
+                                setSearchTerm('');
+                                setStatusFilter('ALL');
+                                setSortBy('name');
+                                loadRoster();
+                                showToast('Directory refreshed');
+                            }}
+                            className={`px-2 lg:px-3 py-1.5 lg:py-2.5 rounded-xl ${csText} hover:text-primary hover:bg-background transition-colors`}
+                            title="Refresh"
                         >
-                            {status.replace(/_/g, ' ')}
+                            <RefreshCw className={`w-3.5 h-3.5 lg:w-4 lg:h-4 ${loading ? 'animate-spin' : ''}`} />
                         </button>
-                    ))}
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setSearchTerm('');
-                            setStatusFilter('ALL');
-                            setSortBy('name');
-                            loadRoster();
-                            showToast('Directory refreshed');
-                        }}
-                        className={`px-3 py-2 border-l border-border ${csText} hover:text-primary`}
-                        title="Refresh"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    </button>
+                    </div>
                 </div>
-                <div className="flex gap-1.5 flex-wrap">
+                <div className="flex gap-1.5 flex-wrap justify-center lg:justify-start">
                     {['name', 'visits', 'rating'].map((criteria) => (
                         <button
                             key={criteria}
                             type="button"
                             onClick={() => setSortBy(criteria)}
-                            className={`px-4 py-3.5 border border-border flex items-center gap-2.5 ${csText} tracking-widest transition-all ${sortBy === criteria ? 'bg-background text-primary border-primary shadow-lg !text-primary' : 'bg-surface hover:text-text'}`}
+                            className={`px-4 py-3.5 border border-border rounded-2xl flex items-center justify-center flex-1 md:flex-none min-w-[110px] gap-2.5 ${csText} tracking-widest transition-all ${sortBy === criteria ? 'bg-background text-primary border-primary shadow-lg !text-primary' : 'bg-surface hover:text-text hover:bg-background'}`}
                         >
                             Sort_{criteria}
                         </button>
@@ -281,13 +283,12 @@ export default function StylistClientsPage() {
                                         <h3 className="text-base font-black text-text group-hover:text-primary transition-colors tracking-tight uppercase !font-sans">{client.name}</h3>
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <div
-                                                className={`font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 border !font-sans ${
-                                                    client.status.includes('VIP')
+                                                className={`font-black text-[7px] uppercase tracking-widest px-1.5 py-0.5 border !font-sans ${client.status.includes('VIP')
                                                         ? 'bg-amber-500/10 text-amber-500 border-amber-500/20'
                                                         : client.status.includes('STANDARD')
-                                                          ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
-                                                          : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
-                                                }`}
+                                                            ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                                            : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                                                    }`}
                                             >
                                                 {client.status.replace(/_/g, ' ')}
                                             </div>
@@ -430,15 +431,15 @@ export default function StylistClientsPage() {
                                 </div>
 
                                 <div className="p-6 bg-slate-50 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowEnrollModal(false)} 
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEnrollModal(false)}
                                         className="flex-1 py-3 text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
                                     >
                                         Cancel
                                     </button>
-                                    <button 
-                                        type="submit" 
+                                    <button
+                                        type="submit"
                                         disabled={enrollSubmitting}
                                         className="flex-1 py-3 text-[11px] font-black text-white uppercase tracking-widest bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 rounded-xl transition-all shadow-lg shadow-slate-800/10 disabled:opacity-50"
                                     >

@@ -11,9 +11,9 @@ import { formatDistanceToNow } from 'date-fns';
 export default function Topbar({ onMenuClick }) {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
-    const { 
-        notifications, unreadCount, markAsRead, markAllRead, 
-        fetchNotifications, fetchUnreadCount 
+    const {
+        notifications, unreadCount, markAsRead, markAllRead,
+        fetchNotifications, fetchUnreadCount
     } = useNotifications();
     const [showNotifications, setShowNotifications] = useState(false);
     const dropdownRef = useRef(null);
@@ -70,9 +70,9 @@ export default function Topbar({ onMenuClick }) {
             <div className="flex items-center gap-3">
                 <button
                     onClick={onMenuClick}
-                    className="lg:hidden w-9 h-9 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors"
+                    className="lg:hidden w-9 h-9 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors text-slate-900 dark:text-slate-300"
                 >
-                    <Menu className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                    <Menu className="w-5 h-5" />
                 </button>
 
 
@@ -84,11 +84,11 @@ export default function Topbar({ onMenuClick }) {
                 <motion.button
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleTheme}
-                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40"
+                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-surface-alt transition-colors border border-border/40 text-slate-900 dark:text-slate-300"
                     title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
                 >
                     {theme === 'light' ? (
-                        <Moon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                        <Moon className="w-5 h-5" />
                     ) : (
                         <Sun className="w-5 h-5 text-amber-400" />
                     )}
@@ -99,9 +99,8 @@ export default function Topbar({ onMenuClick }) {
                     <motion.button
                         whileTap={{ scale: 0.95 }}
                         onClick={() => setShowNotifications(!showNotifications)}
-                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border border-border/40 ${
-                            showNotifications ? 'bg-primary/10 border-primary/30 text-primary font-black shadow-inner shadow-primary/20' : 'bg-surface dark:bg-surface-alt text-slate-600 dark:text-slate-300 hover:bg-surface-alt'
-                        }`}
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all relative border border-border/40 ${showNotifications ? 'bg-primary/10 border-primary/30 text-primary font-black shadow-inner shadow-primary/20' : 'bg-surface dark:bg-surface-alt text-slate-900 dark:text-slate-300 hover:bg-surface-alt'
+                            }`}
                     >
                         <Bell className={`w-4.5 h-4.5 ${unreadCount > 0 ? 'animate-bounce-slow' : ''}`} />
                         {unreadCount > 0 && (
@@ -122,7 +121,7 @@ export default function Topbar({ onMenuClick }) {
                                 <div className="p-4 border-b border-border bg-surface/50 flex items-center justify-between">
                                     <h3 className="text-sm font-black text-text uppercase tracking-widest italic">Notifications</h3>
                                     {unreadCount > 0 && (
-                                        <button 
+                                        <button
                                             onClick={markAllRead}
                                             className="text-[10px] font-bold text-primary hover:underline uppercase tracking-tighter"
                                         >
@@ -142,17 +141,16 @@ export default function Topbar({ onMenuClick }) {
                                     ) : (
                                         <div className="divide-y divide-border/40">
                                             {notifications.map((notif) => (
-                                                <div 
+                                                <div
                                                     key={notif._id}
                                                     onClick={() => handleNotifClick(notif)}
                                                     className={`p-4 hover:bg-surface-alt transition-all cursor-pointer group relative ${!notif.isRead ? 'bg-primary/5' : ''}`}
                                                 >
                                                     <div className="flex gap-3">
-                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                                                            notif.type.includes('booking') ? 'bg-indigo-100 text-indigo-600' : 
-                                                            notif.type.includes('finance') ? 'bg-emerald-100 text-emerald-600' :
-                                                            'bg-amber-100 text-amber-600'
-                                                        }`}>
+                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type.includes('booking') ? 'bg-indigo-100 text-indigo-600' :
+                                                                notif.type.includes('finance') ? 'bg-emerald-100 text-emerald-600' :
+                                                                    'bg-amber-100 text-amber-600'
+                                                            }`}>
                                                             <Clock className="w-4 h-4" />
                                                         </div>
                                                         <div className="flex-1 min-w-0">
@@ -184,7 +182,7 @@ export default function Topbar({ onMenuClick }) {
                                 </div>
 
                                 <div className="p-3 border-t border-border bg-surface/50 text-center">
-                                    <button 
+                                    <button
                                         onClick={() => navigate('/admin/reminders')}
                                         className="text-[10px] font-black uppercase tracking-widest text-text-secondary hover:text-primary transition-colors"
                                     >
@@ -200,9 +198,9 @@ export default function Topbar({ onMenuClick }) {
                 <div className="flex items-center gap-3 pl-3 ml-1 border-l border-border/40">
                     <div className="w-9 h-9 bg-primary/10 flex items-center justify-center text-[10px] font-black text-primary border border-primary/20 shadow-inner overflow-hidden">
                         {user?.avatar ? (
-                            <img 
-                                src={getImageUrl(user.avatar)} 
-                                alt={user.name} 
+                            <img
+                                src={getImageUrl(user.avatar)}
+                                alt={user.name}
                                 className="w-full h-full object-cover"
                             />
                         ) : (
@@ -218,10 +216,10 @@ export default function Topbar({ onMenuClick }) {
                 {/* Logout Button */}
                 <button
                     onClick={logout}
-                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-500 transition-colors border border-border/40 group"
+                    className="w-10 h-10 rounded-xl bg-surface dark:bg-surface-alt flex items-center justify-center hover:bg-rose-500/10 hover:text-rose-500 transition-colors border border-border/40 group text-slate-900 dark:text-slate-300"
                     title="Logout"
                 >
-                    <LogOut className="w-4.5 h-4.5 text-slate-600 dark:text-slate-300 group-hover:text-rose-500" />
+                    <LogOut className="w-4.5 h-4.5 group-hover:text-rose-500" />
                 </button>
             </div>
         </header>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import StylistSidebar from '../components/stylist/StylistSidebar';
 import Topbar from '../components/admin/Topbar';
+import StylistMobileNavbar from '../components/stylist/StylistMobileNavbar';
 
 export default function StylistLayout() {
     const [collapsed, setCollapsed] = useState(() => {
@@ -657,10 +658,12 @@ export default function StylistLayout() {
             >
                 <Topbar onMenuClick={() => setMobileOpen(true)} />
 
-                <main className="animate-reveal p-4">
+                <main className="animate-reveal p-4 pb-24 lg:pb-4">
                     <Outlet />
                 </main>
             </div>
+
+            <StylistMobileNavbar setMobileOpen={setMobileOpen} />
         </div>
     );
 }

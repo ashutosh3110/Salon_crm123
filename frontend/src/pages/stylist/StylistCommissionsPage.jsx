@@ -147,29 +147,37 @@ export default function StylistCommissionsPage() {
                 ) : (
                     stats.map((s) => {
                         const iconMap = {
-                            totalEarned: { icon: DollarSign, color: 'text-emerald-500' },
-                            yieldUnits: { icon: Zap, color: 'text-primary' },
-                            repIndex: { icon: Award, color: 'text-amber-500' },
-                            baseAllocation: { icon: CreditCard, color: 'text-blue-500' },
+                            totalEarned: { icon: DollarSign, colorHex: '#059669', darkColorHex: '#34D399', bgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20', cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5', cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50' },
+                            yieldUnits: { icon: Zap, colorHex: '#D97706', darkColorHex: '#FBBF24', bgClass: '!bg-[#FEF9C3] dark:!bg-[#B4912B]/20', cardBgClass: '!bg-yellow-50/50 dark:!bg-[#B4912B]/5', cardBorderClass: '!border-yellow-100 dark:!border-[#B4912B]/15 hover:!border-yellow-300 dark:hover:!border-[#B4912B]/50' },
+                            repIndex: { icon: Award, colorHex: '#EA580C', darkColorHex: '#FB923C', bgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20', cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5', cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50' },
+                            baseAllocation: { icon: CreditCard, colorHex: '#2563EB', darkColorHex: '#60A5FA', bgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20', cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5', cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50' },
                         };
-                        const { icon: Icon, color } = iconMap[s.key] || { icon: DollarSign, color: 'text-primary' };
+                        const { icon: Icon, colorHex, darkColorHex, bgClass, cardBgClass, cardBorderClass } = iconMap[s.key] || iconMap.totalEarned;
+                        
+                        const title = s.key === 'totalEarned' ? 'Total commissions' : s.key === 'yieldUnits' ? 'Service lines' : s.key === 'repIndex' ? 'Reputation (feedback)' : 'Fixed base salary';
+                        
+                        // Detect dark mode from document element to use appropriate hex color
+                        const isDark = document.documentElement.classList.contains('dark');
+                        const activeColor = isDark ? darkColorHex : colorHex;
+
                         return (
-                            <div key={s.key} className="bg-surface border border-border p-4 relative overflow-hidden group hover:border-primary/30 transition-all">
-                                <div className="absolute top-0 right-0 w-16 h-16 bg-primary/5 -translate-y-8 translate-x-8 rotate-45" />
-                                <div className="w-9 h-9 bg-background border border-border flex items-center justify-center mb-3 text-primary shadow-inner">
-                                    <Icon className={`w-3.5 h-3.5 ${color}`} />
+                            <div key={s.key} className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${cardBgClass} ${cardBorderClass}`}>
+                                <div className="flex !items-start gap-3 !text-left">
+                                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${bgClass}`} style={{ borderRadius: '12px' }}>
+                                        <Icon className="w-4 h-4" strokeWidth={2.5} style={{ color: activeColor, stroke: activeColor }} />
+                                    </div>
+                                    <div className="flex flex-col !items-start !text-left">
+                                        <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left">
+                                            {title}
+                                        </span>
+                                        <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left">
+                                            {s.value}
+                                        </h3>
+                                        <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left">
+                                            {s.sub}
+                                        </span>
+                                    </div>
                                 </div>
-                                <p className="text-xl font-black text-text tracking-tighter uppercase !font-sans">{s.value}</p>
-                                <p className={`${csText} tracking-widest mt-0.5 not-italic`}>
-                                    {s.key === 'totalEarned'
-                                        ? 'Total commissions'
-                                        : s.key === 'yieldUnits'
-                                          ? 'Service lines'
-                                          : s.key === 'repIndex'
-                                            ? 'Reputation (feedback)'
-                                            : 'Fixed base salary'}
-                                </p>
-                                <p className={`${cs} text-text-muted/60 mt-0.5 not-italic tracking-widest`}>{s.sub}</p>
                             </div>
                         );
                     })
@@ -177,7 +185,7 @@ export default function StylistCommissionsPage() {
             </div>
 
             <div className="grid lg:grid-cols-3 gap-4">
-                <div className="lg:col-span-2 bg-surface border border-border overflow-hidden">
+                <div className="lg:col-span-2 bg-surface border border-border overflow-hidden !rounded-[24px]">
                     <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                         <h2 className={`${csHeading} tracking-[0.2em]`}>Recent earnings log</h2>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -186,7 +194,7 @@ export default function StylistCommissionsPage() {
                                     key={st}
                                     type="button"
                                     onClick={() => setStatusFilter(st)}
-                                    className={`${csText} px-2 py-1 border ${statusFilter === st ? 'bg-primary text-white border-primary !text-white' : 'border-border'}`}
+                                    className={`${csText} px-2 py-1 border rounded-lg ${statusFilter === st ? 'bg-primary text-white border-primary !text-white' : 'border-border'}`}
                                 >
                                     {st}
                                 </button>
@@ -206,8 +214,15 @@ export default function StylistCommissionsPage() {
                             <tbody className="divide-y divide-border/10">
                                 {filteredRows.length === 0 && !loading ? (
                                     <tr>
-                                        <td colSpan={4} className={`px-8 py-12 text-center ${csText}`}>
-                                            No commission lines in this period
+                                        <td colSpan={4} className="px-8 py-16 text-center">
+                                            <div className="flex flex-col items-center justify-center">
+                                                <img 
+                                                    src="/vector iamge 4.png" 
+                                                    alt="No data available" 
+                                                    className="w-32 h-32 object-contain opacity-60 mb-4" 
+                                                />
+                                                <p className={csText}>No commission lines in this period</p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : (
@@ -234,42 +249,54 @@ export default function StylistCommissionsPage() {
                     </div>
                 </div>
 
-                <div className="bg-surface border border-border p-8 flex flex-col justify-between relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 p-8 opacity-[0.06] dark:opacity-[0.08] group-hover:opacity-[0.12] transition-opacity">
-                        <Target className="w-24 h-24 text-primary" />
-                    </div>
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 p-8 flex flex-col justify-between relative overflow-hidden group !rounded-[24px] shadow-[0_2px_12px_-3px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow">
+                    {/* Background Accents */}
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-[#B4912B]/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+                    <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#B4912B]/5 rounded-full blur-2xl translate-y-1/2 -translate-x-1/4 pointer-events-none"></div>
 
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-3 mb-8">
-                            <TrendingUp className="w-4 h-4 text-primary" />
-                            <h2 className={`${csHeading} tracking-[0.3em]`}>Revenue goal (bookings)</h2>
+
+
+                    <div className="relative z-10 flex-1 flex flex-col">
+                        <div className="flex items-center gap-3 mb-10">
+                            <div className="w-10 h-10 rounded-xl bg-[#B4912B]/10 flex items-center justify-center border border-[#B4912B]/20">
+                                <TrendingUp className="w-5 h-5 text-amber-500" strokeWidth={2.5} style={{ color: '#B4912B', stroke: '#B4912B' }} />
+                            </div>
+                            <h2 className="text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tracking-[0.2em] uppercase">Revenue goal (bookings)</h2>
                         </div>
 
-                        <div className="space-y-10">
-                            <div className="text-center relative">
-                                <div className="absolute inset-0 flex items-center justify-center opacity-5">
-                                    <div className="w-32 h-32 border-4 border-primary rounded-full shadow-2xl" />
+                        <div className="flex-1 flex flex-col justify-center items-center py-8">
+                            <div className="relative flex flex-col items-center justify-center">
+                                {/* Decorative glow behind percentage */}
+                                <div className="absolute inset-0 w-40 h-40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-tr from-[#B4912B]/10 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+                                
+                                <div className="text-center relative z-10">
+                                    <p className="text-[76px] leading-none font-black text-slate-900 dark:text-white tracking-tighter !font-sans drop-shadow-sm">
+                                        {progressPct}<span className="text-[40px] text-slate-300 dark:text-slate-600 ml-1 font-bold">%</span>
+                                    </p>
+                                    <div className="mt-6 flex flex-col items-center gap-2">
+                                        <p className="text-[10px] font-black tracking-[0.2em] uppercase bg-[#B4912B]/10 px-3.5 py-1 rounded-full border border-[#B4912B]/20" style={{ color: '#B4912B' }}>Target progress</p>
+                                        <p className="text-[15px] font-bold text-slate-500 dark:text-slate-400 mt-2 tracking-tight">
+                                            ₹{Number(performance?.bookingRevenue || 0).toLocaleString('en-IN')} <span className="text-slate-300 dark:text-slate-700 font-normal mx-1">/</span> ₹{Number(performance?.goal || 0).toLocaleString('en-IN')}
+                                        </p>
+                                    </div>
                                 </div>
-                                <p className="text-6xl font-black text-text tracking-tighter !font-sans">{progressPct}%</p>
-                                <p className={`${csText} tracking-[0.3em] mt-2 not-italic`}>Target progress</p>
-                                <p className={`${csText} mt-2`}>
-                                    ₹{Number(performance?.bookingRevenue || 0).toLocaleString('en-IN')} / ₹{Number(performance?.goal || 0).toLocaleString('en-IN')}
-                                </p>
                             </div>
+                        </div>
 
-                            <div className="space-y-3">
-                                <div className={`flex items-center justify-between ${csText} tracking-widest`}>
-                                    <span>Completed booking revenue</span>
-                                    <span className="text-primary !text-primary">{performance?.quotaLabel || '—'}</span>
-                                </div>
-                                <div className="h-4 bg-background border border-border p-0.5 shadow-inner">
-                                    <motion.div
-                                        initial={{ width: 0 }}
-                                        animate={{ width: `${progressPct}%` }}
-                                        transition={{ duration: 1.2, ease: 'easeOut' }}
-                                        className="h-full bg-primary shadow-[0_0_15px_rgba(var(--primary-rgb),0.5)]"
-                                    />
-                                </div>
+                        <div className="mt-auto space-y-4 pt-10">
+                            <div className="flex items-center justify-between">
+                                <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 tracking-wider uppercase">Completed booking revenue</span>
+                                <span className="text-[10px] font-black tracking-[0.1em] uppercase bg-[#B4912B]/10 px-2.5 py-1 rounded-md border border-[#B4912B]/10" style={{ color: '#B4912B' }}>{performance?.quotaLabel || '—'}</span>
+                            </div>
+                            <div className="h-4 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/50 shadow-inner">
+                                <motion.div
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progressPct}%` }}
+                                    transition={{ duration: 1.2, ease: 'easeOut' }}
+                                    className="h-full bg-gradient-to-r from-[#e3b63d] to-[#B4912B] rounded-full relative overflow-hidden"
+                                >
+                                    <div className="absolute top-0 right-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-white/20"></div>
+                                </motion.div>
                             </div>
                         </div>
                     </div>
@@ -277,9 +304,13 @@ export default function StylistCommissionsPage() {
                     <button
                         type="button"
                         onClick={() => setShowSlabModal(true)}
-                        className="mt-10 w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark hover:-translate-y-0.5 active:translate-y-0 transition-all group"
+                        className="mt-8 relative z-10 w-full py-4 rounded-[16px] font-black text-[12px] uppercase tracking-[0.2em] hover:-translate-y-0.5 active:translate-y-0 transition-all group overflow-hidden shadow-xl hover:shadow-2xl dark:shadow-none"
+                        style={{ backgroundColor: '#B4912B', color: '#ffffff' }}
                     >
-                        View incentive reference <ArrowUpRight className="inline w-3.5 h-3.5 ml-2 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        <span className="relative z-10 flex items-center justify-center gap-2">
+                            View incentive reference <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform stroke-[2.5px]" style={{ color: '#ffffff', stroke: '#ffffff' }} />
+                        </span>
+                        <div className="absolute inset-0 bg-white/10 dark:bg-black/5 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-out"></div>
                     </button>
                 </div>
             </div>

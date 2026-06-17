@@ -5,6 +5,7 @@ import PasswordField from '../../components/common/PasswordField';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import api from '../../services/api';
 
 const WEEK_DAYS = [
@@ -34,11 +35,11 @@ function normalizeWeekly(raw) {
     const daysSource = raw?.days || raw;
     WEEK_DAYS.forEach(({ key }) => {
         const d = daysSource?.[key];
-        
+
         let startVal = DEFAULT_DAY.start;
         let endVal = DEFAULT_DAY.end;
         let onVal = false;
-        
+
         if (Array.isArray(d)) {
             if (d.length > 0 && d[0]) {
                 startVal = d[0].start || DEFAULT_DAY.start;
@@ -50,7 +51,7 @@ function normalizeWeekly(raw) {
             endVal = d.end || DEFAULT_DAY.end;
             onVal = d.on !== false;
         }
-        
+
         out[key] = {
             on: onVal,
             start: startVal,
@@ -69,6 +70,8 @@ function outletIdStr(u) {
 export default function StylistSettingsPage() {
     const { section } = useParams();
     const navigate = useNavigate();
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
     const { user, updateProfile, changePassword, refreshUser } = useAuth();
     const { outlets, platformSettings } = useBusiness();
 
@@ -630,56 +633,56 @@ export default function StylistSettingsPage() {
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         exit={{ opacity: 0, x: 10 }}
-                        className="space-y-8"
+                        className="space-y-5"
                     >
-                        <div className="flex items-center justify-between border-b border-border/10 pb-6">
+                        <div className="flex items-center justify-between border-b border-border/10 pb-4">
                             <div className="flex items-center gap-3">
                                 <Clock className="w-4 h-4 text-primary" />
                                 <h3 className="text-[10px] font-black text-text uppercase tracking-[0.3em]">Working hours</h3>
                             </div>
-                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 border border-emerald-500/20">
+                            <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-3 py-1 border border-emerald-500/20 rounded-xl">
                                 Saved on server when you click save
                             </span>
                         </div>
 
                         {/* Single Global Availability Toggle Switch */}
-                        <div className="bg-background border border-border p-6 rounded-xl flex items-center justify-between">
+                        <div
+                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-4 px-5 rounded-2xl flex items-center justify-between"
+                        >
                             <div className="text-left">
-                                <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em] mb-1">Available for Bookings</h4>
-                                <p className="text-[9px] text-text-muted uppercase font-bold tracking-tight">Enable this to allow clients to schedule appointments with you</p>
+                                <h4 className="text-[10px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-[0.2em] mb-1">Available for Bookings</h4>
+                                <p className="text-[9px] text-slate-500 dark:text-slate-400 uppercase font-bold tracking-tight">Enable this to allow clients to schedule appointments with you</p>
                             </div>
                             <button
                                 type="button"
                                 onClick={() => setIsAvailable(v => !v)}
-                                className={`w-11 h-6 rounded-full transition-colors relative shrink-0 p-1 flex items-center ${
-                                    isAvailable ? 'bg-[#C89B2B]' : 'bg-slate-200 dark:bg-slate-800'
-                                }`}
+                                className={`w-11 h-6 rounded-full transition-colors relative shrink-0 p-1 flex items-center ${isAvailable ? 'bg-[#C89B2B]' : 'bg-slate-200 dark:bg-slate-800'
+                                    }`}
                                 aria-label="Toggle availability status"
                             >
                                 <div
-                                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                                        isAvailable ? 'translate-x-5' : 'translate-x-0'
-                                    }`}
+                                    className={`w-4 h-4 rounded-full bg-white shadow-sm transition-transform duration-200 ${isAvailable ? 'translate-x-5' : 'translate-x-0'
+                                        }`}
                                 />
                             </button>
                         </div>
 
-                        <div className={`grid gap-4 transition-all duration-200 ${isAvailable ? 'opacity-100' : 'opacity-50'}`}>
+                        <div className={`grid gap-2 transition-all duration-200 ${isAvailable ? 'opacity-100' : 'opacity-50'}`}>
                             {WEEK_DAYS.map(({ key, label }) => {
                                 const d = weekly[key];
                                 return (
                                     <div
                                         key={key}
-                                        className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-background border border-border gap-4"
+                                        className="bg-white dark:bg-slate-800/40 flex flex-col sm:flex-row sm:items-center justify-between py-2.5 px-5 border border-slate-200 dark:border-slate-700 rounded-2xl gap-3"
                                     >
                                         <div className="flex items-center gap-6">
-                                            <span className="text-[10px] font-black text-text uppercase tracking-widest min-w-[100px]">
+                                            <span className="text-[10px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-widest min-w-[100px]">
                                                 {label}
                                             </span>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-4">
                                             <div>
-                                                <p className="text-[8px] text-text-muted uppercase font-bold mb-1">Start</p>
+                                                <p className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1">Start</p>
                                                 <input
                                                     type="time"
                                                     disabled={!isAvailable}
@@ -690,11 +693,11 @@ export default function StylistSettingsPage() {
                                                             [key]: { ...w[key], start: e.target.value },
                                                         }))
                                                     }
-                                                    className="px-3 py-2 bg-surface border border-border text-[10px] font-black disabled:opacity-40"
+                                                    className="bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 text-[10px] font-black disabled:opacity-40 rounded-xl text-slate-800 dark:text-slate-100"
                                                 />
                                             </div>
                                             <div>
-                                                <p className="text-[8px] text-text-muted uppercase font-bold mb-1">End</p>
+                                                <p className="text-[8px] text-slate-500 dark:text-slate-400 uppercase font-bold mb-1">End</p>
                                                 <input
                                                     type="time"
                                                     disabled={!isAvailable}
@@ -705,7 +708,7 @@ export default function StylistSettingsPage() {
                                                             [key]: { ...w[key], end: e.target.value },
                                                         }))
                                                     }
-                                                    className="px-3 py-2 bg-surface border border-border text-[10px] font-black disabled:opacity-40"
+                                                    className="bg-slate-50 dark:bg-slate-900/50 px-2.5 py-1.5 border border-slate-300 dark:border-slate-600 text-[10px] font-black disabled:opacity-40 rounded-xl text-slate-800 dark:text-slate-100"
                                                 />
                                             </div>
                                         </div>
@@ -718,18 +721,20 @@ export default function StylistSettingsPage() {
                             type="button"
                             onClick={saveAvailability}
                             disabled={isSaving}
-                            className="bg-primary text-white px-10 py-4 font-black text-[10px] uppercase tracking-[0.3em] shadow-xl disabled:opacity-50"
+                            className="bg-primary text-white px-7 py-2.5 font-black text-[9px] uppercase tracking-[0.3em] shadow-xl disabled:opacity-50 rounded-2xl"
                         >
                             {isSaving ? 'Saving…' : 'Save availability'}
                         </button>
 
-                        <div className="p-8 bg-surface-alt border border-border space-y-4">
+                        <div
+                            className="bg-amber-50 dark:bg-slate-800 p-4 px-5 border border-amber-200 dark:border-slate-700 space-y-2 rounded-2xl"
+                        >
                             <div className="flex items-center gap-3">
-                                <Zap className="w-4 h-4 text-primary" />
-                                <h4 className="text-[10px] font-black text-text uppercase tracking-[0.2em]">Time off</h4>
+                                <Zap className="w-4 h-4 text-amber-500" />
+                                <h4 className="text-[10px] font-black text-slate-800 dark:text-slate-100 uppercase tracking-[0.2em]">Time off</h4>
                             </div>
-                            <p className="text-[10px] text-text-muted uppercase leading-relaxed font-bold tracking-tight not-italic">
-                                For leave requests, use <strong className="text-text">Time off</strong> in the sidebar.
+                            <p className="text-[10px] text-slate-600 dark:text-slate-400 uppercase leading-relaxed font-bold tracking-tight not-italic">
+                                For leave requests, use <strong className="text-slate-800 dark:text-slate-200">Time off</strong> in the sidebar.
                             </p>
                         </div>
                     </motion.div>
@@ -840,7 +845,7 @@ export default function StylistSettingsPage() {
                 </div>
             )}
 
-            <div className="bg-surface border border-border p-8 md:p-10 relative overflow-hidden min-h-[500px]">
+            <div className="bg-surface border border-border p-5 md:p-8 relative overflow-hidden min-h-[500px] rounded-3xl">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 -translate-y-16 translate-x-16 rotate-45" />
                 <nav className="flex flex-wrap gap-2 mb-10 border-b border-border/20 pb-4">
                     {[
@@ -852,9 +857,8 @@ export default function StylistSettingsPage() {
                             key={id}
                             type="button"
                             onClick={() => navigate(`/stylist/settings/${id}`)}
-                            className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${
-                                section === id ? 'bg-primary text-white' : 'text-text-muted hover:text-text hover:bg-background'
-                            }`}
+                            className={`flex items-center gap-2 px-4 py-2 text-[9px] font-black uppercase tracking-widest transition-all rounded-xl ${section === id ? 'bg-primary text-white' : 'text-text-muted hover:text-text hover:bg-background'
+                                }`}
                         >
                             <Icon className={`w-3.5 h-3.5 ${section === id ? 'text-white' : 'text-text-muted'}`} />
                             {label}
@@ -871,9 +875,8 @@ export default function StylistSettingsPage() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 20 }}
-                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 border shadow-2xl text-[10px] font-black uppercase tracking-widest ${
-                            toast.isErr ? 'bg-rose-600 text-white border-rose-500' : 'bg-text text-background border-border'
-                        }`}
+                        className={`fixed bottom-8 left-1/2 -translate-x-1/2 z-[200] px-8 py-4 border shadow-2xl text-[10px] font-black uppercase tracking-widest ${toast.isErr ? 'bg-rose-600 text-white border-rose-500' : 'bg-text text-background border-border'
+                            }`}
                     >
                         {toast.msg}
                     </motion.div>
