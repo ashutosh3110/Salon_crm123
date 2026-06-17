@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 const Booking = require('../Models/Booking');
+const Order = require('../Models/Order');
+const Invoice = require('../Models/Invoice');
+const Outlet = require('../Models/Outlet');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const { spendWallet } = require('../Utils/walletHelper');
 const User = require('../Models/User');
@@ -176,9 +179,9 @@ exports.createBooking = async (req, res) => {
             if (promo.usageLimitPerCustomer) {
                 const code = promo.couponCode;
                 const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
-                    mongoose.model('Booking').countDocuments({ clientId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Order').countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Invoice').countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } })
+                    Booking.countDocuments({ clientId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Order.countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Invoice.countDocuments({ customerId: targetCustomerId, couponCode: code, status: { $ne: 'cancelled' } })
                 ]);
                 const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
                 if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
@@ -621,7 +624,7 @@ exports.getAvailableSlots = async (req, res) => {
         const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
         // 2. Get Outlet Working Hours for that staff
-        const outlet = await mongoose.model('Outlet').findById(staff.outletId);
+        const outlet = await Outlet.findById(staff.outletId);
 
         let shiftStart = "09:00";
         let shiftEnd = "21:00";

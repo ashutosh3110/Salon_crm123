@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Calendar, BarChart3, Users, Sparkles, Clock, Shield } from 'lucide-react';
+import { Calendar, BarChart3, Users, Gift, Clock, Shield, Star, Award, Zap, Heart } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
 
 const features = [
@@ -19,7 +19,7 @@ const features = [
         desc: 'Complete client histories, preferences, and loyalty tracking.',
     },
     {
-        icon: Sparkles,
+        icon: Gift,
         title: 'Loyalty Engine',
         desc: 'Automated rewards and referral programs that retain clients.',
     },
@@ -50,7 +50,7 @@ const itemVariants = {
 export default function Features({ data, statsData }) {
     const { theme } = useTheme();
     // Merge static icons with dynamic content if data exists
-    const defaultIcons = [Calendar, BarChart3, Users, Sparkles, Clock, Shield];
+    const defaultIcons = [Calendar, BarChart3, Users, Gift, Clock, Shield, Star, Award, Zap, Heart];
 
     const displayFeatures = data && data.length > 0
         ? data.map((item, i) => ({

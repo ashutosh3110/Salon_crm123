@@ -1,4 +1,7 @@
 const Promotion = require('../Models/Promotion');
+const Booking = require('../Models/Booking');
+const Order = require('../Models/Order');
+const Invoice = require('../Models/Invoice');
 const mongoose = require('mongoose');
 
 exports.getPromotions = async (req, res) => {
@@ -115,9 +118,9 @@ exports.validateCoupon = async (req, res) => {
         if (customerId && promo.usageLimitPerCustomer) {
             const code = promo.couponCode;
             const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
-                mongoose.model('Booking').countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                mongoose.model('Order').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                mongoose.model('Invoice').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
+                Booking.countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                Order.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                Invoice.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
             ]);
             const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
             if (totalCustomerUsage >= promo.usageLimitPerCustomer) {

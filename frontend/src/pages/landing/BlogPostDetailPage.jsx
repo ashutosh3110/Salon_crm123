@@ -74,7 +74,7 @@ export default function BlogPostDetailPage() {
             <WapixoNavbar />
 
             {/* Elegant Header - Matching Journal Style */}
-            <div style={{ paddingTop: 'clamp(100px, 15vw, 160px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ paddingTop: '20px', paddingBottom: '20px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, opacity: theme === 'dark' ? 0.1 : 0.05, pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-10%', left: '25%', width: '400px', height: '400px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(100px)' }} />
                     <div style={{ position: 'absolute', bottom: '-10%', right: '25%', width: '500px', height: '500px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(120px)' }} />
@@ -101,7 +101,7 @@ export default function BlogPostDetailPage() {
             </div>
 
             {/* Content Area */}
-            <main style={{ flex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 1.5rem) 60px', width: '100%' }}>
+            <main style={{ flex: 1, maxWidth: '900px', margin: '0 auto', padding: '0 clamp(1rem, 4vw, 1.5rem) 20px', width: '100%' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
 
                     {/* Main Article Content */}
@@ -171,7 +171,7 @@ export default function BlogPostDetailPage() {
             </main>
 
             {/* Bottom Dark Section */}
-            <div style={{ background: 'var(--wapixo-bg)', borderTop: '1px solid var(--wapixo-border)', textAlign: 'center', padding: '60px 0' }}>
+            <div style={{ background: 'var(--wapixo-bg)', borderTop: '1px solid var(--wapixo-border)', textAlign: 'center', padding: '30px 0' }}>
                 <h2 style={{ fontSize: '1.75rem', fontWeight: 300, color: 'var(--wapixo-text)', letterSpacing: '-0.02em', margin: 0 }}>Explore More Insights.</h2>
             </div>
 

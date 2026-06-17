@@ -5,9 +5,11 @@ const Customer = require('../Models/Customer');
 const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Setting = require('../Models/Setting');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
-const { spendWallet } = require('../Utils/walletHelper');
+const { spendWallet = () => {} } = require('../Utils/walletHelper'); // Safe import
 const Salon = require('../Models/Salon');
 const Service = require('../Models/Service');
+const Booking = require('../Models/Booking');
+const Order = require('../Models/Order');
 
 
 exports.checkout = async (req, res) => {
@@ -87,9 +89,9 @@ exports.checkout = async (req, res) => {
             if (clientId && promo.usageLimitPerCustomer) {
                 const code = promo.couponCode;
                 const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
-                    mongoose.model('Booking').countDocuments({ clientId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Order').countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Invoice').countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } })
+                    Booking.countDocuments({ clientId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Order.countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Invoice.countDocuments({ customerId: clientId, couponCode: code, status: { $ne: 'cancelled' } })
                 ]);
                 const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
                 if (totalCustomerUsage >= promo.usageLimitPerCustomer) {

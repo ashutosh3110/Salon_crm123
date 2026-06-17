@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { User, Mail, Phone, Lock, Save, Loader2, Shield, UserCircle, Briefcase, Key, Camera } from 'lucide-react';
-import mockApi from '../../services/mock/mockApi';
+import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { getImageUrl } from '../../utils/imageUtils';
 
 export default function ReceptionistProfilePage() {
     const { user } = useAuth();
     const { outlets } = useBusiness();
     const [loading, setLoading] = useState(false);
 
-    const [profileImage, setProfileImage] = useState(user?.profileImage || null);
+    const [profileImage, setProfileImage] = useState(user?.avatar || user?.profileImage || null);
+    const [selectedFile, setSelectedFile] = useState(null);
 
     const [profileData, setProfileData] = useState({
         name: user?.name || '',
@@ -37,9 +39,25 @@ export default function ReceptionistProfilePage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await mockApi.put(`/users/${user?._id || user?.id}`, { ...profileData, profileImage });
+            let avatarUrl = profileImage;
+            if (selectedFile) {
+                const uploadData = new FormData();
+                uploadData.append('image', selectedFile);
+                const { data } = await api.post('/uploads', uploadData);
+                if (data.success) {
+                    avatarUrl = data.url;
+                }
+            }
+
+            await api.patch('/auth/updatedetails', { 
+                ...profileData, 
+                avatar: avatarUrl 
+            });
             alert('Profile updated successfully!');
+            // To see changes immediately, one would typically reload or update the auth context
+            window.location.reload();
         } catch (error) {
+            console.error('Error updating profile:', error);
             alert('Error updating profile. Please try again.');
         } finally {
             setLoading(false);
@@ -49,6 +67,7 @@ export default function ReceptionistProfilePage() {
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            setSelectedFile(file);
             const reader = new FileReader();
             reader.onloadend = () => setProfileImage(reader.result);
             reader.readAsDataURL(file);
@@ -66,13 +85,14 @@ export default function ReceptionistProfilePage() {
         }
         setLoading(true);
         try {
-            await mockApi.patch(`/users/${user?._id || user?.id}/password`, {
+            await api.put('/auth/updatepassword', {
                 currentPassword: securityData.currentPassword,
                 newPassword: securityData.newPassword,
             });
             alert('Password updated successfully!');
             setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
         } catch (error) {
+            console.error('Error updating password:', error);
             alert('Error updating password. Please check your current password.');
         } finally {
             setLoading(false);
@@ -105,7 +125,7 @@ export default function ReceptionistProfilePage() {
                             <label className="relative cursor-pointer group/avatar">
                                 <div className="w-20 h-20 rounded-full bg-surface-alt border-4 border-surface shadow-lg flex items-center justify-center overflow-hidden relative">
                                     {profileImage ? (
-                                        <img src={profileImage} alt="Profile" className="w-full h-full object-cover" />
+                                        <img src={getImageUrl(profileImage)} alt="Profile" className="w-full h-full object-cover" />
                                     ) : (
                                         <span className="text-3xl font-black text-text uppercase">
                                             {user?.name?.charAt(0) || 'R'}
