@@ -111,7 +111,7 @@ export default function ServiceApprovalManager() {
                         className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${s.cardBgClass} ${s.cardBorderClass}`}
                     >
                         <div className="flex !items-start gap-3 !text-left">
-                            <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${s.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                            <div className={`w-9 h-9 flex items-center justify-center shrink-0 !rounded-[12px] ${s.iconBgClass}`}>
                                 <s.icon className={`w-4 h-4 ${s.iconColorClass}`} strokeWidth={2} />
                             </div>
 

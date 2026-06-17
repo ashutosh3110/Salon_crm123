@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
     CalendarCheck, Clock, UserCheck, UserMinus,
     ArrowLeftRight, Search, Filter, CheckCircle2,
-    Calendar, MoreVertical, XCircle, AlertCircle, ArrowUpRight, ArrowDownRight,
+    Calendar, MoreVertical, XCircle, AlertCircle, ArrowUpRight, ArrowDownRight, X,
     ChevronLeft, ChevronRight, MessageSquare, Download, MapPin, Check, Users
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +22,23 @@ const STATUS_META = {
     'half-day': { label: 'Half Day', cls: 'bg-blue-500/10 text-blue-600 border-blue-500/20', color: '#3b82f6' },
     leave: { label: 'On Leave', cls: 'bg-violet-500/10 text-violet-600 border-violet-500/20', color: '#8b5cf6' },
 };
+
+const AVATAR_COLORS = [
+    'bg-blue-100 text-blue-600 border-blue-200',
+    'bg-emerald-100 text-emerald-600 border-emerald-200',
+    'bg-purple-100 text-purple-600 border-purple-200',
+    'bg-amber-100 text-amber-600 border-amber-200',
+    'bg-rose-100 text-rose-600 border-rose-200',
+    'bg-cyan-100 text-cyan-600 border-cyan-200',
+    'bg-indigo-100 text-indigo-600 border-indigo-200',
+    'bg-fuchsia-100 text-fuchsia-600 border-fuchsia-200'
+];
+
+function getAvatarColor(name) {
+    if (!name) return AVATAR_COLORS[0];
+    const charCode = name.charCodeAt(0);
+    return AVATAR_COLORS[charCode % AVATAR_COLORS.length];
+}
 
 function formatDisplayTime(iso) {
     if (!iso) return '--:--';
@@ -404,7 +421,7 @@ export default function AttendancePage() {
                                 <tr key={r.id} className="hover:bg-surface-alt/30 transition-colors group">
                                     <td className="px-6 py-4 !text-left">
                                         <div className="flex items-center gap-3 !text-left">
-                                            <div className="w-8 h-8 bg-primary/10 border border-primary/20 flex items-center justify-center text-[10px] font-black text-primary">
+                                            <div className={`w-8 h-8 flex items-center justify-center text-[10px] font-black border !rounded-[12px] ${getAvatarColor(r.name)}`}>
                                                 {r.name.charAt(0)}
                                             </div>
                                             <div>
@@ -458,6 +475,12 @@ export default function AttendancePage() {
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setEditModal(null)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="bg-white w-full max-w-sm border border-border !rounded-[16px] shadow-2xl relative p-8">
+                            <button 
+                                onClick={() => setEditModal(null)} 
+                                className="absolute top-4 right-4 p-2 text-text-muted hover:text-rose-500 hover:bg-rose-50 transition-all rounded-full"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
                             <h2 className="text-sm font-black text-text uppercase tracking-widest mb-1">Modify Registry</h2>
                             <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-8">{editModal.name}</p>
                             
