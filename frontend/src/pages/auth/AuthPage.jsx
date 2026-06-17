@@ -313,7 +313,6 @@ export default function AuthPage() {
                                             {/* Quick Logins Section */}
                                             <div className="pt-6 border-t border-white/5 space-y-4">
                                                 <div className="flex items-center gap-2">
-                                                    <Sparkles className="w-3.5 h-3.5 text-[#B4912B]" />
                                                     <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Quick Access</span>
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-2">
