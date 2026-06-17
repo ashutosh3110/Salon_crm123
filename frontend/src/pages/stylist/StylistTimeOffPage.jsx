@@ -131,9 +131,10 @@ export default function StylistTimeOffPage() {
                     type="button"
                     onClick={() => setShowForm(true)}
                     disabled={loading}
-                    className="flex items-center gap-3 px-6 py-4 bg-primary text-white text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 font-bold disabled:opacity-50"
+                    className="flex items-center gap-3 px-6 py-4 rounded-xl bg-primary text-white text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:scale-[1.02] transition-all active:scale-95 font-bold disabled:opacity-50"
+                    style={{ color: '#ffffff' }}
                 >
-                    <Plus className="w-5 h-5" /> Apply for leave
+                    <Plus className="w-5 h-5" style={{ color: '#ffffff', stroke: '#ffffff' }} /> Apply for leave
                 </button>
             </div>
 
@@ -174,7 +175,7 @@ export default function StylistTimeOffPage() {
                     return (
                         <div
                             key={s.key || s.label}
-                            className={`!rounded-[16px] !border p-4 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[100px] transition-all hover:-translate-y-0.5 hover:shadow-md ${cardBg} ${cardBorder}`}
+                            className={`!rounded-[24px] !border p-4 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[100px] transition-all hover:-translate-y-0.5 hover:shadow-md ${cardBg} ${cardBorder}`}
                         >
                             <div className="flex !items-start gap-3 !text-left">
                                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`} style={{ borderRadius: '12px' }}>
@@ -206,7 +207,7 @@ export default function StylistTimeOffPage() {
             </div>
 
             <div className="space-y-4">
-                <div className="bg-surface border border-border overflow-hidden text-left">
+                <div className="bg-surface border border-border overflow-hidden text-left !rounded-[24px]">
                     <div className="px-5 py-4 border-b border-border/20 bg-background/50 flex flex-col md:flex-row md:items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
                             <h2 className="text-[9px] font-black text-text uppercase tracking-[0.2em]">Application history</h2>
@@ -216,13 +217,13 @@ export default function StylistTimeOffPage() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                            <div className="flex gap-1 p-1 bg-surface border border-border text-left">
+                            <div className="flex gap-1 p-1 bg-surface border border-border text-left !rounded-[16px]">
                                 {['ALL', 'APPROVED', 'PENDING', 'REJECTED'].map((f) => (
                                     <button
                                         key={f}
                                         type="button"
                                         onClick={() => setStatusFilter(f)}
-                                        className={`px-2.5 py-1 text-[7px] font-black uppercase tracking-tighter transition-all ${statusFilter === f ? 'bg-primary text-white' : 'text-text-muted hover:text-text'}`}
+                                        className={`px-3 py-1.5 text-[8px] font-black uppercase tracking-tighter transition-all rounded-[10px] ${statusFilter === f ? 'bg-primary text-white shadow-sm' : 'text-text-muted hover:text-text hover:bg-black/5 dark:hover:bg-white/5'}`}
                                     >
                                         {f === 'ALL' ? 'ALL' : f}
                                     </button>
@@ -249,7 +250,7 @@ export default function StylistTimeOffPage() {
                                     className="px-5 py-4 flex flex-col md:flex-row items-center justify-between bg-surface hover:bg-surface-alt/50 transition-all group"
                                 >
                                     <div className="flex items-center gap-4 w-full md:w-auto text-left">
-                                        <div className={`w-10 h-10 flex items-center justify-center border ${statusStyles[req.status]}`}>
+                                        <div className={`w-10 h-10 flex items-center justify-center border rounded-2xl ${statusStyles[req.status]}`}>
                                             {req.status === 'APPROVED' ? (
                                                 <CheckCircle2 className="w-4 h-4" />
                                             ) : req.status === 'PENDING' ? (
@@ -268,7 +269,7 @@ export default function StylistTimeOffPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-4 mt-3 md:mt-0 w-full md:w-auto justify-between md:justify-end text-left">
-                                        <span className={`text-[8px] font-black px-3 py-1 border uppercase tracking-widest ${statusStyles[req.status]}`}>
+                                        <span className={`text-[8px] font-black px-3 py-1 border uppercase tracking-widest rounded-xl ${statusStyles[req.status]}`}>
                                             {req.status}
                                         </span>
                                     </div>

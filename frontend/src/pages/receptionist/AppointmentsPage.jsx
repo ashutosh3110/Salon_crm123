@@ -31,7 +31,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { maskPhone } from '../../utils/phoneUtils';
 import mockApi from '../../services/mock/mockApi';
-
+import api from '../../services/api';
 export default function AppointmentsPage() {
     const { user } = useAuth();
     const { activeOutletId, outlets = [] } = useBusiness();
@@ -142,14 +142,38 @@ export default function AppointmentsPage() {
         }
     }, [priceCalculation.total]);
 
-    const applyPromo = () => {
+    const applyPromo = async () => {
         const code = String(couponCode || '').trim().toUpperCase();
         if (!code) return;
-        const original = selectedService?.price || 0;
-        const discount = Math.round(original * 0.15); // 15% discount
-        setPromoDiscount(discount);
-        setIsPromoApplied(true);
-        alert(`Coupon applied! Discount of ₹${discount} added.`);
+        if (!selectedService) {
+            alert('Please select a service first.');
+            return;
+        }
+
+        try {
+            const res = await api.post('/promotions/validate-coupon', {
+                couponCode: code,
+                outletId: newBooking.outletId || undefined,
+                customerId: selectedClientId || undefined,
+                items: [{
+                    type: 'service',
+                    price: selectedService.price,
+                    quantity: 1
+                }]
+            }, { skipToast: true });
+
+            if (res.data.success && res.data.data) {
+                const { promotion, discount } = res.data.data;
+                setPromoDiscount(discount);
+                setIsPromoApplied(true);
+                alert(`Coupon "${promotion.name}" applied successfully! Discount: ₹${discount}`);
+            } else {
+                alert('Failed to validate coupon.');
+            }
+        } catch (err) {
+            const msg = err?.response?.data?.message || err?.message || 'Invalid or expired coupon code';
+            alert(msg);
+        }
     };
 
     const [busySlots, setBusySlots] = useState([]);
@@ -193,7 +217,7 @@ export default function AppointmentsPage() {
             const [bookingsRes, servicesRes, staffRes, invoicesRes, clientsRes] = await Promise.all([
                 mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${outletToFetch}`),
                 mockApi.get('/services?limit=100'),
-                mockApi.get('/users?role=stylish'),
+                api.get('/users?role=stylist'),
                 mockApi.get('/invoices', { params: { limit: 100, outletId: outletToFetch } }),
                 mockApi.get('/client')
             ]);
@@ -232,14 +256,9 @@ export default function AppointmentsPage() {
 
                 if (staffRes?.data?.success) {
                     console.log("hvsvahv", staffRes)
-                    const staffList = staffRes.data.data?.results || staffRes.data.results || [];
+                    const staffList = staffRes.data.data?.results || staffRes.data.results || staffRes.data.data || [];
                     const mappedStaffList = staffList.map(s => {
-                        let staffOutletId = s.outletId;
-                        if (s.name === 'Alina Khan' || s.name === 'Rahul Sharma') {
-                            staffOutletId = outlets[0]?._id || outlets[0]?.id || '1';
-                        } else if (s.name === 'Anita Verma') {
-                            staffOutletId = outlets[1]?._id || outlets[1]?.id || '2';
-                        }
+                        let staffOutletId = s.outletId?._id || s.outletId;
                         return { ...s, outletId: staffOutletId };
                     });
                     setStaff(mappedStaffList.map(s => ({
@@ -976,6 +995,7 @@ export default function AppointmentsPage() {
                                             <label className="text-[10px] font-black text-text-muted uppercase tracking-widest">Date</label>
                                             <input
                                                 type="date"
+                                                min={new Date().toISOString().split('T')[0]}
                                                 value={newBooking.date}
                                                 onChange={(e) => setNewBooking({ ...newBooking, date: e.target.value })}
                                                 className="w-full px-4 py-3 bg-surface-alt border border-border text-[10px] font-black uppercase outline-none focus:ring-1 focus:ring-primary/20"
@@ -1083,8 +1103,16 @@ export default function AppointmentsPage() {
                                                 </div>
                                             )}
                                             <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-text-muted">
-                                                <span>GST ({priceCalculation.gstRate}%)</span>
+                                                <span>GST ({priceCalculation.gstRate}%) {priceCalculation.isInclusive ? '(INCLUSIVE)' : '(EXCLUSIVE)'}</span>
                                                 <span>₹{priceCalculation.tax}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-text-muted/70 pl-2">
+                                                <span>CGST ({priceCalculation.gstRate / 2}%)</span>
+                                                <span>₹{priceCalculation.cgst}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest text-text-muted/70 pl-2">
+                                                <span>SGST ({priceCalculation.gstRate / 2}%)</span>
+                                                <span>₹{priceCalculation.sgst}</span>
                                             </div>
                                             <div className="h-[1px] bg-border/40 my-1" />
                                             <div className="flex justify-between items-center text-xs font-black uppercase tracking-widest text-text">

@@ -6,6 +6,8 @@ const LoyaltyTransaction = require('../Models/LoyaltyTransaction');
 const Setting = require('../Models/Setting');
 const { sendWapixoTemplate } = require('../Utils/whatsapp');
 const mongoose = require('mongoose');
+const Booking = require('../Models/Booking');
+const Invoice = require('../Models/Invoice');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -68,9 +70,9 @@ exports.createOrder = async (req, res) => {
             if (promo.usageLimitPerCustomer) {
                 const code = promo.couponCode;
                 const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
-                    mongoose.model('Booking').countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Order').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                    mongoose.model('Invoice').countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
+                    Booking.countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Order.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Invoice.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
                 ]);
                 const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
                 if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
