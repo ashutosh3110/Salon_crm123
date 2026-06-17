@@ -8,6 +8,7 @@ import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 import AnimatedHero from '../../components/landing/wapixo/AnimatedHero';
 import AppShowcase from '../../components/landing/wapixo/AppShowcase';
 import MultiDeviceShowcase from '../../components/landing/wapixo/MultiDeviceShowcase';
+import ModelShowcase from '../../components/landing/wapixo/ModelShowcase';
 import Features from '../../components/landing/wapixo/Features';
 import ScissorsMorph from '../../components/landing/wapixo/ScissorsMorph';
 import WapixoSolutions from '../../components/landing/wapixo/WapixoSolutions';
@@ -73,6 +74,7 @@ export default function LandingPage() {
                     <AnimatedHero data={cmsData?.landing_hero} />
                     <AppShowcase data={cmsData?.landing_app_showcase} />
                     <MultiDeviceShowcase data={cmsData?.landing_multi_device_showcase} />
+                    <ModelShowcase />
                     <Features data={cmsData?.landing_features} statsData={cmsData?.landing_stats} />
                     <ScissorsMorph data={cmsData?.landing_scissors_morph} />
                     <WapixoSolutions

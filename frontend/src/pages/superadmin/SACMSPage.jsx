@@ -172,6 +172,14 @@ const INITIAL_CMS_DATA = {
         button_text: 'Send Inquiry',
         image_url: '/banner.jpeg',
         delay_seconds: 5
+    },
+    landing_model_showcase: {
+        headline_part1: 'Smart tools for',
+        headline_part2: 'modern salons',
+        desc: 'Elevate your client experience with Wapixo. Seamlessly manage appointments, track staff performance in real-time, and automate your marketing—all from one intuitive dashboard.',
+        primary_cta: 'Get Started Free',
+        secondary_cta: 'Watch Demo',
+        image_url: '/women%20wapixo.png'
     }
 };
 
@@ -666,6 +674,28 @@ export default function SACMSPage() {
                                         {renderInput('landing_chair_section', 'primary_cta', 'Primary Button Text')}
                                         {renderInput('landing_chair_section', 'secondary_cta', 'Secondary Button Text')}
                                     </div>
+                                </div>
+                            </section>
+
+                            {/* Model Showcase Section */}
+                            <section className="space-y-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-10 h-10 bg-teal-50 flex items-center justify-center text-primary">
+                                        <ImageIcon size={18} />
+                                    </div>
+                                    <h2 className="text-lg font-bold tracking-tight">Model Showcase Section</h2>
+                                </div>
+                                <div className="bg-white p-8 border border-border space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_model_showcase', 'headline_part1', 'Headline Part 1')}
+                                        {renderInput('landing_model_showcase', 'headline_part2', 'Headline Part 2 (Highlighted)')}
+                                    </div>
+                                    {renderInput('landing_model_showcase', 'desc', 'Description', 'textarea')}
+                                    <div className="grid grid-cols-2 gap-6">
+                                        {renderInput('landing_model_showcase', 'primary_cta', 'Primary Button Text')}
+                                        {renderInput('landing_model_showcase', 'secondary_cta', 'Secondary Button Text')}
+                                    </div>
+                                    {renderInput('landing_model_showcase', 'image_url', 'Main Image', 'image')}
                                 </div>
                             </section>
 
