@@ -41,9 +41,6 @@ exports.getBookings = async (req, res) => {
             filter = { clientId: req.user._id };
         } else {
             filter = { salonId: req.user.salonId };
-            if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-                filter.outletId = req.user.outletId;
-            }
         }
 
         const bookings = await Booking.find(filter)
@@ -82,9 +79,6 @@ exports.createBooking = async (req, res) => {
         const salonId = req.user.salonId || req.body.salonId || req.body.tenantId;
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Cannot identify salon for this booking' });
-        }
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
         }
         const { serviceId, paymentMethod, appointmentDate, source } = req.body;
         if (!serviceId) {
@@ -397,11 +391,6 @@ exports.updateStatus = async (req, res) => {
             if (booking.salonId.toString() !== req.user.salonId.toString()) {
                 return res.status(401).json({ success: false, message: 'Not authorized for this salon' });
             }
-            if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-                if (!booking.outletId || booking.outletId.toString() !== req.user.outletId.toString()) {
-                    return res.status(401).json({ success: false, message: 'Not authorized for this outlet' });
-                }
-            }
         }
 
         const oldStatus = booking.status;
@@ -631,12 +620,6 @@ exports.getAvailableSlots = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff or Service not found' });
         }
 
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            if (!staff.outletId || staff.outletId.toString() !== req.user.outletId.toString()) {
-                return res.status(401).json({ success: false, message: 'Not authorized for this staff member' });
-            }
-        }
-
         const serviceDuration = service.duration || 30;
         const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
 
@@ -781,13 +764,9 @@ exports.getAvailableSlots = async (req, res) => {
 // @access  Private
 exports.getAvailability = async (req, res) => {
     try {
-        let { outletId, date } = req.query;
+        const { outletId, date } = req.query;
         if (!outletId || !date) {
             return res.status(400).json({ success: false, message: 'outletId and date are required' });
-        }
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            outletId = req.user.outletId.toString();
         }
 
         const startOfDay = new Date(date);
@@ -880,13 +859,8 @@ exports.getCustomerBookings = async (req, res) => {
         const limit = parseInt(req.query.limit, 10) || 10;
         const skip = (page - 1) * limit;
 
-        const query = { clientId: customerId };
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        }
-
-        const totalCount = await Booking.countDocuments(query);
-        const bookings = await Booking.find(query)
+        const totalCount = await Booking.countDocuments({ clientId: customerId });
+        const bookings = await Booking.find({ clientId: customerId })
             .populate('serviceId', 'name price duration isInclusiveTax gst')
             .populate('staffId', 'name profileImage')
             .populate('outletId', 'name address city')
@@ -923,21 +897,6 @@ exports.getBookingDetails = async (req, res) => {
 
         if (!booking) {
             return res.status(404).json({ success: false, message: 'Booking details not found' });
-        }
-
-        if (req.user.role === 'customer') {
-            if (booking.clientId.toString() !== req.user._id.toString()) {
-                return res.status(401).json({ success: false, message: 'Not authorized to view this booking' });
-            }
-        } else {
-            if (booking.salonId.toString() !== req.user.salonId.toString()) {
-                return res.status(401).json({ success: false, message: 'Not authorized for this salon' });
-            }
-            if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-                if (!booking.outletId || booking.outletId.toString() !== req.user.outletId.toString()) {
-                    return res.status(401).json({ success: false, message: 'Not authorized for this outlet' });
-                }
-            }
         }
 
         res.json({

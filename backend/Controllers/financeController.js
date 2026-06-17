@@ -10,13 +10,6 @@ const Order = require('../Models/Order');
 
 const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
 
-const getAuthorizedOutletId = (req, sourceVal) => {
-    if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-        return req.user.outletId.toString();
-    }
-    return sourceVal;
-};
-
 // ─── SUPPLIER CONTROLLERS ──────────────────────────────────────────────────
 
 exports.getSuppliers = async (req, res) => {
@@ -58,8 +51,7 @@ exports.deleteSupplier = async (req, res) => {
 
 exports.getExpenses = async (req, res) => {
     try {
-        let { startDate, endDate, category, outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { startDate, endDate, category, outletId } = req.query;
         let query = { salonId: req.user.salonId };
         if (startDate && endDate) {
             query.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
@@ -79,9 +71,6 @@ exports.getExpenses = async (req, res) => {
 
 exports.addExpense = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
-        }
         const expense = await Expense.create({
             ...req.body,
             salonId: req.user.salonId,
@@ -113,8 +102,7 @@ exports.addExpense = async (req, res) => {
 exports.getPettyCashSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const now = new Date();
         const businessDate = now.toISOString().split('T')[0];
 
@@ -150,8 +138,7 @@ exports.getPettyCashSummary = async (req, res) => {
 
 exports.getPettyCashEntries = async (req, res) => {
     try {
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const query = {
             salonId: req.user.salonId,
             accountType: 'cash'
@@ -181,8 +168,7 @@ exports.getPettyCashEntries = async (req, res) => {
 
 exports.getPettyCashClosings = async (req, res) => {
     try {
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const query = { salonId: req.user.salonId };
         if (outletId && outletId !== 'all') query.outletId = outletId;
         const closings = await EndOfDay.find(query).sort({ date: -1 });
@@ -212,9 +198,6 @@ exports.openPettyCashDay = async (req, res) => {
 
 exports.addPettyCashFund = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
-        }
         const { amount, description, source, outletId } = req.body;
         const txn = await FinanceTransaction.create({
             salonId: req.user.salonId,
@@ -235,9 +218,6 @@ exports.addPettyCashFund = async (req, res) => {
 
 exports.addPettyCashExpense = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
-        }
         const { amount, category, description, staff, outletId } = req.body;
         const txn = await FinanceTransaction.create({
             salonId: req.user.salonId,
@@ -258,9 +238,6 @@ exports.addPettyCashExpense = async (req, res) => {
 
 exports.closePettyCashDay = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
-        }
         const { denominations, verifiedBy, outletId } = req.body;
         const now = new Date();
         const businessDate = now.toISOString().split('T')[0];
@@ -294,13 +271,7 @@ exports.closePettyCashDay = async (req, res) => {
 
 exports.getSupplierInvoices = async (req, res) => {
     try {
-        const query = { salonId: req.user.salonId };
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        } else if (req.query.outletId) {
-            query.outletId = req.query.outletId;
-        }
-        const invoices = await SupplierInvoice.find(query)
+        const invoices = await SupplierInvoice.find({ salonId: req.user.salonId })
             .populate('supplierId', 'name')
             .sort({ invoiceDate: -1 });
         res.status(200).json({ success: true, data: invoices });
@@ -311,9 +282,6 @@ exports.getSupplierInvoices = async (req, res) => {
 
 exports.addSupplierInvoice = async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
-        }
         const invoice = await SupplierInvoice.create({
             ...req.body,
             salonId: req.user.salonId,
@@ -324,7 +292,6 @@ exports.addSupplierInvoice = async (req, res) => {
         if (invoice.paidAmount > 0) {
             await FinanceTransaction.create({
                 salonId: req.user.salonId,
-                outletId: invoice.outletId,
                 type: 'expense',
                 category: 'Supplier Payment',
                 amount: invoice.paidAmount,
@@ -362,11 +329,7 @@ exports.addSupplierInvoice = async (req, res) => {
 exports.addInvoicePayment = async (req, res) => {
     try {
         const { invoiceId, amount, paymentMethod, notes } = req.body;
-        const query = { _id: invoiceId, salonId: req.user.salonId };
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        }
-        const invoice = await SupplierInvoice.findOne(query);
+        const invoice = await SupplierInvoice.findOne({ _id: invoiceId, salonId: req.user.salonId });
 
         if (!invoice) return res.status(404).json({ success: false, message: 'Invoice not found' });
 
@@ -381,7 +344,6 @@ exports.addInvoicePayment = async (req, res) => {
         // Record transaction
         await FinanceTransaction.create({
             salonId: req.user.salonId,
-            outletId: invoice.outletId,
             type: 'expense',
             category: 'Supplier Payment',
             amount,
@@ -420,8 +382,7 @@ exports.addInvoicePayment = async (req, res) => {
 exports.getFinanceSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
@@ -562,8 +523,7 @@ exports.getFinanceSummary = async (req, res) => {
 exports.getEODReports = async (req, res) => {
     try {
         const query = { salonId: req.user.salonId };
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         if (outletId && outletId !== 'all') {
             query.outletId = outletId;
         }
@@ -577,8 +537,7 @@ exports.getEODReports = async (req, res) => {
 exports.getEODSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
@@ -684,8 +643,7 @@ exports.getEODSummary = async (req, res) => {
 exports.getEODHistory = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const limit = parseInt(req.query.limit) || 15;
         const query = { salonId };
         if (outletId && outletId !== 'all') query.outletId = outletId;
@@ -700,7 +658,6 @@ exports.closeEOD = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const { businessDate, openingCash, actualCash, notes, outletId, denominations } = req.body;
-        const targetOutletId = getAuthorizedOutletId(req, outletId);
 
         const date = businessDate ? new Date(businessDate) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
@@ -712,7 +669,7 @@ exports.closeEOD = async (req, res) => {
             createdAt: { $gte: start, $lte: end },
             status: { $ne: 'cancelled' }
         };
-        if (targetOutletId && targetOutletId !== 'all') invoiceQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
         const invoices = await Invoice.find(invoiceQuery);
 
         let cashSales = 0;
@@ -746,7 +703,7 @@ exports.closeEOD = async (req, res) => {
             salonId,
             date: { $gte: start, $lte: end }
         };
-        if (targetOutletId && targetOutletId !== 'all') transQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
         const transactions = await FinanceTransaction.find(transQuery);
 
         let otherCashIncome = 0;
@@ -778,13 +735,13 @@ exports.closeEOD = async (req, res) => {
 
         // Fetch last closed bank for expectedBank calculations if needed (fallback to 0)
         const lastEodQuery = { salonId, date: { $lt: start } };
-        if (targetOutletId && targetOutletId !== 'all') lastEodQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') lastEodQuery.outletId = outletId;
         const lastEod = await EndOfDay.findOne(lastEodQuery).sort({ date: -1 });
         const openingBank = lastEod?.actualBank || 0;
         const expectedBank = openingBank + totalBankIncome - bankExpenses;
 
         const reportQuery = { salonId, date: { $gte: start, $lte: end } };
-        if (targetOutletId && targetOutletId !== 'all') reportQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') reportQuery.outletId = outletId;
 
         const updatePayload = {
             openingCash: Number(openingCash || 0),
@@ -805,7 +762,7 @@ exports.closeEOD = async (req, res) => {
             performedBy: req.user._id,
             date: start
         };
-        if (targetOutletId && targetOutletId !== 'all') updatePayload.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') updatePayload.outletId = outletId;
 
         const report = await EndOfDay.findOneAndUpdate(
             reportQuery,
@@ -823,14 +780,10 @@ exports.getGSTSummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const fyYear = parseInt(req.query.fy) || new Date().getFullYear();
-        const outletId = getAuthorizedOutletId(req, req.query.outletId);
         const fyStart = new Date(fyYear, 3, 1); // April 1
         const fyEnd = new Date(fyYear + 1, 2, 31, 23, 59, 59); // March 31
 
-        const query = { salonId, createdAt: { $gte: fyStart, $lte: fyEnd }, paymentStatus: { $ne: 'unpaid' } };
-        if (outletId && outletId !== 'all') query.outletId = outletId;
-
-        const invoices = await Invoice.find(query);
+        const invoices = await Invoice.find({ salonId, createdAt: { $gte: fyStart, $lte: fyEnd }, paymentStatus: { $ne: 'unpaid' } });
 
         const months = {};
         const monthLabels = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
@@ -872,8 +825,7 @@ exports.getGSTSummary = async (req, res) => {
 exports.getCashBank = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { outletId } = req.query;
         const date = req.query.date ? new Date(req.query.date) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
         const end = new Date(date); end.setHours(23, 59, 59, 999);
@@ -976,7 +928,6 @@ exports.reconcileCashBank = async (req, res) => {
     try {
         const salonId = req.user.salonId;
         const { businessDate, actualCash, actualBank, notes, locked, outletId, denominations } = req.body;
-        const targetOutletId = getAuthorizedOutletId(req, outletId);
 
         const date = businessDate ? new Date(businessDate) : new Date();
         const start = new Date(date); start.setHours(0, 0, 0, 0);
@@ -984,7 +935,7 @@ exports.reconcileCashBank = async (req, res) => {
 
         // Fetch opening cash/bank from the latest EndOfDay record before today
         const prevEodQuery = { salonId, date: { $lt: start } };
-        if (targetOutletId && targetOutletId !== 'all') prevEodQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') prevEodQuery.outletId = outletId;
         const prevEod = await EndOfDay.findOne(prevEodQuery).sort({ date: -1 });
 
         const openingCash = prevEod ? prevEod.actualCash : 0;
@@ -992,7 +943,7 @@ exports.reconcileCashBank = async (req, res) => {
 
         // Fetch POS invoices
         const invoiceQuery = { salonId, createdAt: { $gte: start, $lte: end }, status: { $ne: 'cancelled' } };
-        if (targetOutletId && targetOutletId !== 'all') invoiceQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') invoiceQuery.outletId = outletId;
         const invoices = await Invoice.find(invoiceQuery);
         let cashSales = 0;
         let bankSales = 0;
@@ -1005,7 +956,7 @@ exports.reconcileCashBank = async (req, res) => {
 
         // Fetch other ledger transactions
         const transQuery = { salonId, date: { $gte: start, $lte: end } };
-        if (targetOutletId && targetOutletId !== 'all') transQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') transQuery.outletId = outletId;
         const transactions = await FinanceTransaction.find(transQuery);
         let otherCashIncome = 0;
         let otherBankIncome = 0;
@@ -1032,7 +983,7 @@ exports.reconcileCashBank = async (req, res) => {
         const bankDiscrepancy = actualBank - expectedBank;
 
         const reportQuery = { salonId, date: { $gte: start, $lte: end } };
-        if (targetOutletId && targetOutletId !== 'all') reportQuery.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') reportQuery.outletId = outletId;
 
         const updatePayload = {
             openingCash,
@@ -1053,7 +1004,7 @@ exports.reconcileCashBank = async (req, res) => {
             performedBy: req.user._id,
             date: start
         };
-        if (targetOutletId && targetOutletId !== 'all') updatePayload.outletId = targetOutletId;
+        if (outletId && outletId !== 'all') updatePayload.outletId = outletId;
 
         // Save or update EndOfDay report
         const report = await EndOfDay.findOneAndUpdate(
@@ -1070,12 +1021,8 @@ exports.reconcileCashBank = async (req, res) => {
 
 exports.submitEOD = async (req, res) => {
     try {
-        const payload = { ...req.body };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            payload.outletId = req.user.outletId.toString();
-        }
         const report = await EndOfDay.create({
-            ...payload,
+            ...req.body,
             salonId: req.user.salonId,
             performedBy: req.user._id
         });
@@ -1088,8 +1035,7 @@ exports.submitEOD = async (req, res) => {
 exports.getTransactions = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { type, accountType, category, startDate, endDate, outletId, page = 1, limit = 50 } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { type, accountType, category, startDate, endDate, outletId, page = 1, limit = 50 } = req.query;
 
         const query = { salonId };
         if (type) query.type = type;
@@ -1139,14 +1085,13 @@ exports.addTransaction = async (req, res) => {
             outletId,
             date = new Date()
         } = req.body;
-        const targetOutletId = getAuthorizedOutletId(req, outletId);
 
         if (!amount || amount <= 0) {
             return res.status(400).json({ success: false, message: 'Amount must be greater than 0' });
         }
 
         const txnDate = new Date(date);
-        const cleanOutletId = (targetOutletId && targetOutletId !== 'all') ? targetOutletId : undefined;
+        const cleanOutletId = (outletId && outletId !== 'all') ? outletId : undefined;
 
         if (category === 'Bank Deposit') {
             // Cash -> Bank transfer
@@ -1233,11 +1178,7 @@ exports.sendSupplierInvoiceWhatsApp = async (req, res) => {
         const Supplier = require('../Models/Supplier');
         const { sendWhatsAppMessage, checkAndDeductWhatsAppCredit } = require('../Utils/whatsapp');
 
-        const query = { _id: id, salonId: req.user.salonId };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        }
-        const invoice = await SupplierInvoice.findOne(query).populate('supplierId');
+        const invoice = await SupplierInvoice.findById(id).populate('supplierId');
         if (!invoice) {
             return res.status(404).json({ success: false, message: 'Invoice not found' });
         }
@@ -1276,15 +1217,11 @@ exports.getInvoicePayments = async (req, res) => {
         const { id } = req.params;
         const FinanceTransaction = require('../Models/FinanceTransaction');
 
-        const query = {
+        const transactions = await FinanceTransaction.find({
             salonId: req.user.salonId,
             referenceId: id,
             referenceType: 'SupplierInvoice'
-        };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        }
-        const transactions = await FinanceTransaction.find(query).sort({ date: 1 });
+        }).sort({ date: 1 });
 
         res.status(200).json({ success: true, data: transactions });
     } catch (error) {
@@ -1295,8 +1232,7 @@ exports.getInvoicePayments = async (req, res) => {
 exports.getSalesReports = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { period = 'monthly', startDate, endDate, outletId } = req.query;
-        outletId = getAuthorizedOutletId(req, outletId);
+        const { period = 'monthly', startDate, endDate, outletId } = req.query;
         const mongoose = require('mongoose');
         const Staff = require('../Models/Staff');
 

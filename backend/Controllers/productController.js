@@ -22,31 +22,9 @@ exports.getProducts = async (req, res) => {
             filter.categoryId = req.query.categoryId;
         }
 
-        let targetOutletId = req.query.outletId;
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            targetOutletId = req.user.outletId.toString();
-        }
-
-        if (targetOutletId) {
-            filter.$or = [
-                { outletIds: targetOutletId },
-                { outletIds: { $size: 0 } },
-                { outletIds: { $exists: false } }
-            ];
-        }
-
-        let products = await Product.find(filter)
+        const products = await Product.find(filter)
             .populate('categoryId', 'name')
             .sort({ createdAt: -1 });
-
-        if (targetOutletId) {
-            products = products.map(product => {
-                const productObj = product.toObject();
-                const stockVal = product.stockByOutlet instanceof Map ? product.stockByOutlet.get(targetOutletId) : product.stockByOutlet?.[targetOutletId];
-                productObj.stock = stockVal !== undefined ? stockVal : 0;
-                return productObj;
-            });
-        }
 
         res.status(200).json({ success: true, count: products.length, data: products });
     } catch (error) {
@@ -60,20 +38,6 @@ exports.getProduct = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id).populate('categoryId', 'name');
         if (!product) return res.status(404).json({ success: false, error: 'Product not found' });
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletId = req.user.outletId.toString();
-            const isAvailable = !product.outletIds || product.outletIds.length === 0 || product.outletIds.some(id => id.toString() === userOutletId);
-            if (!isAvailable) {
-                return res.status(404).json({ success: false, error: 'Product not found' });
-            }
-
-            const productObj = product.toObject();
-            const stockVal = product.stockByOutlet instanceof Map ? product.stockByOutlet.get(userOutletId) : product.stockByOutlet?.[userOutletId];
-            productObj.stock = stockVal !== undefined ? stockVal : 0;
-            return res.status(200).json({ success: true, data: productObj });
-        }
-
         res.status(200).json({ success: true, data: product });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
@@ -85,15 +49,6 @@ exports.getProduct = async (req, res) => {
 exports.createProduct = async (req, res) => {
     try {
         req.body.salonId = req.user.salonId;
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletId = req.user.outletId.toString();
-            req.body.outletIds = [userOutletId];
-            if (req.body.stock !== undefined) {
-                req.body.stockByOutlet = { [userOutletId]: Number(req.body.stock) };
-            }
-        }
-
         const product = await Product.create(req.body);
         res.status(201).json({ success: true, data: product });
     } catch (error) {
@@ -113,41 +68,22 @@ exports.updateProduct = async (req, res) => {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
         }
 
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletId = req.user.outletId.toString();
-            const isAvailable = !product.outletIds || product.outletIds.length === 0 || product.outletIds.some(id => id.toString() === userOutletId);
-            if (!isAvailable) {
-                return res.status(404).json({ success: false, error: 'Product not found' });
-            }
-            
-            if (req.body.outletIds) {
-                req.body.outletIds = [userOutletId];
-            }
-            
-            if (req.body.stock !== undefined) {
-                const newStock = Number(req.body.stock);
-                const updatedStockByOutlet = product.stockByOutlet ? Object.fromEntries(product.stockByOutlet) : {};
-                updatedStockByOutlet[userOutletId] = newStock;
-                req.body.stockByOutlet = updatedStockByOutlet;
-            }
-        } else {
-            // Sync stockByOutlet for admins/global updates if stock is modified
-            if (req.body.stock !== undefined) {
-                const newStock = Number(req.body.stock);
-                if (!product.stockByOutlet || product.stockByOutlet.size === 0) {
-                    req.body.stockByOutlet = { main: newStock };
-                } else if (product.stockByOutlet.has('main')) {
-                    const updatedStockByOutlet = {};
-                    for (let [key, val] of product.stockByOutlet.entries()) {
-                        updatedStockByOutlet[key] = key === 'main' ? newStock : val;
-                    }
-                    req.body.stockByOutlet = updatedStockByOutlet;
-                } else if (product.stockByOutlet.size === 1) {
-                    const updatedStockByOutlet = {};
-                    const keys = Array.from(product.stockByOutlet.keys());
-                    updatedStockByOutlet[keys[0]] = newStock;
-                    req.body.stockByOutlet = updatedStockByOutlet;
+        // Sync stockByOutlet if stock is modified
+        if (req.body.stock !== undefined) {
+            const newStock = Number(req.body.stock);
+            if (!product.stockByOutlet || product.stockByOutlet.size === 0) {
+                req.body.stockByOutlet = { main: newStock };
+            } else if (product.stockByOutlet.has('main')) {
+                const updatedStockByOutlet = {};
+                for (let [key, val] of product.stockByOutlet.entries()) {
+                    updatedStockByOutlet[key] = key === 'main' ? newStock : val;
                 }
+                req.body.stockByOutlet = updatedStockByOutlet;
+            } else if (product.stockByOutlet.size === 1) {
+                const updatedStockByOutlet = {};
+                const keys = Array.from(product.stockByOutlet.keys());
+                updatedStockByOutlet[keys[0]] = newStock;
+                req.body.stockByOutlet = updatedStockByOutlet;
             }
         }
 
@@ -167,14 +103,6 @@ exports.deleteProduct = async (req, res) => {
         
         if (product.salonId.toString() !== req.user.salonId.toString()) {
             return res.status(401).json({ success: false, error: 'Unauthorized' });
-        }
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletId = req.user.outletId.toString();
-            const isSpecific = product.outletIds && product.outletIds.some(id => id.toString() === userOutletId);
-            if (!isSpecific) {
-                return res.status(404).json({ success: false, error: 'Product not found' });
-            }
         }
 
         await product.deleteOne();

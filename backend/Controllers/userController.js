@@ -23,9 +23,7 @@ exports.getUsers = async (req, res) => {
             const normalizedRole = req.query.role === 'stylist' ? 'stylish' : req.query.role;
             query.role = normalizedRole;
         }
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletId = req.user.outletId;
-        } else if (req.query.outletId) {
+        if (req.query.outletId) {
             query.outletId = req.query.outletId;
         }
 
@@ -51,9 +49,6 @@ exports.getUser = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             filter.salonId = req.user.salonId;
         }
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            filter.outletId = req.user.outletId;
-        }
 
         const staff = await Staff.findOne(filter).populate('outletId', 'name');
 
@@ -76,10 +71,6 @@ exports.getUser = async (req, res) => {
 exports.createUser = async (req, res) => {
     try {
         let { email, name, role, roleId, phone, password, outletId } = req.body;
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            outletId = req.user.outletId.toString();
-            req.body.outletId = req.user.outletId.toString();
-        }
 
         // Parse JSON fields if they come as strings from FormData
         if (typeof req.body.availability === 'string') {
@@ -191,18 +182,11 @@ exports.updateUser = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             filter.salonId = req.user.salonId;
         }
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            filter.outletId = req.user.outletId;
-        }
 
         let staff = await Staff.findOne(filter);
 
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
-        }
-
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            req.body.outletId = req.user.outletId.toString();
         }
 
         // Clean up body fields if they are sent as invalid stringified objects
@@ -262,9 +246,6 @@ exports.deleteUser = async (req, res) => {
         const filter = { _id: req.params.id };
         if (req.user.role !== 'superadmin') {
             filter.salonId = req.user.salonId;
-        }
-        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            filter.outletId = req.user.outletId;
         }
 
         const staff = await Staff.findOne(filter);

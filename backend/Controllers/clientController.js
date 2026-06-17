@@ -20,11 +20,6 @@ exports.getClients = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID context missing' });
         }
 
-        let targetOutletId = req.query.outletId;
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            targetOutletId = req.user.outletId.toString();
-        }
-
         // Build search query matching options
         const matchQuery = { salonId: new mongoose.Types.ObjectId(salonId) };
         if (req.query.wishesSentOnly === 'true') {
@@ -33,8 +28,8 @@ exports.getClients = async (req, res) => {
                 { anniversaryWishSent: true }
             ];
         }
-        if (targetOutletId) {
-            matchQuery.lastOutletId = new mongoose.Types.ObjectId(targetOutletId);
+        if (req.query.outletId) {
+            matchQuery.lastOutletId = new mongoose.Types.ObjectId(req.query.outletId);
         }
 
         const findQuery = { salonId };
@@ -44,8 +39,8 @@ exports.getClients = async (req, res) => {
                 { anniversaryWishSent: true }
             ];
         }
-        if (targetOutletId) {
-            findQuery.lastOutletId = targetOutletId;
+        if (req.query.outletId) {
+            findQuery.lastOutletId = req.query.outletId;
         }
 
         // Search parameter filtering support
@@ -126,18 +121,10 @@ exports.getClients = async (req, res) => {
 // @access  Private
 exports.getClient = async (req, res) => {
     try {
-        const query = {
+        const client = await Customer.findOne({
             _id: req.params.id,
             salonId: req.user.salonId
-        };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.$or = [
-                { lastOutletId: req.user.outletId },
-                { lastOutletId: { $exists: false } },
-                { lastOutletId: null }
-            ];
-        }
-        const client = await Customer.findOne(query);
+        });
 
         if (!client) {
             return res.status(404).json({ success: false, message: 'Client not found' });
@@ -180,13 +167,8 @@ exports.createClient = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Client already exists with this phone number' });
         }
 
-        const payload = { ...req.body };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            payload.lastOutletId = req.user.outletId.toString();
-        }
-
         const client = await Customer.create({
-            ...payload,
+            ...req.body,
             referralCode: generateReferralCode(),
             salonId
         });
@@ -277,18 +259,10 @@ exports.updateClient = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Anniversary date cannot be in the future' });
         }
 
-        const query = {
+        let client = await Customer.findOne({
             _id: req.params.id,
             salonId: req.user.salonId
-        };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.$or = [
-                { lastOutletId: req.user.outletId },
-                { lastOutletId: { $exists: false } },
-                { lastOutletId: null }
-            ];
-        }
-        let client = await Customer.findOne(query);
+        });
 
         if (!client) {
             return res.status(404).json({ success: false, message: 'Client not found' });
@@ -301,12 +275,7 @@ exports.updateClient = async (req, res) => {
             }
         }
 
-        const payload = { ...req.body };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            payload.lastOutletId = req.user.outletId.toString();
-        }
-
-        const updatedClient = await Customer.findByIdAndUpdate(req.params.id, payload, {
+        const updatedClient = await Customer.findByIdAndUpdate(req.params.id, req.body, {
             new: true,
             runValidators: true
         });
@@ -329,18 +298,10 @@ exports.updateClient = async (req, res) => {
 // @access  Private
 exports.deleteClient = async (req, res) => {
     try {
-        const query = {
+        const client = await Customer.findOne({
             _id: req.params.id,
             salonId: req.user.salonId
-        };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.$or = [
-                { lastOutletId: req.user.outletId },
-                { lastOutletId: { $exists: false } },
-                { lastOutletId: null }
-            ];
-        }
-        const client = await Customer.findOne(query);
+        });
 
         if (!client) {
             return res.status(404).json({ success: false, message: 'Client not found' });
@@ -440,18 +401,13 @@ exports.getPaymentDueClients = async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        let targetOutletId = req.query.outletId;
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            targetOutletId = req.user.outletId.toString();
-        }
-
         const query = {
             salonId,
             dueAmount: { $gt: 0 }
         };
 
-        if (targetOutletId) {
-            query.lastOutletId = targetOutletId;
+        if (req.query.outletId) {
+            query.lastOutletId = req.query.outletId;
         }
 
         const totalCount = await Customer.countDocuments(query);
@@ -721,16 +677,11 @@ exports.getInactiveClients = async (req, res) => {
         const Booking = mongoose.model('Booking');
         const Invoice = mongoose.model('Invoice');
 
-        const matchStage = {
-            salonId: new mongoose.Types.ObjectId(salonId)
-        };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            matchStage.lastOutletId = new mongoose.Types.ObjectId(req.user.outletId);
-        }
-
         const inactiveCustomers = await Customer.aggregate([
             {
-                $match: matchStage
+                $match: {
+                    salonId: new mongoose.Types.ObjectId(salonId)
+                }
             },
             {
                 $lookup: {

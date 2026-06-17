@@ -16,11 +16,6 @@ exports.updateStock = async (req, res) => {
         const { productId, outletId, type, quantity, reason, referenceId, notes } = req.body;
         const salonId = req.user.salonId;
 
-        let targetOutletId = outletId;
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            targetOutletId = req.user.outletId.toString();
-        }
-
         const product = await Product.findById(productId).session(session);
         if (!product) {
             return res.status(404).json({ success: false, message: 'Product not found' });
@@ -41,21 +36,21 @@ exports.updateStock = async (req, res) => {
         // Update product total stock
         product.stock = newStock;
 
-        // Update outlet specific stock if targetOutletId provided
-        if (targetOutletId) {
+        // Update outlet specific stock if outletId provided
+        if (outletId) {
             if (!product.stockByOutlet) product.stockByOutlet = new Map();
-            const previousOutletStock = product.stockByOutlet.get(targetOutletId.toString()) || 0;
+            const previousOutletStock = product.stockByOutlet.get(outletId.toString()) || 0;
             let newOutletStock = previousOutletStock;
             if (type === 'IN') {
                 newOutletStock += qty;
             } else if (type === 'OUT' || type === 'ADJUSTMENT') {
                 newOutletStock -= qty;
             }
-            product.stockByOutlet.set(targetOutletId.toString(), newOutletStock);
+            product.stockByOutlet.set(outletId.toString(), newOutletStock);
 
             // Ensure outlet is in outletIds array
-            if (!product.outletIds.includes(targetOutletId)) {
-                product.outletIds.push(targetOutletId);
+            if (!product.outletIds.includes(outletId)) {
+                product.outletIds.push(outletId);
             }
         }
 
@@ -65,7 +60,7 @@ exports.updateStock = async (req, res) => {
         const stockTxn = await StockTransaction.create([{
             salonId,
             productId,
-            outletId: targetOutletId || product.outletIds[0],
+            outletId: outletId || product.outletIds[0],
             type,
             quantity: qty,
             previousStock: previousStock,
@@ -82,7 +77,6 @@ exports.updateStock = async (req, res) => {
 
             const invoice = await SupplierInvoice.create([{
                 salonId,
-                outletId: targetOutletId,
                 supplierId: req.body.supplierId,
                 invoiceNumber: referenceId || `PO-${Date.now()}`,
                 date: new Date(),
@@ -126,12 +120,8 @@ exports.updateStock = async (req, res) => {
 exports.getStockHistory = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let { productId, outletId, type, from, to, page = 1, limit = 20 } = req.query;
+        const { productId, outletId, type, from, to, page = 1, limit = 20 } = req.query;
         const skip = (parseInt(page) - 1) * parseInt(limit);
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            outletId = req.user.outletId.toString();
-        }
 
         let query = { salonId };
         if (productId) query.productId = productId;
@@ -177,27 +167,15 @@ exports.getStockHistory = async (req, res) => {
 exports.getLowStockAlerts = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        let query = { salonId };
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            query.outletIds = req.user.outletId;
-        }
-        const products = await Product.find(query).populate('categoryId', 'name');
-
-        let filteredProducts = products;
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const targetOutletId = req.user.outletId.toString();
-            filteredProducts = products.filter(p => {
-                const outletStock = p.stockByOutlet ? (p.stockByOutlet.get(targetOutletId) || 0) : 0;
-                return outletStock <= (p.minStock || 0);
-            });
-        } else {
-            filteredProducts = products.filter(p => (p.stock || 0) <= (p.minStock || 0));
-        }
+        const products = await Product.find({
+            salonId,
+            $expr: { $lte: ["$stock", "$minStock"] }
+        }).populate('categoryId', 'name');
 
         res.json({
             success: true,
-            count: filteredProducts.length,
-            data: filteredProducts
+            count: products.length,
+            data: products
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
@@ -209,30 +187,6 @@ exports.getLowStockAlerts = async (req, res) => {
 exports.getInventorySummary = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const targetOutletId = req.user.outletId.toString();
-            const products = await Product.find({ salonId, outletIds: req.user.outletId });
-            
-            let totalProducts = products.length;
-            let totalStockValue = 0;
-            let potentialRevenue = 0;
-            let outOfStock = 0;
-
-            products.forEach(p => {
-                const oStock = p.stockByOutlet ? (p.stockByOutlet.get(targetOutletId) || 0) : 0;
-                totalStockValue += oStock * (p.costPrice || 0);
-                potentialRevenue += oStock * (p.sellingPrice || 0);
-                if (oStock === 0) {
-                    outOfStock += 1;
-                }
-            });
-
-            return res.json({
-                success: true,
-                data: { totalProducts, totalStockValue, potentialRevenue, outOfStock }
-            });
-        }
 
         const stats = await Product.aggregate([
             { $match: { salonId: new mongoose.Types.ObjectId(salonId) } },
@@ -269,13 +223,6 @@ exports.transferStock = async (req, res) => {
 
         if (fromOutletId === toOutletId) {
             return res.status(400).json({ success: false, message: 'Source and destination branches cannot be the same' });
-        }
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletStr = req.user.outletId.toString();
-            if (fromOutletId !== userOutletStr && toOutletId !== userOutletStr) {
-                return res.status(403).json({ success: false, message: 'You can only transfer stock to or from your assigned outlet' });
-            }
         }
 
         const qty = Math.abs(Number(quantity));
@@ -401,29 +348,8 @@ exports.getTransferHistory = async (req, res) => {
 
         let query = { salonId };
         if (productId) query.productId = productId;
-
-        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
-            const userOutletId = req.user.outletId;
-            query.$or = [
-                { fromOutletId: userOutletId },
-                { toOutletId: userOutletId }
-            ];
-            if (fromOutletId) {
-                if (fromOutletId.toString() !== userOutletId.toString()) {
-                    return res.json({ success: true, count: 0, data: [] });
-                }
-                query.fromOutletId = fromOutletId;
-            }
-            if (toOutletId) {
-                if (toOutletId.toString() !== userOutletId.toString()) {
-                    return res.json({ success: true, count: 0, data: [] });
-                }
-                query.toOutletId = toOutletId;
-            }
-        } else {
-            if (fromOutletId) query.fromOutletId = fromOutletId;
-            if (toOutletId) query.toOutletId = toOutletId;
-        }
+        if (fromOutletId) query.fromOutletId = fromOutletId;
+        if (toOutletId) query.toOutletId = toOutletId;
 
         if (from || to) {
             query.createdAt = {};
