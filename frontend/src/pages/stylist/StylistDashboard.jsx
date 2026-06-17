@@ -364,8 +364,8 @@ export default function StylistDashboard() {
                                                         setShowStatusDropdown(false);
                                                     }}
                                                     className={`w-full text-left px-3 py-2 text-sm transition-colors ${statusFilter === opt.id
-                                                            ? 'bg-amber-50 dark:bg-slate-800 text-[#C89B2B] font-bold'
-                                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                        ? 'bg-amber-50 dark:bg-slate-800 text-[#C89B2B] font-bold'
+                                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                                                         }`}
                                                 >
                                                     {opt.label}
@@ -510,6 +510,9 @@ export default function StylistDashboard() {
                     </div>
                 </div>
             </div>
+            
+            {/* Mobile Navbar Spacer */}
+            <div className="h-24 lg:hidden w-full"></div>
         </div>
     );
 }

@@ -148,8 +148,8 @@ export default function Topbar({ onMenuClick }) {
                                                 >
                                                     <div className="flex gap-3">
                                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${notif.type.includes('booking') ? 'bg-indigo-100 text-indigo-600' :
-                                                                notif.type.includes('finance') ? 'bg-emerald-100 text-emerald-600' :
-                                                                    'bg-amber-100 text-amber-600'
+                                                            notif.type.includes('finance') ? 'bg-emerald-100 text-emerald-600' :
+                                                                'bg-amber-100 text-amber-600'
                                                             }`}>
                                                             <Clock className="w-4 h-4" />
                                                         </div>

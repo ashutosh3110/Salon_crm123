@@ -93,7 +93,7 @@ const LegalLayout = ({ title, children }) => {
             <WapixoNavbar />
 
             {/* Elegant Header */}
-            <div style={{ paddingTop: 'clamp(100px, 15vw, 140px)', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ paddingTop: '20px', paddingBottom: 'clamp(40px, 8vw, 80px)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ position: 'absolute', inset: 0, opacity: theme === 'dark' ? 0.1 : 0.05, pointerEvents: 'none' }}>
                     <div style={{ position: 'absolute', top: '-10%', left: '20%', width: '400px', height: '400px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(120px)' }} />
                     <div style={{ position: 'absolute', bottom: '-10%', right: '20%', width: '500px', height: '500px', background: 'var(--wapixo-text)', borderRadius: '50%', filter: 'blur(140px)' }} />

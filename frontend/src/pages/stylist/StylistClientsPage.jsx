@@ -191,7 +191,7 @@ export default function StylistClientsPage() {
                     onClick={() => setShowEnrollModal(true)}
                     className="flex items-center justify-center gap-2 px-5 py-3.5 bg-primary text-white font-black !font-sans text-[10px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95 w-full md:w-auto rounded-2xl"
                 >
-                    <UserPlus className="w-4 h-4" /> Add Client
+                    <UserPlus className="w-4 h-4" style={{ color: '#ffffff', stroke: '#ffffff' }} /> Add Client
                 </button>
             </div>
 

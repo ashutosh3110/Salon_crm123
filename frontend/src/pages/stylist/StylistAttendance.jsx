@@ -377,15 +377,15 @@ export default function StylistAttendance() {
                         Monthly History
                     </h2>
 
-                    <div className="flex items-center bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
-                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors text-slate-600 dark:text-slate-200">
+                    <div className="flex items-center justify-between w-full sm:w-auto bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
+                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors text-slate-600 dark:text-slate-200 shrink-0">
                             <ChevronLeft className="w-5 h-5" />
                         </button>
-                        <span className="px-4 font-bold text-sm min-w-[140px] text-center text-slate-800 dark:text-slate-100">{monthName}</span>
+                        <span className="px-4 font-bold text-sm flex-1 text-center sm:min-w-[140px] text-slate-800 dark:text-slate-100">{monthName}</span>
                         <button 
                             onClick={nextMonth} 
                             disabled={isCurrentMonth}
-                            className={`p-2 rounded-lg transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-600' : 'hover:bg-slate-100 dark:hover:bg-slate-700/70 text-slate-600 dark:text-slate-200'}`}
+                            className={`p-2 rounded-lg transition-colors shrink-0 ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-600' : 'hover:bg-slate-100 dark:hover:bg-slate-700/70 text-slate-600 dark:text-slate-200'}`}
                         >
                             <ChevronRight className="w-5 h-5" />
                         </button>

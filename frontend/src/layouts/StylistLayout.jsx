@@ -692,12 +692,10 @@ export default function StylistLayout() {
             >
                 <Topbar onMenuClick={() => setMobileOpen(true)} />
 
-                <main className="animate-reveal p-4 pb-24 lg:pb-4">
+                <main className="animate-reveal p-4 pb-4">
                     <Outlet />
                 </main>
             </div>
-
-            <StylistMobileNavbar setMobileOpen={setMobileOpen} />
         </div>
     );
 }
