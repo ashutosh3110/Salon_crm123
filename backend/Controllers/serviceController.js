@@ -18,7 +18,10 @@ exports.getServices = async (req, res) => {
             salonId = req.query.salonId;
         }
 
-        const outletId = req.query.outletId;
+        let targetOutletId = req.query.outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
 
         console.log("==== GET SERVICES ====");
         console.log("User:", req.user?._id, "Role:", req.user?.role);
@@ -31,15 +34,15 @@ exports.getServices = async (req, res) => {
 
         let query = { salonId };
 
-        if (outletId) {
+        if (targetOutletId) {
             // Service is available for this outlet IF:
             // 1. the outletId is in the outletIds array
             // 2. OR the outletIds array is empty (meaning it's common for all outlets)
             query.$or = [
-                { outletIds: outletId },
+                { outletIds: targetOutletId },
                 { outletIds: { $size: 0 } },
                 { outletIds: { $exists: false } },
-                { outletId: outletId },
+                { outletId: targetOutletId },
                 { outletId: 'all' }
             ];
         }
@@ -68,6 +71,16 @@ exports.getService = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Service not found' });
         }
 
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const userOutletId = req.user.outletId.toString();
+            const isAvailable = !service.outletIds || service.outletIds.length === 0 || 
+                                service.outletIds.some(id => id.toString() === userOutletId) ||
+                                (service.outletId && (service.outletId.toString() === userOutletId || service.outletId === 'all'));
+            if (!isAvailable) {
+                return res.status(404).json({ success: false, message: 'Service not found' });
+            }
+        }
+
         res.json({
             success: true,
             data: service
@@ -89,10 +102,18 @@ exports.createService = async (req, res) => {
             req.body.image = `/uploads/services/${req.file.filename}`;
         }
 
-        const service = await Service.create({
+        let serviceData = {
             ...req.body,
             salonId
-        });
+        };
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const userOutletId = req.user.outletId.toString();
+            serviceData.outletIds = [userOutletId];
+            serviceData.outletId = userOutletId;
+        }
+
+        const service = await Service.create(serviceData);
         res.status(201).json({ success: true, data: service });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -110,6 +131,21 @@ exports.updateService = async (req, res) => {
         const serviceCheck = await Service.findOne({ _id: req.params.id, salonId });
         if (!serviceCheck) {
             return res.status(404).json({ success: false, message: "Service not found or unauthorized access" });
+        }
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const userOutletId = req.user.outletId.toString();
+            const isSpecific = (serviceCheck.outletIds && serviceCheck.outletIds.some(id => id.toString() === userOutletId)) ||
+                                (serviceCheck.outletId && serviceCheck.outletId.toString() === userOutletId);
+            if (!isSpecific) {
+                return res.status(404).json({ success: false, message: "Service not found or unauthorized access" });
+            }
+            if (req.body.outletIds) {
+                req.body.outletIds = [userOutletId];
+            }
+            if (req.body.outletId) {
+                req.body.outletId = userOutletId;
+            }
         }
 
         // Handle local file upload path
@@ -143,6 +179,15 @@ exports.deleteService = async (req, res) => {
             return res.status(401).json({ success: false, message: 'Not authorized' });
         }
 
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const userOutletId = req.user.outletId.toString();
+            const isSpecific = (service.outletIds && service.outletIds.some(id => id.toString() === userOutletId)) ||
+                                (service.outletId && service.outletId.toString() === userOutletId);
+            if (!isSpecific) {
+                return res.status(404).json({ success: false, message: 'Service not found' });
+            }
+        }
+
         await service.deleteOne();
 
         res.json({
@@ -167,8 +212,23 @@ exports.getServicesGrouped = async (req, res) => {
         // Fetch all categories for this salon
         const categories = await Category.find({ salonId, status: 'active' }).lean();
         
-        // Fetch all active services for this salon
-        const services = await Service.find({ salonId, status: 'active' }).lean();
+        let serviceQuery = { salonId, status: 'active' };
+        let targetOutletId = req.query.outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
+        if (targetOutletId) {
+            serviceQuery.$or = [
+                { outletIds: targetOutletId },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } },
+                { outletId: targetOutletId },
+                { outletId: 'all' }
+            ];
+        }
+
+        // Fetch all active services for this salon matching outlet
+        const services = await Service.find(serviceQuery).lean();
 
         // Group services by category
         const grouped = categories.map(cat => {
@@ -250,7 +310,9 @@ exports.bulkImportServices = async (req, res) => {
                 }
                 
                 // Map outlet names to IDs only if provided and not empty
-                if (outletInput && typeof outletInput === 'string' && outletInput.trim()) {
+                if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+                    outletIds = [req.user.outletId];
+                } else if (outletInput && typeof outletInput === 'string' && outletInput.trim()) {
                     const names = outletInput.split(',').map(n => n.trim().toLowerCase()).filter(n => n !== '');
                     if (names.length > 0) {
                         outletIds = allOutlets

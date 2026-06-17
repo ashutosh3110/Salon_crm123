@@ -15,7 +15,11 @@ const mongoose = require('mongoose');
 exports.getAllStaff = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const staff = await Staff.find({ salonId }).sort({ createdAt: -1 });
+        const query = { salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+        }
+        const staff = await Staff.find(query).sort({ createdAt: -1 });
         res.status(200).json({ success: true, count: staff.length, data: staff });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -27,7 +31,11 @@ exports.getAllStaff = async (req, res) => {
 // @access  Private/Admin
 exports.updateStaffHR = async (req, res) => {
     try {
-        const staff = await Staff.findByIdAndUpdate(req.params.id, { hrProfile: req.body.hrProfile }, { new: true, runValidators: true });
+        const query = { _id: req.params.id, salonId: req.user.salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+        }
+        const staff = await Staff.findOneAndUpdate(query, { hrProfile: req.body.hrProfile }, { new: true, runValidators: true });
         if (!staff) {
             return res.status(404).json({ success: false, message: 'Staff not found' });
         }
@@ -46,8 +54,12 @@ exports.updateStaffRevenueTarget = async (req, res) => {
         if (goal === undefined || isNaN(Number(goal))) {
             return res.status(400).json({ success: false, message: 'A valid goal amount is required' });
         }
-        const staff = await Staff.findByIdAndUpdate(
-            req.params.id,
+        const query = { _id: req.params.id, salonId: req.user.salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+        }
+        const staff = await Staff.findOneAndUpdate(
+            query,
             { $set: { 'hrProfile.revenueTarget': Number(goal) } },
             { new: true, runValidators: true }
         );
@@ -68,13 +80,30 @@ exports.markAttendance = async (req, res) => {
         const { staffId, date, status, checkIn, checkOut, notes, bulk } = req.body;
         const salonId = req.user.salonId;
 
+        // Fetch staff members involved to resolve/verify their outletId
+        const staffIdsToFind = bulk ? bulk.map(item => item.staffId) : [staffId];
+        const staffQuery = { _id: { $in: staffIdsToFind }, salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            staffQuery.outletId = req.user.outletId;
+        }
+        const staffList = await Staff.find(staffQuery).select('_id outletId');
+        const staffMap = {};
+        staffList.forEach(s => {
+            staffMap[s._id.toString()] = s.outletId;
+        });
+
         if (bulk && Array.isArray(bulk)) {
-            const operations = bulk.map(item => ({
+            const filteredBulk = bulk.filter(item => staffMap[item.staffId.toString()] !== undefined);
+            if (filteredBulk.length === 0) {
+                return res.status(200).json({ success: true, message: 'No valid staff attendance to mark' });
+            }
+            const operations = filteredBulk.map(item => ({
                 updateOne: {
                     filter: { staffId: item.staffId, date: new Date(date).setHours(0, 0, 0, 0) },
                     update: {
                         staffId: item.staffId,
                         salonId,
+                        outletId: staffMap[item.staffId.toString()],
                         date: new Date(date).setHours(0, 0, 0, 0),
                         status: item.status || 'present',
                         checkIn: item.checkIn,
@@ -89,11 +118,17 @@ exports.markAttendance = async (req, res) => {
         }
 
         // Single upsert
+        if (!staffMap[staffId.toString()]) {
+            return res.status(404).json({ success: false, message: 'Staff member not found' });
+        }
+        const staffOutletId = staffMap[staffId.toString()];
+
         const attendance = await Attendance.findOneAndUpdate(
             { staffId, date: new Date(date).setHours(0, 0, 0, 0) },
             {
                 staffId,
                 salonId,
+                outletId: staffOutletId,
                 date: new Date(date).setHours(0, 0, 0, 0),
                 status,
                 checkIn,
@@ -118,6 +153,15 @@ exports.getAttendanceSummary = async (req, res) => {
         const { month, year, staffId } = req.query;
         const salonId = req.user.salonId;
 
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            if (staffId) {
+                const staffExists = await Staff.findOne({ _id: staffId, salonId, outletId: req.user.outletId });
+                if (!staffExists) {
+                    return res.status(404).json({ success: false, message: 'Staff member not found' });
+                }
+            }
+        }
+
         const startDate = new Date(year, month - 1, 1);
         const endDate = new Date(year, month, 0, 23, 59, 59);
 
@@ -125,6 +169,9 @@ exports.getAttendanceSummary = async (req, res) => {
             salonId,
             date: { $gte: startDate, $lte: endDate }
         };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+        }
         if (staffId) query.staffId = staffId;
 
         const logs = await Attendance.find(query);
@@ -146,6 +193,9 @@ exports.getAttendanceSummary = async (req, res) => {
             status: 'completed',
             appointmentDate: { $gte: startDate, $lte: endDate }
         };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            bookingQuery.outletId = req.user.outletId;
+        }
         if (staffId) {
             bookingQuery.staffId = staffId;
         }
@@ -202,6 +252,15 @@ exports.getAttendance = async (req, res) => {
         const salonId = req.user.salonId;
 
         let query = { salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId;
+            if (staffId) {
+                const staffExists = await Staff.findOne({ _id: staffId, salonId, outletId: req.user.outletId });
+                if (!staffExists) {
+                    return res.status(200).json({ success: true, data: [] });
+                }
+            }
+        }
         if (staffId) query.staffId = staffId;
 
         if (date) {
@@ -417,6 +476,12 @@ exports.generatePayroll = async (req, res) => {
 exports.updatePayrollStatus = async (req, res) => {
     try {
         const { status, paymentMethod } = req.body;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const payrollCheck = await Payroll.findById(req.params.id).populate('staffId');
+            if (!payrollCheck || !payrollCheck.staffId || payrollCheck.staffId.outletId?.toString() !== req.user.outletId.toString()) {
+                return res.status(404).json({ success: false, message: 'Payroll not found' });
+            }
+        }
         const payroll = await Payroll.findByIdAndUpdate(
             req.params.id,
             {
@@ -444,6 +509,11 @@ exports.getPayroll = async (req, res) => {
         if (month) query.month = Number(month);
         if (year) query.year = Number(year);
 
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const staffIds = (await Staff.find({ salonId, outletId: req.user.outletId }).select('_id')).map(s => s._id);
+            query.staffId = { $in: staffIds };
+        }
+
         const payroll = await Payroll.find(query)
             .populate({
                 path: 'staffId',
@@ -462,7 +532,12 @@ exports.getPayroll = async (req, res) => {
 // @access  Private/Admin
 exports.getLeaveRequests = async (req, res) => {
     try {
-        const requests = await LeaveRequest.find({ salonId: req.user.salonId }).populate('staffId', 'name role').sort({ createdAt: -1 });
+        const query = { salonId: req.user.salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const staffIds = (await Staff.find({ salonId: req.user.salonId, outletId: req.user.outletId }).select('_id')).map(s => s._id);
+            query.staffId = { $in: staffIds };
+        }
+        const requests = await LeaveRequest.find(query).populate('staffId', 'name role').sort({ createdAt: -1 });
         res.status(200).json({ success: true, data: requests });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -475,6 +550,12 @@ exports.getLeaveRequests = async (req, res) => {
 exports.updateLeaveStatus = async (req, res) => {
     try {
         const { status, adminNotes } = req.body;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const leaveCheck = await LeaveRequest.findById(req.params.id).populate('staffId');
+            if (!leaveCheck || !leaveCheck.staffId || leaveCheck.staffId.outletId?.toString() !== req.user.outletId.toString()) {
+                return res.status(404).json({ success: false, message: 'Leave request not found' });
+            }
+        }
         const request = await LeaveRequest.findByIdAndUpdate(
             req.params.id,
             { status, adminNotes, approvedBy: req.user._id },
@@ -494,7 +575,11 @@ exports.getOverallPerformance = async (req, res) => {
         const { startDate, endDate } = req.query;
         const salonId = req.user.salonId;
 
-        const staff = await Staff.find({ salonId, status: 'active' });
+        const staffQuery = { salonId, status: 'active' };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            staffQuery.outletId = req.user.outletId;
+        }
+        const staff = await Staff.find(staffQuery);
 
         const performanceData = await Promise.all(staff.map(async (s) => {
             const query = {
@@ -526,7 +611,7 @@ exports.getOverallPerformance = async (req, res) => {
             let contribution = 'Low';
             if (revenue > 50000) contribution = 'Elite';
             else if (revenue > 20000) contribution = 'High';
-            else if (revenue > 5000) contribution = 'Medium';
+            else if (revenue > 500) contribution = 'Medium';
 
             return {
                 id: s._id,
@@ -595,6 +680,17 @@ exports.updateRoster = async (req, res) => {
     try {
         const { id } = req.params;
         const { userIds } = req.body;
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const count = await Staff.countDocuments({
+                _id: { $in: userIds },
+                salonId: req.user.salonId,
+                outletId: req.user.outletId
+            });
+            if (count !== userIds.length) {
+                return res.status(400).json({ success: false, message: 'Some assigned staff do not belong to your outlet' });
+            }
+        }
 
         const shift = await Shift.findByIdAndUpdate(
             id,
@@ -707,7 +803,11 @@ exports.createSalaryAdvance = async (req, res) => {
         }
 
         // Get staff base salary
-        const staffObj = await Staff.findById(staffId);
+        const staffQuery = { _id: staffId, salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            staffQuery.outletId = req.user.outletId;
+        }
+        const staffObj = await Staff.findOne(staffQuery);
         if (!staffObj) {
             return res.status(404).json({ success: false, message: 'Staff member not found' });
         }
@@ -749,6 +849,13 @@ exports.getSalaryAdvances = async (req, res) => {
         const { staffId, month, year } = req.query;
 
         let query = { salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const staffIds = (await Staff.find({ salonId, outletId: req.user.outletId }).select('_id')).map(s => s._id);
+            query.staffId = { $in: staffIds };
+            if (staffId && !staffIds.map(id => id.toString()).includes(staffId.toString())) {
+                return res.status(200).json({ success: true, count: 0, data: [] });
+            }
+        }
         if (staffId) query.staffId = staffId;
         if (month) query.month = Number(month);
         if (year) query.year = Number(year);
@@ -774,6 +881,13 @@ exports.updateSalaryAdvance = async (req, res) => {
         const advance = await SalaryAdvance.findById(id);
         if (!advance) {
             return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+        }
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const staffExists = await Staff.findOne({ _id: advance.staffId, salonId: req.user.salonId, outletId: req.user.outletId });
+            if (!staffExists) {
+                return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+            }
         }
 
         if (advance.isAdjusted) {
@@ -814,6 +928,18 @@ exports.updateSalaryAdvance = async (req, res) => {
 exports.deleteSalaryAdvance = async (req, res) => {
     try {
         const { id } = req.params;
+
+        const advance = await SalaryAdvance.findById(id);
+        if (!advance) {
+            return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+        }
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const staffExists = await Staff.findOne({ _id: advance.staffId, salonId: req.user.salonId, outletId: req.user.outletId });
+            if (!staffExists) {
+                return res.status(404).json({ success: false, message: 'Salary advance record not found' });
+            }
+        }
 
         await SalaryAdvance.findByIdAndDelete(id);
         res.status(200).json({ success: true, message: 'Salary advance deleted successfully' });
@@ -1630,16 +1756,25 @@ exports.getOverallPerformance = async (req, res) => {
         const start = startDate ? new Date(startDate) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         const end = endDate ? new Date(new Date(endDate).setHours(23, 59, 59, 999)) : new Date();
 
-        const allStaff = await Staff.find({ salonId }).select('name role hrProfile');
+        const staffQuery = { salonId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            staffQuery.outletId = req.user.outletId;
+        }
+        const allStaff = await Staff.find(staffQuery).select('name role hrProfile');
 
         // Aggregate completed bookings per staff in the period
+        const matchStage = {
+            salonId: mongoose.Types.ObjectId.isValid(salonId) ? new mongoose.Types.ObjectId(salonId) : salonId,
+            status: 'completed',
+            createdAt: { $gte: start, $lte: end }
+        };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            matchStage.outletId = mongoose.Types.ObjectId.isValid(req.user.outletId) ? new mongoose.Types.ObjectId(req.user.outletId) : req.user.outletId;
+        }
+
         const bookingAgg = await Booking.aggregate([
             {
-                $match: {
-                    salonId: mongoose.Types.ObjectId.isValid(salonId) ? new mongoose.Types.ObjectId(salonId) : salonId,
-                    status: 'completed',
-                    createdAt: { $gte: start, $lte: end }
-                }
+                $match: matchStage
             },
             { $unwind: '$staffId' },
             {

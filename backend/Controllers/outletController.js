@@ -36,6 +36,11 @@ exports.getOutlets = async (req, res) => {
             }
         }
 
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            matchStage._id = new mongoose.Types.ObjectId(req.user.outletId);
+            matchStage.salonId = new mongoose.Types.ObjectId(req.user.salonId);
+        }
+
         const outlets = await Outlet.aggregate([
             { $match: matchStage },
             {
@@ -73,7 +78,11 @@ exports.getOutlets = async (req, res) => {
 // @access  Private
 exports.getOutlet = async (req, res) => {
     try {
-        const outlet = await Outlet.findOne({ _id: req.params.id, salonId: req.user.salonId });
+        const query = { _id: req.params.id, salonId: req.user.salonId };
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query._id = req.user.outletId;
+        }
+        const outlet = await Outlet.findOne(query);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
 
         // Get related data
@@ -214,6 +223,9 @@ exports.updateOutlet = async (req, res) => {
         if (req.user.role !== 'superadmin') {
             query.salonId = req.user.salonId;
         }
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query._id = req.user.outletId;
+        }
 
         let outlet = await Outlet.findOne(query);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
@@ -279,7 +291,11 @@ exports.updateOutlet = async (req, res) => {
 // @access  Private (Admin)
 exports.deleteOutlet = async (req, res) => {
     try {
-        const outlet = await Outlet.findOne({ _id: req.params.id, salonId: req.user.salonId });
+        const query = { _id: req.params.id, salonId: req.user.salonId };
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query._id = req.user.outletId;
+        }
+        const outlet = await Outlet.findOne(query);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
 
         await outlet.deleteOne();

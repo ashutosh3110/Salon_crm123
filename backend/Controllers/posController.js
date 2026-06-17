@@ -14,7 +14,7 @@ const Order = require('../Models/Order');
 
 exports.checkout = async (req, res) => {
     try {
-        const {
+        let {
             clientId,
             outletId,
             items,
@@ -40,6 +40,10 @@ exports.checkout = async (req, res) => {
         } = req.body;
 
         const salonId = req.user.salonId;
+
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        }
 
         // Validate coupon code
         if (couponCode) {
@@ -309,7 +313,10 @@ exports.checkout = async (req, res) => {
 exports.getInvoices = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { outletId } = req.query;
+        let { outletId } = req.query;
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        }
         const query = { salonId };
         if (outletId) query.outletId = outletId;
 
@@ -329,7 +336,10 @@ exports.getInvoices = async (req, res) => {
 exports.getDashboard = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const { outletId, range = 'today' } = req.query;
+        let { outletId, range = 'today' } = req.query;
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        }
 
         const now = new Date();
         const istOffset = 5.5 * 60 * 60 * 1000;
@@ -539,6 +549,16 @@ exports.getInvoice = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Invoice not found' });
         }
 
+        if (invoice.salonId.toString() !== req.user.salonId.toString()) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            if (!invoice.outletId || invoice.outletId.toString() !== req.user.outletId.toString()) {
+                return res.status(401).json({ success: false, message: 'Not authorized for this outlet' });
+            }
+        }
+
         res.json({ success: true, data: invoice });
     } catch (err) {
         console.error('Get single invoice error:', err);
@@ -572,6 +592,16 @@ exports.updateInvoice = async (req, res) => {
         const invoice = await Invoice.findById(id);
         if (!invoice) {
             return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        if (invoice.salonId.toString() !== req.user.salonId.toString()) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            if (!invoice.outletId || invoice.outletId.toString() !== req.user.outletId.toString()) {
+                return res.status(401).json({ success: false, message: 'Not authorized for this outlet' });
+            }
         }
 
         invoice.items = items || invoice.items;
@@ -615,6 +645,16 @@ exports.deleteInvoice = async (req, res) => {
         const invoice = await Invoice.findById(id);
         if (!invoice) {
             return res.status(404).json({ success: false, message: 'Invoice not found' });
+        }
+
+        if (invoice.salonId.toString() !== req.user.salonId.toString()) {
+            return res.status(401).json({ success: false, message: 'Not authorized' });
+        }
+
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            if (!invoice.outletId || invoice.outletId.toString() !== req.user.outletId.toString()) {
+                return res.status(401).json({ success: false, message: 'Not authorized for this outlet' });
+            }
         }
 
         await Invoice.findByIdAndDelete(id);

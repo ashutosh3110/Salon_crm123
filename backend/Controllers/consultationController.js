@@ -14,7 +14,12 @@ exports.createConsultation = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon context missing' });
         }
 
-        if (!customerId || !outletId || !title || !notes || !solution) {
+        let targetOutletId = outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
+
+        if (!customerId || !targetOutletId || !title || !notes || !solution) {
             return res.status(400).json({ success: false, message: 'Required fields are missing: customerId, outletId, title, notes, solution' });
         }
 
@@ -27,7 +32,7 @@ exports.createConsultation = async (req, res) => {
         const consultation = await Consultation.create({
             customerId,
             salonId,
-            outletId,
+            outletId: targetOutletId,
             title,
             notes,
             solution,
@@ -67,8 +72,13 @@ exports.getConsultations = async (req, res) => {
 
         const filter = { salonId };
 
-        if (req.query.outletId) {
-            filter.outletId = req.query.outletId;
+        let targetOutletId = req.query.outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
+
+        if (targetOutletId) {
+            filter.outletId = targetOutletId;
         }
 
         if (req.query.customerId) {
@@ -105,10 +115,15 @@ exports.getConsultations = async (req, res) => {
 // @access  Private
 exports.getConsultationDetails = async (req, res) => {
     try {
-        const consultation = await Consultation.findOne({
+        const query = {
             _id: req.params.id,
             salonId: req.user.salonId
-        })
+        };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId.toString();
+        }
+
+        const consultation = await Consultation.findOne(query)
         .populate('customerId', 'name phone email')
         .populate('outletId', 'name city');
 
@@ -131,10 +146,15 @@ exports.getConsultationDetails = async (req, res) => {
 // @access  Private (Admin/Manager/Stylist)
 exports.updateConsultation = async (req, res) => {
     try {
-        let consultation = await Consultation.findOne({
+        const query = {
             _id: req.params.id,
             salonId: req.user.salonId
-        });
+        };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId.toString();
+        }
+
+        let consultation = await Consultation.findOne(query);
 
         if (!consultation) {
             return res.status(404).json({ success: false, message: 'Consultation record not found' });
@@ -171,10 +191,15 @@ exports.updateConsultation = async (req, res) => {
 // @access  Private (Admin/Manager only)
 exports.deleteConsultation = async (req, res) => {
     try {
-        const consultation = await Consultation.findOne({
+        const query = {
             _id: req.params.id,
             salonId: req.user.salonId
-        });
+        };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId.toString();
+        }
+
+        const consultation = await Consultation.findOne(query);
 
         if (!consultation) {
             return res.status(404).json({ success: false, message: 'Consultation record not found' });

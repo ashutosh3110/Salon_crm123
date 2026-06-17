@@ -210,7 +210,12 @@ exports.bulkRecharge = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Valid amount is required' });
         }
         
-        if (!outletId) {
+        let targetOutletId = outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
+
+        if (!targetOutletId) {
             return res.status(400).json({ success: false, message: 'outletId is required' });
         }
 
@@ -224,7 +229,7 @@ exports.bulkRecharge = async (req, res) => {
                 await addCredit(
                     cid,
                     salonId,
-                    outletId,
+                    targetOutletId,
                     numericAmount,
                     note || 'Bulk Promotional Credit',
                     req.body.expiryDate ? new Date(req.body.expiryDate) : null
@@ -299,7 +304,13 @@ exports.directTopup = async (req, res) => {
         if (!amount || amount <= 0) {
             return res.status(400).json({ success: false, message: 'Valid amount is required' });
         }
-        if (!outletId) {
+        
+        let targetOutletId = outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            targetOutletId = req.user.outletId.toString();
+        }
+
+        if (!targetOutletId) {
             return res.status(400).json({ success: false, message: 'outletId is required' });
         }
 
@@ -311,7 +322,7 @@ exports.directTopup = async (req, res) => {
         await addCredit(
             req.user._id,
             customer.salonId,
-            outletId,
+            targetOutletId,
             amount,
             'Wallet Top-up (Direct)'
         );
@@ -346,6 +357,7 @@ exports.directTopup = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 // @desc    Get wallet balance for a specific customer
 // @route   GET /api/wallet/customer/:customerId
 // @access  Private
@@ -355,11 +367,17 @@ exports.getCustomerWallet = async (req, res) => {
         if (!customer) {
             return res.status(404).json({ success: false, message: 'Customer not found' });
         }
+
+        let balances = customer.outletWallets || [];
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            balances = balances.filter(w => w.outletId && w.outletId._id.toString() === req.user.outletId.toString());
+        }
+
         res.json({
             success: true,
             data: {
                 balance: customer.walletBalance || 0,
-                outletBalances: customer.outletWallets.map(w => ({
+                outletBalances: balances.map(w => ({
                     outletId: w.outletId?._id || w.outletId,
                     outletName: w.outletId?.name || 'Unknown Outlet',
                     balance: w.balance
@@ -376,7 +394,12 @@ exports.getCustomerWallet = async (req, res) => {
 // @access  Private
 exports.getCustomerTransactions = async (req, res) => {
     try {
-        const transactions = await WalletTransaction.find({ customerId: req.params.customerId })
+        const query = { customerId: req.params.customerId };
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            query.outletId = req.user.outletId.toString();
+        }
+
+        const transactions = await WalletTransaction.find(query)
             .sort({ createdAt: -1 })
             .limit(100);
 
@@ -389,6 +412,7 @@ exports.getCustomerTransactions = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
 // @desc    Transfer wallet balance between outlets (Admin)
 // @route   POST /api/wallet/transfer
 // @access  Private (Admin)
@@ -402,6 +426,13 @@ exports.transferWalletBalance = async (req, res) => {
 
         if (fromOutletId === toOutletId) {
             return res.status(400).json({ success: false, message: 'Source and destination outlets cannot be the same' });
+        }
+
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            const userOutletId = req.user.outletId.toString();
+            if (fromOutletId.toString() !== userOutletId && toOutletId.toString() !== userOutletId) {
+                return res.status(403).json({ success: false, message: 'Unauthorized outlet transfer' });
+            }
         }
 
         const numericAmount = Number(amount);

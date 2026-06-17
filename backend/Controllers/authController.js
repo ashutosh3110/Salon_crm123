@@ -85,12 +85,37 @@ exports.login = async (req, res) => {
 
         // 5. Fetch Permissions based on role
         let permissions = [];
+        let roleType = 'custom';
+        let hiddenSidebarItems = [];
+        let adminMenuAccess = [];
         if (roleName === 'superadmin' || roleName === 'admin') {
             permissions = ['*']; // All access
-        } else if (salonId && roleName) {
-            const roleDoc = await Role.findOne({ salonId, name: roleName });
+            roleType = roleName;
+        } else if (salonId && (userData.roleId || roleName)) {
+            let roleDoc = null;
+            if (userData.roleId) {
+                roleDoc = await Role.findById(userData.roleId);
+            }
+            if (!roleDoc && roleName) {
+                roleDoc = await Role.findOne({ 
+                    salonId, 
+                    name: { $regex: new RegExp(`^${roleName}$`, 'i') } 
+                });
+            }
+
             if (roleDoc) {
                 permissions = roleDoc.permissions || [];
+                roleType = roleDoc.roleType || 'custom';
+                hiddenSidebarItems = roleDoc.hiddenSidebarItems || [];
+                adminMenuAccess = roleDoc.adminMenuAccess || [];
+            } else {
+                // Auto-infer roleType if not found in db
+                const rName = (roleName || '').toLowerCase();
+                if (rName.includes('stylist') || rName.includes('stylish')) roleType = 'stylist';
+                else if (rName.includes('receptionist')) roleType = 'receptionist';
+                else if (rName.includes('manager')) roleType = 'manager';
+                else if (rName.includes('accountant')) roleType = 'accountant';
+                else if (rName.includes('inventory')) roleType = 'inventory';
             }
         }
 
@@ -113,6 +138,9 @@ exports.login = async (req, res) => {
                     salonId: salonId,
                     outletId: userData.outletId,
                     permissions: permissions,
+                    roleType: roleType,
+                    hiddenSidebarItems: hiddenSidebarItems,
+                    adminMenuAccess: adminMenuAccess,
                     status: userData.status || 'active',
                     subscriptionPlan: subscriptionPlan,
                     salonIsActive: salonIsActive

@@ -22,7 +22,20 @@ const roleSchema = new mongoose.Schema({
     isDefault: {
         type: Boolean,
         default: false
-    }
+    },
+    roleType: {
+        type: String,
+        enum: ['stylist', 'receptionist', 'manager', 'accountant', 'inventory', 'custom'],
+        default: 'custom'
+    },
+    hiddenSidebarItems: [{
+        type: String,
+        trim: true
+    }],
+    adminMenuAccess: [{
+        type: String,
+        trim: true
+    }]
 }, {
     timestamps: true
 });

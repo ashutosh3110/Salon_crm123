@@ -448,7 +448,12 @@ exports.getSuperAdminDashboard = async (req, res) => {
 exports.getManagerDashboard = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const outletId = req.user.outletId || req.query.outletId;
+        let outletId = req.query.outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        } else if (req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        }
 
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID not found in user context' });
@@ -619,7 +624,12 @@ exports.getManagerDashboard = async (req, res) => {
 exports.getTeamDashboard = async (req, res) => {
     try {
         const salonId = req.user.salonId;
-        const outletId = req.user.outletId || req.query.outletId;
+        let outletId = req.query.outletId;
+        if (req.user && req.user.role !== 'admin' && req.user.role !== 'superadmin' && req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        } else if (req.user.outletId) {
+            outletId = req.user.outletId.toString();
+        }
 
         if (!salonId) {
             return res.status(400).json({ success: false, message: 'Salon ID not found in user context' });

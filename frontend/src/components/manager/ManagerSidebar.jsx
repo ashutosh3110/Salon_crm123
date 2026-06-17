@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -8,23 +8,17 @@ import {
     LayoutDashboard, Users, BarChart3, CalendarCheck, Star,
     Clock, Target, Settings, LogOut, ChevronLeft, ChevronRight, X, Briefcase, Globe, LifeBuoy, CheckCircle2, User
 } from 'lucide-react';
-
-const menuItems = [
-    { label: 'Dashboard', icon: LayoutDashboard, path: '/manager' },
-    { label: 'Performance', icon: BarChart3, path: '/manager/performance' },
-    { label: 'Attendance', icon: CalendarCheck, path: '/manager/attendance' },
-    { label: 'Targets', icon: Target, path: '/manager/targets' },
-    { label: 'Feedback', icon: Star, path: '/manager/feedback' },
-    { label: 'Service Approvals', icon: CheckCircle2, path: '/manager/approvals' },
-    { label: 'Settings', icon: Settings, path: '/manager/settings' },
-    { label: 'Support', icon: LifeBuoy, path: '/manager/support' },
-];
+import { buildDynamicSidebar } from '../../config/sidebarConfig';
 
 export default function ManagerSidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
     const { logout, user } = useAuth();
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
+
+    const menuItems = useMemo(() => {
+        return buildDynamicSidebar('manager', user);
+    }, [user]);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
     useEffect(() => {
