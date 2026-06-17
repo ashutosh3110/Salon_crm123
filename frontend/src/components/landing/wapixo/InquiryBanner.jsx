@@ -53,31 +53,11 @@ export default function InquiryBanner({ data }) {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 30, scale: 0.95 }}
                     transition={{ type: 'spring', damping: 25, stiffness: 120 }}
-                    style={{
-                        position: 'fixed',
-                        bottom: '24px',
-                        right: '24px',
-                        zIndex: 9999,
-                        width: '320px',
-                        maxWidth: 'calc(100vw - 48px)',
-                        background: theme === 'dark'
-                            ? 'rgba(15, 15, 15, 0.85)'
-                            : 'rgba(255, 255, 255, 0.9)',
-                        backdropFilter: 'blur(20px)',
-                        WebkitBackdropFilter: 'blur(20px)',
-                        border: '1px solid var(--wapixo-border)',
-                        borderRadius: '16px',
-                        boxShadow: theme === 'dark'
-                            ? '0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)'
-                            : '0 20px 40px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.02)',
-                        overflow: 'hidden',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        fontFamily: "'Inter', sans-serif"
-                    }}
+                    className={`fixed z-[9999] bottom-4 right-4 w-[240px] sm:w-[320px] flex flex-col overflow-hidden rounded-2xl border backdrop-blur-xl ${theme === 'dark' ? 'bg-[#0f0f0f]/90 border-white/5 shadow-[0_20px_40px_rgba(0,0,0,0.6)]' : 'bg-white/95 border-black/5 shadow-[0_20px_40px_rgba(0,0,0,0.1)]'}`}
+                    style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                     {/* Banner Image Container */}
-                    <div style={{ position: 'relative', width: '100%', height: '140px', overflow: 'hidden' }}>
+                    <div className="relative w-full h-[80px] sm:h-[120px] overflow-hidden shrink-0">
                         <img
                             src={resolveImageUrl(bannerData.image_url)}
                             alt={bannerData.title}
@@ -91,12 +71,7 @@ export default function InquiryBanner({ data }) {
                             onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                         />
                         {/* Overlay Gradient */}
-                        <div style={{
-                            position: 'absolute',
-                            inset: 0,
-                            background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.4) 100%)',
-                            pointerEvents: 'none'
-                        }} />
+                        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/60 pointer-events-none" />
 
                         {/* Top badge */}
                         {bannerData.badge_text && (
@@ -126,8 +101,8 @@ export default function InquiryBanner({ data }) {
                                 position: 'absolute',
                                 top: '12px',
                                 right: '12px',
-                                width: '28px',
-                                height: '28px',
+                                width: '22px',
+                                height: '22px',
                                 borderRadius: '50%',
                                 background: 'rgba(0, 0, 0, 0.5)',
                                 color: 'white',
@@ -143,16 +118,16 @@ export default function InquiryBanner({ data }) {
                             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)'}
                             aria-label="Dismiss banner"
                         >
-                            <X size={14} />
+                            <X size={10} />
                         </button>
                     </div>
 
                     {/* Content Section */}
-                    <div style={{ padding: '16px 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="p-2.5 sm:p-4 flex flex-col gap-2 sm:gap-3">
                         <div>
                             <h4 style={{
-                                margin: '0 0 4px 0',
-                                fontSize: '0.95rem',
+                                margin: '0 0 2px 0',
+                                fontSize: '0.8rem',
                                 fontWeight: 600,
                                 color: 'var(--wapixo-text)',
                                 letterSpacing: '-0.01em'
@@ -161,9 +136,9 @@ export default function InquiryBanner({ data }) {
                             </h4>
                             <p style={{
                                 margin: 0,
-                                fontSize: '0.78rem',
+                                fontSize: '0.65rem',
                                 color: 'var(--wapixo-text-muted)',
-                                lineHeight: '1.4',
+                                lineHeight: '1.25',
                                 fontWeight: 400
                             }}>
                                 {bannerData.desc}
@@ -180,12 +155,12 @@ export default function InquiryBanner({ data }) {
                                 whileTap={{ scale: 0.98 }}
                                 style={{
                                     width: '100%',
-                                    padding: '10px',
+                                    padding: '8px',
                                     background: 'var(--wapixo-primary)',
                                     color: 'white',
                                     border: 'none',
-                                    borderRadius: '8px',
-                                    fontSize: '0.8rem',
+                                    borderRadius: '6px',
+                                    fontSize: '0.75rem',
                                     fontWeight: 600,
                                     cursor: 'pointer',
                                     display: 'flex',

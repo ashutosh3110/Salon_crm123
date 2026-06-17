@@ -24,7 +24,6 @@ export default function StylistLayout() {
             <style>{`
                 /* --- Global Theme, Colors & Font Assignment --- */
                 html {
-                    overscroll-behavior-y: none !important;
                 }
                 
                 html:not(.dark) .admin-panel {

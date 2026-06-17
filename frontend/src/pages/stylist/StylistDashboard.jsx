@@ -18,9 +18,9 @@ import AnimatedCounter from '../../components/common/AnimatedCounter';
 const statusColors = {
     completed: { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-500/20' },
     'in-progress': { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-600 dark:text-emerald-400', border: 'border-emerald-200 dark:border-emerald-500/20' },
-    upcoming: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/20' },
+    upcoming: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-black dark:text-white !text-black dark:!text-white font-bold', border: 'border-amber-300 dark:border-amber-500/30' },
     cancelled: { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-500/20' },
-    pending: { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-600 dark:text-amber-400', border: 'border-amber-200 dark:border-amber-500/20' },
+    pending: { bg: 'bg-amber-100 dark:bg-amber-500/20', text: 'text-black dark:text-white !text-black dark:!text-white font-bold', border: 'border-amber-300 dark:border-amber-500/30' },
 };
 
 function mapBookingToUi(bookingStatus) {
@@ -452,7 +452,7 @@ export default function StylistDashboard() {
                                 Shift Activity
                             </h2>
                         </div>
-                        <div className="space-y-4">
+                        <div className="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
                             {attendanceLog.length === 0 ? (
                                 <p className="text-sm text-slate-500 font-medium py-4 text-center">No punch records yet.</p>
                             ) : (
