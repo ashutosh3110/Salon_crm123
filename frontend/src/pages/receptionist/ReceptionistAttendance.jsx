@@ -31,8 +31,8 @@ const statusColors = {
 export default function ReceptionistAttendance() {
     const { user } = useAuth();
     
-    // Punch Logic States
-    const [status, setStatus] = useState('OFFLINE');
+    // Attendance Logic States
+    const [status, setStatus] = useState('UNMARKED');
     const [loadingLocation, setLoadingLocation] = useState(false);
     const [location, setLocation] = useState(null);
     const [locationName, setLocationName] = useState('');
@@ -82,12 +82,10 @@ export default function ReceptionistAttendance() {
             // Check if today is marked
             const todayStr = todayLocalYmd();
             const todayRec = (data?.data || []).find(d => d.date === todayStr);
-            if (todayRec && todayRec.checkInAt && !todayRec.checkOutAt) {
-                setStatus('ACTIVE_RUN');
-            } else if (todayRec && todayRec.checkOutAt) {
-                setStatus('COMPLETED');
+            if (todayRec) {
+                setStatus(todayRec.status);
             } else {
-                setStatus('OFFLINE');
+                setStatus('UNMARKED');
             }
 
         } catch (err) {
@@ -102,23 +100,23 @@ export default function ReceptionistAttendance() {
         fetchHistory(currentMonth, currentYear);
     }, [currentMonth, currentYear, fetchLocation, fetchHistory]);
 
-    const handlePunch = async (type) => {
-        if (!location) {
-            setError('Location required to punch in.');
+    const handlePunch = async (statusVal) => {
+        if (statusVal === 'PRESENT' && !location) {
+            setError('Location required to mark Present.');
             return;
         }
         setError(null);
         setActionMsg(null);
         try {
             await api.post('/hr/attendance/punch', {
-                type: type === 'IN' ? 'in' : 'out',
+                status: statusVal.toLowerCase(),
                 date: todayLocalYmd(),
-                location: locationName || 'Reception Desk',
+                location: statusVal === 'PRESENT' ? (locationName || 'Reception Desk') : undefined,
             });
-            setActionMsg(type === 'IN' ? 'Successfully punched in for the day!' : 'Successfully punched out.');
+            setActionMsg(statusVal === 'PRESENT' ? 'Successfully marked Present!' : 'Successfully marked Absent.');
             fetchHistory(currentMonth, currentYear);
         } catch (e) {
-            setError(e?.response?.data?.message || 'Failed to record punch.');
+            setError(e?.response?.data?.message || 'Failed to update attendance status.');
         }
     };
 
@@ -153,6 +151,15 @@ export default function ReceptionistAttendance() {
                 html:not(.dark) .attendance-stat-label-absent {
                     color: #b91c1c !important;
                 }
+                html:not(.dark) .attendance-stat-label-late {
+                    color: #d97706 !important;
+                }
+                html:not(.dark) .attendance-stat-label-halfday {
+                    color: #2563eb !important;
+                }
+                html:not(.dark) .attendance-stat-label-weekoff {
+                    color: #475569 !important;
+                }
             `}</style>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
@@ -160,7 +167,7 @@ export default function ReceptionistAttendance() {
                     <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Attendance & Timesheet</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">Manage your daily presence and track historical records</p>
                 </div>
-            </div>             {/* Daily Punch Card */}
+            </div>             {/* Daily Attendance Card */}
              <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 md:p-5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] relative overflow-hidden group">
                  <div className="absolute -top-10 -right-10 opacity-[0.05] dark:opacity-8 transition-opacity pointer-events-none">
                      <Activity className="w-48 h-48 text-emerald-500" />
@@ -168,29 +175,29 @@ export default function ReceptionistAttendance() {
                  
                  <div className="relative z-10 flex flex-col md:flex-row gap-5 justify-between items-center">
                      <div className="space-y-4 flex-1 w-full text-left">
-                         <div className="flex items-center gap-3">
-                             <div className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
-                                 status === 'ACTIVE_RUN' 
-                                     ? 'bg-emerald-50 dark:bg-emerald-950/30' 
-                                     : status === 'COMPLETED'
-                                     ? 'bg-blue-50 dark:bg-blue-950/30'
-                                     : 'bg-rose-50 dark:bg-rose-950/30'
-                             }`}>
-                                 {status === 'ACTIVE_RUN' ? (
-                                     <Clock className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-450 animate-pulse" style={{ color: '#059669' }} />
-                                 ) : status === 'COMPLETED' ? (
-                                     <CheckCircle2 className="w-4.5 h-4.5 text-blue-650 dark:text-blue-400" style={{ color: '#2563eb' }} />
-                                 ) : (
-                                     <Clock className="w-4.5 h-4.5 text-rose-600 dark:text-rose-450" style={{ color: '#dc2626' }} />
-                                 )}
-                             </div>
-                             <div className="text-left">
-                                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</p>
-                                 <p className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">
-                                     {status === 'ACTIVE_RUN' ? 'Punched In (Active)' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
-                                 </p>
-                             </div>
-                         </div>
+                          <div className="flex items-center gap-3">
+                              <div className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
+                                  status === 'PRESENT'
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/30' 
+                                      : status === 'ABSENT'
+                                      ? 'bg-rose-50 dark:bg-rose-950/30'
+                                      : 'bg-slate-50 dark:bg-slate-800/40'
+                              }`}>
+                                  {status === 'PRESENT' ? (
+                                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-450" style={{ color: '#059669' }} />
+                                  ) : status === 'ABSENT' ? (
+                                      <XCircle className="w-4.5 h-4.5 text-rose-600 dark:text-rose-450" style={{ color: '#dc2626' }} />
+                                  ) : (
+                                      <Clock className="w-4.5 h-4.5 text-slate-500 dark:text-slate-400" />
+                                  )}
+                              </div>
+                              <div className="text-left">
+                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</p>
+                                  <p className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">
+                                      {status === 'PRESENT' ? 'Present' : status === 'ABSENT' ? 'Absent' : '—'}
+                                  </p>
+                              </div>
+                          </div>
 
                          <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-150 dark:border-slate-800 space-y-1.5 text-left">
                              <div className="flex items-center justify-between">
@@ -217,24 +224,24 @@ export default function ReceptionistAttendance() {
 
                      <div className="flex flex-row md:flex-col justify-center gap-3 w-full md:w-auto min-w-[200px]">
                          <button
-                             onClick={() => handlePunch('IN')}
-                             disabled={status !== 'OFFLINE' || !location || loadingLocation}
+                             onClick={() => handlePunch('PRESENT')}
+                             disabled={status === 'PRESENT' || !location || loadingLocation}
                              className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
-                                 ${status !== 'OFFLINE' || !location
+                                 ${status === 'PRESENT' || !location
                                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                     : 'bg-[#B4912B] hover:bg-[#9f8025] text-white-force shadow-sm hover:shadow active:scale-95'}`}
+                                     : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow active:scale-95'}`}
                          >
-                             <Zap className={`w-4 h-4 ${status !== 'OFFLINE' || !location ? 'text-slate-400' : 'icon-white-outline-force'}`} /> Punch In
+                             <CheckCircle2 className="w-4 h-4 icon-white-outline-force" /> Present
                          </button>
                          <button
-                             onClick={() => handlePunch('OUT')}
-                             disabled={status !== 'ACTIVE_RUN' || !location || loadingLocation}
+                             onClick={() => handlePunch('ABSENT')}
+                             disabled={status === 'ABSENT' || loadingLocation}
                              className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
-                                 ${status !== 'ACTIVE_RUN' || !location
+                                 ${status === 'ABSENT'
                                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                     : 'bg-[#B4912B] hover:bg-[#9f8025] text-white-force shadow-sm hover:shadow active:scale-95'}`}
+                                     : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm hover:shadow active:scale-95'}`}
                          >
-                             <CheckCircle2 className={`w-4 h-4 ${status !== 'ACTIVE_RUN' || !location ? 'text-slate-400' : 'icon-white-outline-force'}`} /> Punch Out
+                             <XCircle className="w-4 h-4 icon-white-outline-force" /> Absent
                          </button>
                      </div>
                  </div>
@@ -261,21 +268,15 @@ export default function ReceptionistAttendance() {
                             <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
-                </div>
-
-                {/* Stat Cards */}
+                </div>                {/* Stat Cards */}
                 <div className="grid grid-cols-2 gap-3">
                     {[
-                        { label: 'Present', val: historyStats.present, color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
-                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-600 dark:text-rose-450', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
-                     ].map((stat, i) => (
+                        { label: 'Present', val: historyStats.present, color: 'text-emerald-650 dark:text-emerald-455', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20', labelClass: 'attendance-stat-label-present' },
+                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-650 dark:text-rose-455', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20', labelClass: 'attendance-stat-label-absent' },
+                    ].map((stat, i) => (
                         <div key={i} className={`p-2.5 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
                             <span className="text-xl font-black text-slate-800 dark:text-white mb-0.5">{stat.val}</span>
-                            <span 
-                                className={`text-[9px] font-black uppercase tracking-wider ${stat.color} ${
-                                    stat.label === 'Present' ? 'attendance-stat-label-present' : 'attendance-stat-label-absent'
-                                }`}
-                            >
+                            <span className={`text-[9px] font-black uppercase tracking-wider ${stat.color} ${stat.labelClass}`}>
                                 {stat.label}
                             </span>
                         </div>
@@ -290,8 +291,7 @@ export default function ReceptionistAttendance() {
                                 <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</th>
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Punch In</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Punch Out</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Present</th>
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notes</th>
                                 </tr>
                             </thead>
@@ -300,12 +300,16 @@ export default function ReceptionistAttendance() {
                                     <tr>
                                         <td colSpan={5} className="py-8 text-center text-xs text-slate-500">Loading history...</td>
                                     </tr>
-                                ) : historyData.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="py-8 text-center text-xs text-slate-500">No attendance records found for this month.</td>
-                                    </tr>
-                                ) : (
-                                    historyData.map((record, i) => {
+                                ) : (() => {
+                                    const filteredRecords = historyData.filter(record => record.status === 'PRESENT' || record.status === 'ABSENT');
+                                    if (filteredRecords.length === 0) {
+                                        return (
+                                            <tr>
+                                                <td colSpan={5} className="py-8 text-center text-xs text-slate-500">No attendance records found for this month.</td>
+                                            </tr>
+                                        );
+                                    }
+                                    return filteredRecords.map((record, i) => {
                                         const d = new Date(record.date);
                                         const isFuture = d > new Date();
                                         if (isFuture) return null;
@@ -325,12 +329,9 @@ export default function ReceptionistAttendance() {
                                                 </td>
                                                 <td className="py-2.5 px-4 whitespace-nowrap">
                                                     <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                                        {formatTime(record.checkInAt)}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                                        {formatTime(record.checkOutAt)}
+                                                        {record.checkInAt ? (
+                                                            `${formatTime(record.checkInAt)}${record.checkOutAt ? ` - ${formatTime(record.checkOutAt)}` : ''}`
+                                                        ) : '—'}
                                                     </span>
                                                 </td>
                                                 <td className="py-2.5 px-4 whitespace-nowrap">
@@ -340,8 +341,8 @@ export default function ReceptionistAttendance() {
                                                 </td>
                                             </tr>
                                         );
-                                    })
-                                )}
+                                    });
+                                })()}
                             </tbody>
                         </table>
                     </div>

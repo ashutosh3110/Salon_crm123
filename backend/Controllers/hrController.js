@@ -822,7 +822,7 @@ exports.deleteSalaryAdvance = async (req, res) => {
     }
 };
 
-// @desc    Self punch attendance (IN/OUT)
+// @desc    Self punch attendance (IN/OUT or PRESENT/ABSENT)
 // @route   POST /api/hr/attendance/punch
 // @access  Private
 exports.punchAttendance = async (req, res) => {
@@ -831,10 +831,10 @@ exports.punchAttendance = async (req, res) => {
         const salonId = req.user.salonId;
         const outletId = req.user.outletId;
         
-        const { type, date, location } = req.body;
+        const { type, date, location, status } = req.body;
         
-        if (!type || !date) {
-            return res.status(400).json({ success: false, message: 'Type and date are required' });
+        if (!date || (!type && !status)) {
+            return res.status(400).json({ success: false, message: 'Type/status and date are required' });
         }
         
         const normalizedDate = new Date(date).setHours(0, 0, 0, 0);
@@ -847,20 +847,35 @@ exports.punchAttendance = async (req, res) => {
                 salonId,
                 outletId,
                 date: normalizedDate,
-                status: 'present',
-                checkIn: type === 'in' ? new Date().toISOString() : null,
+                status: status || 'present',
+                checkIn: type === 'in' || status === 'present' ? new Date().toISOString() : null,
                 checkOut: type === 'out' ? new Date().toISOString() : null,
-                notes: location ? `Punched at ${location}` : null,
+                notes: location ? `Punched at ${location}` : (status ? `Marked ${status}` : null),
                 performedBy: req.user._id
             });
         } else {
-            if (type === 'in') {
-                attendance.checkIn = new Date().toISOString();
-            } else if (type === 'out') {
-                attendance.checkOut = new Date().toISOString();
+            if (status) {
+                attendance.status = status;
+                if (status === 'present') {
+                    if (!attendance.checkIn) {
+                        attendance.checkIn = new Date().toISOString();
+                    }
+                } else if (status === 'absent') {
+                    attendance.checkIn = null;
+                    attendance.checkOut = null;
+                }
+            } else {
+                if (type === 'in') {
+                    attendance.checkIn = new Date().toISOString();
+                    attendance.status = 'present';
+                } else if (type === 'out') {
+                    attendance.checkOut = new Date().toISOString();
+                }
             }
             if (location) {
                 attendance.notes = attendance.notes ? `${attendance.notes}; Punched at ${location}` : `Punched at ${location}`;
+            } else if (status) {
+                attendance.notes = attendance.notes ? `${attendance.notes}; Marked ${status}` : `Marked ${status}`;
             }
             attendance.performedBy = req.user._id;
         }
@@ -869,7 +884,7 @@ exports.punchAttendance = async (req, res) => {
         
         res.status(200).json({
             success: true,
-            message: 'Punched successfully.',
+            message: 'Attendance status recorded successfully.',
             data: attendance
         });
     } catch (error) {
@@ -962,37 +977,22 @@ exports.getMyAttendanceHistory = async (req, res) => {
             if (dateStr === todayStr) {
                 history.push({
                     date: dateStr,
-                    status: 'ABSENT',
+                    status: 'UNMARKED',
                     checkInAt: null,
                     checkOutAt: null,
                     notes: null
                 });
-                absentCount++;
                 continue;
             }
             
-            let status = 'PRESENT';
+            let status = 'UNMARKED';
             if (isWeekend) status = 'WEEKOFF';
-            else {
-                const rand = Math.random();
-                if (rand < 0.15) status = 'ABSENT';
-            }
-            
-            let checkIn = null;
-            let checkOut = null;
-            if (status === 'PRESENT') {
-                checkIn = `${dateStr}T09:00:00Z`;
-                checkOut = `${dateStr}T18:00:00Z`;
-                presentCount++;
-            } else if (status === 'ABSENT') {
-                absentCount++;
-            }
             
             history.push({
                 date: dateStr,
                 status,
-                checkInAt: checkIn,
-                checkOutAt: checkOut,
+                checkInAt: null,
+                checkOutAt: null,
                 notes: null
             });
         }

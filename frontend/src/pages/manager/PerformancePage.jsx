@@ -74,7 +74,10 @@ export default function PerformancePage() {
             change: '+0%', 
             isUp: true, 
             icon: Users, 
-            color: 'text-primary' 
+            iconColorClass: '!text-[#7C3AED] dark:!text-[#A78BFA]',
+            iconBgClass: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
+            cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
+            cardBorderClass: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#D8B4FE] dark:hover:!border-[#A78BFA]/50'
         },
         { 
             label: 'Present Today', 
@@ -82,7 +85,10 @@ export default function PerformancePage() {
             change: 'Live', 
             isUp: true, 
             icon: Calendar, 
-            color: 'text-amber-500' 
+            iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
+            iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+            cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+            cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50'
         },
         { 
             label: 'Avg Rating', 
@@ -90,7 +96,10 @@ export default function PerformancePage() {
             change: 'MTD', 
             isUp: true, 
             icon: StarBadge, 
-            color: 'text-emerald-500' 
+            iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
+            iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+            cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+            cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50'
         },
         { 
             label: 'Target Achievement', 
@@ -98,7 +107,10 @@ export default function PerformancePage() {
             change: 'Goal', 
             isUp: true, 
             icon: Target, 
-            color: 'text-blue-500' 
+            iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
+            iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+            cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+            cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50'
         },
     ];
 
@@ -118,22 +130,27 @@ export default function PerformancePage() {
                 </div>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {stats.map((s) => (
-                    <div key={s.label} className="bg-surface py-2.5 px-3 sm:py-3 sm:px-4 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative text-left">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
-                        <div className="relative z-10">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 mb-2 sm:mb-3">
-                                <div className="flex items-center gap-2">
-                                    <s.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted transition-colors group-hover:text-primary" />
-                                    <p className="text-[9px] sm:text-[11px] font-extrabold text-text-secondary uppercase tracking-widest leading-none">{s.label}</p>
-                                </div>
-                                <div className={`flex items-center gap-0.5 sm:gap-1 text-[9px] sm:text-[11px] font-bold ${s.isUp ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                    {s.change}
-                                </div>
+                    <div
+                        key={s.label}
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${s.cardBgClass} ${s.cardBorderClass}`}
+                    >
+                        <div className="flex !items-start gap-3 !text-left">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                <s.icon className={`w-4 h-4 ${s.iconColorClass}`} strokeWidth={2} />
                             </div>
-                            <div className="flex items-end justify-between mt-auto">
-                                <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-text tracking-tight uppercase leading-none">
+                            <div className="flex flex-col !items-start !text-left">
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                    className="uppercase text-slate-500 dark:text-slate-450 leading-none mb-1.5 !text-left"
+                                >
+                                    {s.label}
+                                </span>
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
+                                    className="text-slate-800 dark:text-slate-50 leading-none tracking-tight !text-left"
+                                >
                                     <AnimatedCounter
                                         value={typeof s.value === 'string' ? parseFloat(s.value.replace(/[₹%,]/g, '')) : s.value}
                                         prefix={typeof s.value === 'string' && s.value.includes('₹') ? '₹' : ''}
@@ -142,11 +159,18 @@ export default function PerformancePage() {
                                 </h3>
                             </div>
                         </div>
+                        
+                        <div
+                            style={{ fontSize: '11px', fontWeight: 700 }}
+                            className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
+                        >
+                            <span className={s.iconColorClass}>{s.change}</span>
+                        </div>
                     </div>
                 ))}
             </div>
 
-            <div className="bg-white rounded-none border border-border/60 p-3 sm:p-4 shadow-none overflow-hidden">
+            <div className="bg-white !rounded-[16px] border border-border/60 p-3 sm:p-4 shadow-sm overflow-hidden">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
                     <h2 className="text-[10px] sm:text-[11px] font-black text-text uppercase tracking-widest leading-none">Revenue Growth</h2>
                     <CustomDropdown
@@ -215,7 +239,7 @@ export default function PerformancePage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-                <div className="bg-white rounded-none border border-border/60 p-4 shadow-none lg:col-span-2">
+                <div className="bg-white !rounded-[16px] border border-border/60 p-4 shadow-sm lg:col-span-2">
                     <div className="flex items-center gap-2 mb-4">
                         <Award className="w-3.5 h-3.5 text-primary" />
                         <h2 className="text-[11px] font-black text-text uppercase tracking-widest leading-none">Team Performance Rankings</h2>

@@ -39,6 +39,10 @@ export default function ReceptionistDashboard() {
     const { bookings: registryBookings, addBooking, updateBookingStatus: registryUpdate } = useBookingRegistry();
     const { activeOutletId, setActiveOutletId, outlets } = useBusiness();
 
+    const isReceptionistMode = user?.role === 'receptionist';
+    const userOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+    const outletToFetch = isReceptionistMode ? userOutletId : (activeOutletId || '');
+
     // Live States
     const [stats, setStats] = useState([]);
     const [hourlyFootfall, setHourlyFootfall] = useState([]);
@@ -90,8 +94,8 @@ export default function ReceptionistDashboard() {
                 const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
 
                 const [statsRes, bookingsRes, servicesRes, staffRes] = await Promise.all([
-                    mockApi.get(`/dashboard/receptionist?outletId=${activeOutletId || ''}`),
-                    mockApi.get(`/bookings?date=${today}&limit=100&outletId=${activeOutletId || ''}`),
+                    mockApi.get(`/dashboard/receptionist?outletId=${outletToFetch || ''}`),
+                    mockApi.get(`/bookings?date=${today}&limit=100&outletId=${outletToFetch || ''}`),
                     mockApi.get('/services?limit=100'),
                     mockApi.get('/users?role=stylist')
                 ]);
@@ -159,7 +163,7 @@ export default function ReceptionistDashboard() {
         fetchData();
         const interval = setInterval(fetchData, 60000); // 1 min sync
         return () => clearInterval(interval);
-    }, [activeOutletId]);
+    }, [outletToFetch]);
 
     useEffect(() => {
         if (isRegistrationOpen || isBookingOpen || isWalkinOpen) {
@@ -256,8 +260,8 @@ export default function ReceptionistDashboard() {
             const d = new Date();
             const today = `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
             const [statsRes, feedRes] = await Promise.all([
-                mockApi.get(`/dashboard/receptionist?outletId=${activeOutletId || ''}`),
-                mockApi.get(`/bookings?date=${today}&limit=8&outletId=${activeOutletId || ''}`)
+                mockApi.get(`/dashboard/receptionist?outletId=${outletToFetch || ''}`),
+                mockApi.get(`/bookings?date=${today}&limit=8&outletId=${outletToFetch || ''}`)
             ]);
 
             if (statsRes.data.success) {
@@ -426,10 +430,20 @@ export default function ReceptionistDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {stats.map((stat, i) => {
                     const config = statCardConfig[i % statCardConfig.length];
+                    const routeMap = {
+                        "Total Appointments": "/receptionist/appointments",
+                        "Total Orders": "/receptionist/pos/billing",
+                        "New Customers": "/receptionist/leads",
+                        "Total Invoices": "/receptionist/invoices"
+                    };
                     return (
                         <div
                             key={i}
-                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${config.cardBgClass} ${config.cardBorderClass}`}
+                            onClick={() => {
+                                const route = routeMap[stat.label];
+                                if (route) navigate(route);
+                            }}
+                            className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md cursor-pointer ${config.cardBgClass} ${config.cardBorderClass}`}
                         >
                             <div className="flex !items-start gap-3 !text-left">
                                 <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${config.iconBgClass}`} style={{ borderRadius: '12px' }}>

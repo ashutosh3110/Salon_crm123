@@ -7,6 +7,7 @@ import {
     UserCircle, Hash, Clock, Send, ShieldCheck, Share2, Flag
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 import { useBusiness } from '../../contexts/BusinessContext';
 
@@ -28,10 +29,34 @@ export default function FeedbackPage() {
         const nps = ((positive - feedbacks.filter(f => f.sentiment === 'Negative').length) / total) * 100;
 
         return [
-            { label: 'Avg Rating', value: avg.toFixed(1), sub: 'Overall Lifetime', icon: Star, color: 'text-amber-500', trend: '+0.1' },
-            { label: 'Sentiment', value: Math.round((positive / total) * 100), sub: 'Happiness Index', icon: ThumbsUp, color: 'text-emerald-500', trend: '+2%' },
-            { label: 'Response', value: Math.round((resRate / total) * 100), sub: 'Resolution Rate', icon: MessageSquare, color: 'text-primary', trend: '+5%' },
-            { label: 'NPS', value: Math.round(nps), sub: 'Promoter Score', icon: ShieldCheck, color: 'text-violet-500', trend: '+8' },
+            { 
+                label: 'Avg Rating', value: avg.toFixed(1), sub: 'Overall Lifetime', icon: Star, trend: '+0.1',
+                iconColorClass: '!text-[#EA580C] dark:!text-[#FB923C]',
+                iconBgClass: '!bg-[#FFEDD5] dark:!bg-[#EA580C]/20',
+                cardBgClass: '!bg-[#FFF7ED] dark:!bg-[#EA580C]/5',
+                cardBorderClass: '!border-[#FFEDD5] dark:!border-[#EA580C]/15 hover:!border-[#FDBA74] dark:hover:!border-[#FB923C]/50',
+            },
+            { 
+                label: 'Sentiment', value: Math.round((positive / total) * 100), sub: 'Happiness Index', icon: ThumbsUp, trend: '+2%',
+                iconColorClass: '!text-[#059669] dark:!text-[#34D399]',
+                iconBgClass: '!bg-[#D1FAE5] dark:!bg-[#059669]/20',
+                cardBgClass: '!bg-[#F0FDF4] dark:!bg-[#059669]/5',
+                cardBorderClass: '!border-[#DCFCE7] dark:!border-[#059669]/15 hover:!border-[#86EFAC] dark:hover:!border-[#34D399]/50',
+            },
+            { 
+                label: 'Response', value: Math.round((resRate / total) * 100), sub: 'Resolution Rate', icon: MessageSquare, trend: '+5%',
+                iconColorClass: '!text-[#2563EB] dark:!text-[#60A5FA]',
+                iconBgClass: '!bg-[#DBEAFE] dark:!bg-[#2563EB]/20',
+                cardBgClass: '!bg-[#EFF6FF] dark:!bg-[#2563EB]/5',
+                cardBorderClass: '!border-[#DBEAFE] dark:!border-[#2563EB]/15 hover:!border-[#93C5FD] dark:hover:!border-[#60A5FA]/50',
+            },
+            { 
+                label: 'NPS', value: Math.round(nps), sub: 'Promoter Score', icon: ShieldCheck, trend: '+8',
+                iconColorClass: '!text-[#7C3AED] dark:!text-[#A78BFA]',
+                iconBgClass: '!bg-[#EDE9FE] dark:!bg-[#7C3AED]/20',
+                cardBgClass: '!bg-[#FAF5FF] dark:!bg-[#7C3AED]/5',
+                cardBorderClass: '!border-[#F3E8FF] dark:!border-[#7C3AED]/15 hover:!border-[#E9D5FF] dark:hover:!border-[#A78BFA]/50',
+            },
         ];
     }, [feedbacks]);
 
@@ -77,6 +102,32 @@ export default function FeedbackPage() {
         updateFeedback(id, { status: 'Rejected' });
     };
 
+    const handleShare = async (fb) => {
+        const shareText = `Feedback from ${fb.customerName || 'Anonymous'}: "${fb.comment}" - Rating: ${fb.rating}/5 Stars`;
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Customer Feedback',
+                    text: shareText,
+                });
+                toast.success('Feedback shared successfully!');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    navigator.clipboard.writeText(shareText);
+                    toast.success('Feedback copied to clipboard!');
+                }
+            }
+        } else {
+            navigator.clipboard.writeText(shareText);
+            toast.success('Feedback copied to clipboard!');
+        }
+    };
+
+    const handleFlag = (id) => {
+        updateFeedback(id, { isFlagged: true });
+        toast.success('Feedback flagged for administrative review.');
+    };
+
     const getSentimentColor = (sentiment) => {
         switch(sentiment) {
             case 'Positive': return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20';
@@ -114,42 +165,53 @@ export default function FeedbackPage() {
             </div>
 
             {/* Matrix Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {stats.map((s, idx) => (
                     <motion.div 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: idx * 0.1 }}
                         key={s.label} 
-                        className="bg-surface p-4 border border-border/60 hover:border-primary/40 transition-all group relative overflow-hidden"
+                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${s.cardBgClass} ${s.cardBorderClass}`}
                     >
-                        <div className="absolute -right-6 -bottom-6 w-16 h-16 sm:w-24 sm:h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
-                        
-                        <div className="relative z-10 flex flex-col h-full text-left">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 mb-2 sm:mb-3">
-                                <div className="flex items-center gap-2 sm:gap-3">
-                                    <div className={`p-1.5 sm:p-2 rounded-none ${s.color.replace('text', 'bg').replace('500', '500/10')} border border-current/20`}>
-                                        <s.icon className={`w-3 h-3 sm:w-4 sm:h-4 ${s.color}`} />
-                                    </div>
-                                    <p className="text-[9px] sm:text-[11px] font-black text-text-secondary uppercase tracking-[0.2em]">{s.label}</p>
-                                </div>
-                                <div className="flex items-center gap-1 text-[9px] sm:text-[10px] font-black text-emerald-500 uppercase">
-                                    <ArrowUpRight className="w-2.5 h-2.5 sm:w-3 sm:h-3" /> {s.trend}
-                                </div>
+                        <div className="flex !items-start gap-3 !text-left">
+                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.iconBgClass}`} style={{ borderRadius: '12px' }}>
+                                <s.icon className={`w-4 h-4 ${s.iconColorClass}`} strokeWidth={2} />
                             </div>
 
-                            <div className="flex items-end justify-between">
-                                <h3 className="text-xl sm:text-2xl font-black text-text tracking-tighter leading-none">
+                            <div className="flex flex-col !items-start !text-left">
+                                <span
+                                    style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }}
+                                    className="uppercase text-slate-500 dark:text-slate-455 leading-none mb-1.5 !text-left"
+                                >
+                                    {s.label}
+                                </span>
+                                <h3
+                                    style={{ fontSize: '24px', fontWeight: 850 }}
+                                    className="text-slate-800 dark:text-slate-55 leading-none tracking-tight !text-left flex items-baseline"
+                                >
                                     <AnimatedCounter 
                                         value={typeof s.value === 'string' ? parseFloat(s.value) : s.value} 
-                                        suffix={s.label === 'Avg Rating' ? '' : (s.label === 'NPS' ? '' : '%')}
                                     />
-                                    {s.label === 'Avg Rating' && <span className="text-sm sm:text-lg text-text-muted font-bold ml-1">/5</span>}
+                                    {s.label === 'Avg Rating' && <span className="text-sm sm:text-lg text-slate-500 font-bold ml-1">/5</span>}
+                                    {s.label !== 'Avg Rating' && s.label !== 'NPS' && <span className="text-sm sm:text-lg text-slate-500 font-bold ml-1">%</span>}
                                 </h3>
-                                <div className="text-[8px] sm:text-[10px] font-bold text-text-muted uppercase tracking-tighter text-right leading-tight">
+                                <span
+                                    style={{ fontSize: '12px', fontWeight: 500 }}
+                                    className="text-slate-500 dark:text-slate-400 mt-1.5 !text-left"
+                                >
                                     {s.sub}
-                                </div>
+                                </span>
                             </div>
+                        </div>
+
+                        <div
+                            style={{ fontSize: '11px', fontWeight: 700 }}
+                            className="flex !items-center gap-1 mt-auto pt-2 transition-all opacity-90 group-hover:opacity-100 whitespace-nowrap !text-left !justify-start"
+                        >
+                            <span className={`flex items-center gap-1 ${s.iconColorClass}`}>
+                                <ArrowUpRight className="w-3 h-3" /> {s.trend}
+                            </span>
                         </div>
                     </motion.div>
                 ))}
@@ -170,7 +232,7 @@ export default function FeedbackPage() {
 
                 {/* Side Navigation / Filters */}
                 <div className={`${showMobileFilters ? 'block' : 'hidden'} md:block md:col-span-4 lg:col-span-3 space-y-4`}>
-                    <div className="bg-surface border border-border/80 p-4 space-y-4 shadow-xl md:shadow-none">
+                    <div className="bg-surface border border-border/80 p-4 space-y-4 shadow-xl md:shadow-none !rounded-[16px]">
                         <div className="flex items-center justify-between">
                             <h2 className="text-xs font-black text-text uppercase tracking-widest flex items-center gap-2">
                                 <Filter className="w-3 h-3 text-primary" /> Filter Matrix
@@ -245,7 +307,7 @@ export default function FeedbackPage() {
                         </div>
                     </div>
 
-                    <div className="hidden md:block bg-surface border-l-4 border-l-amber-500 border border-border/60 p-6">
+                    <div className="hidden md:block bg-surface border-l-4 border-l-amber-500 border border-border/60 p-6 !rounded-[16px]">
                         <div className="flex items-center gap-2 mb-3">
                             <AlertCircle className="w-4 h-4 text-amber-500" />
                             <h2 className="text-[10px] font-black text-text uppercase tracking-widest">Protocol Tip</h2>
@@ -259,19 +321,19 @@ export default function FeedbackPage() {
                 {/* Feedback Ledger */}
                 <div className="md:col-span-8 lg:col-span-9 space-y-5">
                     {/* Search & Bulk Actions */}
-                    <div className="bg-surface border border-border/80 p-3 flex flex-col sm:flex-row gap-3 sm:gap-4">
+                    <div className="bg-surface border border-border/80 p-3 flex flex-col sm:flex-row gap-3 sm:gap-4 !rounded-[16px]">
                         <div className="relative flex-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 sm:w-4 sm:h-4 text-text-muted" />
                             <input
                                 type="text"
                                 placeholder="IDENTIFY RECORD KEYWORDS..."
-                                className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-2 bg-white border border-border/60 rounded-none text-[10px] sm:text-xs font-black uppercase tracking-widest outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/40"
+                                className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-2 bg-white border border-border/60 !rounded-[16px] text-[10px] sm:text-xs font-black uppercase tracking-widest outline-none focus:border-primary/50 transition-all placeholder:text-text-muted/40"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
                         <div className="flex items-center gap-2">
-                            <button className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-white border border-border/60 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all">
+                            <button className="w-full sm:w-auto px-6 py-2.5 sm:py-2 bg-white border border-border/60 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] hover:bg-surface-alt transition-all !rounded-[16px]">
                                 Export .CSV
                             </button>
                         </div>
@@ -306,7 +368,7 @@ export default function FeedbackPage() {
                                             exit={{ opacity: 0, scale: 0.95 }}
                                             transition={{ delay: idx * 0.05 }}
                                             key={fb.id} 
-                                            className="bg-surface border border-border/80 p-0 hover:border-primary/40 transition-all group overflow-hidden relative"
+                                            className="bg-surface border border-border/80 p-0 hover:border-primary/40 transition-all group overflow-hidden relative !rounded-[16px]"
                                         >
                                             <div className="p-4 md:p-6">
                                                 <div className="flex flex-col md:flex-row gap-5 md:gap-8">
@@ -401,7 +463,7 @@ export default function FeedbackPage() {
                                                                 }}
                                                                 className="flex-1 sm:w-full py-2.5 bg-primary text-white text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                                                             >
-                                                                <Send className="w-3 h-3" /> {fb.status === 'Pending' ? 'Reply & Share' : 'Respond'}
+                                                                <Send className="w-3 h-3 text-white" /> {fb.status === 'Pending' ? 'Reply & Share' : 'Respond'}
                                                             </button>
                                                         ) : (
                                                             <div className="flex-1 sm:w-full py-2 bg-emerald-500/10 border border-emerald-500/20 flex flex-row sm:flex-col items-center justify-center gap-1">
@@ -411,10 +473,22 @@ export default function FeedbackPage() {
                                                         )}
                                                         
                                                         <div className="flex sm:grid sm:grid-cols-2 gap-2 mt-auto">
-                                                            <button className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center">
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleShare(fb);
+                                                                }}
+                                                                className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-primary hover:border-primary/40 transition-all flex items-center justify-center !rounded-[16px]"
+                                                            >
                                                                 <Share2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                             </button>
-                                                            <button className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-rose-500 hover:border-rose-500/40 transition-all flex items-center justify-center">
+                                                            <button 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleFlag(fb.id || fb._id);
+                                                                }}
+                                                                className="flex-1 py-2 sm:py-2 bg-white border border-border/60 text-text-muted hover:text-rose-500 hover:border-rose-500/40 transition-all flex items-center justify-center !rounded-[16px]"
+                                                            >
                                                                 <Flag className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                                                             </button>
                                                         </div>
@@ -504,7 +578,7 @@ export default function FeedbackPage() {
                                     <motion.div 
                                         initial={{ opacity: 0 }} 
                                         animate={{ opacity: 1 }} 
-                                        className="bg-surface border border-dashed border-border py-24 flex flex-col items-center justify-center text-center px-6"
+                                        className="bg-surface border border-dashed border-border py-24 flex flex-col items-center justify-center text-center px-6 !rounded-[16px]"
                                     >
                                         <div className="w-20 h-20 bg-background border border-border/60 flex items-center justify-center mb-6">
                                             <Filter className="w-8 h-8 text-text-muted opacity-20" />
@@ -520,7 +594,7 @@ export default function FeedbackPage() {
                                                 setActiveTab('All');
                                                 setSearchTerm('');
                                             }}
-                                            className="mt-8 px-8 py-3 bg-text text-white text-[10px] font-black uppercase tracking-widest"
+                                            className="mt-8 px-8 py-3 bg-[#B4912B] text-white text-[10px] font-black uppercase tracking-widest !rounded-[16px] hover:brightness-110 transition-all shadow-lg shadow-[#B4912B]/20"
                                         >
                                             Clear Filters
                                         </button>

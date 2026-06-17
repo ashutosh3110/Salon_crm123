@@ -133,7 +133,7 @@ export default function TargetsPage() {
                 </div>
                 <button
                     onClick={() => setIsAddModalOpen(true)}
-                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-primary text-primary-foreground border border-primary px-6 sm:px-10 py-3 sm:py-4 rounded-none text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-primary/20 hover:brightness-110 transition-all font-black"
+                    className="w-full sm:w-auto flex items-center justify-center gap-3 bg-[#B4912B] text-white border border-[#B4912B] px-6 sm:px-10 py-3 sm:py-4 !rounded-[16px] text-[9px] sm:text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-[#B4912B]/20 hover:brightness-110 transition-all font-black"
                 >
                     <Plus className="w-4 h-4" /> Set New Target
                 </button>
@@ -142,9 +142,9 @@ export default function TargetsPage() {
             {/* Target Progress Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {targetList.map((t) => (
-                    <div key={t.id} className="bg-surface py-5 sm:py-6 px-6 sm:px-8 rounded-none border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
+                    <div key={t.id} className="bg-surface py-5 sm:py-6 px-6 sm:px-8 !rounded-[16px] border border-border shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
                         {/* Soft Glow Effect */}
-                        <div className="absolute -right-4 -top-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/5 rounded-none blur-2xl group-hover:bg-primary/10 transition-colors" />
+                        <div className="absolute -right-4 -top-4 w-16 h-16 sm:w-24 sm:h-24 bg-primary/5 rounded-full blur-2xl group-hover:bg-primary/10 transition-colors" />
 
                         <div className="relative z-10 text-left">
                             <div className="flex items-center justify-between mb-3">
@@ -173,9 +173,9 @@ export default function TargetsPage() {
                             </div>
 
                             <div className="mt-4 space-y-2">
-                                <div className="w-full h-1 sm:h-1.5 bg-background rounded-none overflow-hidden border border-border/5">
+                                <div className="w-full h-1 sm:h-1.5 bg-background !rounded-full overflow-hidden border border-border/5">
                                     <motion.div
-                                        className={`h-full ${t.percent >= 70 ? 'bg-emerald-500' : 'bg-primary'}`}
+                                        className={`h-full !rounded-full ${t.percent >= 70 ? 'bg-emerald-500' : 'bg-primary'}`}
                                         initial={{ width: 0 }}
                                         animate={{ width: `${t.percent}%` }}
                                         transition={{ duration: 1, ease: 'easeOut' }}
@@ -193,13 +193,13 @@ export default function TargetsPage() {
 
             <div className="grid grid-cols-1 gap-6">
                 {/* Team Target Progress */}
-                <div className="bg-white rounded-none border border-border/60 p-4 sm:p-6 shadow-none">
+                <div className="bg-white !rounded-[16px] border border-border/60 p-4 sm:p-6 shadow-sm">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
                         <div className="flex items-center gap-2">
                             <Users className="w-4 sm:w-4.5 h-4 sm:h-4.5 text-primary" />
                             <h2 className="text-[13px] sm:text-sm font-black text-text uppercase tracking-widest">Staff Performance</h2>
                         </div>
-                        <button className="w-full sm:w-auto text-[9px] sm:text-[10px] font-black text-primary px-3 py-2 sm:py-1.5 bg-white border border-primary/20 rounded-none uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
+                        <button className="w-full sm:w-auto text-[9px] sm:text-[10px] font-black text-primary px-3 py-2 sm:py-1.5 bg-white border border-primary/20 !rounded-[12px] uppercase tracking-widest hover:bg-primary hover:text-white transition-all">
                             Refresh Data
                         </button>
                     </div>
@@ -214,7 +214,7 @@ export default function TargetsPage() {
                                 <div key={tp.id} className="space-y-2">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2 sm:gap-3">
-                                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-none bg-white flex items-center justify-center border border-border/20 text-[10px] sm:text-xs font-bold text-text-secondary shrink-0">
+                                            <div className="w-8 h-8 sm:w-9 sm:h-9 !rounded-[12px] bg-white flex items-center justify-center border border-border/20 text-[10px] sm:text-xs font-bold text-text-secondary shrink-0">
                                                 {tp.name.split(' ').map(n => n[0]).join('')}
                                             </div>
                                             <div className="text-left">
@@ -231,9 +231,9 @@ export default function TargetsPage() {
                                                 }`}>{tp.status}</span>
                                         </div>
                                     </div>
-                                    <div className="w-full h-1 sm:h-1.5 bg-background rounded-none overflow-hidden">
+                                    <div className="w-full h-1 sm:h-1.5 bg-background !rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full ${tp.progress >= 90 ? 'bg-emerald-500' : tp.progress >= 70 ? 'bg-blue-500' : 'bg-primary'}`}
+                                            className={`h-full !rounded-full ${tp.progress >= 90 ? 'bg-emerald-500' : tp.progress >= 70 ? 'bg-blue-500' : 'bg-primary'}`}
                                             style={{ width: `${tp.progress}%` }}
                                         />
                                     </div>
@@ -249,7 +249,7 @@ export default function TargetsPage() {
             {/* Add Target Modal */}
             {isAddModalOpen && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white border border-border/60 rounded-none w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-200">
+                    <div className="bg-white border border-border/60 !rounded-[16px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in duration-200">
                         <div className="p-6 border-b border-border/40 flex items-center justify-between">
                             <h2 className="text-sm font-black text-text uppercase tracking-widest">Set Staff Target</h2>
                             <button onClick={() => setIsAddModalOpen(false)} className="text-text-muted hover:text-primary transition-colors">
@@ -268,7 +268,7 @@ export default function TargetsPage() {
                                 <input
                                     required
                                     type="number"
-                                    className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 rounded-none text-sm outline-none focus:border-primary/50 transition-colors"
+                                    className="w-full px-4 py-2.5 bg-surface-alt border border-border/40 !rounded-[12px] text-sm outline-none focus:border-primary/50 transition-colors"
                                     placeholder="e.g. 50000"
                                     value={newTarget.goal}
                                     onChange={(e) => setNewTarget({ ...newTarget, goal: e.target.value })}
@@ -278,13 +278,13 @@ export default function TargetsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsAddModalOpen(false)}
-                                    className="flex-1 py-3 bg-white border border-border/60 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt transition-all"
+                                    className="flex-1 py-3 bg-white border border-border/60 text-[10px] font-black uppercase tracking-widest hover:bg-surface-alt !rounded-[12px] transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                    className="flex-1 py-3 bg-primary text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/25 hover:scale-[1.02] active:scale-[0.98] !rounded-[12px] transition-all"
                                 >
                                     Save Target
                                 </button>
@@ -298,7 +298,7 @@ export default function TargetsPage() {
             <AnimatePresence>
                 {toast && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                        className="fixed bottom-6 right-6 z-50 bg-text text-background px-6 py-3 border border-border shadow-2xl flex items-center gap-3">
+                        className="fixed bottom-6 right-6 z-50 bg-text text-background px-6 py-3 border border-border !rounded-[16px] shadow-2xl flex items-center gap-3">
                         <CheckCircle2 className="w-4 h-4 text-emerald-500" />
                         <p className="text-[10px] font-black uppercase tracking-widest">{toast}</p>
                     </motion.div>

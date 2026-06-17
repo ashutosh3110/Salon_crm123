@@ -18,7 +18,16 @@ exports.getUsers = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Salon ID is required' });
         }
 
-        const staff = await Staff.find({ salonId }).populate('outletId', 'name').sort({ createdAt: -1 });
+        let query = { salonId };
+        if (req.query.role) {
+            const normalizedRole = req.query.role === 'stylist' ? 'stylish' : req.query.role;
+            query.role = normalizedRole;
+        }
+        if (req.query.outletId) {
+            query.outletId = req.query.outletId;
+        }
+
+        const staff = await Staff.find(query).populate('outletId', 'name').sort({ createdAt: -1 });
 
         res.json({
             success: true,
