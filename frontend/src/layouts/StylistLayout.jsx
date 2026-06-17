@@ -618,6 +618,41 @@ export default function StylistLayout() {
                     stroke: #2563eb !important;
                 }
 
+                /* Orange SVGs */
+                html:not(.dark) .admin-panel [class*="text-orange"] svg,
+                html:not(.dark) .admin-panel [class*="text-orange"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-orange"],
+                html:not(.dark) .admin-panel svg[class*="text-orange"] * {
+                    color: #ea580c !important;
+                    stroke: #ea580c !important;
+                }
+
+                /* Violet/purple SVGs */
+                html:not(.dark) .admin-panel [class*="text-violet"] svg,
+                html:not(.dark) .admin-panel [class*="text-violet"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-violet"],
+                html:not(.dark) .admin-panel svg[class*="text-violet"] *,
+                html:not(.dark) .admin-panel [class*="text-purple"] svg,
+                html:not(.dark) .admin-panel [class*="text-purple"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-purple"],
+                html:not(.dark) .admin-panel svg[class*="text-purple"] * {
+                    color: #7c3aed !important;
+                    stroke: #7c3aed !important;
+                }
+
+                /* Slate/gray SVGs */
+                html:not(.dark) .admin-panel [class*="text-slate"] svg,
+                html:not(.dark) .admin-panel [class*="text-slate"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-slate"],
+                html:not(.dark) .admin-panel svg[class*="text-slate"] *,
+                html:not(.dark) .admin-panel [class*="text-gray"] svg,
+                html:not(.dark) .admin-panel [class*="text-gray"] svg *,
+                html:not(.dark) .admin-panel svg[class*="text-gray"],
+                html:not(.dark) .admin-panel svg[class*="text-gray"] * {
+                    color: #475569 !important;
+                    stroke: #475569 !important;
+                }
+
                 /* Rounded icon containers */
                 html .admin-panel .rounded-full:has(svg),
                 html .admin-panel div[class*="w-"][class*="h-"]:has(svg) {

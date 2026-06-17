@@ -45,6 +45,7 @@ export default function ReceptionistAttendance() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyData, setHistoryData] = useState([]);
     const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, late: 0, halfDay: 0, total: 0 });
+    const [historyFilter, setHistoryFilter] = useState('ALL'); // ALL | PRESENT | ABSENT | NOT_MARKED
 
     const fetchLocation = useCallback(() => {
         setLoadingLocation(true);
@@ -140,6 +141,36 @@ export default function ReceptionistAttendance() {
     const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
     const isCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
 
+    // Build a full list of all past days in the selected month, filling missing days as NOT_MARKED
+    const fullDaysList = useMemo(() => {
+        const today = new Date();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const result = [];
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dayDate = new Date(currentYear, currentMonth, d);
+            if (dayDate > today) break; // skip future days
+            const ymd = dayDate.toLocaleDateString('en-CA');
+            const existing = historyData.find(r => r.date === ymd);
+            if (existing) {
+                const mappedStatus = existing.status === 'UNMARKED' ? 'NOT_MARKED' : existing.status;
+                result.push({ ...existing, status: mappedStatus });
+            } else {
+                result.push({ date: ymd, status: 'NOT_MARKED', checkInAt: null, checkOutAt: null, notes: null, _synthetic: true });
+            }
+        }
+        return result.reverse(); // newest first
+    }, [historyData, currentMonth, currentYear]);
+
+    const notMarkedCount = fullDaysList.filter(r => r.status === 'NOT_MARKED' || r.status === 'WEEKOFF').length;
+
+    const filteredList = useMemo(() => {
+        if (historyFilter === 'ALL') return fullDaysList;
+        if (historyFilter === 'NOT_MARKED') {
+            return fullDaysList.filter(r => r.status === 'NOT_MARKED' || r.status === 'WEEKOFF');
+        }
+        return fullDaysList.filter(r => r.status === historyFilter);
+    }, [fullDaysList, historyFilter]);
+
     return (
         <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto text-left font-sans">
             <style>{`
@@ -159,6 +190,14 @@ export default function ReceptionistAttendance() {
                 }
                 html:not(.dark) .attendance-stat-label-weekoff {
                     color: #475569 !important;
+                }
+                html:not(.dark) .attendance-stat-label-notmarked {
+                    color: #6d28d9 !important;
+                }
+                html:not(.dark) .attendance-badge-notmarked {
+                    color: #5b21b6 !important;
+                    background-color: #f5f3ff !important;
+                    border-color: #ddd6fe !important;
                 }
             `}</style>
 
@@ -268,81 +307,110 @@ export default function ReceptionistAttendance() {
                             <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
-                </div>                {/* Stat Cards */}
-                <div className="grid grid-cols-2 gap-3">
+                </div>                {/* Stat Cards — clickable to filter */}
+                <div className="grid grid-cols-3 gap-3">
                     {[
-                        { label: 'Present', val: historyStats.present, color: 'text-emerald-650 dark:text-emerald-455', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20', labelClass: 'attendance-stat-label-present' },
-                        { label: 'Absent', val: historyStats.absent, color: 'text-rose-650 dark:text-rose-455', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20', labelClass: 'attendance-stat-label-absent' },
+                        { label: 'Present', val: historyStats.present, filterKey: 'PRESENT', color: 'text-emerald-650 dark:text-emerald-455', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20', activeBg: 'ring-2 ring-emerald-400', labelClass: 'attendance-stat-label-present' },
+                        { label: 'Absent', val: historyStats.absent, filterKey: 'ABSENT', color: 'text-rose-650 dark:text-rose-455', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20', activeBg: 'ring-2 ring-rose-400', labelClass: 'attendance-stat-label-absent' },
+                        { label: 'Not Marked', val: notMarkedCount, filterKey: 'NOT_MARKED', color: 'text-violet-650 dark:text-violet-455', bg: 'bg-violet-50/50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20', activeBg: 'ring-2 ring-violet-400', labelClass: 'attendance-stat-label-notmarked' },
                     ].map((stat, i) => (
-                        <div key={i} className={`p-2.5 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center`}>
+                        <button
+                            key={i}
+                            onClick={() => setHistoryFilter(prev => prev === stat.filterKey ? 'ALL' : stat.filterKey)}
+                            className={`p-2.5 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:scale-[1.02] active:scale-95 ${historyFilter === stat.filterKey ? stat.activeBg : ''}`}
+                        >
                             <span className="text-xl font-black text-slate-800 dark:text-white mb-0.5">{stat.val}</span>
                             <span className={`text-[9px] font-black uppercase tracking-wider ${stat.color} ${stat.labelClass}`}>
                                 {stat.label}
                             </span>
-                        </div>
+                        </button>
                     ))}
                 </div>
 
                 {/* History List */}
                 <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+                    {/* Filter Tab Bar */}
+                    <div className="flex items-center gap-1 px-3 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800 overflow-x-auto hide-scrollbar">
+                        {[
+                            { key: 'ALL', label: 'All Days', count: fullDaysList.length },
+                            { key: 'PRESENT', label: 'Present', count: historyStats.present },
+                            { key: 'ABSENT', label: 'Absent', count: historyStats.absent },
+                            { key: 'NOT_MARKED', label: 'Not Marked', count: notMarkedCount },
+                        ].map(tab => (
+                            <button
+                                key={tab.key}
+                                onClick={() => setHistoryFilter(tab.key)}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                                    historyFilter === tab.key
+                                        ? tab.key === 'PRESENT' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
+                                        : tab.key === 'ABSENT' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300'
+                                        : tab.key === 'NOT_MARKED' ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300'
+                                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
+                                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
+                                }`}
+                            >
+                                {tab.label}
+                                <span className={`inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded text-[9px] font-black ${
+                                    historyFilter === tab.key
+                                        ? 'bg-white/60 dark:bg-black/20'
+                                        : 'bg-slate-100 dark:bg-slate-800'
+                                }`}>{tab.count}</span>
+                            </button>
+                        ))}
+                    </div>
+
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</th>
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Present</th>
+                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Check-In / Out</th>
                                     <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notes</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                                 {historyLoading ? (
                                     <tr>
-                                        <td colSpan={5} className="py-8 text-center text-xs text-slate-500">Loading history...</td>
+                                        <td colSpan={4} className="py-8 text-center text-xs text-slate-500">Loading history...</td>
                                     </tr>
-                                ) : (() => {
-                                    const filteredRecords = historyData.filter(record => record.status === 'PRESENT' || record.status === 'ABSENT');
-                                    if (filteredRecords.length === 0) {
-                                        return (
-                                            <tr>
-                                                <td colSpan={5} className="py-8 text-center text-xs text-slate-500">No attendance records found for this month.</td>
-                                            </tr>
-                                        );
-                                    }
-                                    return filteredRecords.map((record, i) => {
-                                        const d = new Date(record.date);
-                                        const isFuture = d > new Date();
-                                        if (isFuture) return null;
-                                        
-                                        const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
-                                        const styleClass = statusColors[record.status] || 'bg-slate-50 text-slate-600';
+                                ) : filteredList.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={4} className="py-8 text-center text-xs text-slate-500">No records found.</td>
+                                    </tr>
+                                ) : filteredList.map((record, i) => {
+                                    const d = new Date(record.date);
+                                    const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                                    const isNotMarked = record.status === 'NOT_MARKED';
+                                    const styleClass = isNotMarked
+                                        ? 'bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20'
+                                        : (statusColors[record.status] || 'bg-slate-50 text-slate-600 border-slate-200');
 
-                                        return (
-                                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-200">{displayDate}</span>
-                                                </td>
-                                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                                    <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-lg border ${styleClass}`}>
-                                                        {record.status.replace('_', ' ')}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                                        {record.checkInAt ? (
-                                                            `${formatTime(record.checkInAt)}${record.checkOutAt ? ` - ${formatTime(record.checkOutAt)}` : ''}`
-                                                        ) : '—'}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2.5 px-4 whitespace-nowrap">
-                                                    <span className="text-xs text-slate-500 dark:text-slate-400 italic">
-                                                        {record.notes || '—'}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    });
-                                })()}
+                                    return (
+                                        <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                                            <td className="py-2.5 px-4 whitespace-nowrap">
+                                                <span className={`text-xs font-semibold text-slate-700 dark:text-slate-200 ${isNotMarked ? 'opacity-50' : ''}`}>{displayDate}</span>
+                                            </td>
+                                            <td className="py-2.5 px-4 whitespace-nowrap">
+                                                <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-lg border ${styleClass} ${isNotMarked ? 'attendance-badge-notmarked' : ''}`}>
+                                                    {record.status.replace('_', ' ')}
+                                                </span>
+                                            </td>
+                                            <td className="py-2.5 px-4 whitespace-nowrap">
+                                                <span className={`text-xs font-medium text-slate-600 dark:text-slate-300 ${isNotMarked ? 'opacity-50' : ''}`}>
+                                                    {record.checkInAt
+                                                        ? `${formatTime(record.checkInAt)}${record.checkOutAt ? ` – ${formatTime(record.checkOutAt)}` : ''}`
+                                                        : '—'}
+                                                </span>
+                                            </td>
+                                            <td className="py-2.5 px-4 whitespace-nowrap">
+                                                <span className={`text-xs text-slate-500 dark:text-slate-400 italic ${isNotMarked ? 'opacity-50' : ''}`}>
+                                                    {record.notes || '—'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

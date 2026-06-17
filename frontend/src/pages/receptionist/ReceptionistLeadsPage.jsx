@@ -319,6 +319,10 @@ export default function ReceptionistLeadsPage() {
     return (
         <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-8 font-sans">
             <style>{`
+                html:not(.dark) .lead-avatar-badge {
+                    color: #1e293b !important;
+                }
+
                 .action-btn-custom svg, .action-btn-custom svg * {
                     color: #475569 !important;
                     stroke: #475569 !important;
@@ -575,8 +579,8 @@ export default function ReceptionistLeadsPage() {
                         onFocus={() => setSearchFocused(true)}
                         onBlur={() => setSearchFocused(false)}
                         placeholder="Search enquiries by name..."
-                        className="w-full h-full text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-transparent !bg-transparent focus:!bg-transparent active:!bg-transparent outline-none border-none shadow-none focus:ring-0 placeholder-slate-400"
-                        style={{ outline: 'none', border: 'none', boxShadow: 'none', padding: 0, margin: 0, background: 'transparent' }}
+                        className="w-full text-[10px] font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200 bg-transparent !bg-transparent focus:!bg-transparent active:!bg-transparent outline-none border-none shadow-none focus:ring-0 placeholder-slate-400 py-1"
+                        style={{ outline: 'none', border: 'none', boxShadow: 'none', padding: '4px 0', margin: 0, background: 'transparent', lineHeight: 'normal' }}
                         autoComplete="off"
                         spellCheck="false"
                     />
@@ -647,7 +651,7 @@ export default function ReceptionistLeadsPage() {
                                                         const initials = getInitials(inq.name);
                                                         const colors = getAvatarStyles(inq.name);
                                                         return (
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 allow-curve ${colors.bg} ${colors.text}`}>
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 allow-curve ${colors.bg} ${colors.text} lead-avatar-badge`}>
                                                                 {initials}
                                                             </div>
                                                         );

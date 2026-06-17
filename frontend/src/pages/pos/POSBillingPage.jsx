@@ -1677,6 +1677,55 @@ export default function POSBillingPage() {
 
     return (
         <div className={`flex flex-col mt-0 overflow-hidden ${isReceptionistMode ? 'h-[calc(100vh-4rem)]' : 'h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)]'}`}>
+            <style>{`
+                html body #root div button.discount-btn-active,
+                html:not(.dark) body #root div button.discount-btn-active { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+                
+                html body #root div button.discount-btn-inactive,
+                html:not(.dark) body #root div button.discount-btn-inactive { color: #64748b !important; -webkit-text-fill-color: #64748b !important; }
+                
+                html body #root div input.discount-input,
+                html:not(.dark) body #root div input.discount-input { color: #0f172a !important; -webkit-text-fill-color: #0f172a !important; }
+                
+                html.dark body #root div input.discount-input { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
+                
+                html body #root div span.tax-badge-incl,
+                html:not(.dark) body #root div span.tax-badge-incl { color: #065f46 !important; -webkit-text-fill-color: #065f46 !important; }
+                
+                html.dark body #root div span.tax-badge-incl { color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; }
+
+                html body #root div span.tax-badge-excl,
+                html:not(.dark) body #root div span.tax-badge-excl { color: #1e40af !important; -webkit-text-fill-color: #1e40af !important; }
+                
+                html.dark body #root div span.tax-badge-excl { color: #60a5fa !important; -webkit-text-fill-color: #60a5fa !important; }
+
+                html body #root div .pos-bill-badge,
+                html:not(.dark) body #root div .pos-bill-badge {
+                    background-color: #dbeafe !important;
+                    color: #1e40af !important;
+                }
+                
+                html.dark body #root div .pos-bill-badge {
+                    background-color: rgba(30, 64, 175, 0.4) !important;
+                    color: #93c5fd !important;
+                }
+
+                html body #root div input.discount-input,
+                html body #root div input.discount-input:focus {
+                    outline: none !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    background: transparent !important;
+                }
+                html body #root div input.discount-input::-webkit-outer-spin-button,
+                html body #root div input.discount-input::-webkit-inner-spin-button {
+                    -webkit-appearance: none !important;
+                    margin: 0 !important;
+                }
+                html body #root div input.discount-input {
+                    -moz-appearance: textfield !important;
+                }
+            `}</style>
 
             {/* Mobile Tab Switcher */}
             <div className="flex lg:hidden border-b border-border bg-surface shrink-0">
@@ -1845,7 +1894,7 @@ export default function POSBillingPage() {
                                                         <Check className="w-2.5 h-2.5" /> Billed
                                                     </div>
                                                 ) : (
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 text-blue-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 pos-bill-badge">
                                                         Bill
                                                     </div>
                                                 )}
@@ -1888,8 +1937,8 @@ export default function POSBillingPage() {
                                                     )}
                                                 </div>
                                                 <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider ${item.isInclusiveTax
-                                                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                                    : 'bg-blue-50 text-blue-600 border border-blue-200'
+                                                    ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 border border-emerald-200 dark:border-emerald-900/30 tax-badge-incl'
+                                                    : 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 border border-blue-200 dark:border-blue-900/30 tax-badge-excl'
                                                     }`}>{item.isInclusiveTax ? 'Incl. GST' : 'Excl. GST'}</span>
                                             </div>
                                         </div>
@@ -1934,7 +1983,7 @@ export default function POSBillingPage() {
                                                         <Check className="w-2.5 h-2.5" /> Billed
                                                     </div>
                                                 ) : (
-                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 text-blue-600 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                                    <div className="opacity-0 group-hover:opacity-100 transition-opacity text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider pos-bill-badge">
                                                         Bill
                                                     </div>
                                                 )}
@@ -2027,8 +2076,8 @@ export default function POSBillingPage() {
                                         <div className="flex items-center justify-between gap-1 mt-auto pt-1 border-t border-dashed border-slate-100 dark:border-slate-800/60">
                                             <p className="text-sm font-black text-slate-900 dark:text-slate-100">₹{item.price}</p>
                                             <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase tracking-wider ${item.isInclusiveTax
-                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400'
-                                                : 'bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400'
+                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 tax-badge-incl'
+                                                : 'bg-slate-50 text-slate-500 dark:bg-slate-800/50 dark:text-slate-400 tax-badge-excl'
                                                 }`}>{item.isInclusiveTax ? 'Incl' : 'Excl'}</span>
                                         </div>
                                     </div>
@@ -2049,8 +2098,8 @@ export default function POSBillingPage() {
                             {/* Glass header */}
                             <div className="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md flex items-center justify-between shrink-0">
                                 <div className="flex items-center gap-2.5">
-                                    <div className="w-8 h-8 rounded-xl bg-[#cca839]/20 flex items-center justify-center">
-                                        <FileText className="w-4 h-4" style={{ color: '#cca839' }} />
+                                    <div className="w-8 h-8 rounded-xl bg-[#cca839]/20 flex items-center justify-center text-primary">
+                                        <FileText className="w-4 h-4 text-primary" />
                                     </div>
                                     <div>
                                         <h2 className="text-[11px] font-black uppercase tracking-widest text-slate-800 dark:text-slate-200 leading-none">Billing Summary</h2>
@@ -2072,7 +2121,7 @@ export default function POSBillingPage() {
                                 {/* ── 1. CUSTOMER INFORMATION ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-                                        <User className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <User className="w-3.5 h-3.5 text-primary" />
                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Customer Information</span>
                                     </div>
                                     <div className="p-4 flex items-start gap-3">
@@ -2128,7 +2177,7 @@ export default function POSBillingPage() {
                                 {/* ── 2. OUTLET & BOOKING INFO ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-                                        <Building2 className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <Building2 className="w-3.5 h-3.5 text-primary" />
                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Outlet Information</span>
                                     </div>
                                     <div className="p-4 space-y-2.5">
@@ -2210,7 +2259,7 @@ export default function POSBillingPage() {
                                 {cart.length > 0 && (
                                     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                         <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-                                            <ShoppingBag className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                            <ShoppingBag className="w-3.5 h-3.5 text-primary" />
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Order Summary</span>
                                             <span className="ml-auto text-[8px] font-bold bg-[#cca839]/10 text-[#cca839] px-1.5 py-0.5 rounded-full">{cart.length} items</span>
                                         </div>
@@ -2363,7 +2412,7 @@ export default function POSBillingPage() {
                                 {/* ── 6. APPLIED BENEFITS ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-                                        <Gift className="w-3.5 h-3.5" style={{ color: '#cca839' }} />
+                                        <Gift className="w-3.5 h-3.5 text-primary" />
                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Applied Benefits</span>
                                     </div>
                                     <div className="px-4 py-3">
@@ -2393,7 +2442,7 @@ export default function POSBillingPage() {
                                 {/* ── 7. PAYMENT DETAILS ── */}
                                 <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
                                     <div className="flex items-center gap-2 px-4 py-2.5 bg-slate-50 dark:bg-slate-800/60 border-b border-slate-100 dark:border-slate-800">
-                                        <Wallet className="w-3.5 h-3.5 text-[#cca839]" />
+                                        <Wallet className="w-3.5 h-3.5 text-primary" />
                                         <span className="text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Payment Details</span>
                                     </div>
                                     <div className="p-4 space-y-3">
@@ -2405,7 +2454,7 @@ export default function POSBillingPage() {
                                         <div className="flex items-center justify-between pb-1">
                                             <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
                                             <label className="flex items-center gap-1.5 text-xs font-semibold text-[#cca839] cursor-pointer hover:opacity-80 transition-all bg-[#cca839]/5 px-2 py-1 rounded-lg border border-[#cca839]/10">
-                                                <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-[#cca839]/20 text-[#cca839] focus:ring-[#cca839]/20 cursor-pointer" />
+                                                <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-[#cca839]/20 text-[#cca839] focus:ring-[#cca839]/20 cursor-pointer mr-2" />
                                                 <span className="uppercase tracking-tight text-slate-500 dark:text-slate-400">Partial Pay</span>
                                             </label>
                                         </div>
@@ -2722,7 +2771,7 @@ export default function POSBillingPage() {
                                     <div className="flex items-center justify-between px-1 mb-1">
                                         <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Payment Method</span>
                                         <label className="flex items-center gap-1.5 text-xs font-semibold text-primary cursor-pointer hover:opacity-80 transition-all bg-primary/5 px-2 py-1 rounded-lg border border-primary/10">
-                                            <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20 cursor-pointer" />
+                                            <input type="checkbox" checked={isManualPayment} onChange={(e) => { setIsManualPayment(e.target.checked); if (e.target.checked) { setTimeout(() => { const el = document.querySelector('input[type="number"][data-payment-idx="0"]'); el?.focus(); el?.select(); }, 100); } }} className="w-3 h-3 rounded border-primary/20 text-primary focus:ring-primary/20 cursor-pointer mr-2" />
                                             <span className="uppercase tracking-tight text-text-muted">Partial Pay</span>
                                         </label>
                                     </div>
@@ -2736,7 +2785,7 @@ export default function POSBillingPage() {
                                                     if (!isManualPayment && payments.length === 1) {
                                                         setPayments([{ ...payments[0], amount: totals.currentBillTotal + dueVal }]);
                                                     }
-                                                }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer" />
+                                                }} className="w-3 h-3 rounded border-rose-200 text-rose-600 focus:ring-rose-500/20 cursor-pointer mr-2" />
                                                 <span className="uppercase tracking-tight">Pay Previous Dues (₹{Number(selectedClient.dueAmount).toFixed(0)})</span>
                                             </label>
                                             {includePreviousDue && (
@@ -4456,44 +4505,6 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             })()}
                                         </div>
                                         <div className="flex flex-col gap-1">
-                                            <style>{`
-                                                html body #root div button.discount-btn-active,
-                                                html:not(.dark) body #root div button.discount-btn-active { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
-                                                
-                                                html body #root div button.discount-btn-inactive,
-                                                html:not(.dark) body #root div button.discount-btn-inactive { color: #64748b !important; -webkit-text-fill-color: #64748b !important; }
-                                                
-                                                html body #root div input.discount-input,
-                                                html:not(.dark) body #root div input.discount-input { color: #0f172a !important; -webkit-text-fill-color: #0f172a !important; }
-                                                
-                                                html.dark body #root div input.discount-input { color: #ffffff !important; -webkit-text-fill-color: #ffffff !important; }
-                                                
-                                                html body #root div span.tax-badge-incl,
-                                                html:not(.dark) body #root div span.tax-badge-incl { color: #065f46 !important; -webkit-text-fill-color: #065f46 !important; }
-                                                
-                                                html.dark body #root div span.tax-badge-incl { color: #34d399 !important; -webkit-text-fill-color: #34d399 !important; }
-
-                                                html body #root div span.tax-badge-excl,
-                                                html:not(.dark) body #root div span.tax-badge-excl { color: #1e40af !important; -webkit-text-fill-color: #1e40af !important; }
-                                                
-                                                html.dark body #root div span.tax-badge-excl { color: #60a5fa !important; -webkit-text-fill-color: #60a5fa !important; }
-
-                                                html body #root div input.discount-input,
-                                                html body #root div input.discount-input:focus {
-                                                    outline: none !important;
-                                                    border: none !important;
-                                                    box-shadow: none !important;
-                                                    background: transparent !important;
-                                                }
-                                                html body #root div input.discount-input::-webkit-outer-spin-button,
-                                                html body #root div input.discount-input::-webkit-inner-spin-button {
-                                                    -webkit-appearance: none !important;
-                                                    margin: 0 !important;
-                                                }
-                                                html body #root div input.discount-input {
-                                                    -moz-appearance: textfield !important;
-                                                }
-                                            `}</style>
                                             <span className="text-[9px] font-black uppercase tracking-widest text-slate-500">Qty</span>
                                             <div className="-ml-6 flex items-center rounded-lg overflow-hidden h-6 w-fit border border-slate-200 bg-white">
                                                 <button type="button" onClick={() => updateQQty(idx, -1)} className="px-1.5 h-full flex items-center hover:bg-slate-50 border-r border-slate-200 text-slate-500">
