@@ -6,7 +6,7 @@ import {
     Calendar, Users, ChevronRight, LogOut,
     Shield, HelpCircle, Edit3, Loader2,
     TrendingUp, Info, Star, MessageSquare, Wallet, Heart, Camera,
-    Crown, Gem, History, ShoppingBag, Zap, X, ChevronDown, MapPin, CreditCard, Bell, Settings
+    Crown, Gem, History, ShoppingBag, Zap, X, ChevronDown, MapPin, CreditCard, Bell, Settings, Gift
 } from 'lucide-react';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useWallet } from '../../contexts/WalletContext';
@@ -318,203 +318,161 @@ export default function AppProfilePage() {
         {
             label: 'My Bookings',
             icon: Calendar,
-            color: '#d97706',
-            bgColor: 'rgba(217, 119, 6, 0.05)',
-            borderColor: 'rgba(217, 119, 6, 0.15)',
             action: () => navigate('/app/bookings')
         },
         {
-            label: 'Order History',
-            icon: ShoppingBag,
-            color: '#ca8a04',
-            bgColor: 'rgba(202, 138, 4, 0.05)',
-            borderColor: 'rgba(202, 138, 4, 0.15)',
-            action: () => navigate('/app/orders')
-        },
-        {
-            label: 'Membership',
-            icon: Crown,
-            color: '#8b5cf6',
-            bgColor: 'rgba(139, 92, 246, 0.05)',
-            borderColor: 'rgba(139, 92, 246, 0.15)',
+            label: 'My Membership',
+            icon: Shield,
+            extra: 'Gold Member',
+            extraColor: '#d97706',
             action: () => navigate('/app/membership')
         },
         {
-            label: 'Consultation',
-            icon: MessageSquare,
-            color: '#0ea5e9',
-            bgColor: 'rgba(14, 165, 233, 0.05)',
-            borderColor: 'rgba(14, 165, 233, 0.15)',
-            action: () => navigate('/app/consultation')
-        },
-        {
-            label: 'Addresses',
+            label: 'My Addresses',
             icon: MapPin,
-            color: '#ea580c',
-            bgColor: 'rgba(234, 88, 12, 0.05)',
-            borderColor: 'rgba(234, 88, 12, 0.15)',
             action: () => toast('Addresses features are managed during checkout.')
         },
         {
-            label: 'Payment Methods',
-            icon: CreditCard,
-            color: '#b45309',
-            bgColor: 'rgba(180, 83, 9, 0.05)',
-            borderColor: 'rgba(180, 83, 9, 0.15)',
-            action: () => toast('Payment options can be configured during checkout.')
-        },
-        {
-            label: 'Notifications',
-            icon: Bell,
-            color: '#d97706',
-            bgColor: 'rgba(217, 119, 6, 0.05)',
-            borderColor: 'rgba(217, 119, 6, 0.15)',
-            action: () => navigate('/app/notifications')
-        },
-        {
-            label: 'Help & Support',
-            icon: HelpCircle,
-            color: '#ea580c',
-            bgColor: 'rgba(234, 88, 12, 0.05)',
-            borderColor: 'rgba(234, 88, 12, 0.15)',
-            action: () => navigate('/app/help')
-        },
-        {
-            label: 'Settings',
-            icon: Settings,
-            color: '#16a34a',
-            bgColor: 'rgba(22, 163, 74, 0.05)',
-            borderColor: 'rgba(22, 163, 74, 0.15)',
-            action: () => setEditing(!editing)
+            label: 'Refer & Earn',
+            icon: Gift,
+            extra: 'Earn ₹200',
+            extraColor: '#64748b',
+            action: () => navigate('/app/referrals')
         }
     ];
 
     return (
-        <div style={{ background: colors.bg, minHeight: '100svh' }} className="pb-32">
+        <div style={{ background: '#ffffff', minHeight: '100svh' }} className="pb-32">
 
-            {/* Redesigned Premium Header Card with Gradient */}
-            <div
-                style={{
-                    background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0) 25%, rgba(255, 255, 255, 0.9) 85%, #ffffff 100%), linear-gradient(135deg, #784824 0%, #C8956C 100%)',
-                    borderRadius: '0px',
-                    padding: '36px 24px 0px 24px',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    color: '#ffffff',
-                }}
-            >
-                {/* Wavy Background Decor */}
-                <div style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }}>
-                    <svg viewBox="0 0 500 200" preserveAspectRatio="none" style={{ width: '100%', height: '100%', position: 'absolute', bottom: 0, left: 0 }}>
-                        <path d="M0,90 C150,150 350,50 500,110 L500,200 L0,200 Z" fill="#ffffff" opacity="0.15"></path>
-                        <path d="M0,120 C180,180 320,80 500,140 L500,200 L0,200 Z" fill="#ffffff" opacity="0.1"></path>
-                    </svg>
-                </div>
-
-                {/* Actions Icons: Settings & Notifications */}
-                <div style={{ position: 'absolute', top: '32px', right: '24px', display: 'flex', gap: '18px', zIndex: 10 }}>
-                    <button onClick={() => setEditing(!editing)} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', opacity: 0.95 }}>
-                        <Settings size={20} strokeWidth={2} />
-                    </button>
-                    <button onClick={() => navigate('/app/notifications')} style={{ background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', opacity: 0.95 }}>
-                        <Bell size={20} strokeWidth={2} />
-                    </button>
-                </div>
-
-                {/* User Info block */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px', position: 'relative', zIndex: 2 }}>
+            {/* Header */}
+            <div style={{ padding: '24px 24px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <div className="relative">
                         <div
                             onClick={() => avatarInputRef.current.click()}
                             style={{
-                                width: '64px',
-                                height: '64px',
+                                width: '56px',
+                                height: '56px',
                                 borderRadius: '50%',
-                                border: '2px solid rgba(255, 255, 255, 0.9)',
                                 overflow: 'hidden',
-                                background: 'rgba(255, 255, 255, 0.2)',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
                                 cursor: 'pointer',
-                                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                background: '#f1f5f9'
                             }}
                         >
                             {uploadingAvatar ? (
-                                <Loader2 className="w-5 h-5 animate-spin text-white" />
+                                <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
                             ) : customer?.avatar ? (
                                 <img src={customer.avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                                <span style={{ fontSize: '1.4rem', fontWeight: 900, color: '#ffffff' }}>{getInitials(customer?.name)}</span>
+                                <span style={{ fontSize: '1.2rem', fontWeight: 700, color: '#64748b' }}>{getInitials(customer?.name)}</span>
                             )}
                         </div>
                         <input type="file" ref={avatarInputRef} onChange={handleAvatarChange} accept="image/*" style={{ display: 'none' }} />
                     </div>
-
                     <div>
                         <h2 style={{
                             margin: 0,
-                            fontSize: '1.35rem',
-                            fontWeight: 600,
-                            color: '#ffffff',
-                            fontFamily: "'Inter', sans-serif"
+                            fontSize: '1.25rem',
+                            fontWeight: 700,
+                            color: '#1e293b',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px'
                         }}>
-                            Hi, {customer?.name?.split(' ')[0] || 'Priya'} 👋
+                            Hi, {customer?.name?.split(' ')[0] || 'Ananya'} <Crown size={20} color="#eab308" fill="#eab308" />
                         </h2>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b', marginTop: '2px' }}>Welcome Back!</p>
                     </div>
                 </div>
+                <button onClick={() => setEditing(!editing)} style={{ background: 'none', border: 'none', color: '#1e293b', cursor: 'pointer' }}>
+                    <Settings size={24} />
+                </button>
+            </div>
 
-                {/* Center Statistics bar with transparent background */}
-                <div
-                    style={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr 1fr 1fr',
-                        textAlign: 'center',
-                        background: 'transparent',
-                        padding: '16px 8px',
-                        position: 'relative',
-                        zIndex: 5,
-                        marginTop: '12px'
-                    }}
-                >
-                    <div onClick={() => navigate('/app/bookings')} style={{ cursor: 'pointer' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>{bookingsCount}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Bookings</div>
+            {/* Wallet Section */}
+            <div style={{ padding: '0 24px', marginBottom: '24px' }}>
+                <div style={{ 
+                    border: '1px solid #e2e8f0', 
+                    borderRadius: '16px', 
+                    padding: '20px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    background: '#ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                }}>
+                    <div>
+                        <h3 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginBottom: '8px' }}>My Wallet</h3>
+                        <div style={{ fontSize: '2rem', fontWeight: 700, color: '#0f172a', marginBottom: '4px' }}>₹{totalBalance}</div>
+                        <p style={{ margin: 0, fontSize: '0.85rem', color: '#64748b' }}>Wallet Balance</p>
                     </div>
-                    <div onClick={() => navigate('/app/wallet')} style={{ cursor: 'pointer', borderLeft: '1px solid rgba(0, 0, 0, 0.08)', borderRight: '1px solid rgba(0, 0, 0, 0.08)' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>₹{totalBalance}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Wallet</div>
+                    <div>
+                        <Wallet size={48} color="#d97706" fill="#d97706" style={{ opacity: 0.9 }} />
                     </div>
-                    <div onClick={() => navigate('/app/profile')} style={{ cursor: 'pointer' }}>
-                        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>{customer?.loyaltyPoints || 0}</div>
-                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '2px', fontWeight: 600 }}>Points</div>
-                    </div>
+                </div>
+            </div>
+
+            {/* Loyalty Section (Replacing Offers) */}
+            <div style={{ padding: '0 24px', marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' }}>My Loyalty</h3>
+                    <span onClick={() => navigate('/app/loyalty')} style={{ fontSize: '0.85rem', color: '#d97706', cursor: 'pointer', fontWeight: 500 }}>See All</span>
                 </div>
                 
-                {/* Promo Balance Banner */}
-                {outletBalances && outletBalances.some(ow => ow.balance > 0) && (
-                    <div className="mx-4 mb-4 mt-2 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 animate-pulse relative z-10" onClick={() => navigate('/app/wallet')}>
-                        {outletBalances.filter(ow => ow.balance > 0).map(ow => {
-                            const outletObj = outlets?.find(o => (o._id || o.id) === ow.outletId);
-                            const outletName = outletObj ? outletObj.name : 'Salon Outlet';
-                            const expiryText = ow.expiryDate ? `Valid till ${new Date(ow.expiryDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}` : 'No Expiry';
-                            return (
-                                <div key={ow.outletId || Math.random()} className="flex justify-between items-center text-emerald-800 dark:text-emerald-300">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black uppercase tracking-wider">Promo: {outletName}</span>
-                                        <span className="text-[9px] font-semibold opacity-80">{expiryText}</span>
-                                    </div>
-                                    <span className="text-sm font-black">₹{ow.balance}</span>
-                                </div>
-                            );
-                        })}
+                <div style={{ 
+                    border: '1px solid #e2e8f0', 
+                    borderRadius: '16px', 
+                    padding: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    background: '#ffffff',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)'
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                        <div style={{ 
+                            width: '48px', 
+                            height: '48px', 
+                            borderRadius: '12px', 
+                            background: '#fef3c7', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center' 
+                        }}>
+                            <Star size={24} color="#d97706" fill="#d97706" />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '1rem', fontWeight: 700, color: '#d97706', marginBottom: '4px' }}>
+                                {customer?.loyaltyPoints || 0} Points
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '2px' }}>Available Balance</div>
+                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>Redeem on next booking</div>
+                        </div>
                     </div>
-                )}
+                    <button 
+                        onClick={() => navigate('/app/loyalty')}
+                        style={{ 
+                            background: '#d97706', 
+                            color: 'white', 
+                            border: 'none', 
+                            borderRadius: '8px', 
+                            padding: '8px 16px', 
+                            fontSize: '0.85rem', 
+                            fontWeight: 600,
+                            cursor: 'pointer'
+                        }}
+                    >
+                        Redeem
+                    </button>
+                </div>
             </div>
 
             {/* Profile editing block */}
             {editing && (
-                <div style={{ background: colors.card, border: `1px solid ${colors.border}` }} className="mx-4 mt-6 p-5 rounded-3xl space-y-4">
+                <div style={{ background: '#ffffff', border: `1px solid #e2e8f0` }} className="mx-4 mb-6 p-5 rounded-2xl space-y-4">
                     <div className="flex justify-between items-center mb-2">
                         <span className="text-xs font-bold text-gray-800">Edit Personal Details</span>
                         <button onClick={() => setEditing(false)} className="text-xs text-gray-400 hover:text-gray-600">Close</button>
@@ -525,8 +483,7 @@ export default function AppProfilePage() {
                             type="text"
                             value={form.name}
                             onChange={(e) => setForm({ ...form, name: e.target.value })}
-                            style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                            className="w-full h-11 px-4 rounded-xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors"
+                            className="w-full h-11 px-4 rounded-xl text-xs font-bold focus:border-[#d97706] border border-gray-200 outline-none transition-colors"
                         />
                     </div>
                     <div className="space-y-1">
@@ -535,8 +492,7 @@ export default function AppProfilePage() {
                             type="email"
                             value={form.email}
                             onChange={(e) => setForm({ ...form, email: e.target.value })}
-                            style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                            className="w-full h-11 px-4 rounded-xl text-xs font-bold focus:border-[#C8956C] outline-none transition-colors"
+                            className="w-full h-11 px-4 rounded-xl text-xs font-bold focus:border-[#d97706] border border-gray-200 outline-none transition-colors"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -546,8 +502,7 @@ export default function AppProfilePage() {
                                 type="date"
                                 value={form.dob ? form.dob.substring(0, 10) : ''}
                                 onChange={(e) => setForm({ ...form, dob: e.target.value })}
-                                style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                className="w-full h-11 px-4 rounded-xl text-[10px] font-bold focus:border-[#C8956C] outline-none transition-colors"
+                                className="w-full h-11 px-4 rounded-xl text-[10px] font-bold focus:border-[#d97706] border border-gray-200 outline-none transition-colors"
                             />
                         </div>
                         <div className="space-y-1">
@@ -556,26 +511,25 @@ export default function AppProfilePage() {
                                 type="date"
                                 value={form.anniversary ? form.anniversary.substring(0, 10) : ''}
                                 onChange={(e) => setForm({ ...form, anniversary: e.target.value })}
-                                style={{ background: colors.input, color: colors.text, border: `1px solid ${colors.border}` }}
-                                className="w-full h-11 px-4 rounded-xl text-[10px] font-bold focus:border-[#C8956C] outline-none transition-colors"
+                                className="w-full h-11 px-4 rounded-xl text-[10px] font-bold focus:border-[#d97706] border border-gray-200 outline-none transition-colors"
                             />
                         </div>
                     </div>
                     <button
                         onClick={handleSave}
                         disabled={saving}
-                        className="w-full h-11 bg-[#C8956C] text-white rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-[#C8956C]/10"
+                        className="w-full h-11 bg-[#d97706] text-white rounded-xl font-black uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-[#d97706]/10"
                     >
                         {saving ? <Loader2 size={16} className="animate-spin" /> : 'Update Profile'}
                     </button>
                 </div>
             )}
 
-            {/* Menu options list - full width, seamless, matching screenshot */}
+            {/* Menu options list - matching screenshot */}
             <div
                 style={{
                     background: '#ffffff',
-                    overflow: 'hidden'
+                    padding: '0 8px'
                 }}
             >
                 {menuOptions.map((opt, idx) => (
@@ -586,34 +540,28 @@ export default function AppProfilePage() {
                             display: 'flex',
                             alignItems: 'center',
                             width: '100%',
-                            padding: '16px 20px',
+                            padding: '16px',
                             background: 'none',
                             border: 'none',
-                            borderBottom: '1px solid #f1f5f9',
+                            borderBottom: idx === menuOptions.length - 1 ? 'none' : '1px solid #f1f5f9',
                             cursor: 'pointer',
                             textAlign: 'left'
                         }}
                     >
-                        {/* Circular Left Icon Container */}
+                        {/* Left Icon Container */}
                         <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '50%',
-                            backgroundColor: opt.bgColor,
-                            border: `1.5px solid ${opt.borderColor}`,
+                            marginRight: '16px',
                             display: 'flex',
                             alignItems: 'center',
-                            justifyContent: 'center',
-                            marginRight: '16px',
-                            flexShrink: 0
+                            justifyContent: 'center'
                         }}>
-                            <opt.icon size={16} style={{ color: opt.color }} />
+                            <opt.icon size={22} style={{ color: '#1e293b' }} strokeWidth={1.5} />
                         </div>
 
                         {/* Title label */}
                         <span style={{
                             flex: 1,
-                            fontSize: '0.9rem',
+                            fontSize: '0.95rem',
                             fontWeight: 600,
                             color: '#1e293b',
                             fontFamily: "'Inter', sans-serif"
@@ -621,8 +569,20 @@ export default function AppProfilePage() {
                             {opt.label}
                         </span>
 
+                        {/* Extra text */}
+                        {opt.extra && (
+                            <span style={{
+                                fontSize: '0.85rem',
+                                color: opt.extraColor || '#64748b',
+                                marginRight: '8px',
+                                fontWeight: 500
+                            }}>
+                                {opt.extra}
+                            </span>
+                        )}
+
                         {/* Arrow Right chevron */}
-                        <ChevronRight size={16} style={{ color: '#cbd5e1' }} />
+                        <ChevronRight size={20} style={{ color: '#cbd5e1' }} />
                     </button>
                 ))}
             </div>

@@ -14,6 +14,7 @@ import {
 
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useBusiness } from '../../contexts/BusinessContext';
+import { useFavorites } from '../../contexts/FavoritesContext';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 import homeData from '../../data/appHomeData.json';
 import api from '../../services/api';
@@ -345,6 +346,7 @@ export default function AppHomePage() {
     const location = useLocation();
     const { gender, setGender } = useGender();
     const { unreadCount } = useNotifications();
+    const { isSalonLiked, toggleSalonLike } = useFavorites();
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
 
@@ -825,42 +827,9 @@ export default function AppHomePage() {
                     </div>
                 </div>
 
-                {/* ── GENDER TABS ── */}
-                <div style={{ padding: '0 16px 12px', display: 'flex', gap: '0', borderBottom: `1px solid ${colors.border}` }}>
-                    {['men', 'women'].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => setGender(tab)}
-                            style={{
-                                flex: 1, padding: '10px 0', background: 'none', border: 'none', cursor: 'pointer',
-                                fontSize: '15px', fontWeight: g === tab ? 700 : 400,
-                                color: g === tab ? (isLight ? '#000' : '#fff') : colors.textMuted,
-                                transition: 'all 0.2s', textTransform: 'capitalize',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                                position: 'relative'
-                            }}
-                        >
-                            <img
-                                src={tab === 'men' ? boyIcon : girlIcon}
-                                alt={tab}
-                                loading="lazy"
-                                style={{ width: '28px', height: '28px', objectFit: 'contain' }}
-                            />
-                            {tab === 'men' ? 'Men' : 'Women'}
-                            {g === tab && (
-                                <div
-                                    style={{
-                                        position: 'absolute', bottom: '-1px', left: '15%', right: '15%', height: '3px', background: colors.accent, borderRadius: '4px',
-                                        zIndex: 1
-                                    }}
-                                />
-                            )}
-                        </button>
-                    ))}
-                </div>
 
                 {/* ── PROMO BANNER (CAROUSEL) ── */}
-                <div style={{ padding: '20px 16px 0', position: 'relative' }}>
+                <div style={{ padding: '0px 16px 0', position: 'relative' }}>
                     <div style={{ position: 'relative', height: '170px', borderRadius: '24px', overflow: 'hidden' }}>
                         {filteredPromos.length > 0 ? (
                             <div
@@ -907,6 +876,187 @@ export default function AppHomePage() {
                                 <p style={{ color: colors.textMuted, fontSize: '12px' }}>No banners available</p>
                             </div>
                         )}
+                    </div>
+                </div>
+
+                {/* ── NEAREST SALONS ── */}
+                <div style={{ padding: '24px 16px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '14px' }}>
+                        <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Nearby Salons</h3>
+                    </div>
+
+                    {/* Distance filter buttons */}
+                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
+                        <button
+                            onClick={() => setDistanceFilter(null)}
+                            style={{
+                                padding: '8px 20px',
+                                borderRadius: '9999px',
+                                fontSize: '13px',
+                                fontWeight: 700,
+                                border: distanceFilter === null ? 'none' : '1px solid #F1F5F9',
+                                background: distanceFilter === null ? '#B4912B' : '#FFFFFF',
+                                color: distanceFilter === null ? '#FFFFFF' : '#0F172A',
+                                cursor: 'pointer',
+                                transition: 'all 0.2s ease',
+                                boxShadow: distanceFilter === null ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                whiteSpace: 'nowrap'
+                            }}
+                            className="active:scale-95"
+                        >
+                            All
+                        </button>
+                        {[2, 5, 10].map((km) => {
+                            const isSelected = distanceFilter === km;
+                            return (
+                                <button
+                                    key={km}
+                                    onClick={() => setDistanceFilter(isSelected ? null : km)}
+                                    style={{
+                                        padding: '8px 20px',
+                                        borderRadius: '9999px',
+                                        fontSize: '13px',
+                                        fontWeight: 700,
+                                        border: isSelected ? 'none' : '1px solid #F1F5F9',
+                                        background: isSelected ? '#B4912B' : '#FFFFFF',
+                                        color: isSelected ? '#FFFFFF' : '#0F172A',
+                                        cursor: 'pointer',
+                                        transition: 'all 0.2s ease',
+                                        boxShadow: isSelected ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
+                                        whiteSpace: 'nowrap'
+                                    }}
+                                    className="active:scale-95"
+                                >
+                                    Within {km} km
+                                </button>
+                            );
+                        })}
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {(() => {
+                            const sourceOutlets = (outlets || []);
+                            const otherSalons = sourceOutlets.map(o => {
+                                const code = String(o._id || o.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                const dist = userLocation && o.location?.coordinates?.length === 2
+                                    ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
+                                    : null;
+                                const effectiveDist = dist !== null ? dist : ((code % 5) * 0.4 + 0.5);
+                                return { ...o, calculatedDist: dist, effectiveDist };
+                            });
+                            
+                            // Filter by distance if filter is active
+                            const filteredSalons = distanceFilter
+                                ? otherSalons.filter(s => s.effectiveDist <= distanceFilter)
+                                : otherSalons;
+
+                            const sortedSalons = [...filteredSalons].sort((a, b) => {
+                                return a.effectiveDist - b.effectiveDist;
+                            });
+
+                            if (sortedSalons.length === 0) {
+                                return (
+                                    <div style={{ width: '100%', padding: '40px 20px', textAlign: 'center', background: 'rgba(180, 145, 43, 0.05)', borderRadius: '24px' }}>
+                                        <div className="w-12 h-12 bg-[#B4912B]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                                            <MapPin size={24} color={colors.accent} className="opacity-40" />
+                                        </div>
+                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No salons found within {distanceFilter} km</p>
+                                    </div>
+                                );
+                            }
+
+                            return sortedSalons.slice(0, 3).map(outlet => {
+                                const code = String(outlet._id || outlet.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+                                const mockReviewsCount = (code % 150) + 180; // Stable count between 180 and 330
+                                const mockStartingPrice = (code % 3) * 100 + 199; // Stable starting price e.g., ₹199, ₹299, ₹399
+                                const distString = outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
+                                    ? `${outlet.calculatedDist.toFixed(1)} km`
+                                    : `${(code % 5) * 0.4 + 0.5} km`;
+
+                                return (
+                                    <div
+                                        key={outlet._id}
+                                        onClick={() => {
+                                            setActiveOutletId(outlet._id);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                            navigate(`/app/salon/${outlet._id || outlet.id}`);
+                                        }}
+                                        style={{ 
+                                            background: isLight ? '#ffffff' : colors.card,
+                                            border: `1px solid ${isLight ? '#f1f5f9' : colors.border}`,
+                                            borderRadius: '20px',
+                                            padding: '10px',
+                                            display: 'flex',
+                                            gap: '10px',
+                                            cursor: 'pointer',
+                                            transition: 'transform 0.2s',
+                                            boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.03)' : 'none'
+                                        }}
+                                        className="active:scale-[0.98]"
+                                    >
+                                        {/* Left Image */}
+                                        <div style={{ width: '72px', height: '72px', borderRadius: '14px', overflow: 'hidden', flexShrink: 0, background: colors.bg }}>
+                                            <img
+                                                src={getImageUrl(outlet.images?.[0] || outlet.image) || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'}
+                                                alt={outlet.name}
+                                                loading="lazy"
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'; }}
+                                            />
+                                        </div>
+
+                                        {/* Right Content */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flex: 1, minWidth: 0 }}>
+                                            
+                                            {/* Top row: Title and Rating */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2px' }}>
+                                                <h4 style={{ fontSize: '15px', fontWeight: 700, color: colors.text, margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '8px' }}>
+                                                    {outlet.name}
+                                                </h4>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '3px', flexShrink: 0, marginTop: '2px' }}>
+                                                    <Star size={12} fill="#F59E0B" color="#F59E0B" />
+                                                    <span style={{ fontSize: '12px', fontWeight: 700, color: colors.text }}>{getOutletRating(outlet)}</span>
+                                                    <span style={{ fontSize: '11px', color: colors.textMuted }}>({mockReviewsCount})</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Middle row: Location, distance, heart icon */}
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                                <div style={{ fontSize: '12px', color: colors.textMuted, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', paddingRight: '8px' }}>
+                                                    {outlet.address?.city || outlet.address?.street || 'Connaught Place'} • {distString}
+                                                </div>
+                                                <button 
+                                                    onClick={(e) => { 
+                                                        e.stopPropagation(); 
+                                                        toggleSalonLike(outlet._id); 
+                                                    }} 
+                                                    style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', flexShrink: 0 }}
+                                                >
+                                                    <Heart size={16} color={isSalonLiked(outlet._id) ? "#ef4444" : colors.text} fill={isSalonLiked(outlet._id) ? "#ef4444" : "none"} strokeWidth={isSalonLiked(outlet._id) ? 0 : 2} />
+                                                </button>
+                                            </div>
+
+                                            {/* Bottom row: Offer */}
+                                            <div style={{ fontSize: '12px', fontWeight: 700, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                                {(() => {
+                                                    const text = code % 2 === 0 ? "20% OFF on Hair Color" : (code % 3 === 0 ? "15% OFF on All Services" : "Flat 10% OFF");
+                                                    const parts = text.split(' OFF');
+                                                    if (parts.length === 2) {
+                                                        return (
+                                                            <>
+                                                                <span style={{ color: '#D97706' }}>{parts[0]} OFF</span>
+                                                                <span style={{ color: colors.text }}>{parts[1]}</span>
+                                                            </>
+                                                        );
+                                                    }
+                                                    return <span style={{ color: '#D97706' }}>{text}</span>;
+                                                })()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            });
+                        })()}
                     </div>
                 </div>
 
@@ -1181,167 +1331,6 @@ export default function AppHomePage() {
                         </div>
                     </div>
                 )}
-
-                {/* ── NEAREST SALONS ── */}
-                <div style={{ padding: '24px 16px 0' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '14px' }}>
-                        <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Nearby Salons</h3>
-                    </div>
-
-                    {/* Distance filter buttons */}
-                    <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }} className="no-scrollbar">
-                        <button
-                            onClick={() => setDistanceFilter(null)}
-                            style={{
-                                padding: '8px 20px',
-                                borderRadius: '9999px',
-                                fontSize: '13px',
-                                fontWeight: 700,
-                                border: distanceFilter === null ? 'none' : '1px solid #F1F5F9',
-                                background: distanceFilter === null ? '#B4912B' : '#FFFFFF',
-                                color: distanceFilter === null ? '#FFFFFF' : '#0F172A',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease',
-                                boxShadow: distanceFilter === null ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
-                                whiteSpace: 'nowrap'
-                            }}
-                            className="active:scale-95"
-                        >
-                            All
-                        </button>
-                        {[2, 5, 10].map((km) => {
-                            const isSelected = distanceFilter === km;
-                            return (
-                                <button
-                                    key={km}
-                                    onClick={() => setDistanceFilter(isSelected ? null : km)}
-                                    style={{
-                                        padding: '8px 20px',
-                                        borderRadius: '9999px',
-                                        fontSize: '13px',
-                                        fontWeight: 700,
-                                        border: isSelected ? 'none' : '1px solid #F1F5F9',
-                                        background: isSelected ? '#B4912B' : '#FFFFFF',
-                                        color: isSelected ? '#FFFFFF' : '#0F172A',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s ease',
-                                        boxShadow: isSelected ? '0 4px 12px rgba(180, 145, 43, 0.2)' : '0 2px 4px rgba(0, 0, 0, 0.02)',
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                    className="active:scale-95"
-                                >
-                                    Within {km} km
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {(() => {
-                            const sourceOutlets = (outlets || []);
-                            const otherSalons = sourceOutlets.map(o => {
-                                const code = String(o._id || o.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                const dist = userLocation && o.location?.coordinates?.length === 2
-                                    ? calculateDistance(userLocation.lat, userLocation.lng, o.location.coordinates[1], o.location.coordinates[0])
-                                    : null;
-                                const effectiveDist = dist !== null ? dist : ((code % 5) * 0.4 + 0.5);
-                                return { ...o, calculatedDist: dist, effectiveDist };
-                            });
-                            
-                            // Filter by distance if filter is active
-                            const filteredSalons = distanceFilter
-                                ? otherSalons.filter(s => s.effectiveDist <= distanceFilter)
-                                : otherSalons;
-
-                            const sortedSalons = [...filteredSalons].sort((a, b) => {
-                                return a.effectiveDist - b.effectiveDist;
-                            });
-
-                            if (sortedSalons.length === 0) {
-                                return (
-                                    <div style={{ width: '100%', padding: '40px 20px', textAlign: 'center', background: 'rgba(180, 145, 43, 0.05)', borderRadius: '24px' }}>
-                                        <div className="w-12 h-12 bg-[#B4912B]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                                            <MapPin size={24} color={colors.accent} className="opacity-40" />
-                                        </div>
-                                        <p style={{ color: colors.textMuted, fontSize: '11px', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>No salons found within {distanceFilter} km</p>
-                                    </div>
-                                );
-                            }
-
-                            return sortedSalons.slice(0, 3).map(outlet => {
-                                const code = String(outlet._id || outlet.id || '').split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-                                const mockReviewsCount = (code % 150) + 180; // Stable count between 180 and 330
-                                const mockStartingPrice = (code % 3) * 100 + 199; // Stable starting price e.g., ₹199, ₹299, ₹399
-                                const distString = outlet.calculatedDist !== undefined && outlet.calculatedDist !== null
-                                    ? `${outlet.calculatedDist.toFixed(1)} km`
-                                    : `${(code % 5) * 0.4 + 0.5} km`;
-
-                                return (
-                                    <div
-                                        key={outlet._id}
-                                        onClick={() => {
-                                            setActiveOutletId(outlet._id);
-                                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                                        }}
-                                        className="bg-white border border-slate-100 rounded-[24px] p-3 flex items-center justify-between shadow-[0_4px_16px_rgba(0,0,0,0.015)] cursor-pointer active:scale-[0.99] transition-transform duration-200"
-                                    >
-                                        <div className="flex items-center gap-3 min-w-0 flex-1">
-                                            {/* Circular avatar on the left */}
-                                            <div className="w-[66px] h-[66px] rounded-full overflow-hidden border border-slate-100 flex-shrink-0 bg-slate-50">
-                                                <img
-                                                    src={getImageUrl(outlet.images?.[0] || outlet.image) || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'}
-                                                    alt={outlet.name}
-                                                    loading="lazy"
-                                                    className="w-full h-full object-cover"
-                                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=200'; }}
-                                                />
-                                            </div>
-
-                                            {/* Details group */}
-                                            <div className="flex flex-col text-left min-w-0 flex-1">
-                                                <h4 className="text-[14px] font-bold text-slate-800 leading-snug mb-0.5 truncate">{outlet.name}</h4>
-
-                                                <div className="flex items-center gap-2.5 mb-1">
-                                                    {/* Rating */}
-                                                    <div className="flex items-center gap-0.5">
-                                                        <Star size={12} fill="#B4912B" color="#B4912B" />
-                                                        <span className="text-[11px] font-bold text-slate-700">{getOutletRating(outlet)}</span>
-                                                        <span className="text-[10px] text-slate-400 font-medium">({mockReviewsCount})</span>
-                                                    </div>
-
-                                                    {/* Distance */}
-                                                    <div className="flex items-center gap-0.5">
-                                                        <span className="inline-block w-1.5 h-1.5 rounded-full border border-[#B4912B] bg-white mr-0.5"></span>
-                                                        <span className="text-[11px] font-medium text-slate-500">{distString}</span>
-                                                    </div>
-                                                </div>
-
-                                                <p className="text-[12px] font-medium text-slate-500">
-                                                    Starting <span className="font-bold text-slate-800">₹{mockStartingPrice}</span>
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Status and button on the right */}
-                                        <div className="flex flex-col items-end gap-2.5 flex-shrink-0">
-                                            <span className="text-[11px] font-bold text-emerald-600">Open</span>
-                                            <button
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    setActiveOutletId(outlet._id);
-                                                    navigate(`/app/booking`);
-                                                }}
-                                                className="px-4 py-2 bg-[#B4912B] text-black font-bold text-[12px] rounded-[18px] shadow-sm hover:opacity-90 active:scale-95 transition-all duration-200"
-                                            >
-                                                Book Now
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            });
-                        })()}
-                    </div>
-                </div>
 
                 {/* ── TRENDING SERVICES ── */}
                 <div style={{ padding: '24px 16px 0' }}>

@@ -42,11 +42,16 @@ export function FavoritesProvider({ children }) {
     }, [isCustomerAuthenticated, fetchFavorites]);
 
     const toggleSalonLike = async (salonId) => {
+        setFavoriteSalons(prev => {
+            const isLiked = prev.some(o => (o._id || o) === salonId);
+            return isLiked ? prev.filter(o => (o._id || o) !== salonId) : [...prev, salonId];
+        });
+
         if (!isCustomerAuthenticated) return;
 
         try {
             const res = await api.post(`/outlets/${salonId}/like`);
-            if (res.data.success) {
+            if (res.data && res.data.success) {
                 fetchFavorites();
             }
         } catch (err) {

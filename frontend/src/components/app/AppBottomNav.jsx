@@ -10,6 +10,7 @@ const tabs = [
     { id: 'services', label: 'Services', icon: Scissors, path: '/app/services' },
     { id: 'book', label: 'Booking', icon: CalendarPlus, path: '/app/bookings' },
     { id: 'shop', label: 'Shop', icon: ShoppingBag, path: '/app/shop' },
+    { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/app/wallet' },
     { id: 'profile', label: 'Profile', icon: User, path: '/app/profile' },
 ];
 

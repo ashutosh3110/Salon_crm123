@@ -70,8 +70,9 @@ export default function AppLayout() {
 
     }, [authLoading, isInitializing, customer, gender, activeOutletId, navigate, location.pathname]);
 
-    const hideNavPaths = ['/app/product', '/app/notifications', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
+    const hideNavPaths = ['/app/product', '/app/bookings/', '/app/orders/', '/app/checkout', '/app/membership/checkout', '/app/favorites'];
     const hideHeaderPaths = [
+        '/app/salon',
         '/app/product',
         '/app/service',
         '/app/bookings',

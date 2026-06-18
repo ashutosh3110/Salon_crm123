@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bell, Calendar, Tag, Shield, CheckCircle2, Trash2, CheckCircle, Package, Star, ArrowLeft, Clock } from 'lucide-react';
+import { Bell, Calendar, Tag, Shield, CheckCircle2, Trash2, CheckCircle, Package, Star, ChevronLeft, Clock } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
@@ -125,31 +125,20 @@ export default function AppNotificationPage() {
 
     return (
         <div className="pb-24 min-h-screen" style={{ background: colors.bg }}>
-            {/* Minimal Header */}
-            <div style={{ background: `${colors.bg}cc`, backdropFilter: 'blur(20px)' }} className="sticky top-0 z-50 px-4 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <button onClick={() => navigate(-1)} style={{ color: colors.text }} className="w-8 h-8 flex items-center justify-center active:scale-90 transition-all">
-                        <ArrowLeft size={18} />
-                    </button>
-                    <div>
-                        <h1 className="text-base font-black tracking-tight leading-none" style={{ color: colors.text, fontFamily: "'Playfair Display', serif" }}>
-                            Notifications
-                        </h1>
-                        <p className="text-[8px] font-bold uppercase tracking-[0.2em] text-[#C8956C] mt-0.5">
-                            {unreadCount > 0 ? `${unreadCount} Unread Updates` : 'Fully Synchronized'}
-                        </p>
-                    </div>
-                </div>
-
+            {/* Standard App Header */}
+            <div className="sticky top-0 z-50 px-4 py-4 flex items-center" style={{ background: colors.bg, position: 'relative' }}>
+                <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'absolute', left: '16px', color: colors.text }}>
+                    <ChevronLeft size={24} />
+                </button>
+                <h1 style={{ flex: 1, textAlign: 'center', fontSize: '18px', fontWeight: '700', color: colors.text, margin: 0 }}>Notifications</h1>
                 {notifications.length > 0 && (
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={markAllRead}
-                            className={`w-8 h-8 flex items-center justify-center transition-all active:scale-90 ${unreadCount > 0 ? 'text-[#C8956C]' : 'opacity-20 pointer-events-none'}`}
-                        >
-                            <CheckCircle className="w-4 h-4" />
-                        </button>
-                    </div>
+                    <button
+                        onClick={markAllRead}
+                        style={{ position: 'absolute', right: '16px', background: 'none', border: 'none', cursor: 'pointer' }}
+                        className={`transition-all ${unreadCount > 0 ? 'text-[#C8956C]' : 'opacity-20 pointer-events-none'}`}
+                    >
+                        <CheckCircle size={20} />
+                    </button>
                 )}
             </div>
 
