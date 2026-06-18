@@ -50,6 +50,14 @@ const feedbackSchema = new mongoose.Schema({
         type: String,
         enum: ['Pending', 'Approved', 'Rejected'],
         default: 'Pending'
+    },
+    response: {
+        type: String,
+        required: false
+    },
+    isFlagged: {
+        type: Boolean,
+        default: false
     }
 }, {
     timestamps: true

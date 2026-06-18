@@ -8,7 +8,7 @@ exports.getFeedbacks = async (req, res) => {
     try {
         const { targetId, targetType, status, salonId, outletId } = req.query;
         let query = {};
-        if (status && status !== 'all') {
+        if (status && status.toLowerCase() !== 'all') {
             query.status = status;
         } else if (!status) {
             query.status = 'Approved';
@@ -97,7 +97,12 @@ exports.createFeedback = async (req, res) => {
 // @access  Private/Admin
 exports.updateFeedbackStatus = async (req, res) => {
     try {
-        const feedback = await Feedback.findByIdAndUpdate(req.params.id, { status: req.body.status }, {
+        const updateFields = {};
+        if (req.body.status !== undefined) updateFields.status = req.body.status;
+        if (req.body.response !== undefined) updateFields.response = req.body.response;
+        if (req.body.isFlagged !== undefined) updateFields.isFlagged = req.body.isFlagged;
+
+        const feedback = await Feedback.findByIdAndUpdate(req.params.id, updateFields, {
             new: true,
             runValidators: true
         });
