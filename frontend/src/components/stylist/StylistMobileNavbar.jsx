@@ -17,7 +17,7 @@ export default function StylistMobileNavbar({ setMobileOpen }) {
             {navItems.map((item) => {
                 const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
                 const targetPath = item.path.toLowerCase().replace(/\/$/, '');
-                
+
                 let isActive = false;
                 if (item.exact) {
                     isActive = currentPath === targetPath;
@@ -31,8 +31,8 @@ export default function StylistMobileNavbar({ setMobileOpen }) {
                         to={item.path}
                         className="group flex flex-col items-center justify-center w-full h-full gap-1 transition-colors"
                     >
-                        <item.icon 
-                            size={26} 
+                        <item.icon
+                            size={26}
                             color={isActive ? '#B4912B' : '#000000'}
                             className="shrink-0 mb-0.5"
                         />
@@ -42,7 +42,7 @@ export default function StylistMobileNavbar({ setMobileOpen }) {
                     </NavLink>
                 );
             })}
-            
+
             {/* More / Menu button */}
             <button
                 onClick={() => setMobileOpen(true)}
