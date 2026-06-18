@@ -353,13 +353,13 @@ function App() {
       <Toaster 
         position="top-center" 
         reverseOrder={false} 
-        containerStyle={{ zIndex: 99999 }}
+        containerStyle={{ zIndex: 999999 }}
         toastOptions={{
           duration: 4000,
           style: {
             background: '#333',
             color: '#fff',
-            zIndex: 99999
+            zIndex: 999999
           },
         }}
       />

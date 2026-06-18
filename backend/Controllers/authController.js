@@ -270,6 +270,7 @@ exports.getMe = async (req, res) => {
             data: req.user
         });
     } catch (err) {
+        console.error('getMe error:', err);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };
@@ -329,10 +330,21 @@ exports.updateDetails = async (req, res) => {
             Model = Staff;
         }
 
-        const user = await Model.findByIdAndUpdate(req.user._id, fieldsToUpdate, {
+        let user = await Model.findByIdAndUpdate(req.user._id, fieldsToUpdate, {
             new: true,
             runValidators: true
         });
+
+        // Re-attach permissions and role data from req.user to the updated user object 
+        // so the frontend doesn't lose them when it updates local state.
+        if (user) {
+            const updatedObj = user.toObject();
+            updatedObj.permissions = req.user.permissions;
+            updatedObj.roleType = req.user.roleType;
+            updatedObj.hiddenSidebarItems = req.user.hiddenSidebarItems;
+            updatedObj.adminMenuAccess = req.user.adminMenuAccess;
+            user = updatedObj;
+        }
 
         res.json({
             success: true,

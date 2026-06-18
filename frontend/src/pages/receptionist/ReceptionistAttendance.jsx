@@ -1,76 +1,40 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
-import { 
-    Clock, Calendar as CalendarIcon, CheckCircle2, XCircle, AlertTriangle, 
-    Zap, Navigation, Activity, ChevronLeft, ChevronRight, MapPin, Search 
-} from 'lucide-react';
-import { haversineMeters } from '../../utils/geo';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from 'lucide-react';
 
 function todayLocalYmd() {
     return new Date().toLocaleDateString('en-CA');
 }
 
-function formatTime(iso) {
-    if (!iso) return '—';
-    try {
-        return new Date(iso).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true });
-    } catch {
-        return '—';
-    }
-}
-
 const statusColors = {
-    PRESENT: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
-    ABSENT: 'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20',
-    LATE: 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
-    HALF_DAY: 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
-    WEEKOFF: 'bg-slate-50 text-slate-600 border-slate-200 dark:bg-slate-500/10 dark:text-slate-400 dark:border-slate-500/20',
+    PRESENT: 'bg-emerald-100 !text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:!text-emerald-300 dark:border-emerald-800',
+    ABSENT: 'bg-rose-100 !text-rose-800 border-rose-300 dark:bg-rose-950/40 dark:!text-rose-300 dark:border-rose-800',
+    UNMARKED: 'bg-purple-100 !text-purple-800 border-purple-300 dark:bg-purple-950/40 dark:!text-purple-300 dark:border-purple-800',
+    WEEKOFF: 'bg-blue-100 !text-blue-800 border-blue-300 dark:bg-blue-950/40 dark:!text-blue-300 dark:border-blue-800',
+    LATE: 'bg-amber-100 !text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:!text-amber-300 dark:border-amber-800',
+    HALF_DAY: 'bg-indigo-100 !text-indigo-800 border-indigo-300 dark:bg-indigo-950/40 dark:!text-indigo-300 dark:border-indigo-800',
+};
+
+const getStatusDisplay = (status) => {
+    const s = status?.toUpperCase() || 'UNMARKED';
+    if (s === 'PRESENT') return 'Present';
+    if (s === 'ABSENT') return 'Absent';
+    if (s === 'WEEKOFF') return 'Week Off';
+    if (s === 'UNMARKED') return 'Not Marked';
+    return s.replace('_', ' ');
+};
+
+const getStatusColor = (status) => {
+    const s = status?.toUpperCase() || 'UNMARKED';
+    return statusColors[s] || statusColors['UNMARKED'];
 };
 
 export default function ReceptionistAttendance() {
-    const { user } = useAuth();
-    
-    // Attendance Logic States
-    const [status, setStatus] = useState('UNMARKED');
-    const [loadingLocation, setLoadingLocation] = useState(false);
-    const [location, setLocation] = useState(null);
-    const [locationName, setLocationName] = useState('');
-    const [error, setError] = useState(null);
-    const [actionMsg, setActionMsg] = useState(null);
-    
-    // History states
     const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
     const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyData, setHistoryData] = useState([]);
-    const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, late: 0, halfDay: 0, total: 0 });
-    const [historyFilter, setHistoryFilter] = useState('ALL'); // ALL | PRESENT | ABSENT | NOT_MARKED
-
-    const fetchLocation = useCallback(() => {
-        setLoadingLocation(true);
-        setError(null);
-        if (!navigator.geolocation) {
-            setError('Geolocation is not supported by your browser.');
-            setLoadingLocation(false);
-            return;
-        }
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const { latitude, longitude } = position.coords;
-                setLocation({ latitude, longitude });
-                setTimeout(() => {
-                    setLocationName("Salon Premises");
-                    setLoadingLocation(false);
-                }, 600);
-            },
-            (err) => {
-                setError(`Failed to fetch location: ${err.message}`);
-                setLoadingLocation(false);
-            },
-            { enableHighAccuracy: true, timeout: 30000, maximumAge: 0 }
-        );
-    }, []);
+    const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, unmarked: 0 });
 
     const fetchHistory = useCallback(async (month, year) => {
         setHistoryLoading(true);
@@ -78,17 +42,19 @@ export default function ReceptionistAttendance() {
             const res = await api.get('/hr/attendance/history', { params: { month, year } });
             const data = res.data?.data || res.data;
             setHistoryData(data?.data || []);
-            setHistoryStats(data?.stats || { present: 0, absent: 0, late: 0, halfDay: 0, total: 0 });
             
-            // Check if today is marked
-            const todayStr = todayLocalYmd();
-            const todayRec = (data?.data || []).find(d => d.date === todayStr);
-            if (todayRec) {
-                setStatus(todayRec.status);
-            } else {
-                setStatus('UNMARKED');
-            }
-
+            // Recalculate stats based on returned data to match requested categories
+            const records = data?.data || [];
+            let present = 0, absent = 0, unmarked = 0;
+            
+            records.forEach(r => {
+                const s = r.status?.toUpperCase();
+                if (s === 'PRESENT' || s === 'LATE' || s === 'HALF_DAY') present++;
+                else if (s === 'ABSENT') absent++;
+                else if (s === 'UNMARKED') unmarked++;
+            });
+            
+            setHistoryStats({ present, absent, unmarked });
         } catch (err) {
             console.error(err);
         } finally {
@@ -96,36 +62,32 @@ export default function ReceptionistAttendance() {
         }
     }, []);
 
-    useEffect(() => {
-        fetchLocation();
-        fetchHistory(currentMonth, currentYear);
-    }, [currentMonth, currentYear, fetchLocation, fetchHistory]);
-
-    const handlePunch = async (statusVal) => {
-        if (statusVal === 'PRESENT' && !location) {
-            setError('Location required to mark Present.');
-            return;
-        }
-        setError(null);
-        setActionMsg(null);
+    const handleMarkAttendance = async (status) => {
         try {
             await api.post('/hr/attendance/punch', {
-                status: statusVal.toLowerCase(),
+                status: status,
                 date: todayLocalYmd(),
-                location: statusVal === 'PRESENT' ? (locationName || 'Reception Desk') : undefined,
+                location: 'Marked manually',
+                latitude: 0,
+                longitude: 0,
             });
-            setActionMsg(statusVal === 'PRESENT' ? 'Successfully marked Present!' : 'Successfully marked Absent.');
             fetchHistory(currentMonth, currentYear);
+            alert(`Successfully marked ${status} for today!`);
         } catch (e) {
-            setError(e?.response?.data?.message || 'Failed to update attendance status.');
+            console.error('Failed to mark attendance', e);
+            alert(e?.response?.data?.message || 'Failed to record attendance.');
         }
     };
+
+    useEffect(() => {
+        fetchHistory(currentMonth, currentYear);
+    }, [currentMonth, currentYear, fetchHistory]);
 
     const nextMonth = () => {
         let m = currentMonth + 1;
         let y = currentYear;
         if (m > 11) { m = 0; y++; }
-        if (new Date(y, m, 1) > new Date()) return; // Prevent future months
+        if (new Date(y, m, 1) > new Date()) return;
         setCurrentMonth(m);
         setCurrentYear(y);
     };
@@ -141,276 +103,134 @@ export default function ReceptionistAttendance() {
     const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
     const isCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
 
-    // Build a full list of all past days in the selected month, filling missing days as NOT_MARKED
-    const fullDaysList = useMemo(() => {
-        const today = new Date();
-        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-        const result = [];
-        for (let d = 1; d <= daysInMonth; d++) {
-            const dayDate = new Date(currentYear, currentMonth, d);
-            if (dayDate > today) break; // skip future days
-            const ymd = dayDate.toLocaleDateString('en-CA');
-            const existing = historyData.find(r => r.date === ymd);
-            if (existing) {
-                const mappedStatus = existing.status === 'UNMARKED' ? 'NOT_MARKED' : existing.status;
-                result.push({ ...existing, status: mappedStatus });
-            } else {
-                result.push({ date: ymd, status: 'NOT_MARKED', checkInAt: null, checkOutAt: null, notes: null, _synthetic: true });
-            }
-        }
-        return result.reverse(); // newest first
-    }, [historyData, currentMonth, currentYear]);
-
-    const notMarkedCount = fullDaysList.filter(r => r.status === 'NOT_MARKED' || r.status === 'WEEKOFF').length;
-
-    const filteredList = useMemo(() => {
-        if (historyFilter === 'ALL') return fullDaysList;
-        if (historyFilter === 'NOT_MARKED') {
-            return fullDaysList.filter(r => r.status === 'NOT_MARKED' || r.status === 'WEEKOFF');
-        }
-        return fullDaysList.filter(r => r.status === historyFilter);
-    }, [fullDaysList, historyFilter]);
-
     return (
-        <div className="p-4 md:p-6 space-y-5 max-w-5xl mx-auto text-left font-sans">
-            <style>{`
-                .hide-scrollbar::-webkit-scrollbar { display: none; }
-                .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-                html:not(.dark) .attendance-stat-label-present {
-                    color: #047857 !important;
-                }
-                html:not(.dark) .attendance-stat-label-absent {
-                    color: #b91c1c !important;
-                }
-                html:not(.dark) .attendance-stat-label-late {
-                    color: #d97706 !important;
-                }
-                html:not(.dark) .attendance-stat-label-halfday {
-                    color: #2563eb !important;
-                }
-                html:not(.dark) .attendance-stat-label-weekoff {
-                    color: #475569 !important;
-                }
-                html:not(.dark) .attendance-stat-label-notmarked {
-                    color: #6d28d9 !important;
-                }
-                html:not(.dark) .attendance-badge-notmarked {
-                    color: #5b21b6 !important;
-                    background-color: #f5f3ff !important;
-                    border-color: #ddd6fe !important;
-                }
-            `}</style>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-left">
-                <div className="text-left">
-                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Attendance & Timesheet</h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-normal">Manage your daily presence and track historical records</p>
-                </div>
-            </div>             {/* Daily Attendance Card */}
-             <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 md:p-5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] relative overflow-hidden group">
-                 <div className="absolute -top-10 -right-10 opacity-[0.05] dark:opacity-8 transition-opacity pointer-events-none">
-                     <Activity className="w-48 h-48 text-emerald-500" />
-                 </div>
-                 
-                 <div className="relative z-10 flex flex-col md:flex-row gap-5 justify-between items-center">
-                     <div className="space-y-4 flex-1 w-full text-left">
-                          <div className="flex items-center gap-3">
-                              <div className={`flex items-center justify-center w-9 h-9 rounded-xl transition-all ${
-                                  status === 'PRESENT'
-                                      ? 'bg-emerald-50 dark:bg-emerald-950/30' 
-                                      : status === 'ABSENT'
-                                      ? 'bg-rose-50 dark:bg-rose-950/30'
-                                      : 'bg-slate-50 dark:bg-slate-800/40'
-                              }`}>
-                                  {status === 'PRESENT' ? (
-                                      <CheckCircle2 className="w-4.5 h-4.5 text-emerald-600 dark:text-emerald-450" style={{ color: '#059669' }} />
-                                  ) : status === 'ABSENT' ? (
-                                      <XCircle className="w-4.5 h-4.5 text-rose-600 dark:text-rose-450" style={{ color: '#dc2626' }} />
-                                  ) : (
-                                      <Clock className="w-4.5 h-4.5 text-slate-500 dark:text-slate-400" />
-                                  )}
-                              </div>
-                              <div className="text-left">
-                                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Current Status</p>
-                                  <p className="text-base font-extrabold text-slate-800 dark:text-white mt-0.5">
-                                      {status === 'PRESENT' ? 'Present' : status === 'ABSENT' ? 'Absent' : '—'}
-                                  </p>
-                              </div>
-                          </div>
-
-                         <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-xl border border-slate-150 dark:border-slate-800 space-y-1.5 text-left">
-                             <div className="flex items-center justify-between">
-                                 <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Location Status</span>
-                                 {loadingLocation ? (
-                                     <span className="text-[10px] font-bold text-blue-500 animate-pulse">Detecting...</span>
-                                 ) : location ? (
-                                     <span className="text-[10px] font-bold text-emerald-600">Verified</span>
-                                 ) : (
-                                     <span className="text-[10px] font-bold text-rose-500">Not Available</span>
-                                 )}
-                             </div>
-                             {location && (
-                                 <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300">
-                                     <MapPin className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" style={{ color: '#3b82f6' }} />
-                                     <span className="font-semibold">{locationName || `${location.latitude.toFixed(4)}, ${location.longitude.toFixed(4)}`}</span>
-                                 </div>
-                             )}
-                         </div>
-
-                         {error && <p className="text-xs text-rose-600 dark:text-rose-450 bg-rose-50 dark:bg-rose-500/10 p-2.5 rounded-xl font-medium">{error}</p>}
-                         {actionMsg && <p className="text-xs text-emerald-600 dark:text-emerald-450 bg-emerald-50 dark:bg-emerald-500/10 p-2.5 rounded-xl font-medium">{actionMsg}</p>}
-                     </div>
-
-                     <div className="flex flex-row md:flex-col justify-center gap-3 w-full md:w-auto min-w-[200px]">
-                         <button
-                             onClick={() => handlePunch('PRESENT')}
-                             disabled={status === 'PRESENT' || !location || loadingLocation}
-                             className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
-                                 ${status === 'PRESENT' || !location
-                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                     : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm hover:shadow active:scale-95'}`}
-                         >
-                             <CheckCircle2 className="w-4 h-4 icon-white-outline-force" /> Present
-                         </button>
-                         <button
-                             onClick={() => handlePunch('ABSENT')}
-                             disabled={status === 'ABSENT' || loadingLocation}
-                             className={`flex-1 py-2.5 px-4 rounded-xl font-extrabold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-2 cursor-pointer
-                                 ${status === 'ABSENT'
-                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 border border-slate-200 dark:border-slate-700 shadow-none cursor-not-allowed'
-                                     : 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm hover:shadow active:scale-95'}`}
-                         >
-                             <XCircle className="w-4 h-4 icon-white-outline-force" /> Absent
-                         </button>
-                     </div>
-                 </div>
-             </div>
-
-             {/* History Section */}
-             <div className="space-y-3">
-                 <div className="flex flex-row items-center justify-between gap-4 text-left">
-                     <h2 className="text-base font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                         <CalendarIcon className="w-4.5 h-4.5 text-violet-500" style={{ color: '#8b5cf6' }} />
-                         Monthly History
-                     </h2>
-
-                    <div className="flex items-center bg-white dark:bg-slate-900 rounded-xl p-0.5 shadow-sm border border-slate-200 dark:border-slate-850">
-                        <button onClick={prevMonth} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400 cursor-pointer">
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        <span className="px-3 font-bold text-xs min-w-[120px] text-center text-slate-700 dark:text-slate-200">{monthName}</span>
-                        <button 
-                            onClick={nextMonth} 
-                            disabled={isCurrentMonth}
-                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
+        <div className="p-4 md:p-8 min-h-screen bg-[#F8FAFC] dark:bg-slate-900 font-sans animate-reveal">
+            <div className="max-w-6xl mx-auto space-y-8">
+                
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex flex-col gap-1">
+                        <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">Attendance</h1>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">View your monthly attendance records.</p>
                     </div>
-                </div>                {/* Stat Cards — clickable to filter */}
-                <div className="grid grid-cols-3 gap-3">
-                    {[
-                        { label: 'Present', val: historyStats.present, filterKey: 'PRESENT', color: 'text-emerald-650 dark:text-emerald-455', bg: 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20', activeBg: 'ring-2 ring-emerald-400', labelClass: 'attendance-stat-label-present' },
-                        { label: 'Absent', val: historyStats.absent, filterKey: 'ABSENT', color: 'text-rose-650 dark:text-rose-455', bg: 'bg-rose-50/50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20', activeBg: 'ring-2 ring-rose-400', labelClass: 'attendance-stat-label-absent' },
-                        { label: 'Not Marked', val: notMarkedCount, filterKey: 'NOT_MARKED', color: 'text-violet-650 dark:text-violet-455', bg: 'bg-violet-50/50 dark:bg-violet-500/10 border-violet-100 dark:border-violet-500/20', activeBg: 'ring-2 ring-violet-400', labelClass: 'attendance-stat-label-notmarked' },
-                    ].map((stat, i) => (
+                    
+                    <div className="flex gap-2">
                         <button
-                            key={i}
-                            onClick={() => setHistoryFilter(prev => prev === stat.filterKey ? 'ALL' : stat.filterKey)}
-                            className={`p-2.5 rounded-xl border ${stat.bg} flex flex-col items-center justify-center text-center cursor-pointer transition-all hover:scale-[1.02] active:scale-95 ${historyFilter === stat.filterKey ? stat.activeBg : ''}`}
+                            onClick={() => handleMarkAttendance('absent')}
+                            className="flex items-center gap-2 px-6 py-3 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-95"
                         >
-                            <span className="text-xl font-black text-slate-800 dark:text-white mb-0.5">{stat.val}</span>
-                            <span className={`text-[9px] font-black uppercase tracking-wider ${stat.color} ${stat.labelClass}`}>
-                                {stat.label}
-                            </span>
+                            <XCircle className="w-5 h-5" />
+                            <span>Mark Absent</span>
                         </button>
-                    ))}
+                        <button
+                            onClick={() => handleMarkAttendance('present')}
+                            className="flex items-center gap-2 px-6 py-3 bg-[#059669] hover:bg-[#047857] text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+                        >
+                            <CheckCircle2 className="w-5 h-5" />
+                            <span>Mark Present</span>
+                        </button>
+                    </div>
                 </div>
 
-                {/* History List */}
-                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-                    {/* Filter Tab Bar */}
-                    <div className="flex items-center gap-1 px-3 pt-3 pb-2 border-b border-slate-100 dark:border-slate-800 overflow-x-auto hide-scrollbar">
-                        {[
-                            { key: 'ALL', label: 'All Days', count: fullDaysList.length },
-                            { key: 'PRESENT', label: 'Present', count: historyStats.present },
-                            { key: 'ABSENT', label: 'Absent', count: historyStats.absent },
-                            { key: 'NOT_MARKED', label: 'Not Marked', count: notMarkedCount },
-                        ].map(tab => (
-                            <button
-                                key={tab.key}
-                                onClick={() => setHistoryFilter(tab.key)}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[10px] font-extrabold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
-                                    historyFilter === tab.key
-                                        ? tab.key === 'PRESENT' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300'
-                                        : tab.key === 'ABSENT' ? 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300'
-                                        : tab.key === 'NOT_MARKED' ? 'bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300'
-                                        : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-200'
-                                        : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                }`}
-                            >
-                                {tab.label}
-                                <span className={`inline-flex items-center justify-center min-w-[16px] h-4 px-1 rounded text-[9px] font-black ${
-                                    historyFilter === tab.key
-                                        ? 'bg-white/60 dark:bg-black/20'
-                                        : 'bg-slate-100 dark:bg-slate-800'
-                                }`}>{tab.count}</span>
-                            </button>
-                        ))}
+                {/* Attendance Summary Cards */}
+                <div className="grid grid-cols-3 gap-4 md:gap-6">
+                    {/* Present Card */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[20px] p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300">
+                        <span className="text-4xl font-black mb-2" style={{ color: '#059669' }}>{historyStats.present}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#059669', opacity: 0.8 }}>Present</span>
                     </div>
 
+                    {/* Absent Card */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[20px] p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300">
+                        <span className="text-4xl font-black mb-2" style={{ color: '#E11D48' }}>{historyStats.absent}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#E11D48', opacity: 0.8 }}>Absent</span>
+                    </div>
+
+                    {/* Not Marked Card */}
+                    <div className="bg-white dark:bg-slate-800 rounded-[20px] p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 flex flex-col items-center justify-center text-center transition-transform hover:-translate-y-1 duration-300">
+                        <span className="text-4xl font-black mb-2" style={{ color: '#7C3AED' }}>{historyStats.unmarked}</span>
+                        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#7C3AED', opacity: 0.8 }}>Not Marked</span>
+                    </div>
+                </div>
+
+                {/* Monthly History Section */}
+                <div className="bg-white dark:bg-slate-800 rounded-[20px] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    
+                    {/* Table Header & Controls */}
+                    <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800">
+                        <h2 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                            <CalendarIcon className="w-5 h-5 text-slate-400" />
+                            Monthly History
+                        </h2>
+
+                        <div className="flex items-center bg-[#F8FAFC] dark:bg-slate-900 rounded-xl p-1 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
+                            <button onClick={prevMonth} className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-600 dark:text-slate-300 shrink-0 shadow-sm">
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="px-6 font-black text-sm flex-1 text-center sm:min-w-[160px] text-slate-800 dark:text-slate-100 uppercase tracking-wide">
+                                {monthName}
+                            </span>
+                            <button 
+                                onClick={nextMonth} 
+                                disabled={isCurrentMonth}
+                                className={`p-2 rounded-lg transition-colors shrink-0 ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-white dark:hover:bg-slate-800 shadow-sm text-slate-600 dark:text-slate-300'}`}
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Table */}
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800">
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Check-In / Out</th>
-                                    <th className="py-2.5 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Notes</th>
+                                <tr className="bg-slate-50/50 dark:bg-slate-900/30 border-b border-slate-100 dark:border-slate-700">
+                                    <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                                    <th className="py-4 px-6 text-[10px] font-black text-slate-400 uppercase tracking-widest">Notes</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                            <tbody className="divide-y divide-slate-50 dark:divide-slate-700/50">
                                 {historyLoading ? (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center text-xs text-slate-500">Loading history...</td>
+                                        <td colSpan={3} className="py-16 text-center">
+                                            <div className="inline-block w-6 h-6 border-2 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
+                                        </td>
                                     </tr>
-                                ) : filteredList.length === 0 ? (
+                                ) : historyData.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center text-xs text-slate-500">No records found.</td>
+                                        <td colSpan={3} className="py-16 text-center text-sm font-medium text-slate-500">
+                                            No attendance records found for this month.
+                                        </td>
                                     </tr>
-                                ) : filteredList.map((record, i) => {
-                                    const d = new Date(record.date);
-                                    const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
-                                    const isNotMarked = record.status === 'NOT_MARKED';
-                                    const styleClass = isNotMarked
-                                        ? 'bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-500/10 dark:text-violet-400 dark:border-violet-500/20'
-                                        : (statusColors[record.status] || 'bg-slate-50 text-slate-600 border-slate-200');
+                                ) : (
+                                    historyData.map((record, i) => {
+                                        const d = new Date(record.date);
+                                        const isFuture = d > new Date();
+                                        if (isFuture) return null;
+                                        
+                                        const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                                        const styleClass = getStatusColor(record.status);
 
-                                    return (
-                                        <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
-                                            <td className="py-2.5 px-4 whitespace-nowrap">
-                                                <span className={`text-xs font-semibold text-slate-700 dark:text-slate-200 ${isNotMarked ? 'opacity-50' : ''}`}>{displayDate}</span>
-                                            </td>
-                                            <td className="py-2.5 px-4 whitespace-nowrap">
-                                                <span className={`px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wider rounded-lg border ${styleClass} ${isNotMarked ? 'attendance-badge-notmarked' : ''}`}>
-                                                    {record.status.replace('_', ' ')}
-                                                </span>
-                                            </td>
-                                            <td className="py-2.5 px-4 whitespace-nowrap">
-                                                <span className={`text-xs font-medium text-slate-600 dark:text-slate-300 ${isNotMarked ? 'opacity-50' : ''}`}>
-                                                    {record.checkInAt
-                                                        ? `${formatTime(record.checkInAt)}${record.checkOutAt ? ` – ${formatTime(record.checkOutAt)}` : ''}`
-                                                        : '—'}
-                                                </span>
-                                            </td>
-                                            <td className="py-2.5 px-4 whitespace-nowrap">
-                                                <span className={`text-xs text-slate-500 dark:text-slate-400 italic ${isNotMarked ? 'opacity-50' : ''}`}>
-                                                    {record.notes || '—'}
-                                                </span>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                        return (
+                                            <tr key={i} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors">
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-200">{displayDate}</span>
+                                                </td>
+                                                <td className="py-4 px-6 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border ${styleClass}`}>
+                                                        {getStatusDisplay(record.status)}
+                                                    </span>
+                                                </td>
+                                                <td className="py-4 px-6">
+                                                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400">
+                                                        {record.notes || '-'}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
+                                )}
                             </tbody>
                         </table>
                     </div>

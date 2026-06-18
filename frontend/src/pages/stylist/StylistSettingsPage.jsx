@@ -850,7 +850,6 @@ export default function StylistSettingsPage() {
                 <nav className="flex flex-wrap gap-2 mb-10 border-b border-border/20 pb-4">
                     {[
                         { id: 'profile', label: 'Profile', icon: User },
-                        { id: 'availability', label: 'Hours', icon: Bell },
                         { id: 'security', label: 'Security', icon: Shield },
                     ].map(({ id, label, icon: Icon }) => (
                         <button

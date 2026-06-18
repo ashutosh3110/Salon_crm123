@@ -96,6 +96,44 @@ exports.protect = async (req, res, next) => {
             userObj.role = 'manager';
         }
 
+        // Fetch Role Info (permissions, adminMenuAccess, etc) to attach to userObj
+        if (userObj.role === 'superadmin' || userObj.role === 'admin') {
+            userObj.permissions = ['*'];
+            userObj.roleType = userObj.role;
+            userObj.hiddenSidebarItems = [];
+            userObj.adminMenuAccess = [];
+        } else if (userObj.salonId && (userObj.roleId || userObj.role)) {
+            let roleDoc = null;
+            const Role = require('../Models/Role');
+            if (userObj.roleId) {
+                roleDoc = await Role.findById(userObj.roleId);
+            }
+            if (!roleDoc && userObj.role) {
+                roleDoc = await Role.findOne({ 
+                    salonId: userObj.salonId, 
+                    name: { $regex: new RegExp(`^${userObj.role}$`, 'i') } 
+                });
+            }
+
+            if (roleDoc) {
+                userObj.permissions = roleDoc.permissions || [];
+                userObj.roleType = roleDoc.roleType || 'custom';
+                userObj.hiddenSidebarItems = roleDoc.hiddenSidebarItems || [];
+                userObj.adminMenuAccess = roleDoc.adminMenuAccess || [];
+            } else {
+                const rName = (userObj.role || '').toLowerCase();
+                if (rName.includes('stylist') || rName.includes('stylish')) userObj.roleType = 'stylist';
+                else if (rName.includes('receptionist')) userObj.roleType = 'receptionist';
+                else if (rName.includes('manager')) userObj.roleType = 'manager';
+                else if (rName.includes('accountant')) userObj.roleType = 'accountant';
+                else if (rName.includes('inventory')) userObj.roleType = 'inventory';
+                else userObj.roleType = 'custom';
+                userObj.permissions = [];
+                userObj.hiddenSidebarItems = [];
+                userObj.adminMenuAccess = [];
+            }
+        }
+
         req.user = userObj;
         next();
     } catch (err) {

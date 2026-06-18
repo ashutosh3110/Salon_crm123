@@ -737,7 +737,12 @@ export default function AppointmentsPage() {
                                                                 apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-600' :
                                                                     apt.status === 'Upcoming' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
                                                                         'bg-rose-500/10 border-rose-500/20 text-rose-600'
-                                                                }`}>
+                                                                }`}
+                                                                style={{
+                                                                    color: apt.status === 'Arrived' ? '#059669' :
+                                                                        apt.status === 'Completed' ? '#2563eb' :
+                                                                            apt.status === 'Upcoming' ? '#d97706' : '#e11d48'
+                                                                }}>
                                                                 <div className={`w-1.5 h-1.5 rounded-full ${apt.status === 'Arrived' ? 'bg-emerald-500' :
                                                                     apt.status === 'Completed' ? 'bg-blue-500' :
                                                                         apt.status === 'Upcoming' ? 'bg-amber-500' : 'bg-rose-500'
@@ -773,7 +778,7 @@ export default function AppointmentsPage() {
                                                             {apt.status === 'Arrived' && (
                                                                 <button
                                                                     onClick={() => handleBill(apt)}
-                                                                    className="px-3 py-1.5 text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-all shadow-sm"
+                                                                    className="px-3 py-1.5 text-white text-[8px] font-black uppercase tracking-widest flex items-center gap-1.5 hover:opacity-90 transition-all shadow-sm rounded-full"
                                                                     style={{ backgroundColor: '#B4912B', borderColor: '#B4912B' }}
                                                                 >
                                                                     <CreditCard className="w-3 h-3 text-white-force" /> Bill
@@ -782,14 +787,14 @@ export default function AppointmentsPage() {
                                                             {apt.status === 'Upcoming' && (
                                                                 <button
                                                                     onClick={() => handleCheckIn(apt.id)}
-                                                                    className="p-2 border border-border hover:bg-emerald-500/5 hover:border-emerald-500/20 group transition-all"
+                                                                    className="p-2 border border-border hover:bg-emerald-500/5 hover:border-emerald-500/20 group transition-all rounded-full"
                                                                     title="Mark Arrived"
                                                                 >
-                                                                    <CheckCircle2 className="w-4 h-4 text-text-muted group-hover:text-emerald-500" />
+                                                                    <CheckCircle2 className="w-4 h-4 group-hover:text-emerald-500" style={{ color: '#059669' }} />
                                                                 </button>
                                                             )}
-                                                            <button onClick={() => handleViewDetails(apt.id)} className="p-2 border border-border hover:bg-surface-alt transition-all group" title="View Protocol">
-                                                                <MoreVertical className="w-4 h-4 text-text-muted group-hover:text-text" />
+                                                            <button onClick={() => handleViewDetails(apt.id)} className="p-2 border border-border hover:bg-surface-alt transition-all group rounded-full" title="View Protocol">
+                                                                <MoreVertical className="w-4 h-4 group-hover:text-text" style={{ color: '#64748b' }} />
                                                             </button>
                                                         </div>
                                                     </td>

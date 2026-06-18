@@ -142,7 +142,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                     const hasSubItems = item.subItems && item.subItems.length > 0;
                     const isExpanded = expandedItem === item.label && !effectiveCollapsed;
                     const isItemActive = location.pathname === item.path || (item.path !== '/stylist' && location.pathname.startsWith(item.path));
-                    
+
                     if (hasSubItems) {
                         return (
                             <div key={item.label} className="space-y-0.5">
@@ -169,7 +169,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                     {!effectiveCollapsed && (
                                         <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 sidebar-svg-icon ${isExpanded ? 'rotate-90' : ''}`} />
                                     )}
-                                    
+
                                     {/* Tooltip (collapsed) */}
                                     {effectiveCollapsed && (
                                         <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700">
@@ -177,7 +177,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                         </div>
                                     )}
                                 </button>
-                                
+
                                 {isExpanded && !effectiveCollapsed && (
                                     <div className="mt-1 mb-2 space-y-0.5 pl-6 border-l border-slate-100 dark:border-slate-800 ml-6">
                                         {item.subItems.map((sub) => {
@@ -232,12 +232,12 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                     )}
                                 </div>
                             )}
-                            
+
                             {/* Badge Indicator (collapsed) */}
                             {effectiveCollapsed && item.badge && (
                                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
                             )}
-                            
+
                             {/* Tooltip (collapsed) */}
                             {effectiveCollapsed && (
                                 <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700 flex items-center gap-2">
