@@ -87,14 +87,16 @@ export default function AppLayout() {
         '/app/checkout',
         '/app/membership',
         '/app/shop',
-        '/app/profile'
+        '/app/profile',
+        '/app/notifications',
+        '/app/notification'
     ];
     const searchParams = new URLSearchParams(location.search);
     const hasProductModal = searchParams.get('product');
     const stepParam = searchParams.get('step');
     const isBookingStep = location.pathname === '/app/booking' && ['1', '2', '3', '4', '5'].includes(stepParam);
     const shouldHideNav = hideNavPaths.some(path => location.pathname.startsWith(path)) || hasProductModal;
-    const shouldHideHeader = hideHeaderPaths.some(path => location.pathname.startsWith(path)) || hasProductModal || isBookingStep;
+    const shouldHideHeader = location.pathname === '/app' || hideHeaderPaths.some(path => location.pathname.startsWith(path)) || hasProductModal || isBookingStep;
 
     // Apply global body background based on theme
     useEffect(() => {

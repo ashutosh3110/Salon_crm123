@@ -4,12 +4,15 @@ const {
     getRoles,
     createRole,
     updateRole,
-    deleteRole
+    deleteRole,
+    getDefaults
 } = require('../Controllers/roleController');
 const { protect, authorize } = require('../Middleware/auth');
 
 router.use(protect);
 router.use(authorize('admin', 'p:manage_roles')); // Salon owners and roles manager can manage roles
+
+router.get('/defaults/:roleType', getDefaults);
 
 router.route('/')
     .get(getRoles)

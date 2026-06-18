@@ -112,12 +112,39 @@ exports.authorize = (...requirements) => {
             return next();
         }
 
+        // Fetch role info if not already attached to req.user
+        if (user.roleId && !user.roleType) {
+            try {
+                const Role = require('../Models/Role');
+                const roleDoc = await Role.findById(user.roleId);
+                if (roleDoc) {
+                    user.permissions = roleDoc.permissions || [];
+                    user.roleType = roleDoc.roleType || 'custom';
+                    user.hiddenSidebarItems = roleDoc.hiddenSidebarItems || [];
+                    user.adminMenuAccess = roleDoc.adminMenuAccess || [];
+                }
+            } catch (err) {
+                console.error('Error fetching role details in middleware:', err);
+            }
+        }
+
+        // Auto-infer roleType if not found in db but roleName exists
+        if (user.role && !user.roleType) {
+            const rName = user.role.toLowerCase();
+            if (rName.includes('stylist') || rName.includes('stylish')) user.roleType = 'stylist';
+            else if (rName.includes('receptionist')) user.roleType = 'receptionist';
+            else if (rName.includes('manager')) user.roleType = 'manager';
+            else if (rName.includes('accountant')) user.roleType = 'accountant';
+            else if (rName.includes('inventory')) user.roleType = 'inventory';
+            else user.roleType = 'custom';
+        }
+
         // Check if any of the requirements are met
         let isAuthorized = false;
 
         for (const reqmt of requirements) {
-            // Check for specific role name
-            if (user.role === reqmt) {
+            // Check for specific role name or role type
+            if (user.role === reqmt || user.roleType === reqmt) {
                 isAuthorized = true;
                 break;
             }
@@ -125,19 +152,6 @@ exports.authorize = (...requirements) => {
             // Check for permission (prefixed with p:)
             if (reqmt.startsWith('p:')) {
                 const permissionNeeded = reqmt.split(':')[1];
-
-                // Fetch permissions if not already attached to req.user
-                if (!user.permissions && user.roleId) {
-                    try {
-                        const Role = require('../Models/Role');
-                        const roleDoc = await Role.findById(user.roleId);
-                        if (roleDoc) {
-                            user.permissions = roleDoc.permissions;
-                        }
-                    } catch (err) {
-                        console.error('Error fetching role permissions in middleware:', err);
-                    }
-                }
 
                 if (user.permissions && (
                     user.permissions.includes(permissionNeeded) ||

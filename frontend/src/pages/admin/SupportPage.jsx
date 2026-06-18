@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
-    Plus, Search, LifeBuoy, MessageSquare,
+    Plus, Search as SearchIcon, LifeBuoy, MessageSquare,
     CheckCircle, Clock, AlertCircle, ChevronDown,
     Filter, HelpCircle, ArrowUpCircle,
     X, Send, RefreshCw, User as UserIcon, Shield, Headphones, Ticket, Bell, Eye,
@@ -50,11 +50,88 @@ const CATEGORY_STYLES = {
     'Other':             'text-slate-600 bg-slate-50 border-slate-100',
 };
 
+const CATEGORY_BADGE_STYLES = {
+    'Billing':           { bg: '#faf5ff', text: '#7c3aed', border: '#e9d5ff' },
+    'Technical Issue':   { bg: '#fff5f5', text: '#e53e3e', border: '#fed7d7' },
+    'Feature Request':   { bg: '#eff6ff', text: '#2563eb', border: '#bfdbfe' },
+    'General Inquiry':   { bg: '#f8fafc', text: '#475569', border: '#e2e8f0' },
+    'Account Access':    { bg: '#fffbeb', text: '#d97706', border: '#fde68a' },
+    'Service Complaint': { bg: '#fef2f2', text: '#dc2626', border: '#fee2e2' },
+    'Appointment Issue': { bg: '#f0fdfa', text: '#0d9488', border: '#99f6e4' },
+    'Bug Report':        { bg: '#fff5f5', text: '#e53e3e', border: '#fed7d7' },
+    'Payment Issue':     { bg: '#faf5ff', text: '#7c3aed', border: '#e9d5ff' },
+    'Printer Issue':     { bg: '#fff7ed', text: '#ea580c', border: '#ffedd5' },
+    'Network/System Issue': { bg: '#f0f9ff', text: '#0284c7', border: '#bae6fd' },
+    'Access / Permission':  { bg: '#fffbeb', text: '#d97706', border: '#fde68a' },
+    'Other':             { bg: '#f8fafc', text: '#475569', border: '#e2e8f0' },
+};
+
+const PRIORITY_BADGE_STYLES = {
+    'low': { backgroundColor: '#f1f5f9', textColor: '#475569', borderColor: '#cbd5e1', label: 'Low' },
+    'medium': { backgroundColor: '#eff6ff', textColor: '#2563eb', borderColor: '#bfdbfe', label: 'Medium' },
+    'high': { backgroundColor: '#fff7ed', textColor: '#ea580c', borderColor: '#ffedd5', label: 'High' },
+    'urgent': { backgroundColor: '#fff1f2', textColor: '#e11d48', borderColor: '#fecdd3', label: 'Urgent' }
+};
+
+const STATUS_BADGE_STYLES = {
+    'open':        { bg: '#fffbeb', text: '#b45309', border: '#fde68a', label: 'Open' },
+    'pending':     { bg: '#fffbeb', text: '#b45309', border: '#fde68a', label: 'Open' },
+    'in-progress': { bg: '#f0f9ff', text: '#0369a1', border: '#bae6fd', label: 'In Progress' },
+    'resolved':    { bg: '#f0fdf4', text: '#047857', border: '#bbf7d0', label: 'Resolved' },
+    'closed':      { bg: '#f8fafc', text: '#64748b', border: '#e2e8f0', label: 'Closed' },
+    'escalated':   { bg: '#fff1f2', text: '#be123c', border: '#fecdd3', label: 'Escalated' },
+};
+
+const CATEGORY_BADGE_STYLES_DARK = {
+    'Billing':           { bg: 'rgba(124, 58, 237, 0.15)', text: '#a78bfa', border: 'rgba(124, 58, 237, 0.3)' },
+    'Technical Issue':   { bg: 'rgba(229, 62, 62, 0.15)', text: '#fca5a5', border: 'rgba(229, 62, 62, 0.3)' },
+    'Feature Request':   { bg: 'rgba(37, 99, 235, 0.15)', text: '#93c5fd', border: 'rgba(37, 99, 235, 0.3)' },
+    'General Inquiry':   { bg: 'rgba(71, 85, 105, 0.15)', text: '#cbd5e1', border: 'rgba(71, 85, 105, 0.3)' },
+    'Account Access':    { bg: 'rgba(217, 119, 6, 0.15)', text: '#fcd34d', border: 'rgba(217, 119, 6, 0.3)' },
+    'Service Complaint': { bg: 'rgba(220, 38, 38, 0.15)', text: '#fca5a5', border: 'rgba(220, 38, 38, 0.3)' },
+    'Appointment Issue': { bg: 'rgba(13, 148, 136, 0.15)', text: '#5eead4', border: 'rgba(13, 148, 136, 0.3)' },
+    'Bug Report':        { bg: 'rgba(229, 62, 62, 0.15)', text: '#fca5a5', border: 'rgba(229, 62, 62, 0.3)' },
+    'Payment Issue':     { bg: 'rgba(124, 58, 237, 0.15)', text: '#a78bfa', border: 'rgba(124, 58, 237, 0.3)' },
+    'Printer Issue':     { bg: 'rgba(234, 88, 12, 0.15)', text: '#fdba74', border: 'rgba(234, 88, 12, 0.3)' },
+    'Network/System Issue': { bg: 'rgba(2, 132, 199, 0.15)', text: '#7dd3fc', border: 'rgba(2, 132, 199, 0.3)' },
+    'Access / Permission':  { bg: 'rgba(217, 119, 6, 0.15)', text: '#fcd34d', border: 'rgba(217, 119, 6, 0.3)' },
+    'Other':             { bg: 'rgba(71, 85, 105, 0.15)', text: '#cbd5e1', border: 'rgba(71, 85, 105, 0.3)' },
+};
+
+const PRIORITY_BADGE_STYLES_DARK = {
+    'low': { backgroundColor: 'rgba(71, 85, 105, 0.15)', textColor: '#cbd5e1', borderColor: 'rgba(71, 85, 105, 0.3)', label: 'Low' },
+    'medium': { backgroundColor: 'rgba(37, 99, 235, 0.15)', textColor: '#93c5fd', borderColor: 'rgba(37, 99, 235, 0.3)', label: 'Medium' },
+    'high': { backgroundColor: 'rgba(234, 88, 12, 0.15)', textColor: '#fdba74', borderColor: 'rgba(234, 88, 12, 0.3)', label: 'High' },
+    'urgent': { backgroundColor: 'rgba(225, 29, 72, 0.15)', textColor: '#fda4af', borderColor: 'rgba(225, 29, 72, 0.3)', label: 'Urgent' }
+};
+
+const STATUS_BADGE_STYLES_DARK = {
+    'open':        { bg: 'rgba(217, 119, 6, 0.15)', text: '#fcd34d', border: 'rgba(217, 119, 6, 0.3)', label: 'Open' },
+    'pending':     { bg: 'rgba(217, 119, 6, 0.15)', text: '#fcd34d', border: 'rgba(217, 119, 6, 0.3)', label: 'Open' },
+    'in-progress': { bg: 'rgba(3, 105, 161, 0.15)', text: '#7dd3fc', border: 'rgba(3, 105, 161, 0.3)', label: 'In Progress' },
+    'resolved':    { bg: 'rgba(4, 120, 87, 0.15)', text: '#6ee7b7', border: 'rgba(4, 120, 87, 0.3)', label: 'Resolved' },
+    'closed':      { bg: 'rgba(100, 116, 139, 0.15)', text: '#cbd5e1', border: 'rgba(100, 116, 139, 0.3)', label: 'Closed' },
+    'escalated':   { bg: 'rgba(190, 18, 60, 0.15)', text: '#fda4af', border: 'rgba(190, 18, 60, 0.3)', label: 'Escalated' },
+};
+
+const useDarkMode = () => {
+    const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+    useEffect(() => {
+        const observer = new MutationObserver(() => {
+            setIsDark(document.documentElement.classList.contains('dark'));
+        });
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
+    return isDark;
+};
+
 /* ─── Main Page ───────────────────────────────────────────────────────── */
 
 export default function SupportPage() {
     const { user } = useAuth();
     const userRole = user?.role?.toLowerCase();
+    const isDark = useDarkMode();
 
     const [activeTab, setActiveTab] = useState('customer'); // 'customer' | 'platform'
     const [tickets, setTickets] = useState([]);
@@ -242,126 +319,114 @@ export default function SupportPage() {
     /* ─── Render ─────────────────────────────────────────────────── */
 
     return (
-        <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-8 font-sans">
+        <div className="space-y-8 animate-reveal text-left max-w-[1600px] mx-auto pb-20 font-sans px-4">
 
-            {/* ── Header ──────────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-1">
-                <div className="text-left">
-                    <h1 className="text-2xl font-bold text-text tracking-tight leading-none">Support & Help</h1>
-                    <p className="text-[11px] font-medium text-text-muted mt-1 uppercase tracking-wider">
+            {/* ── Header Hero Section ──────────────────────────────── */}
+            <div className="bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] dark:from-[#1e293b] dark:to-[#334155] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 text-slate-800 dark:text-white shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-[#B58E29]/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="text-left relative z-10">
+                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-slate-800 dark:text-white">
+                        <Headphones className="w-8 h-8 text-[#B58E29]" /> Support & Help
+                    </h1>
+                    <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm max-w-xl font-medium">
                         {activeTab === 'customer'
-                            ? 'Customer tickets raised via website, app, chat or WhatsApp'
-                            : 'Internal platform issues raised by staff to admin team'}
+                            ? 'Manage customer support requests raised via your website, app, chat, or WhatsApp.'
+                            : 'Monitor internal platform tickets, system reports, and printer errors raised by outlet staff.'}
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 relative z-10 shrink-0">
                     {/* Tab Toggle */}
-                    <div className="flex items-center bg-white border border-border rounded-xl overflow-hidden shadow-sm">
+                    <div className="flex items-center bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-1">
                         <button
                             onClick={() => setActiveTab('customer')}
-                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all ${activeTab === 'customer' ? 'bg-[#B58E29] text-white' : 'bg-transparent text-text hover:bg-gray-50'}`}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all rounded-xl ${activeTab === 'customer' ? 'bg-[#B58E29] text-white shadow-md' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <Headphones className="w-3.5 h-3.5" />
                             Customer Issues
                         </button>
                         <button
                             onClick={() => setActiveTab('platform')}
-                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all ${activeTab === 'platform' ? 'bg-[#B58E29] text-white' : 'bg-transparent text-text hover:bg-gray-50'}`}
+                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all rounded-xl ${activeTab === 'platform' ? 'bg-[#B58E29] text-white shadow-md' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
                         >
                             <Wrench className="w-3.5 h-3.5" />
                             Platform Help
                         </button>
                     </div>
-                    {/* Create button — only for platform tab */}
-                    {activeTab === 'platform' && (
-                        <button
-                            onClick={() => setShowModal(true)}
-                            className="flex items-center gap-2 bg-text text-background px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider shadow-lg hover:bg-primary hover:text-white transition-all rounded-xl"
-                        >
-                            <Plus className="w-4 h-4 text-white" />
-                            New Request
-                        </button>
-                    )}
                 </div>
             </div>
 
-            {/* ── Flow Banner ──────────────────────────────────────── */}
-            <div className={`rounded-2xl border px-5 py-3 flex items-center gap-6 text-[10px] font-bold uppercase tracking-wider overflow-x-auto ${activeTab === 'customer' ? 'bg-blue-50 border-blue-100 text-blue-600' : 'bg-amber-50 border-amber-100 text-amber-700'}`}>
-                {activeTab === 'customer' ? (
-                    <>
-                        <span className="flex items-center gap-1.5 shrink-0"><UserIcon className="w-3 h-3" /> Customer</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><MessageSquare className="w-3 h-3" /> Raises Ticket</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><Headphones className="w-3 h-3" /> Receptionist / Support</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><CheckCircle className="w-3 h-3" /> Resolve / Close</span>
-                    </>
-                ) : (
-                    <>
-                        <span className="flex items-center gap-1.5 shrink-0"><UserIcon className="w-3 h-3" /> Staff / Receptionist</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><Plus className="w-3 h-3" /> Creates Platform Request</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><Shield className="w-3 h-3" /> Admin / Technical Team</span>
-                        <span className="opacity-40">→</span>
-                        <span className="flex items-center gap-1.5 shrink-0"><CheckCircle className="w-3 h-3" /> Resolve / Close</span>
-                    </>
-                )}
-            </div>
+            {/* Floating New Request Button — only for platform tab */}
+            {activeTab === 'platform' && (
+                <button
+                    onClick={() => setShowModal(true)}
+                    className="fixed bottom-8 right-8 rounded-full w-14 h-14 bg-[#B58E29] hover:bg-[#a07c22] shadow-[0_8px_30px_rgb(181,142,41,0.4)] hover:scale-110 flex items-center justify-center text-white transition-all z-50 group hover:-translate-y-1"
+                    title="Create Platform Ticket"
+                >
+                    <Plus className="w-6 h-6 text-white transition-transform group-hover:rotate-90" strokeWidth={3} />
+                </button>
+            )}
+
 
             {/* ── Stats Cards ─────────────────────────────────────── */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
                 {stats.map((stat, i) => (
                     <motion.div
                         key={`${activeTab}-${stat.label}`}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.08 }}
-                        className={`!rounded-[16px] !border p-3.5 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.04)] group flex flex-col justify-between min-h-[118px] transition-all hover:-translate-y-0.5 active:scale-[0.98] hover:shadow-md ${stat.cardBgClass} ${stat.cardBorderClass}`}
+                        className="bg-white rounded-3xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between min-h-[128px] overflow-hidden border border-slate-100"
                     >
-                        <div className="flex !items-start gap-3 !text-left">
-                            <div className={`w-9 h-9 flex items-center justify-center shrink-0 ${stat.iconBgClass}`} style={{ borderRadius: '12px' }}>
-                                <stat.icon className={`w-4 h-4 ${stat.iconColorClass}`} strokeWidth={2} />
+                        {/* Colored Top Strip */}
+                        <div className={`h-1 rounded-t-3xl ${
+                            i === 0 ? 'bg-amber-500' :
+                            i === 1 ? 'bg-purple-500' :
+                            i === 2 ? 'bg-emerald-500' :
+                            'bg-blue-500'
+                        }`} />
+
+                        <div className="flex-1 p-5 flex items-start gap-4 text-left">
+                            <div className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-2xl ${stat.iconBgClass}`}>
+                                <stat.icon className={`w-5 h-5 ${stat.iconColorClass}`} strokeWidth={2.5} />
                             </div>
-                            <div className="flex flex-col !items-start !text-left">
-                                <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.03em' }} className="uppercase text-slate-500 leading-none mb-1.5 !text-left">{stat.label}</span>
-                                <h3 style={{ fontSize: '24px', fontWeight: 850 }} className="text-slate-800 leading-none tracking-tight !text-left flex items-baseline">
+                            <div className="flex flex-col text-left">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">{stat.label}</span>
+                                <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none mt-1">
                                     {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
                                 </h3>
-                                <span style={{ fontSize: '12px', fontWeight: 500 }} className="text-slate-500 mt-1.5 !text-left">{stat.subtitle}</span>
+                                <span className="text-[11px] text-slate-500 mt-2 font-bold uppercase tracking-wider">{stat.subtitle}</span>
                             </div>
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            {/* ── Table Section ────────────────────────────────────── */}
-            <div className="space-y-4">
+            {/* ── Filter & Card Section ───────────────────────────── */}
+            <div className="space-y-6">
                 {/* Search + Filter Row */}
-                <div className="flex flex-col md:flex-row gap-3">
-                    <div className={`relative flex-1 bg-white border transition-all duration-300 rounded-xl ${isSearchFocused ? 'border-[#B58E29] shadow-[0_0_15px_rgba(181,142,41,0.25)] ring-1 ring-[#B58E29]/50' : 'border-border shadow-sm'}`}>
-                        <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${isSearchFocused ? 'text-primary' : 'text-text-muted'}`} />
+                <div className="flex flex-col md:flex-row gap-4">
+                    <div className="relative flex-1">
                         <input
                             type="text"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             onFocus={() => setIsSearchFocused(true)}
                             onBlur={() => setIsSearchFocused(false)}
-                            placeholder={activeTab === 'customer' ? 'Search by customer name, subject or ticket ID...' : 'Search by subject, staff name or ticket ID...'}
-                            className="w-full pl-11 pr-4 py-3.5 bg-transparent text-[13px] font-medium outline-none rounded-xl"
+                            placeholder={activeTab === 'customer' ? 'Search customer name, subject or ticket ID...' : 'Search subject, staff name or ticket ID...'}
+                            className="w-full h-14 pl-14 pr-4 bg-white dark:bg-slate-800 shadow-md border border-slate-200/60 dark:border-slate-700/60 focus:ring-2 focus:ring-[#B58E29] rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-slate-400 dark:text-slate-200"
                         />
+                        <SearchIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 z-10 pointer-events-none transition-colors ${isSearchFocused ? 'text-[#B58E29]' : 'text-slate-400'}`} />
                     </div>
-                    <div
-                        ref={filterRef}
-                        className={`relative flex items-center px-5 bg-white border transition-all duration-300 rounded-xl cursor-pointer hover:bg-gray-50 ${isFilterOpen ? 'border-[#B58E29] ring-1 ring-[#B58E29]/50 shadow-[0_0_15px_rgba(181,142,41,0.15)]' : 'border-border shadow-sm'}`}
-                        onClick={() => setIsFilterOpen(!isFilterOpen)}
-                    >
-                        <Filter className={`w-4 h-4 mr-2 transition-colors ${isFilterOpen ? 'text-primary' : 'text-text-muted'}`} />
-                        <div className="text-[12px] font-bold uppercase tracking-wider py-3.5 pr-8 min-w-[120px] select-none text-text">
-                            {filterStatus === 'All' ? 'ALL STATUS' : filterStatus.replace('-', ' ')}
-                        </div>
-                        <ChevronDown className={`w-4 h-4 absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                    <div ref={filterRef} className="relative shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            className="h-14 px-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 rounded-2xl shadow-md flex items-center gap-3 transition-colors text-xs font-bold uppercase tracking-wider cursor-pointer"
+                        >
+                            <Filter className="w-4 h-4 text-[#B58E29]" />
+                            <span className="text-slate-800 dark:text-slate-100 font-bold">{filterStatus === 'All' ? 'ALL STATUS' : filterStatus.replace('-', ' ').toUpperCase()}</span>
+                            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                        </button>
                         <AnimatePresence>
                             {isFilterOpen && (
                                 <motion.div
@@ -369,7 +434,7 @@ export default function SupportPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 8 }}
                                     transition={{ duration: 0.13 }}
-                                    className="absolute top-full right-0 w-full mt-2 bg-white border border-border rounded-xl shadow-lg z-50 overflow-hidden py-1"
+                                    className="absolute top-full right-0 w-56 mt-2 bg-white border border-border rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
                                 >
                                     {[
                                         { value: 'All',         label: 'ALL' },
@@ -381,8 +446,11 @@ export default function SupportPage() {
                                     ].map(opt => (
                                         <div
                                             key={opt.value}
-                                            className={`px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${filterStatus === opt.value ? 'bg-primary/10 text-[#B4912B]' : 'text-text-muted hover:bg-slate-50'}`}
-                                            onClick={() => setFilterStatus(opt.value)}
+                                            className={`px-5 py-3 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${filterStatus === opt.value ? 'bg-[#B58E29]/10 text-[#B58E29]' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            onClick={() => {
+                                                setFilterStatus(opt.value);
+                                                setIsFilterOpen(false);
+                                            }}
                                         >
                                             {opt.label}
                                         </div>
@@ -393,15 +461,15 @@ export default function SupportPage() {
                     </div>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white border border-border shadow-sm overflow-hidden min-h-[400px] rounded-2xl">
+                {/* Card Container Grid */}
+                <div className="bg-slate-50/50 shadow-inner overflow-hidden min-h-[250px] rounded-3xl border border-slate-100/50">
                     {loading ? (
-                        <div className="flex flex-col items-center justify-center h-64 opacity-40 space-y-3">
+                        <div className="flex flex-col items-center justify-center py-20 opacity-40 space-y-3">
                             <RefreshCw className="w-6 h-6 animate-spin text-primary" />
                             <p className="text-[11px] font-bold uppercase tracking-wider">Loading tickets...</p>
                         </div>
                     ) : activeTab === 'customer' ? (
-                        <CustomerTable
+                        <CustomerCards
                             tickets={filtered}
                             userRole={userRole}
                             openStatusDropdownId={openStatusDropdownId}
@@ -411,9 +479,10 @@ export default function SupportPage() {
                             setDropdownPos={setDropdownPos}
                             handleSelectTicket={handleSelectTicket}
                             handleUpdateStatus={handleUpdateStatus}
+                            isDark={isDark}
                         />
                     ) : (
-                        <PlatformTable
+                        <PlatformCards
                             tickets={filtered}
                             userRole={userRole}
                             openStatusDropdownId={openStatusDropdownId}
@@ -423,34 +492,32 @@ export default function SupportPage() {
                             setDropdownPos={setDropdownPos}
                             handleSelectTicket={handleSelectTicket}
                             handleUpdateStatus={handleUpdateStatus}
+                            isDark={isDark}
                         />
                     )}
                 </div>
             </div>
 
             {/* ── Bottom Banner ────────────────────────────────────── */}
-            <div className="bg-surface border border-border rounded-2xl p-6 flex items-center justify-between relative overflow-hidden">
-                <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-14 h-14 rounded-xl bg-[#B4912B]/10 flex items-center justify-center shrink-0">
-                        <Shield className="w-7 h-7 text-primary" />
+            <div className="bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] dark:from-[#1e293b] dark:to-[#334155] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 text-slate-800 dark:text-white shadow-md flex items-center justify-between relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-[#B58E29]/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="flex items-center gap-5 relative z-10 text-left">
+                    <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
+                        <Shield className="w-8 h-8 text-[#B58E29]" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h3 className="text-[16px] font-bold text-text">
-                            {activeTab === 'customer' ? "We're here to help!" : 'Report a Platform Issue'}
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white leading-none">
+                            {activeTab === 'customer' ? "Need support assistance?" : 'Report a Platform Issue'}
                         </h3>
-                        <p className="text-[13px] text-text-muted mt-1">
+                        <p className="text-sm text-slate-500 dark:text-slate-300 mt-2 max-w-xl leading-relaxed font-medium">
                             {activeTab === 'customer'
-                                ? 'Your satisfaction is our priority. Reach out anytime.'
-                                : 'Found a bug or facing a technical problem? Create a platform help request.'}
+                                ? 'We maintain a premium standard of customer support. Raise, monitor and resolve issues promptly.'
+                                : 'Found a bug or facing a technical problem? Create a ticket for the administrator team.'}
                         </p>
                     </div>
                 </div>
-                <div className="relative z-10 hidden sm:flex items-center justify-center mr-8">
-                    <div className="w-24 h-24 relative flex items-center justify-center">
-                        <span className="text-6xl">{activeTab === 'customer' ? '🎧' : '🛠️'}</span>
-                        <span className="absolute -top-2 -right-4 text-3xl">{activeTab === 'customer' ? '💬' : '🔧'}</span>
-                        <span className="absolute bottom-0 -right-2 text-2xl">{activeTab === 'customer' ? '😊' : '⚡'}</span>
-                    </div>
+                <div className="relative z-10 hidden md:block mr-4 shrink-0">
+                    <Shield className="w-20 h-20 text-[#B58E29] opacity-80" />
                 </div>
             </div>
 
@@ -465,15 +532,15 @@ export default function SupportPage() {
                                 <button onClick={() => setSelectedTicket(null)} className="p-2 hover:bg-surface rounded-xl transition-colors">
                                     <X className="w-5 h-5 text-text-muted" />
                                 </button>
-                                <div>
+                                <div className="text-left">
                                     <h2 className="text-[14px] font-bold text-text leading-tight">{selectedTicket.subject}</h2>
-                                    <div className="flex items-center gap-2 mt-1">
+                                    <div className="flex items-center gap-2 mt-1.5">
                                         <div className="text-[10px] font-bold text-primary uppercase">#{selectedTicket._id?.slice(-6)}</div>
-                                        <div className={`px-1.5 py-0.5 text-[8px] font-black border uppercase rounded-full ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).bg} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).text} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).border}`}>
+                                        <div className={`px-2 py-0.5 text-[8px] font-black border uppercase rounded-full ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).bg} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).text} ${(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).border}`}>
                                             {(STATUS_STYLES[selectedTicket.status] || STATUS_STYLES.pending).label}
                                         </div>
                                         {selectedTicket.priority && (
-                                            <div className={`px-1.5 py-0.5 text-[8px] font-black border uppercase rounded-full ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).bg} ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).text} ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).border}`}>
+                                            <div className={`px-2 py-0.5 text-[8px] font-black border uppercase rounded-full ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).bg} ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).text} ${(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).border}`}>
                                                 {(PRIORITY_STYLES[selectedTicket.priority] || PRIORITY_STYLES.medium).label}
                                             </div>
                                         )}
@@ -511,8 +578,8 @@ export default function SupportPage() {
                             ) : (
                                 <>
                                     {/* Original Message */}
-                                    <div className="flex gap-4">
-                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                                    <div className="flex gap-4 text-left">
+                                        <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center shrink-0 border border-primary/20">
                                             <UserIcon className="w-4 h-4 text-primary" />
                                         </div>
                                         <div className="space-y-2 max-w-[85%]">
@@ -522,11 +589,11 @@ export default function SupportPage() {
                                                 </span>
                                                 <span className="text-[9px] font-medium text-text-muted">{new Date(selectedTicket.createdAt).toLocaleString()}</span>
                                             </div>
-                                            <div className="bg-white border border-border p-4 rounded-2xl rounded-tl-none shadow-sm text-[13px] leading-relaxed text-text-secondary whitespace-pre-wrap">
+                                            <div className="bg-white border border-slate-100 p-4 rounded-2xl rounded-tl-none shadow-md text-[13px] leading-relaxed text-text-secondary whitespace-pre-wrap">
                                                 {selectedTicket.description}
                                             </div>
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <div className={`text-[9px] font-bold border px-2 py-0.5 rounded-full uppercase ${CATEGORY_STYLES[selectedTicket.category] || CATEGORY_STYLES['General Inquiry']}`}>
+                                                <div className={`text-[9px] font-bold border px-2.5 py-0.5 rounded-full uppercase ${CATEGORY_STYLES[selectedTicket.category] || CATEGORY_STYLES['General Inquiry']}`}>
                                                     {selectedTicket.category}
                                                 </div>
                                             </div>
@@ -539,7 +606,7 @@ export default function SupportPage() {
                                             const isMe = msg.userId?._id === user?._id;
                                             const role = msg.userId?.role || 'user';
                                             return (
-                                                <div key={i} className={`flex gap-3 ${isMe ? 'flex-row-reverse' : ''}`}>
+                                                <div key={i} className={`flex gap-3 text-left ${isMe ? 'flex-row-reverse' : ''}`}>
                                                     {!isMe && (
                                                         <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center shrink-0 border border-border">
                                                             <UserIcon className="w-4 h-4 text-slate-500" />
@@ -555,7 +622,7 @@ export default function SupportPage() {
                                                             </span>
                                                             <span className="text-[9px] text-text-muted">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                         </div>
-                                                        <div className={`px-4 py-3 rounded-2xl shadow-sm text-[13px] font-medium leading-relaxed ${isMe ? 'bg-text text-white rounded-tr-none' : 'bg-white border border-border text-text-secondary rounded-tl-none'}`}>
+                                                        <div className={`px-4 py-3 rounded-2xl shadow-md text-[13px] font-medium leading-relaxed ${isMe ? 'bg-text text-white rounded-tr-none' : 'bg-white border border-slate-150 text-text-secondary rounded-tl-none'}`}>
                                                             {msg.message}
                                                         </div>
                                                     </div>
@@ -564,7 +631,7 @@ export default function SupportPage() {
                                         })}
                                         {selectedTicket.responses?.length === 0 && (
                                             <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary border border-primary/10 rounded-xl text-[10px] font-bold uppercase tracking-wider">
-                                                <Clock className="w-3.5 h-3.5" /> Awaiting reply
+                                                <Clock className="w-3.5 h-3.5" /> Awaiting response
                                             </div>
                                         )}
                                         <div ref={chatEndRef} />
@@ -607,7 +674,7 @@ export default function SupportPage() {
             {/* ── Create Platform Ticket Modal ─────────────────────── */}
             {showModal && createPortal(
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4" onClick={() => setShowModal(false)}>
-                    <div className="bg-card text-card-foreground w-full max-w-md p-8 shadow-2xl relative border border-border overflow-hidden rounded-2xl" onClick={(e) => e.stopPropagation()}>
+                    <div className="bg-card text-card-foreground w-full max-w-md p-8 shadow-2xl relative border border-border overflow-hidden rounded-2xl animate-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
                         <div className="flex items-center gap-5 mb-8 pb-5 border-b border-border">
                             <div className="w-12 h-12 flex items-center justify-center rounded-xl bg-[#B58E29]/10">
                                 <Wrench className="w-7 h-7 text-[#B58E29]" />
@@ -644,28 +711,30 @@ export default function SupportPage() {
                                     <button
                                         type="button"
                                         onClick={() => setIsCategoryOpen(v => !v)}
-                                        className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-bold outline-none rounded-xl flex items-center justify-between cursor-pointer transition-all focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30"
+                                        className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-bold outline-none rounded-xl flex items-center justify-between cursor-pointer"
                                     >
                                         <span>{form.category}</span>
-                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isCategoryOpen ? 'rotate-180' : ''}`} />
+                                        <ChevronDown className={`w-4 h-4 transition-transform ${isCategoryOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     <AnimatePresence>
                                         {isCategoryOpen && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: -6 }}
+                                                initial={{ opacity: 0, y: 8 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -6 }}
-                                                transition={{ duration: 0.15 }}
-                                                className="absolute top-full left-0 right-0 mt-1.5 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-[10001]"
+                                                exit={{ opacity: 0, y: 8 }}
+                                                transition={{ duration: 0.13 }}
+                                                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#243044] border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1.5 max-h-48 overflow-y-auto"
                                             >
-                                                {PLATFORM_CATEGORIES.map(c => (
+                                                {categories.map(cat => (
                                                     <div
-                                                        key={c}
-                                                        onClick={() => { setForm({ ...form, category: c }); setIsCategoryOpen(false); }}
-                                                        className={`px-4 py-3 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between ${form.category === c ? 'bg-[#B58E29]/10 text-[#B58E29] font-bold' : 'text-card-foreground hover:bg-accent'}`}
+                                                        key={cat}
+                                                        className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${form.category === cat ? 'bg-[#B58E29]/15 text-[#B58E29]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                                                        onClick={() => {
+                                                            setForm({ ...form, category: cat });
+                                                            setIsCategoryOpen(false);
+                                                        }}
                                                     >
-                                                        {c}
-                                                        {form.category === c && <span className="text-[#B58E29] text-xs">✓</span>}
+                                                        {cat}
                                                     </div>
                                                 ))}
                                             </motion.div>
@@ -681,34 +750,30 @@ export default function SupportPage() {
                                     <button
                                         type="button"
                                         onClick={() => setIsPriorityOpen(v => !v)}
-                                        className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-bold outline-none rounded-xl flex items-center justify-between cursor-pointer transition-all focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30"
+                                        className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-bold outline-none rounded-xl flex items-center justify-between cursor-pointer"
                                     >
-                                        <span className="flex items-center gap-2">
-                                            <span className={`w-2 h-2 rounded-full ${(PRIORITY_STYLES[form.priority] || PRIORITY_STYLES.medium).bg.replace('bg-', 'bg-').replace('50', '400')}`} style={{ background: form.priority === 'urgent' ? '#f43f5e' : form.priority === 'high' ? '#f97316' : form.priority === 'medium' ? '#3b82f6' : '#94a3b8' }}></span>
-                                            {(PRIORITY_STYLES[form.priority] || PRIORITY_STYLES.medium).label}
-                                        </span>
-                                        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform duration-200 ${isPriorityOpen ? 'rotate-180' : ''}`} />
+                                        <span className="uppercase">{form.priority}</span>
+                                        <ChevronDown className={`w-4 h-4 transition-transform ${isPriorityOpen ? 'rotate-180' : ''}`} />
                                     </button>
                                     <AnimatePresence>
                                         {isPriorityOpen && (
                                             <motion.div
-                                                initial={{ opacity: 0, y: -6 }}
+                                                initial={{ opacity: 0, y: 8 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -6 }}
-                                                transition={{ duration: 0.15 }}
-                                                className="absolute top-full left-0 right-0 mt-1.5 bg-card border border-border rounded-xl overflow-hidden shadow-xl z-[10001]"
+                                                exit={{ opacity: 0, y: 8 }}
+                                                transition={{ duration: 0.13 }}
+                                                className="absolute top-full left-0 w-full mt-2 bg-white dark:bg-[#243044] border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1.5"
                                             >
-                                                {PRIORITIES.map(p => (
+                                                {PRIORITIES.map(pri => (
                                                     <div
-                                                        key={p}
-                                                        onClick={() => { setForm({ ...form, priority: p }); setIsPriorityOpen(false); }}
-                                                        className={`px-4 py-3 text-[13px] font-medium cursor-pointer transition-colors flex items-center justify-between ${form.priority === p ? 'bg-[#B58E29]/10 text-[#B58E29] font-bold' : 'text-card-foreground hover:bg-accent'}`}
+                                                        key={pri}
+                                                        className={`px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${form.priority === pri ? 'bg-[#B58E29]/15 text-[#B58E29]' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                                                        onClick={() => {
+                                                            setForm({ ...form, priority: pri });
+                                                            setIsPriorityOpen(false);
+                                                        }}
                                                     >
-                                                        <span className="flex items-center gap-2">
-                                                            <span className="w-2 h-2 rounded-full" style={{ background: p === 'urgent' ? '#f43f5e' : p === 'high' ? '#f97316' : p === 'medium' ? '#3b82f6' : '#94a3b8' }}></span>
-                                                            {PRIORITY_STYLES[p].label}
-                                                        </span>
-                                                        {form.priority === p && <span className="text-[#B58E29] text-xs">✓</span>}
+                                                        {pri}
                                                     </div>
                                                 ))}
                                             </motion.div>
@@ -719,18 +784,24 @@ export default function SupportPage() {
 
                             {/* Description */}
                             <div className="space-y-2 text-left">
-                                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Detailed Description</label>
+                                <label className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider ml-1">Description</label>
                                 <textarea
                                     value={form.description}
                                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-medium outline-none focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30 rounded-xl resize-none h-28 transition-all placeholder:text-muted-foreground/60"
-                                    placeholder="Explain the problem, steps to reproduce, or what help you need..."
+                                    rows="4"
+                                    className="w-full px-4 py-3 bg-white dark:bg-[#243044] border border-border text-card-foreground text-[13px] font-medium outline-none focus:border-[#B58E29] focus:ring-1 focus:ring-[#B58E29]/30 rounded-xl transition-all placeholder:text-muted-foreground/60 resize-none"
+                                    placeholder="Explain the problem in detail so the technical team can investigate..."
                                 />
                             </div>
 
-                            <div className="flex gap-4 pt-6 border-t border-border mt-2">
-                                <button type="button" onClick={() => setShowModal(false)} className="flex-1 py-3 text-[12px] font-bold uppercase tracking-wider text-muted-foreground hover:bg-accent rounded-xl transition-colors border border-border">
+                            {/* Buttons */}
+                            <div className="flex gap-3 pt-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowModal(false)}
+                                    className="flex-1 py-3.5 border border-border text-card-foreground text-xs font-bold uppercase tracking-wider hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-all"
+                                >
                                     Cancel
                                 </button>
                                 <button type="submit" className="flex-1 py-3 shadow-lg flex items-center justify-center gap-2 rounded-xl transition-all active:scale-95 bg-[#1e293b] hover:bg-[#2d3f57]">
@@ -764,218 +835,301 @@ export default function SupportPage() {
 }
 
 /* ──────────────────────────────────────────────────────────────────────
-   CUSTOMER ISSUES TABLE
-   Columns: Customer Name | Subject | Category | Priority | Status | Date | Actions
+   CUSTOMER ISSUES CARDS (Premium Grid Layout)
 ────────────────────────────────────────────────────────────────────── */
-function CustomerTable({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus }) {
+function CustomerCards({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus, isDark }) {
+    if (tickets.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-24 opacity-30 space-y-3">
+                <Headphones className="w-12 h-12 text-text-muted" />
+                <p className="text-[13px] font-bold text-text-muted">No customer support requests found.</p>
+                <p className="text-[11px] text-text-muted">Customer tickets from website, app, chat or WhatsApp will appear here.</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[860px]">
-                <colgroup>
-                    <col style={{ width: '18%' }} />
-                    <col style={{ width: '24%' }} />
-                    <col style={{ width: '16%' }} />
-                    <col style={{ width: '11%' }} />
-                    <col style={{ width: '13%' }} />
-                    <col style={{ width: '11%' }} />
-                    <col style={{ width: '7%' }} />
-                </colgroup>
-                <thead>
-                    <tr className="bg-surface border-b border-border">
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Customer Name</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Subject</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Category</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Priority</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Status</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Date</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {tickets.length === 0 ? (
-                        <tr>
-                            <td colSpan="7" className="px-6 py-24 text-center">
-                                <div className="flex flex-col items-center justify-center opacity-30 space-y-3">
-                                    <Headphones className="w-12 h-12 text-text-muted" />
-                                    <p className="text-[13px] font-bold text-text-muted">No customer support requests found.</p>
-                                    <p className="text-[11px] text-text-muted">Customer tickets from website, app, chat or WhatsApp will appear here.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            {tickets.map(t => {
+                const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
+                const prStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.medium;
+                const borderColors = {
+                    low: 'border-t-slate-400',
+                    medium: 'border-t-blue-500',
+                    high: 'border-t-orange-500',
+                    urgent: 'border-t-rose-600'
+                };
+                const borderColorClass = borderColors[t.priority] || 'border-t-blue-500';
+
+                return (
+                    <div 
+                        key={t._id} 
+                        className={`h-full bg-white dark:bg-[#1e2433] rounded-3xl border-x border-b border-slate-150 dark:border-slate-800 border-t-4 ${borderColorClass} shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
+                    >
+                        {/* Upper Header */}
+                        <div className="p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                        <UserIcon className="w-4 h-4 text-primary" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[12px] font-black text-text truncate max-w-[120px]">
+                                            {t.customerId?.name || 'Unknown Customer'}
+                                        </div>
+                                        {t.customerId?.phone && (
+                                            <div className="text-[10px] text-text-muted mt-0.5">{t.customerId.phone}</div>
+                                        )}
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    ) : tickets.map(t => {
-                        const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
-                        const prStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.medium;
-                        return (
-                            <tr key={t._id} className="hover:bg-primary/[0.02] transition-colors group">
-                                {/* Customer Name */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                            <UserIcon className="w-3.5 h-3.5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <div className="text-[12px] font-bold text-text truncate max-w-[110px]">{t.customerId?.name || 'Unknown Customer'}</div>
-                                            {t.customerId?.phone && <div className="text-[10px] text-text-muted mt-0.5">{t.customerId.phone}</div>}
-                                        </div>
-                                    </div>
-                                </td>
-                                {/* Subject */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="text-[12px] font-semibold text-text truncate max-w-[190px]">{t.subject}</div>
-                                    <div className="text-[10px] font-bold text-primary/70 uppercase mt-0.5">#{t._id?.slice(-6)}</div>
-                                </td>
-                                {/* Category */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold border uppercase tracking-wide rounded-full ${CATEGORY_STYLES[t.category] || CATEGORY_STYLES['General Inquiry']}`}>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></div>
-                                        {t.category}
-                                    </div>
-                                </td>
-                                {/* Priority */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold border uppercase tracking-wide rounded-full ${prStyle.bg} ${prStyle.text} ${prStyle.border}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${prStyle.dot}`}></span>
-                                        {prStyle.label}
-                                    </span>
-                                </td>
-                                {/* Status */}
-                                <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                                    {['admin', 'manager', 'superadmin'].includes(userRole) ? (
-                                        <StatusDropdown t={t} stStyle={stStyle} openStatusDropdownId={openStatusDropdownId} setOpenStatusDropdownId={setOpenStatusDropdownId} statusBtnRefs={statusBtnRefs} dropdownPos={dropdownPos} setDropdownPos={setDropdownPos} handleUpdateStatus={handleUpdateStatus} />
-                                    ) : (
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${stStyle.dot}`}></span>
-                                            {stStyle.label}
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+                                    #{t._id?.slice(-6)}
+                                </span>
+                            </div>
+
+                            {/* Subject */}
+                            <div>
+                                <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
+                                    {t.subject}
+                                </h4>
+                                <p className="text-[11px] text-text-muted line-clamp-2 mt-1 font-medium">
+                                    {t.description}
+                                </p>
+                            </div>
+
+                            {/* Badges */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {(() => {
+                                    const catStyle = isDark 
+                                        ? (CATEGORY_BADGE_STYLES_DARK[t.category] || CATEGORY_BADGE_STYLES_DARK['General Inquiry'])
+                                        : (CATEGORY_BADGE_STYLES[t.category] || CATEGORY_BADGE_STYLES['General Inquiry']);
+                                    return (
+                                        <span 
+                                            style={{ backgroundColor: catStyle.bg, color: catStyle.text, borderColor: catStyle.border }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                        >
+                                            {t.category}
                                         </span>
-                                    )}
-                                </td>
-                                {/* Date */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="text-[11px] font-medium text-text">{new Date(t.createdAt).toLocaleDateString()}</div>
-                                    <div className="text-[10px] text-text-muted mt-0.5">{new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                </td>
-                                {/* Actions */}
-                                <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handleSelectTicket(t._id)} className="p-1.5 rounded-lg hover:bg-blue-50 transition-colors" title="View Details">
-                                        <Eye className="w-4 h-4 text-blue-500" strokeWidth={2.5} />
-                                    </button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                                    );
+                                })()}
+                                {(() => {
+                                    const priStyle = isDark
+                                        ? (PRIORITY_BADGE_STYLES_DARK[t.priority] || PRIORITY_BADGE_STYLES_DARK.medium)
+                                        : (PRIORITY_BADGE_STYLES[t.priority] || PRIORITY_BADGE_STYLES.medium);
+                                    return (
+                                        <span 
+                                            style={{ backgroundColor: priStyle.backgroundColor, color: priStyle.textColor, borderColor: priStyle.borderColor }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                        >
+                                            {priStyle.label}
+                                        </span>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Card Footer */}
+                        <div className="px-5 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div onClick={(e) => e.stopPropagation()}>
+                                {['admin', 'manager', 'receptionist', 'superadmin'].includes(userRole) ? (
+                                    <StatusDropdown 
+                                        t={t} 
+                                        stStyle={stStyle} 
+                                        openStatusDropdownId={openStatusDropdownId} 
+                                        setOpenStatusDropdownId={setOpenStatusDropdownId} 
+                                        statusBtnRefs={statusBtnRefs} 
+                                        dropdownPos={dropdownPos} 
+                                        setDropdownPos={setDropdownPos} 
+                                        handleUpdateStatus={handleUpdateStatus} 
+                                    />
+                                ) : (
+                                    (() => {
+                                        const sStyle = isDark
+                                            ? (STATUS_BADGE_STYLES_DARK[t.status] || STATUS_BADGE_STYLES_DARK.pending)
+                                            : (STATUS_BADGE_STYLES[t.status] || STATUS_BADGE_STYLES.pending);
+                                        return (
+                                            <span 
+                                                style={{ backgroundColor: sStyle.bg, color: sStyle.text, borderColor: sStyle.border }}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                            >
+                                                <span 
+                                                    style={{ backgroundColor: sStyle.text }} 
+                                                    className="w-1.5 h-1.5 rounded-full"
+                                                ></span>
+                                                {stStyle.label}
+                                            </span>
+                                        );
+                                    })()
+                                )}
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-text-muted font-bold">
+                                    {new Date(t.createdAt).toLocaleDateString()}
+                                </span>
+                                <button 
+                                    onClick={() => handleSelectTicket(t._id)} 
+                                    className="p-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm border border-slate-200/60 dark:border-slate-700/60 transition-all text-blue-500 hover:scale-105 active:scale-95" 
+                                    title="View Details"
+                                >
+                                    <Eye className="w-4 h-4" strokeWidth={2.5} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }
 
 /* ──────────────────────────────────────────────────────────────────────
-   PLATFORM HELP TABLE
-   Columns: Ticket ID | Subject | Category | Priority | Status | Created By | Date | Actions
+   PLATFORM HELP CARDS (Premium Grid Layout)
 ────────────────────────────────────────────────────────────────────── */
-function PlatformTable({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus }) {
+function PlatformCards({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus, isDark }) {
+    if (tickets.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center py-24 opacity-30 space-y-3">
+                <Wrench className="w-12 h-12 text-text-muted" />
+                <p className="text-[13px] font-bold text-text-muted">No platform help requests created yet.</p>
+                <p className="text-[11px] text-text-muted">Use the "New Request" button to report a bug, payment issue, or platform problem.</p>
+            </div>
+        );
+    }
+
     return (
-        <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[960px]">
-                <colgroup>
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '22%' }} />
-                    <col style={{ width: '15%' }} />
-                    <col style={{ width: '10%' }} />
-                    <col style={{ width: '13%' }} />
-                    <col style={{ width: '16%' }} />
-                    <col style={{ width: '9%' }} />
-                    <col style={{ width: '5%' }} />
-                </colgroup>
-                <thead>
-                    <tr className="bg-surface border-b border-border">
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Ticket ID</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Subject</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Category</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Priority</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Status</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Created By</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Date</th>
-                        <th className="px-5 py-4 text-[10px] font-bold text-text-muted uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                    {tickets.length === 0 ? (
-                        <tr>
-                            <td colSpan="8" className="px-6 py-24 text-center">
-                                <div className="flex flex-col items-center justify-center opacity-30 space-y-3">
-                                    <Wrench className="w-12 h-12 text-text-muted" />
-                                    <p className="text-[13px] font-bold text-text-muted">No platform help requests created yet.</p>
-                                    <p className="text-[11px] text-text-muted">Use the "New Request" button to report a bug, payment issue, or platform problem.</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
+            {tickets.map(t => {
+                const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
+                const prStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.medium;
+                const borderColors = {
+                    low: 'border-t-slate-400',
+                    medium: 'border-t-blue-500',
+                    high: 'border-t-orange-500',
+                    urgent: 'border-t-rose-600'
+                };
+                const borderColorClass = borderColors[t.priority] || 'border-t-blue-500';
+
+                return (
+                    <div 
+                        key={t._id} 
+                        className={`h-full bg-white dark:bg-[#1e2433] rounded-3xl border-x border-b border-slate-150 dark:border-slate-800 border-t-4 ${borderColorClass} shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
+                    >
+                        {/* Upper Header */}
+                        <div className="p-5 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                                        <UserIcon className="w-4 h-4 text-slate-500" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[12px] font-black text-text truncate max-w-[120px]">
+                                            {t.userId?.name || 'Staff'}
+                                        </div>
+                                        {t.userId?.role && (
+                                            <div className="text-[9px] text-text-muted font-extrabold uppercase mt-0.5">
+                                                {t.userId.role}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </td>
-                        </tr>
-                    ) : tickets.map(t => {
-                        const stStyle = STATUS_STYLES[t.status] || STATUS_STYLES.pending;
-                        const prStyle = PRIORITY_STYLES[t.priority] || PRIORITY_STYLES.medium;
-                        return (
-                            <tr key={t._id} className="hover:bg-primary/[0.02] transition-colors group">
-                                {/* Ticket ID */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="text-[11px] font-bold text-primary uppercase">#{t._id?.slice(-6)}</div>
-                                </td>
-                                {/* Subject */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="text-[12px] font-semibold text-text truncate max-w-[180px]">{t.subject}</div>
-                                </td>
-                                {/* Category */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold border uppercase tracking-wide rounded-full ${CATEGORY_STYLES[t.category] || CATEGORY_STYLES['Other']}`}>
-                                        <div className="w-1.5 h-1.5 rounded-full bg-current opacity-70"></div>
-                                        {t.category}
-                                    </div>
-                                </td>
-                                {/* Priority */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold border uppercase tracking-wide rounded-full ${prStyle.bg} ${prStyle.text} ${prStyle.border}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${prStyle.dot}`}></span>
-                                        {prStyle.label}
-                                    </span>
-                                </td>
-                                {/* Status */}
-                                <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                                    {['admin', 'manager', 'superadmin'].includes(userRole) ? (
-                                        <StatusDropdown t={t} stStyle={stStyle} openStatusDropdownId={openStatusDropdownId} setOpenStatusDropdownId={setOpenStatusDropdownId} statusBtnRefs={statusBtnRefs} dropdownPos={dropdownPos} setDropdownPos={setDropdownPos} handleUpdateStatus={handleUpdateStatus} />
-                                    ) : (
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-bold border uppercase tracking-wider rounded-full ${stStyle.bg} ${stStyle.text} ${stStyle.border}`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${stStyle.dot}`}></span>
-                                            {stStyle.label}
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase">
+                                    #{t._id?.slice(-6)}
+                                </span>
+                            </div>
+
+                            {/* Subject */}
+                            <div>
+                                <h4 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 line-clamp-1">
+                                    {t.subject}
+                                </h4>
+                                <p className="text-[11px] text-text-muted line-clamp-2 mt-1 font-medium">
+                                    {t.description}
+                                </p>
+                            </div>
+
+                            {/* Badges */}
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {(() => {
+                                    const catStyle = isDark 
+                                        ? (CATEGORY_BADGE_STYLES_DARK[t.category] || CATEGORY_BADGE_STYLES_DARK['Other'])
+                                        : (CATEGORY_BADGE_STYLES[t.category] || CATEGORY_BADGE_STYLES['Other']);
+                                    return (
+                                        <span 
+                                            style={{ backgroundColor: catStyle.bg, color: catStyle.text, borderColor: catStyle.border }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                        >
+                                            {t.category}
                                         </span>
-                                    )}
-                                </td>
-                                {/* Created By */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                                            <UserIcon className="w-3 h-3 text-slate-500" />
-                                        </div>
-                                        <div>
-                                            <div className="text-[11px] font-semibold text-text truncate max-w-[100px]">{t.userId?.name || 'Staff'}</div>
-                                            {t.userId?.role && <div className="text-[9px] text-text-muted uppercase font-bold">{t.userId.role}</div>}
-                                        </div>
-                                    </div>
-                                </td>
-                                {/* Date */}
-                                <td className="px-5 py-4 cursor-pointer" onClick={() => handleSelectTicket(t._id)}>
-                                    <div className="text-[11px] font-medium text-text">{new Date(t.createdAt).toLocaleDateString()}</div>
-                                    <div className="text-[10px] text-text-muted mt-0.5">{new Date(t.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                </td>
-                                {/* Actions */}
-                                <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                                    <button onClick={() => handleSelectTicket(t._id)} className="p-1.5 rounded-lg hover:bg-blue-50 transition-colors" title="View Details">
-                                        <Eye className="w-4 h-4 text-blue-500" strokeWidth={2.5} />
-                                    </button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                                    );
+                                })()}
+                                {(() => {
+                                    const priStyle = isDark
+                                        ? (PRIORITY_BADGE_STYLES_DARK[t.priority] || PRIORITY_BADGE_STYLES_DARK.medium)
+                                        : (PRIORITY_BADGE_STYLES[t.priority] || PRIORITY_BADGE_STYLES.medium);
+                                    return (
+                                        <span 
+                                            style={{ backgroundColor: priStyle.backgroundColor, color: priStyle.textColor, borderColor: priStyle.borderColor }}
+                                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                        >
+                                            {priStyle.label}
+                                        </span>
+                                    );
+                                })()}
+                            </div>
+                        </div>
+
+                        {/* Card Footer */}
+                        <div className="px-5 py-4 bg-slate-50/50 dark:bg-white/5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                            <div onClick={(e) => e.stopPropagation()}>
+                                {['admin', 'manager', 'receptionist', 'superadmin'].includes(userRole) ? (
+                                    <StatusDropdown 
+                                        t={t} 
+                                        stStyle={stStyle} 
+                                        openStatusDropdownId={openStatusDropdownId} 
+                                        setOpenStatusDropdownId={setOpenStatusDropdownId} 
+                                        statusBtnRefs={statusBtnRefs} 
+                                        dropdownPos={dropdownPos} 
+                                        setDropdownPos={setDropdownPos} 
+                                        handleUpdateStatus={handleUpdateStatus} 
+                                    />
+                                ) : (
+                                    (() => {
+                                        const sStyle = isDark
+                                            ? (STATUS_BADGE_STYLES_DARK[t.status] || STATUS_BADGE_STYLES_DARK.pending)
+                                            : (STATUS_BADGE_STYLES[t.status] || STATUS_BADGE_STYLES.pending);
+                                        return (
+                                            <span 
+                                                style={{ backgroundColor: sStyle.bg, color: sStyle.text, borderColor: sStyle.border }}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[9px] font-black border uppercase tracking-wider rounded-full"
+                                            >
+                                                <span 
+                                                    style={{ backgroundColor: sStyle.text }} 
+                                                    className="w-1.5 h-1.5 rounded-full"
+                                                ></span>
+                                                {stStyle.label}
+                                            </span>
+                                        );
+                                    })()
+                                )}
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <span className="text-[10px] text-text-muted font-bold">
+                                    {new Date(t.createdAt).toLocaleDateString()}
+                                </span>
+                                <button 
+                                    onClick={() => handleSelectTicket(t._id)} 
+                                    className="p-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm border border-slate-200/60 dark:border-slate-700/60 transition-all text-blue-500 hover:scale-105 active:scale-95" 
+                                    title="View Details"
+                                >
+                                    <Eye className="w-4 h-4" strokeWidth={2.5} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })}
         </div>
     );
 }

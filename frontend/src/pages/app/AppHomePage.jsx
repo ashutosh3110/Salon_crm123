@@ -12,7 +12,7 @@ import {
     Moon, Bell, Sun, Search, Clock, RefreshCw, Camera, MessageSquare, ExternalLink, Wallet, Scissors, LayoutGrid, Tag, DoorClosed, Armchair, ShoppingBag, Check, ChevronRight, ChevronDown, X, Navigation
 } from 'lucide-react';
 
-
+import { useNotifications } from '../../contexts/NotificationContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { mapInventoryProductToShopProduct } from '../../utils/shopProductMapper';
 import homeData from '../../data/appHomeData.json';
@@ -344,6 +344,7 @@ export default function AppHomePage() {
     const navigate = useNavigate();
     const location = useLocation();
     const { gender, setGender } = useGender();
+    const { unreadCount } = useNotifications();
     // Fallback if gender is null
     const g = (gender === 'men' || gender === 'women') ? gender : 'women';
 
@@ -728,52 +729,72 @@ export default function AppHomePage() {
                         justifyContent: 'space-between'
                     }}
                 >
-                    <div onClick={() => setShowLocationModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
-                        <div style={{
-                            width: '36px',
-                            height: '36px',
-                            borderRadius: '12px',
-                            background: isLight ? '#FFF' : '#242424',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            border: `1px solid ${colors.border}`
-                        }}>
-                            <MapPin size={18} style={{ color: colors.accent }} />
-                        </div>
+                    <div onClick={() => setShowLocationModal(true)} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}>
+                        <MapPin size={28} color="#F59E0B" fill="#F59E0B" />
                         <div>
+                            <p style={{ fontSize: '11px', color: isLight ? '#6B7280' : '#9CA3AF', margin: 0, fontWeight: 500 }}>Current Location</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <p style={{ fontSize: '10px', color: colors.textMuted, fontWeight: 700, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Selection</p>
-                                <ChevronDown size={12} color={colors.textMuted} />
+                                <h3 style={{ fontSize: '15px', fontWeight: 700, color: colors.text, margin: 0, display: 'flex', alignItems: 'center' }}>
+                                    {activeOutlet?.name || 'Connaught Place, New Delhi'}
+                                </h3>
+                                <ChevronDown size={16} color={colors.text} />
                             </div>
-                            <h3 style={{ fontSize: '14px', fontWeight: 800, color: colors.text, margin: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                {activeOutlet?.name || 'Wapixo Salon'}
-                                <span style={{ fontSize: '12px' }}>📍</span>
-                            </h3>
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <div style={{ position: 'relative' }}>
+                            <Bell 
+                                size={24} 
+                                color={colors.text} 
+                                style={{ cursor: 'pointer' }} 
+                                onClick={() => navigate('/app/notifications')} 
+                            />
+                            {unreadCount > 0 && (
+                                <span style={{
+                                    position: 'absolute',
+                                    top: '-4px',
+                                    right: '-4px',
+                                    minWidth: '14px',
+                                    height: '14px',
+                                    background: '#ff4757',
+                                    color: 'white',
+                                    fontSize: '8px',
+                                    fontWeight: 900,
+                                    borderRadius: '50%',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    border: isLight ? '1.5px solid #fff' : '1.5px solid #141414',
+                                }}>
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* ── SEARCH BAR ── */}
-                <div style={{ padding: '10px 16px 16px', display: 'flex', gap: '10px', alignItems: 'center' }}>
+                <div style={{ padding: '4px 16px 16px', display: 'flex', alignItems: 'center' }}>
                     <div
                         style={{
                             flex: 1,
-                            background: '#F3F4F6',
+                            background: isLight ? '#FFFFFF' : '#242424',
+                            border: `1px solid ${colors.border}`,
                             borderRadius: '9999px',
                             display: 'flex',
                             alignItems: 'center',
                             padding: '0 16px',
-                            height: '46px',
-                            gap: '10px',
-                            transition: 'all 0.3s ease'
+                            height: '50px',
+                            gap: '12px',
+                            transition: 'all 0.3s ease',
+                            boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.04)' : 'none'
                         }}
                     >
                         <button
                             onClick={() => searchQuery.trim() && navigate(`/app/services?search=${encodeURIComponent(searchQuery.trim())}`)}
                             style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                         >
-                            <Search size={18} className="text-slate-400" />
+                            <Search size={20} color={isLight ? '#6B7280' : '#9CA3AF'} />
                         </button>
                         <input
                             type="text"
@@ -781,20 +802,26 @@ export default function AppHomePage() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             onKeyDown={handleSearchKeyDown}
-                            placeholder={isFocused ? "" : (PLACEHOLDERS?.[placeholderIndex] || "Search...")}
+                            placeholder={isFocused ? "" : (PLACEHOLDERS?.[placeholderIndex] || "Search for salons, services...")}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
                             style={{
                                 background: 'transparent',
                                 border: 'none',
                                 outline: 'none',
-                                color: '#1e293b',
+                                color: colors.text,
                                 fontSize: '14px',
                                 width: '100%',
                                 height: '100%',
                                 fontWeight: 500
                             }}
                         />
+                        <button 
+                            onClick={() => navigate('/app/services')}
+                            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                        >
+                            <SlidersHorizontal size={20} color={colors.text} />
+                        </button>
                     </div>
                 </div>
 

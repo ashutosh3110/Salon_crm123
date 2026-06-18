@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
@@ -8,21 +8,7 @@ import {
     LayoutDashboard, Users, Clock, Settings, LogOut, ChevronLeft, ChevronRight, X, User,
     Scissors, Bell, Shield, LifeBuoy, DollarSign, UserCheck, Camera
 } from 'lucide-react';
-
-const menuItems = [
-    { label: 'Overview', icon: LayoutDashboard, path: '/stylist' },
-    { label: 'Attendance', icon: UserCheck, path: '/stylist/attendance', badge: { count: 'LIVE', color: 'bg-emerald-500 text-white animate-pulse' } },
-    { label: 'My clients', icon: Users, path: '/stylist/clients' },
-    { label: 'Earnings', icon: DollarSign, path: '/stylist/commissions' },
-    { label: 'Time off', icon: Clock, path: '/stylist/timeoff' },
-    { label: 'Settings', icon: Settings, path: '/stylist/settings', subItems: [
-        { label: 'My profile', path: '/stylist/settings/profile' },
-        // { label: 'Services & skills', pat    h: '/stylist/settings/skills' },
-        { label: 'Availability', path: '/stylist/settings/availability' },
-        { label: 'Security', path: '/stylist/settings/security' }
-    ]},
-    { label: 'Support', icon: LifeBuoy, path: '/stylist/support' }
-];
+import { buildDynamicSidebar } from '../../config/sidebarConfig';
 
 export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mobileOpen, setMobileOpen }) {
     const { logout, user } = useAuth();
@@ -30,6 +16,10 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
+
+    const menuItems = useMemo(() => {
+        return buildDynamicSidebar('stylist', user);
+    }, [user]);
 
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
     const [expandedItem, setExpandedItem] = useState(null);

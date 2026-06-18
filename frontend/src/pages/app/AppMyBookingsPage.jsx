@@ -118,7 +118,7 @@ export default function AppMyBookingsPage() {
             <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                style={{ background: '#FFFFFF', minHeight: '100svh' }}
+                style={{ background: themeColors.bg || '#FCF9F6', minHeight: '100svh' }}
                 className="pb-10"
             >
                 {/* Redesigned Header to match screenshot */}

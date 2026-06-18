@@ -1,27 +1,22 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import {
     LayoutDashboard, Package, ShoppingBag, BarChart2,
     Settings, LogOut, ChevronLeft, ChevronRight, X, AlertTriangle, List, Truck, History, ShoppingCart, ArrowLeftRight
 } from 'lucide-react';
-
-const menuItems = [
-    { label: 'Operational Dashboard', icon: LayoutDashboard, path: '/inventory' },
-    { label: 'Asset Ledger', icon: Package, path: '/inventory/stock' },
-    { label: 'Procurement Matrix', icon: ShoppingCart, path: '/inventory/purchase' },
-    { label: 'Deployment Logs', icon: ArrowLeftRight, path: '/inventory/transfer' },
-    { label: 'Depletion Alerts', icon: AlertTriangle, path: '/inventory/alerts' },
-    { label: 'Analysis Vectors', icon: BarChart2, path: '/inventory/reports' },
-    { label: 'System Prefs', icon: Settings, path: '/inventory/settings' },
-];
+import { buildDynamicSidebar } from '../../config/sidebarConfig';
 
 export default function InventorySidebar({ collapsed, setCollapsed, mobileOpen, setMobileOpen, isHovered, setIsHovered }) {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
     const { theme } = useTheme();
     const logoSrc = theme === 'dark' ? "/new wapixo logo .png" : "/new black wapixo logo .png";
     const location = useLocation();
+
+    const menuItems = useMemo(() => {
+        return buildDynamicSidebar('inventory', user);
+    }, [user]);
     const [isLgUp, setIsLgUp] = useState(typeof window !== 'undefined' ? window.innerWidth >= 1024 : true);
 
     useEffect(() => {
