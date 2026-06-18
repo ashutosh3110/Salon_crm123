@@ -377,9 +377,9 @@ export default function AppBookingDetailsPage() {
                 {booking.status === 'confirmed' || booking.status === 'pending' ? (
                     <button 
                         onClick={handleCancel}
-                        disabled={!canCancel || isCancelling}
-                        style={{ opacity: canCancel ? 1 : 0.4 }}
-                        className="w-full py-5 rounded-[2rem] bg-black text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
+                        disabled={isCancelling}
+                        style={{ background: '#dc2626' }}
+                        className="w-full py-5 rounded-[2rem] text-white text-[11px] font-black uppercase tracking-[0.4em] shadow-2xl flex items-center justify-center gap-3 active:scale-95 transition-all"
                     >
                         {isCancelling ? 'Processing...' : 'Cancel Booking'} <XCircle size={14} />
                     </button>
