@@ -274,7 +274,7 @@ export default function SalonProfilePage() {
             </div>
 
             {/* ── SALON IDENTITY ── */}
-            <div style={{ position: 'relative', marginTop: '-24px', zIndex: 30, background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px 20px 0', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+            <div style={{ position: 'relative', marginTop: '-24px', zIndex: 30, background: '#FFF', borderTopLeftRadius: '24px', borderTopRightRadius: '24px', padding: '24px 30px 0', display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
                 {/* Circular Logo */}
                 <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: '#000', border: '2px solid #D9A05B', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D9A05B', fontSize: '20px', fontWeight: 900, flexShrink: 0, overflow: 'hidden' }}>
                     {heroImages[0] ? <img src={getImageUrl(heroImages[0])} alt="logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; }} /> : outlet.name?.charAt(0) || 'L'}
@@ -309,7 +309,7 @@ export default function SalonProfilePage() {
             </div>
 
             {/* ── QUICK ACTION BUTTONS ── */}
-            <div style={{ padding: '24px 20px 24px', background: '#FFF', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ padding: '24px 30px 24px', background: '#FFF', display: 'flex', justifyContent: 'space-between' }}>
                 {quickActions.map(({ label, icon: Icon, action }) => (
                     <motion.button
                         key={label}
@@ -333,8 +333,8 @@ export default function SalonProfilePage() {
                 ))}
             </div>
 
-            <div style={{ padding: '20px 20px' }}>
-                    <motion.div key="services" {...fadeUp} style={{ padding: '20px 20px' }}>
+            <div style={{ padding: '20px 30px' }}>
+                    <motion.div key="services" {...fadeUp} style={{ padding: '20px 0' }}>
                         {/* Top Services Header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1A1A1A', margin: 0 }}>Services</h3>
@@ -347,7 +347,7 @@ export default function SalonProfilePage() {
                         </div>
 
                         {/* Horizontal Service Cards */}
-                        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', margin: '0 -20px', paddingLeft: '20px', paddingRight: '20px' }} className="no-scrollbar">
+                        <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', margin: '0 -30px', paddingLeft: '30px', paddingRight: '30px' }} className="no-scrollbar">
                             {outletServices.length === 0 && (
                                 <div style={{ width: '100%', textAlign: 'center', padding: '20px', color: '#AAA', fontSize: '13px' }}>
                                     No services available for this outlet.
