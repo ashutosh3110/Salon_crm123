@@ -3809,7 +3809,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                 initial={{ opacity: 0, scale: 0.97 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.22, ease: 'easeOut' }}
-                className="w-full max-w-7xl h-[92vh] flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E] border border-slate-200 dark:border-white/10 shadow-2xl"
+                className="w-full max-w-[98vw] h-[96vh] flex flex-col rounded-2xl overflow-hidden bg-white dark:bg-[#0A0F1E] border border-slate-200 dark:border-white/10 shadow-2xl"
                 style={{ fontFamily: 'inherit' }}
             >
                 <style>{`
@@ -4522,12 +4522,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
                                                     className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${(item.membershipDiscountType || 'percentage') === 'percentage' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
-                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent' }}
+                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#cca839' : 'transparent' }}
                                                 >%</button>
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue || 0)}
                                                     className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${item.membershipDiscountType === 'fixed' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
-                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent' }}
+                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#cca839' : 'transparent' }}
                                                 >&#8377;</button>
                                                 <input
                                                     type="number"
@@ -4791,24 +4791,25 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                         style={{ background: 'rgba(15,23,42,0.8)' }}>
                         <motion.form initial={{ scale: 0.9, y: 10 }} animate={{ scale: 1, y: 0 }} onSubmit={handleQuickCreateClient}
                             className="w-full max-w-sm rounded-2xl shadow-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                            <div className="p-5 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800/50">
-                                <h4 className="text-xs font-bold uppercase flex items-center gap-2 text-slate-900 dark:text-white">
-                                    <UserPlus className="w-4 h-4 text-amber-600" /> New Quick Client
+                            <div className="p-5 flex justify-between items-center border-b" style={{ background: '#f8fafc', borderColor: '#e2e8f0' }}>
+                                <h4 className="text-sm font-black uppercase flex items-center gap-2" style={{ color: '#0f172a' }}>
+                                    <UserPlus className="w-4 h-4" style={{ color: '#B4912B' }} /> New Quick Client
                                 </h4>
-                                <button type="button" onClick={() => setShowNewClient(false)} className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                                    <X className="w-5 h-5" />
+                                <button type="button" onClick={() => setShowNewClient(false)} className="transition-colors hover:opacity-70">
+                                    <X className="w-5 h-5" style={{ color: '#64748b' }} />
                                 </button>
                             </div>
-                            <div className="p-6 space-y-4">
+                            <div className="p-6 space-y-4" style={{ background: '#ffffff' }}>
                                 {[
                                     { label: 'Customer Name', key: 'name', type: 'text', placeholder: 'e.g. John Doe', required: true },
                                     { label: 'Contact Number', key: 'phone', type: 'tel', placeholder: '10-digit mobile', required: true },
                                     { label: 'Referral Code (Optional)', key: 'appliedReferralCode', type: 'text', placeholder: 'e.g. WAP-XXXXXX', required: false },
                                 ].map(({ label, key, type, placeholder, required }) => (
                                     <div key={key} className="space-y-1.5">
-                                        <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{label}</label>
+                                        <label className="text-[10px] font-black uppercase tracking-widest" style={{ display: 'block', color: '#64748b' }}>{label}</label>
                                         <input required={required} type={type} placeholder={placeholder}
-                                            className="w-full p-3 text-sm font-bold rounded-xl outline-none bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-amber-500 dark:focus:border-amber-500 transition-colors"
+                                            className="w-full p-3 text-sm font-bold rounded-xl outline-none transition-colors"
+                                            style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
                                             value={newClientForm[key] || ''}
                                             onChange={e => setNewClientForm({ ...newClientForm, [key]: key === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : key === 'appliedReferralCode' ? e.target.value.toUpperCase().trim() : e.target.value })}
                                         />
@@ -4820,9 +4821,10 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                         { label: 'Anniversary', key: 'anniversary' },
                                     ].map(({ label, key }) => (
                                         <div key={key} className="space-y-1.5">
-                                            <label className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-400">{label}</label>
+                                            <label className="text-[10px] font-black uppercase tracking-widest" style={{ display: 'block', color: '#64748b' }}>{label}</label>
                                             <input type="date" max={new Date().toISOString().split('T')[0]}
-                                                className="w-full p-3 text-xs font-bold rounded-xl outline-none bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:border-amber-500 dark:focus:border-amber-500 transition-colors"
+                                                className="w-full p-3 text-xs font-bold rounded-xl outline-none transition-colors"
+                                                style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
                                                 value={newClientForm[key]}
                                                 onChange={e => setNewClientForm({ ...newClientForm, [key]: e.target.value })}
                                             />

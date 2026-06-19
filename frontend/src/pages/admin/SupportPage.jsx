@@ -319,52 +319,54 @@ export default function SupportPage() {
     /* ─── Render ─────────────────────────────────────────────────── */
 
     return (
-        <div className="space-y-8 animate-reveal text-left max-w-[1600px] mx-auto pb-20 font-sans px-4">
+        <div className="space-y-6 animate-reveal text-left max-w-[1600px] mx-auto pb-20 font-sans px-4">
 
             {/* ── Header Hero Section ──────────────────────────────── */}
-            <div className="bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] dark:from-[#1e293b] dark:to-[#334155] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 text-slate-800 dark:text-white shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-[#B58E29]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="bg-white dark:bg-slate-900 border border-border/80 !rounded-[16px] p-6 sm:p-8 text-text shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-72 h-72 bg-[#C89B2B]/5 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-primary/5 rounded-full blur-2xl pointer-events-none" />
+                
                 <div className="text-left relative z-10">
-                    <h1 className="text-3xl font-black tracking-tight flex items-center gap-3 text-slate-800 dark:text-white">
-                        <Headphones className="w-8 h-8 text-[#B58E29]" /> Support & Help
+                    <h1 className="text-2xl font-black tracking-tight flex items-center gap-3 text-text uppercase">
+                        <Headphones className="w-7 h-7 text-primary" /> Support & Help
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-300 mt-2 text-sm max-w-xl font-medium">
+                    <p className="text-text-muted mt-2 text-xs max-w-xl font-bold uppercase tracking-wide opacity-80 leading-relaxed">
                         {activeTab === 'customer'
                             ? 'Manage customer support requests raised via your website, app, chat, or WhatsApp.'
                             : 'Monitor internal platform tickets, system reports, and printer errors raised by outlet staff.'}
                     </p>
                 </div>
-                <div className="flex items-center gap-3 relative z-10 shrink-0">
+                <div className="flex flex-wrap items-center gap-3 relative z-10 shrink-0">
                     {/* Tab Toggle */}
-                    <div className="flex items-center bg-slate-100/80 dark:bg-white/5 border border-slate-200/60 dark:border-slate-800/60 rounded-2xl p-1">
+                    <div className="flex items-center bg-background border border-border/80 p-1 !rounded-[12px]">
                         <button
                             onClick={() => setActiveTab('customer')}
-                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all rounded-xl ${activeTab === 'customer' ? 'bg-[#B58E29] text-white shadow-md' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                            className={`flex items-center gap-2 px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all !rounded-[8px] ${activeTab === 'customer' ? 'bg-primary text-white shadow-sm' : 'bg-transparent text-text-muted hover:text-text'}`}
                         >
                             <Headphones className="w-3.5 h-3.5" />
                             Customer Issues
                         </button>
                         <button
                             onClick={() => setActiveTab('platform')}
-                            className={`flex items-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all rounded-xl ${activeTab === 'platform' ? 'bg-[#B58E29] text-white shadow-md' : 'bg-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'}`}
+                            className={`flex items-center gap-2 px-5 py-2 text-[10px] font-black uppercase tracking-wider transition-all !rounded-[8px] ${activeTab === 'platform' ? 'bg-primary text-white shadow-sm' : 'bg-transparent text-text-muted hover:text-text'}`}
                         >
                             <Wrench className="w-3.5 h-3.5" />
                             Platform Help
                         </button>
                     </div>
+
+                    {/* New Request Button */}
+                    {activeTab === 'platform' && (
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white text-[10px] font-black uppercase tracking-wider shadow-sm hover:scale-105 active:scale-95 transition-all !rounded-[12px] cursor-pointer"
+                        >
+                            <Plus className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                            New Request
+                        </button>
+                    )}
                 </div>
             </div>
-
-            {/* Floating New Request Button — only for platform tab */}
-            {activeTab === 'platform' && (
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="fixed bottom-8 right-8 rounded-full w-14 h-14 bg-[#B58E29] hover:bg-[#a07c22] shadow-[0_8px_30px_rgb(181,142,41,0.4)] hover:scale-110 flex items-center justify-center text-white transition-all z-50 group hover:-translate-y-1"
-                    title="Create Platform Ticket"
-                >
-                    <Plus className="w-6 h-6 text-white transition-transform group-hover:rotate-90" strokeWidth={3} />
-                </button>
-            )}
 
 
             {/* ── Stats Cards ─────────────────────────────────────── */}
@@ -372,30 +374,20 @@ export default function SupportPage() {
                 {stats.map((stat, i) => (
                     <motion.div
                         key={`${activeTab}-${stat.label}`}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: i * 0.08 }}
-                        className="bg-white rounded-3xl shadow-md hover:shadow-xl hover:-translate-y-1 transition-all group flex flex-col justify-between min-h-[128px] overflow-hidden border border-slate-100"
+                        transition={{ delay: i * 0.05 }}
+                        className="bg-white dark:bg-slate-900 !rounded-[16px] border border-border shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all p-5 flex items-start gap-4"
                     >
-                        {/* Colored Top Strip */}
-                        <div className={`h-1 rounded-t-3xl ${
-                            i === 0 ? 'bg-amber-500' :
-                            i === 1 ? 'bg-purple-500' :
-                            i === 2 ? 'bg-emerald-500' :
-                            'bg-blue-500'
-                        }`} />
-
-                        <div className="flex-1 p-5 flex items-start gap-4 text-left">
-                            <div className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-2xl ${stat.iconBgClass}`}>
-                                <stat.icon className={`w-5 h-5 ${stat.iconColorClass}`} strokeWidth={2.5} />
-                            </div>
-                            <div className="flex flex-col text-left">
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 leading-none">{stat.label}</span>
-                                <h3 className="text-2xl font-black text-slate-800 tracking-tight leading-none mt-1">
-                                    {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
-                                </h3>
-                                <span className="text-[11px] text-slate-500 mt-2 font-bold uppercase tracking-wider">{stat.subtitle}</span>
-                            </div>
+                        <div className={`w-10 h-10 flex items-center justify-center shrink-0 !rounded-[12px] ${stat.iconBgClass} border border-border/10`}>
+                            <stat.icon className={`w-5 h-5 ${stat.iconColorClass}`} strokeWidth={2.5} />
+                        </div>
+                        <div className="flex flex-col text-left">
+                            <span className="text-[9px] font-black uppercase tracking-widest text-text-muted leading-none mb-1.5">{stat.label}</span>
+                            <h3 className="text-xl sm:text-2xl font-black text-text tracking-tight leading-none">
+                                {typeof stat.value === 'number' ? <AnimatedCounter value={stat.value} /> : stat.value}
+                            </h3>
+                            <span className="text-[9px] text-text-muted mt-2 font-black uppercase tracking-widest leading-none">{stat.subtitle}</span>
                         </div>
                     </motion.div>
                 ))}
@@ -413,19 +405,19 @@ export default function SupportPage() {
                             onFocus={() => setIsSearchFocused(true)}
                             onBlur={() => setIsSearchFocused(false)}
                             placeholder={activeTab === 'customer' ? 'Search customer name, subject or ticket ID...' : 'Search subject, staff name or ticket ID...'}
-                            className="w-full h-14 pl-14 pr-4 bg-white dark:bg-slate-800 shadow-md border border-slate-200/60 dark:border-slate-700/60 focus:ring-2 focus:ring-[#B58E29] rounded-2xl text-sm font-medium outline-none transition-all placeholder:text-slate-400 dark:text-slate-200"
+                            className="w-full h-12 pl-12 pr-4 bg-white dark:bg-slate-900 border border-border text-[10px] font-black uppercase tracking-widest focus:border-primary outline-none transition-all placeholder:text-text-muted/40 rounded-xl"
                         />
-                        <SearchIcon className={`absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 z-10 pointer-events-none transition-colors ${isSearchFocused ? 'text-[#B58E29]' : 'text-slate-400'}`} />
+                        <SearchIcon className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 z-10 pointer-events-none transition-colors ${isSearchFocused ? 'text-primary' : 'text-text-muted'}`} />
                     </div>
                     <div ref={filterRef} className="relative shrink-0">
                         <button
                             type="button"
                             onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="h-14 px-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/80 rounded-2xl shadow-md flex items-center gap-3 transition-colors text-xs font-bold uppercase tracking-wider cursor-pointer"
+                            className="h-12 px-5 bg-white dark:bg-slate-900 border border-border text-text-muted hover:text-text rounded-xl flex items-center gap-3 transition-colors text-[9px] font-black uppercase tracking-widest cursor-pointer"
                         >
-                            <Filter className="w-4 h-4 text-[#B58E29]" />
-                            <span className="text-slate-800 dark:text-slate-100 font-bold">{filterStatus === 'All' ? 'ALL STATUS' : filterStatus.replace('-', ' ').toUpperCase()}</span>
-                            <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                            <Filter className="w-3.5 h-3.5 text-primary" />
+                            <span className="text-text font-black">{filterStatus === 'All' ? 'ALL STATUS' : filterStatus.replace('-', ' ').toUpperCase()}</span>
+                            <ChevronDown className={`w-3.5 h-3.5 text-text-muted transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
                         </button>
                         <AnimatePresence>
                             {isFilterOpen && (
@@ -434,7 +426,7 @@ export default function SupportPage() {
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: 8 }}
                                     transition={{ duration: 0.13 }}
-                                    className="absolute top-full right-0 w-56 mt-2 bg-white border border-border rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
+                                    className="absolute top-full right-0 w-56 mt-2 bg-white border border-border rounded-xl shadow-xl z-50 overflow-hidden py-1.5"
                                 >
                                     {[
                                         { value: 'All',         label: 'ALL' },
@@ -446,7 +438,7 @@ export default function SupportPage() {
                                     ].map(opt => (
                                         <div
                                             key={opt.value}
-                                            className={`px-5 py-3 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${filterStatus === opt.value ? 'bg-[#B58E29]/10 text-[#B58E29]' : 'text-slate-600 hover:bg-slate-50'}`}
+                                            className={`px-5 py-3 text-[11px] font-bold uppercase tracking-wider cursor-pointer transition-colors ${filterStatus === opt.value ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'}`}
                                             onClick={() => {
                                                 setFilterStatus(opt.value);
                                                 setIsFilterOpen(false);
@@ -462,7 +454,7 @@ export default function SupportPage() {
                 </div>
 
                 {/* Card Container Grid */}
-                <div className="bg-slate-50/50 shadow-inner overflow-hidden min-h-[250px] rounded-3xl border border-slate-100/50">
+                <div className="bg-white dark:bg-slate-900 border border-border/80 !rounded-[16px] overflow-hidden min-h-[250px] shadow-sm">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-20 opacity-40 space-y-3">
                             <RefreshCw className="w-6 h-6 animate-spin text-primary" />
@@ -499,17 +491,17 @@ export default function SupportPage() {
             </div>
 
             {/* ── Bottom Banner ────────────────────────────────────── */}
-            <div className="bg-gradient-to-r from-[#f8fafc] to-[#f1f5f9] dark:from-[#1e293b] dark:to-[#334155] border border-slate-200/80 dark:border-slate-800/80 rounded-3xl p-8 text-slate-800 dark:text-white shadow-md flex items-center justify-between relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-64 h-64 bg-[#B58E29]/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="bg-white dark:bg-slate-900 border border-border/80 !rounded-[16px] p-6 sm:p-8 text-text shadow-sm flex items-center justify-between relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-64 h-64 bg-[#C89B2B]/5 rounded-full blur-3xl pointer-events-none" />
                 <div className="flex items-center gap-5 relative z-10 text-left">
-                    <div className="w-16 h-16 rounded-2xl bg-white dark:bg-slate-800 flex items-center justify-center shrink-0 border border-slate-200/60 dark:border-slate-700/60 shadow-lg">
-                        <Shield className="w-8 h-8 text-[#B58E29]" strokeWidth={2.5} />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl bg-surface border border-border flex items-center justify-center shrink-0 shadow-sm">
+                        <Shield className="w-6 h-6 sm:w-8 sm:h-8 text-primary" strokeWidth={2.5} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-white leading-none">
+                        <h3 className="text-base sm:text-lg font-black text-text leading-none uppercase">
                             {activeTab === 'customer' ? "Need support assistance?" : 'Report a Platform Issue'}
                         </h3>
-                        <p className="text-sm text-slate-500 dark:text-slate-300 mt-2 max-w-xl leading-relaxed font-medium">
+                        <p className="text-xs text-text-muted mt-2 max-w-xl leading-relaxed font-bold uppercase opacity-80">
                             {activeTab === 'customer'
                                 ? 'We maintain a premium standard of customer support. Raise, monitor and resolve issues promptly.'
                                 : 'Found a bug or facing a technical problem? Create a ticket for the administrator team.'}
@@ -840,10 +832,14 @@ export default function SupportPage() {
 function CustomerCards({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus, isDark }) {
     if (tickets.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-24 opacity-30 space-y-3">
-                <Headphones className="w-12 h-12 text-text-muted" />
-                <p className="text-[13px] font-bold text-text-muted">No customer support requests found.</p>
-                <p className="text-[11px] text-text-muted">Customer tickets from website, app, chat or WhatsApp will appear here.</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                <div className="w-16 h-16 bg-surface-alt border border-border/60 flex items-center justify-center text-text-muted rounded-2xl relative overflow-hidden">
+                    <Headphones className="w-7 h-7 opacity-40 text-primary" />
+                </div>
+                <div>
+                    <h3 className="text-xs font-black text-text uppercase tracking-widest">No customer requests found</h3>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Customer tickets from website, app, or WhatsApp will appear here</p>
+                </div>
             </div>
         );
     }
@@ -864,7 +860,7 @@ function CustomerCards({ tickets, userRole, openStatusDropdownId, setOpenStatusD
                 return (
                     <div 
                         key={t._id} 
-                        className={`h-full bg-white dark:bg-[#1e2433] rounded-3xl border-x border-b border-slate-150 dark:border-slate-800 border-t-4 ${borderColorClass} shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
+                        className={`h-full bg-white dark:bg-slate-900 !rounded-[16px] border-x border-b border-border border-t-4 ${borderColorClass} shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
                     >
                         {/* Upper Header */}
                         <div className="p-5 space-y-4">
@@ -989,10 +985,14 @@ function CustomerCards({ tickets, userRole, openStatusDropdownId, setOpenStatusD
 function PlatformCards({ tickets, userRole, openStatusDropdownId, setOpenStatusDropdownId, statusBtnRefs, dropdownPos, setDropdownPos, handleSelectTicket, handleUpdateStatus, isDark }) {
     if (tickets.length === 0) {
         return (
-            <div className="flex flex-col items-center justify-center py-24 opacity-30 space-y-3">
-                <Wrench className="w-12 h-12 text-text-muted" />
-                <p className="text-[13px] font-bold text-text-muted">No platform help requests created yet.</p>
-                <p className="text-[11px] text-text-muted">Use the "New Request" button to report a bug, payment issue, or platform problem.</p>
+            <div className="flex flex-col items-center justify-center py-20 text-center space-y-4">
+                <div className="w-16 h-16 bg-surface-alt border border-border/60 flex items-center justify-center text-text-muted rounded-2xl relative overflow-hidden">
+                    <Wrench className="w-7 h-7 opacity-40 text-primary" />
+                </div>
+                <div>
+                    <h3 className="text-xs font-black text-text uppercase tracking-widest">No platform help requests</h3>
+                    <p className="text-[10px] text-text-muted font-bold uppercase tracking-widest mt-1">Click the float button at bottom right to create a new ticket</p>
+                </div>
             </div>
         );
     }
@@ -1013,7 +1013,7 @@ function PlatformCards({ tickets, userRole, openStatusDropdownId, setOpenStatusD
                 return (
                     <div 
                         key={t._id} 
-                        className={`h-full bg-white dark:bg-[#1e2433] rounded-3xl border-x border-b border-slate-150 dark:border-slate-800 border-t-4 ${borderColorClass} shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
+                        className={`h-full bg-white dark:bg-slate-900 !rounded-[16px] border-x border-b border-border border-t-4 ${borderColorClass} shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 flex flex-col justify-between overflow-hidden relative group text-left`}
                     >
                         {/* Upper Header */}
                         <div className="p-5 space-y-4">

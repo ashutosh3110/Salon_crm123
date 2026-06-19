@@ -117,11 +117,20 @@ exports.validateCoupon = async (req, res) => {
         const customerId = req.body.customerId || (req.user?.role === 'customer' ? req.user._id : null);
         if (customerId && promo.usageLimitPerCustomer) {
             const code = promo.couponCode;
-            const [bookingsCount, ordersCount, invoicesCount] = await Promise.all([
-                Booking.countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                Order.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
-                Invoice.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
-            ]);
+            let bookingsCount = 0, ordersCount = 0, invoicesCount = 0;
+            
+            // Only query if customerId is a valid ObjectId (ignores temporary IDs like 'c_1')
+            if (mongoose.Types.ObjectId.isValid(customerId)) {
+                const [bCount, oCount, iCount] = await Promise.all([
+                    Booking.countDocuments({ clientId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Order.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } }),
+                    Invoice.countDocuments({ customerId: customerId, couponCode: code, status: { $ne: 'cancelled' } })
+                ]);
+                bookingsCount = bCount;
+                ordersCount = oCount;
+                invoicesCount = iCount;
+            }
+
             const totalCustomerUsage = bookingsCount + ordersCount + invoicesCount;
             if (totalCustomerUsage >= promo.usageLimitPerCustomer) {
                 return res.status(400).json({ success: false, message: 'You have already used this coupon code' });

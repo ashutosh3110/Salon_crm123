@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Outlet, useLocation, Navigate } from 'react-router-dom';
-import { useEffect, lazy as reactLazy, Suspense } from 'react';
+import React, { useEffect, lazy as reactLazy, Suspense } from 'react';
 const lazy = (importFunc) => {
   return reactLazy(() =>
     importFunc().catch((error) => {
@@ -354,13 +354,13 @@ function App() {
       <Toaster 
         position="top-center" 
         reverseOrder={false} 
-        containerStyle={{ zIndex: 99999 }}
+        containerStyle={{ zIndex: 999999 }}
         toastOptions={{
           duration: 4000,
           style: {
             background: '#333',
             color: '#fff',
-            zIndex: 99999
+            zIndex: 999999
           },
         }}
       />

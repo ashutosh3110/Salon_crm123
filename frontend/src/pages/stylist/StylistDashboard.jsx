@@ -16,11 +16,11 @@ import {
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
 const statusColors = {
-    completed: { bg: 'bg-[#E6F8EF] dark:bg-emerald-500/10', text: 'text-[#059669] dark:text-emerald-400' },
-    'in-progress': { bg: 'bg-[#FFF0E6] dark:bg-orange-500/10', text: 'text-[#EA580C] dark:text-orange-400' },
-    upcoming: { bg: 'bg-[#EBF4FF] dark:bg-blue-500/10', text: 'text-[#3B82F6] dark:text-blue-400' },
-    cancelled: { bg: 'bg-[#FEF2F2] dark:bg-red-500/10', text: 'text-[#EF4444] dark:text-red-400' },
-    pending: { bg: 'bg-[#EBF4FF] dark:bg-blue-500/10', text: 'text-[#3B82F6] dark:text-blue-400' },
+    completed: { bg: '!bg-emerald-50 dark:!bg-emerald-500/10', text: '!text-emerald-600 dark:!text-emerald-400' },
+    'in-progress': { bg: '!bg-orange-50 dark:!bg-orange-500/10', text: '!text-orange-600 dark:!text-orange-400' },
+    upcoming: { bg: '!bg-blue-50 dark:!bg-blue-500/10', text: '!text-blue-600 dark:!text-blue-400' },
+    cancelled: { bg: '!bg-red-50 dark:!bg-red-500/10', text: '!text-red-600 dark:!text-red-400' },
+    pending: { bg: '!bg-blue-50 dark:!bg-blue-500/10', text: '!text-blue-600 dark:!text-blue-400' },
 };
 
 function mapBookingToUi(bookingStatus) {
@@ -123,15 +123,7 @@ export default function StylistDashboard() {
                 </div>
             )}
 
-            {/* Mobile Header (Hidden on Desktop) */}
-            <div className="md:hidden flex items-center justify-between px-5 py-4 bg-[#F9FAFB] dark:bg-slate-900 sticky top-0 z-10">
-                <button className="text-slate-800 dark:text-slate-200"><Menu className="w-6 h-6" /></button>
-                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-100">Overview</h1>
-                <button className="relative text-slate-800 dark:text-slate-200">
-                    <Bell className="w-6 h-6" />
-                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#7C3AED] rounded-full border-2 border-[#F9FAFB] dark:border-slate-900"></span>
-                </button>
-            </div>
+
 
             <div className="px-5 sm:px-8 py-4 sm:py-6 space-y-6 max-w-5xl mx-auto">
                 {/* Greeting */}
@@ -159,26 +151,23 @@ export default function StylistDashboard() {
                 <div className="bg-[#FAFAFA] dark:bg-slate-800 rounded-[20px] p-5 border border-slate-100 dark:border-slate-700/50">
                     <div className="flex items-center justify-between mb-5">
                         <div className="flex items-center gap-4">
-                            <div className={`w-[54px] h-[54px] rounded-full flex items-center justify-center ${shiftActive ? 'bg-[#00A350] text-white shadow-sm' : 'bg-slate-100 dark:bg-slate-700 text-slate-500'}`}>
-                                <Fingerprint className="w-[28px] h-[28px] stroke-[1.5]" />
+                            <div className="w-[60px] h-[60px] rounded-2xl flex items-center justify-center bg-green-50 dark:bg-green-900/20 border-[1.5px] border-green-200 dark:border-green-800 shadow-sm">
+                                <Fingerprint className="w-[34px] h-[34px] stroke-[2] !text-green-600 dark:!text-green-400" />
                             </div>
                             <div className="flex flex-col gap-0.5">
-                                <p className="text-[16px] font-bold text-[#0F172A] dark:text-slate-200 leading-tight">
-                                    You are <span className={shiftActive ? 'text-[#00A350]' : 'text-slate-500'}>{shiftActive ? 'Punched In' : 'Punched Out'}</span>
+                                <p className="text-[16px] font-bold !text-slate-900 dark:!text-slate-200 leading-tight tracking-tight">
+                                    You are <span className="!text-green-600 dark:!text-green-500">{shiftActive ? 'Punched In' : 'Punched Out'}</span>
                                 </p>
-                                <p className="text-[14px] text-[#2E2856] dark:text-[#A5B4FC] font-bold leading-tight">
+                                <p className="text-[14px] !text-slate-500 dark:text-slate-400 font-bold leading-tight">
                                     {shiftActive ? `Since ${attendanceLog.find(l => l.type === 'PUNCH_IN')?.time || '09:05 AM'}` : 'Not working'}
                                 </p>
                             </div>
                         </div>
                         <Link
                             to="/stylist/attendance"
-                            className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-[14px] font-bold transition-colors shadow-sm
-                                ${shiftActive 
-                                    ? 'bg-white dark:bg-slate-800 border-[1.5px] border-[#7C3AED] text-[#7C3AED] hover:bg-[#F8F5FF] dark:hover:bg-[#7C3AED]/10' 
-                                    : 'bg-[#7C3AED] text-white hover:bg-[#6D28D9]'}`}
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[14px] font-bold transition-all border-[1.5px] border-purple-600 !text-purple-600 bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-900/20 hover:opacity-90 shadow-sm"
                         >
-                            <LogOut className="w-[18px] h-[18px] stroke-[2.5]" /> {shiftActive ? 'Punch Out' : 'Punch In'}
+                            <LogOut className="w-[18px] h-[18px] stroke-[2.5] !text-purple-600" /> {shiftActive ? 'Punch Out' : 'Punch In'}
                         </Link>
                     </div>
                     <div className="flex justify-between items-center pt-5 border-t border-slate-200/60 dark:border-slate-700">
@@ -202,17 +191,17 @@ export default function StylistDashboard() {
                     <h3 className="text-[15px] font-bold mb-4 text-slate-900 dark:text-slate-100">Today's Summary</h3>
                     <div className="grid grid-cols-4 gap-3">
                         <div className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
-                            <CalendarCheck className="w-8 h-8 text-[#7C3AED] mb-3" strokeWidth={1.5} />
+                            <CalendarCheck className="w-8 h-8 !text-purple-600 mb-3" strokeWidth={1.5} />
                             <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{stats.totalAssigned || 8}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Assigned</p>
                         </div>
                         <div className="bg-[#F0FDF4] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
-                            <CheckCircle2 className="w-8 h-8 text-[#059669] mb-3" strokeWidth={1.5} />
+                            <CheckCircle2 className="w-8 h-8 !text-emerald-600 mb-3" strokeWidth={1.5} />
                             <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{stats.totalCompleted || 5}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Completed</p>
                         </div>
                         <div className="bg-[#FFF7ED] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
-                            <Clock className="w-8 h-8 text-[#EA580C] mb-3" strokeWidth={1.5} />
+                            <Clock className="w-8 h-8 !text-orange-600 mb-3" strokeWidth={1.5} />
                             <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{Math.max(0, (stats.totalAssigned || 8) - (stats.totalCompleted || 5))}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Remaining</p>
                         </div>
@@ -230,7 +219,7 @@ export default function StylistDashboard() {
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Today's Appointments</h3>
-                        <button className="text-[11px] font-bold flex items-center" style={{ color: '#7C3AED' }}>View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
+                        <button className="text-[11px] font-bold flex items-center !text-purple-600 dark:!text-purple-400">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
                     </div>
                     <div className="bg-white dark:bg-slate-800 rounded-[20px] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] border border-[#F3F4F6] dark:border-slate-700/50">
                         {scheduleRows.length === 0 ? (
@@ -254,7 +243,7 @@ export default function StylistDashboard() {
 
                                     return (
                                         <div key={idx} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-700/50 last:border-0 last:pb-0 gap-3 group">
-                                            <div className="text-[11px] font-bold w-[60px]" style={{ color: '#7C3AED' }}>{mock.time}</div>
+                                            <div className="text-[13px] font-black w-[65px] !text-purple-600 dark:!text-purple-400">{mock.time}</div>
                                             <div 
                                                 className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                                                 style={{ backgroundColor: cStyle.bg, color: cStyle.text }}
@@ -292,7 +281,7 @@ export default function StylistDashboard() {
 
                                     return (
                                         <div key={row.id} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-700/50 last:border-0 last:pb-0 gap-3 group">
-                                            <div className="text-[11px] font-bold w-[60px]" style={{ color: '#7C3AED' }}>{row.time}</div>
+                                            <div className="text-[13px] font-black w-[65px] !text-purple-600 dark:!text-purple-400">{row.time}</div>
                                             <div 
                                                 className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
                                                 style={{ backgroundColor: cStyle.bg, color: cStyle.text }}
@@ -350,35 +339,35 @@ export default function StylistDashboard() {
 
                 {/* My Performance */}
                 <div>
-                    <h3 className="text-[14px] font-bold mb-3 flex items-center gap-1.5 text-slate-900 dark:text-slate-100">
-                        My Performance <span className="text-[11px] font-medium text-slate-500">(This Month)</span>
+                    <h3 className="text-[15px] font-black mb-3 flex items-center gap-1.5 text-slate-900 dark:text-slate-100">
+                        My Performance <span className="text-[12px] font-semibold text-slate-500">(This Month)</span>
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2">
-                            <div className="w-8 h-8 rounded-full bg-[#F3E8FF] dark:bg-[#7C3AED]/20 text-[#7C3AED] flex items-center justify-center shrink-0">
-                                <IndianRupee className="w-4 h-4" />
+                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2.5">
+                            <div className="w-[38px] h-[38px] rounded-full !bg-purple-100 dark:!bg-purple-900/30 !text-purple-600 dark:!text-purple-400 flex items-center justify-center shrink-0">
+                                <IndianRupee className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[14px] font-black text-slate-900 dark:text-white">₹{(stats.revenue || 28650).toLocaleString('en-IN')}</span>
-                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold leading-tight">Total Earnings</p>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.revenue || 28650).toLocaleString('en-IN')}</span>
+                                <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Total Earnings</p>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2">
-                            <div className="w-8 h-8 rounded-full border-[3px] border-[#059669] text-[#059669] flex items-center justify-center shrink-0">
-                                <span className="text-[10px] font-bold">{stats.progressPercent || 87}%</span>
+                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2.5">
+                            <div className="w-[38px] h-[38px] rounded-full border-[3.5px] !border-emerald-600 !text-emerald-600 dark:!border-emerald-500 dark:!text-emerald-400 flex items-center justify-center shrink-0 relative">
+                                <span className="text-[11px] font-black">{stats.progressPercent || 87}%</span>
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[14px] font-black text-slate-900 dark:text-white">{stats.progressPercent || 87}%</span>
-                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold leading-tight">Completion Rate</p>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">{stats.progressPercent || 87}%</span>
+                                <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Completion Rate</p>
                             </div>
                         </div>
-                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2">
-                            <div className="w-8 h-8 rounded-full bg-[#FFEDD5] dark:bg-[#EA580C]/20 text-[#EA580C] flex items-center justify-center shrink-0">
-                                <Percent className="w-4 h-4" />
+                        <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2.5">
+                            <div className="w-[38px] h-[38px] rounded-full border-[3.5px] !border-orange-100 !text-orange-600 dark:!border-orange-900/40 dark:!text-orange-400 flex items-center justify-center shrink-0">
+                                <Percent className="w-[18px] h-[18px] stroke-[2.5]" />
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[14px] font-black text-slate-900 dark:text-white">₹{(stats.totalCommission || 3650).toLocaleString('en-IN')}</span>
-                                <p className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold leading-tight">Commission Earned</p>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.totalCommission || 3650).toLocaleString('en-IN')}</span>
+                                <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Commission Earned</p>
                             </div>
                         </div>
                     </div>
@@ -388,7 +377,7 @@ export default function StylistDashboard() {
                 <div>
                     <div className="flex items-center justify-between mb-3">
                         <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Recent Notifications</h3>
-                        <button className="text-[11px] font-bold text-[#7C3AED] flex items-center">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
+                        <button className="text-[11px] font-bold flex items-center !text-purple-600 dark:!text-purple-400">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
                     </div>
                     <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[20px] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] space-y-4">
                         <div className="flex items-start gap-3 border-b border-slate-50 dark:border-slate-700/50 pb-4">

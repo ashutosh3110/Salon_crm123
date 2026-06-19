@@ -57,7 +57,6 @@ export const ROLE_SIDEBAR_DEFAULTS = {
             path: '/stylist/settings',
             subItems: [
                 { id: 'stylist_settings_profile', label: 'My profile', path: '/stylist/settings/profile' },
-                { id: 'stylist_settings_availability', label: 'Availability', path: '/stylist/settings/availability' },
                 { id: 'stylist_settings_security', label: 'Security', path: '/stylist/settings/security' }
             ]
         },
@@ -80,7 +79,7 @@ export const ROLE_SIDEBAR_DEFAULTS = {
         { id: 'manager_attendance', label: 'Attendance', icon: CalendarCheck, path: '/manager/attendance' },
         { id: 'manager_targets', label: 'Targets', icon: Target, path: '/manager/targets' },
         { id: 'manager_feedback', label: 'Feedback', icon: Star, path: '/manager/feedback' },
-        { id: 'manager_approvals', label: 'Service Approvals', icon: CheckCircle2, path: '/manager/approvals' },
+        { id: 'manager_approvals', label: 'Leave Approvals', icon: CheckCircle2, path: '/manager/approvals' },
         { id: 'manager_settings', label: 'Settings', icon: Settings, path: '/manager/settings' },
         { id: 'manager_support', label: 'Support', icon: LifeBuoy, path: '/manager/support' }
     ],
