@@ -45,6 +45,7 @@ import {
 export const ROLE_SIDEBAR_DEFAULTS = {
     stylist: [
         { id: 'stylist_overview', label: 'Overview', icon: LayoutDashboard, path: '/stylist' },
+        { id: 'stylist_appointments', label: 'Appointments', icon: Calendar, path: '/stylist/appointments' },
         { id: 'stylist_attendance', label: 'Attendance', icon: UserCheck, path: '/stylist/attendance', badge: { count: 'LIVE', color: 'bg-emerald-500 text-white animate-pulse' } },
         { id: 'stylist_clients', label: 'My clients', icon: Users, path: '/stylist/clients' },
         { id: 'stylist_commissions', label: 'Earnings', icon: DollarSign, path: '/stylist/commissions' },

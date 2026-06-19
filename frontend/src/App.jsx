@@ -262,6 +262,7 @@ const PettyCashPage = lazy(() => import('./pages/accountant/PettyCashPage'));
 
 const StylistLayout = lazy(() => import('./layouts/StylistLayout'));
 const StylistDashboard = lazy(() => import('./pages/stylist/StylistDashboard'));
+const StylistAppointmentsPage = lazy(() => import('./pages/stylist/StylistAppointmentsPage'));
 const StylistClientsPage = lazy(() => import('./pages/stylist/StylistClientsPage'));
 const StylistCommissionsPage = lazy(() => import('./pages/stylist/StylistCommissionsPage'));
 const StylistTimeOffPage = lazy(() => import('./pages/stylist/StylistTimeOffPage'));
@@ -659,6 +660,7 @@ function App() {
                         <Route element={<ProtectedRoute />}>
                           <Route element={<StylistLayout />}>
                             <Route path="/stylist" element={<StylistDashboard />} />
+                            <Route path="/stylist/appointments" element={<StylistAppointmentsPage />} />
                             <Route path="/stylist/schedule" element={<Navigate to="/stylist" replace />} />
                             <Route path="/stylist/clients" element={<StylistClientsPage />} />
                             <Route path="/stylist/commissions" element={<StylistCommissionsPage />} />

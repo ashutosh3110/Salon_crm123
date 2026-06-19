@@ -67,10 +67,12 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
                 }
-                /* Active state: gold bg, white text & icons */
+                /* Active state: purple bg, white text & icons */
                 .sidebar-container nav a.sidebar-active {
-                    background-color: #C89B2B !important;
+                    background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%) !important;
                     color: #ffffff !important;
+                    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
+                    border-color: transparent !important;
                 }
                 .sidebar-container nav a.sidebar-active svg,
                 .sidebar-container nav a.sidebar-active span {
@@ -84,8 +86,8 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                 }
                 html:not(.dark) .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
                 html:not(.dark) .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
-                    color: #C89B2B !important;
-                    stroke: #C89B2B !important;
+                    color: #7C3AED !important;
+                    stroke: #7C3AED !important;
                 }
                 /* Dark mode inactive icons */
                 .dark .sidebar-container nav a:not(.sidebar-active) svg.sidebar-svg-icon,
@@ -95,8 +97,8 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                 }
                 .dark .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
                 .dark .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
-                    color: #C89B2B !important;
-                    stroke: #C89B2B !important;
+                    color: #7C3AED !important;
+                    stroke: #7C3AED !important;
                 }
                 /* Logout hover */
                 .sidebar-container .logout-btn:hover svg {
@@ -142,10 +144,10 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                     const hasSubItems = item.subItems && item.subItems.length > 0;
                     const isExpanded = expandedItem === item.label && !effectiveCollapsed;
                     const isItemActive = location.pathname === item.path || (item.path !== '/stylist' && location.pathname.startsWith(item.path));
-                    
+
                     if (hasSubItems) {
                         return (
-                            <div key={item.label} className="space-y-0.5">
+                            <div key={item.id || item.label} className="space-y-0.5">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
                                     title={effectiveCollapsed ? item.label : undefined}
@@ -169,7 +171,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                     {!effectiveCollapsed && (
                                         <ChevronRight className={`w-3.5 h-3.5 transition-transform duration-200 sidebar-svg-icon ${isExpanded ? 'rotate-90' : ''}`} />
                                     )}
-                                    
+
                                     {/* Tooltip (collapsed) */}
                                     {effectiveCollapsed && (
                                         <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700">
@@ -177,7 +179,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                         </div>
                                     )}
                                 </button>
-                                
+
                                 {isExpanded && !effectiveCollapsed && (
                                     <div className="mt-1 mb-2 space-y-0.5 pl-6 border-l border-slate-100 dark:border-slate-800 ml-6">
                                         {item.subItems.map((sub) => {
@@ -205,7 +207,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
 
                     return (
                         <NavLink
-                            key={item.label || item.path}
+                            key={item.id || item.path}
                             to={item.path}
                             end={item.path === '/stylist'}
                             onClick={() => setMobileOpen(false)}
@@ -232,12 +234,12 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                     )}
                                 </div>
                             )}
-                            
+
                             {/* Badge Indicator (collapsed) */}
                             {effectiveCollapsed && item.badge && (
                                 <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
                             )}
-                            
+
                             {/* Tooltip (collapsed) */}
                             {effectiveCollapsed && (
                                 <div className="absolute left-[48px] px-2 py-1 rounded-md bg-slate-900 dark:bg-slate-800 text-white text-[11px] font-medium whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none z-[100] shadow-lg transition-opacity duration-150 border border-slate-700 flex items-center gap-2">

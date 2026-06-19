@@ -236,245 +236,169 @@ export default function StylistAttendance() {
 
     const monthName = new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long', year: 'numeric' });
     const isCurrentMonth = currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear();
-
     const canPunch = !worksiteLoading && location && (!worksite?.geofenceEnforced || withinGeofence);
 
     return (
-        <div className="p-3 md:p-4 lg:p-5 space-y-4 max-w-6xl mx-auto font-sans">
+        <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-[24px] overflow-hidden shadow-sm font-sans">
             <style>{`
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
-
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Attendance & Timesheet</h1>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage your daily presence and track historical records</p>
-                </div>
+            
+            {/* Header */}
+            <div className="flex items-center justify-center px-5 pt-6 pb-6 relative">
+                <h1 className="text-[17px] font-bold text-slate-900 dark:text-white text-center">
+                    Attendance
+                </h1>
             </div>
 
-            {/* Geofence Info Card */}
-            {!worksiteLoading && worksite && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/60 p-3 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
-                    <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                            <Building2 className="w-4 h-4" stroke="#C89B2B" color="#C89B2B" />
-                            Assigned Outlet
-                        </div>
-                        {worksite.outlet ? (
-                            <>
-                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
-                                    {worksite.outlet.name} {worksite.outlet.city ? `· ${worksite.outlet.city}` : ''}
-                                </h3>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">
-                                    {worksite.outlet.address}
-                                </p>
-                            </>
-                        ) : (
-                            <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                                {worksite.message || "No outlet assigned."}
-                            </p>
-                        )}
-                    </div>
-                    {worksite.geofenceEnforced && (
-                        <div className="bg-[#C89B2B]/10 text-[#a47a18] dark:text-[#e4be5b] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#C89B2B]/30 uppercase tracking-widest">
-                            Geofence Enabled ({radiusMeters}m radius)
-                        </div>
-                    )}
-                </div>
-            )}
-
-            {/* Daily Punch Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 md:p-5 shadow-sm relative overflow-hidden group">
-                
-                <div className="relative z-10 flex flex-col md:flex-row gap-4 justify-between">
-                    <div className="space-y-4 flex-1">
-                        <div className="flex items-center gap-3">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#C89B2B]/10 dark:bg-[#C89B2B]/20">
-                                <Clock className={`w-5 h-5 ${status === 'ACTIVE_RUN' ? 'animate-pulse' : ''}`} stroke="#C89B2B" color="#C89B2B" />
-                            </div>
+            <div className="px-5 pb-8 overflow-y-auto no-scrollbar flex-1">
+                {/* Daily Punch Card (Hero) */}
+                <div className="bg-gradient-to-r from-[#6D28D9] to-[#8B5CF6] rounded-[20px] p-5 relative overflow-hidden shadow-lg shadow-[#6D28D9]/20 text-white mb-6">
+                    <div className="relative z-10">
+                        <div className="flex justify-between items-center mb-6">
                             <div>
-                                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Current Status</p>
-                                <p className="text-xl font-bold text-slate-900 dark:text-white">
-                                    {status === 'ACTIVE_RUN' ? 'Punched In (Active)' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
-                                </p>
+                                <p className="text-[11px] font-semibold text-white/90 uppercase tracking-wide mb-1">Current Status</p>
+                                <h2 className="text-[24px] font-black tracking-tight leading-none">
+                                    {status === 'ACTIVE_RUN' ? 'Punched In' : status === 'COMPLETED' ? 'Shift Completed' : 'Not Punched In'}
+                                </h2>
+                            </div>
+                            <div className="w-10 h-10 border border-white/20 rounded-xl flex items-center justify-center bg-white/10 shrink-0">
+                                <Clock className={`w-5 h-5 text-white ${status === 'ACTIVE_RUN' ? 'animate-pulse' : ''}`} strokeWidth={2} />
                             </div>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50 space-y-2">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Location Status</span>
-                                {loadingLocation ? (
-                                    <span className="text-xs text-[#C89B2B] animate-pulse">Detecting...</span>
-                                ) : location ? (
-                                    <span className={`text-xs font-bold ${worksite?.geofenceEnforced ? (withinGeofence ? 'text-[#C89B2B]' : 'text-rose-500') : 'text-[#C89B2B]'}`}>
-                                        {worksite?.geofenceEnforced ? (withinGeofence ? 'Verified' : 'Outside Geofence') : 'Available'}
-                                    </span>
-                                ) : (
-                                    <span className="text-xs font-bold text-rose-500">Not Available</span>
-                                )}
-                            </div>
-                            
-                            {location && (
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-200">
-                                        <MapPin className="w-4 h-4" stroke="#C89B2B" color="#C89B2B" />
-                                        <span>{isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}</span>
-                                    </div>
-                                    <div className="flex items-center gap-4 text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-widest pl-6">
-                                        <span>Accuracy: ±{accuracy}m</span>
-                                        {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (
-                                            <span>Distance: ~{Math.round(distanceMeters)}m / limit {radiusMeters}m</span>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-
+                        {/* Punch Buttons */}
+                        <div className="flex gap-3">
                             <button
-                                type="button"
-                                onClick={fetchLocation}
-                                className="flex items-center gap-1.5 text-xs font-bold text-[#C89B2B] hover:text-[#b48a25] uppercase tracking-widest pl-6 pt-1 transition-colors"
+                                onClick={() => handlePunch('IN')}
+                                disabled={status !== 'OFFLINE' || !canPunch || loadingLocation}
+                                className={`flex-1 py-3 rounded-xl font-bold tracking-wide text-[13px] transition-all flex items-center justify-center gap-2
+                                    ${status !== 'OFFLINE' || !canPunch || loadingLocation
+                                        ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                                        : 'bg-white text-[#6D28D9] hover:bg-white/90 shadow-lg active:scale-95'}`}
                             >
-                                <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} stroke="#C89B2B" color="#C89B2B" /> Refresh location
+                                <Zap className="w-4 h-4" /> Punch In
+                            </button>
+                            <button
+                                onClick={() => handlePunch('OUT')}
+                                disabled={status !== 'ACTIVE_RUN' || !canPunch || loadingLocation}
+                                className={`flex-1 py-3 rounded-xl font-bold tracking-wide text-[13px] transition-all flex items-center justify-center gap-2
+                                    ${status !== 'ACTIVE_RUN' || !canPunch || loadingLocation
+                                        ? 'bg-white/10 text-white/50 cursor-not-allowed'
+                                        : 'bg-white text-[#6D28D9] hover:bg-white/90 shadow-lg active:scale-95'}`}
+                            >
+                                <CheckCircle2 className="w-4 h-4" /> Punch Out
                             </button>
                         </div>
-
-                        {error && <p className="text-sm text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10 p-3 rounded-lg">{error}</p>}
-                        {geofenceBlockedReason && <p className="text-sm text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 p-3 rounded-lg border border-amber-500/20">{geofenceBlockedReason}</p>}
-                        {actionMsg && <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 p-3 rounded-lg">{actionMsg}</p>}
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:flex sm:flex-col justify-center gap-3 sm:gap-4 w-full sm:w-auto sm:min-w-[240px]">
-                        <button
-                            onClick={() => handlePunch('IN')}
-                            disabled={status !== 'OFFLINE' || !canPunch || loadingLocation}
-                            className={`py-2.5 rounded-lg font-bold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-1 sm:gap-2
-                                ${status !== 'OFFLINE'
-                                    ? 'bg-[#C89B2B]/10 text-[#C89B2B]/40 border border-[#C89B2B]/20 cursor-not-allowed shadow-none'
-                                    : 'bg-[#C89B2B] hover:bg-[#b48a25] text-white shadow-[#C89B2B]/20 shadow-lg active:scale-95'}`}
-                        >
-                            <Zap className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: status !== 'OFFLINE' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff', stroke: status !== 'OFFLINE' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff' }} /> <span className="whitespace-nowrap">Punch In</span>
-                        </button>
-                        <button
-                            onClick={() => handlePunch('OUT')}
-                            disabled={status !== 'ACTIVE_RUN' || !canPunch || loadingLocation}
-                            className={`py-2.5 rounded-lg font-bold tracking-wide uppercase text-xs transition-all flex items-center justify-center gap-1 sm:gap-2
-                                ${status !== 'ACTIVE_RUN'
-                                    ? 'bg-[#C89B2B]/10 text-[#C89B2B]/40 border border-[#C89B2B]/20 cursor-not-allowed shadow-none'
-                                    : 'bg-[#C89B2B] hover:bg-[#b48a25] text-white shadow-[#C89B2B]/20 shadow-lg active:scale-95'}`}
-                        >
-                            <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: status !== 'ACTIVE_RUN' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff', stroke: status !== 'ACTIVE_RUN' ? 'rgba(200, 155, 43, 0.4)' : '#ffffff' }} /> <span className="whitespace-nowrap">Punch Out</span>
-                        </button>
                     </div>
                 </div>
-            </div>
 
-            {/* History Section */}
-            <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                        <CalendarIcon className="w-5 h-5" stroke="#C89B2B" color="#C89B2B" />
-                        Monthly History
-                    </h2>
+                {/* Location / Geofence Card */}
+                <div className="bg-white dark:bg-slate-800 rounded-[20px] shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/50 p-4 mb-6">
+                    <div className="flex justify-between items-center mb-3 px-1">
+                        <h3 className="text-[14px] font-bold text-slate-900 dark:text-white">Location Status</h3>
+                        {loadingLocation ? (
+                            <span className="text-[11px] font-bold text-[#7C3AED] animate-pulse">Detecting...</span>
+                        ) : location ? (
+                            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${worksite?.geofenceEnforced ? (withinGeofence ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700') : 'bg-[#7C3AED]/10 text-[#7C3AED]'}`}>
+                                {worksite?.geofenceEnforced ? (withinGeofence ? 'Verified' : 'Outside Geofence') : 'Available'}
+                            </span>
+                        ) : (
+                            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700">Not Available</span>
+                        )}
+                    </div>
+                    
+                    {location && (
+                        <div className="px-1 space-y-2 mb-3">
+                            <div className="flex items-start gap-2">
+                                <MapPin className="w-4 h-4 text-[#7C3AED] mt-0.5 shrink-0" />
+                                <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300 leading-tight">
+                                    {isResolvingName ? 'Resolving Address...' : (locationName || `${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`)}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-3 pl-6 text-[10px] font-bold text-slate-400 uppercase">
+                                <span>Acc: ±{accuracy}m</span>
+                                {worksite?.geofenceEnforced && worksite.configured && distanceMeters != null && !Number.isNaN(distanceMeters) && (
+                                    <span>Dist: ~{Math.round(distanceMeters)}m / {radiusMeters}m</span>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                    
+                    {error && <p className="text-[12px] font-medium text-rose-600 bg-rose-50 p-2.5 rounded-lg mb-3">{error}</p>}
+                    {geofenceBlockedReason && <p className="text-[12px] font-medium text-amber-700 bg-amber-50 p-2.5 rounded-lg border border-amber-500/20 mb-3">{geofenceBlockedReason}</p>}
+                    {actionMsg && <p className="text-[12px] font-medium text-emerald-700 bg-emerald-50 p-2.5 rounded-lg mb-3">{actionMsg}</p>}
 
-                    <div className="flex items-center justify-between w-full sm:w-auto bg-white dark:bg-slate-800 rounded-xl p-1 shadow-sm border border-slate-200 dark:border-slate-700">
-                        <button onClick={prevMonth} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700/70 rounded-lg transition-colors text-slate-600 dark:text-slate-200 shrink-0">
-                            <ChevronLeft className="w-5 h-5" />
+                    <button
+                        type="button"
+                        onClick={fetchLocation}
+                        className="flex items-center justify-center w-full py-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 gap-2 text-[12px] font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-100 transition-colors"
+                    >
+                        <RefreshCw className={`w-3.5 h-3.5 ${loadingLocation ? 'animate-spin' : ''}`} /> Refresh Location
+                    </button>
+                </div>
+
+                {/* Monthly History Section */}
+                <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white px-1">Monthly History</h3>
+                    <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-full p-1 border border-slate-200 dark:border-slate-700">
+                        <button onClick={prevMonth} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-slate-700 text-slate-600 transition-colors">
+                            <ChevronLeft className="w-3.5 h-3.5" />
                         </button>
-                        <span className="px-4 font-bold text-sm flex-1 text-center sm:min-w-[140px] text-slate-800 dark:text-slate-100">{monthName}</span>
-                        <button 
-                            onClick={nextMonth} 
-                            disabled={isCurrentMonth}
-                            className={`p-2 rounded-lg transition-colors shrink-0 ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400 dark:text-slate-600' : 'hover:bg-slate-100 dark:hover:bg-slate-700/70 text-slate-600 dark:text-slate-200'}`}
-                        >
-                            <ChevronRight className="w-5 h-5" />
+                        <span className="px-3 text-[11px] font-bold text-slate-800 dark:text-slate-200 min-w-[90px] text-center">{monthName}</span>
+                        <button onClick={nextMonth} disabled={isCurrentMonth} className={`w-6 h-6 flex items-center justify-center rounded-full transition-colors ${isCurrentMonth ? 'opacity-30 cursor-not-allowed text-slate-400' : 'hover:bg-white dark:hover:bg-slate-700 text-slate-600'}`}>
+                            <ChevronRight className="w-3.5 h-3.5" />
                         </button>
                     </div>
                 </div>
 
                 {/* Stat Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                    {[
-                        { label: 'Present', val: historyStats.present, hex: '#059669', darkHex: '#34d399', bg: 'bg-emerald-50 dark:bg-emerald-500/10 border-emerald-100 dark:border-emerald-500/20' },
-                        { label: 'Absent', val: historyStats.absent, hex: '#e11d48', darkHex: '#fb7185', bg: 'bg-rose-50 dark:bg-rose-500/10 border-rose-100 dark:border-rose-500/20' },
-                    ].map((stat, i) => (
-                        <div key={i} className={`p-2 rounded-lg border ${stat.bg} flex flex-col items-center justify-center text-center`}>
-                            <span className="text-xl font-black mb-0.5 text-slate-800 dark:text-slate-100">{stat.val}</span>
-                            <span 
-                                className="text-[10px] font-black uppercase tracking-wider" 
-                                style={{ color: stat.hex }}
-                            >
-                                {stat.label}
-                            </span>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-2 gap-3 mb-6">
+                    <div className="bg-[#DCFCE7] dark:bg-emerald-500/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+                        <span className="text-[24px] font-black text-[#059669] dark:text-emerald-400 leading-none mb-1">{historyStats.present}</span>
+                        <span className="text-[11px] font-bold text-[#059669] dark:text-emerald-500 uppercase tracking-wide">Present</span>
+                    </div>
+                    <div className="bg-[#FFE4E6] dark:bg-rose-500/10 rounded-2xl p-4 flex flex-col items-center justify-center text-center">
+                        <span className="text-[24px] font-black text-[#E11D48] dark:text-rose-400 leading-none mb-1">{historyStats.absent}</span>
+                        <span className="text-[11px] font-bold text-[#E11D48] dark:text-rose-500 uppercase tracking-wide">Absent</span>
+                    </div>
                 </div>
 
                 {/* History List */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch In</th>
-                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Punch Out</th>
-                                    <th className="py-2.5 px-4 text-[11px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Notes</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                {historyLoading ? (
-                                    <tr>
-                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">Loading history...</td>
-                                    </tr>
-                                ) : historyData.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={5} className="py-12 text-center text-sm text-slate-500">No attendance records found for this month.</td>
-                                    </tr>
-                                ) : (
-                                    historyData.map((record, i) => {
-                                        const d = new Date(record.date);
-                                        const isFuture = d > new Date();
-                                        if (isFuture) return null;
-                                        
-                                        const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
-                                        const styleClass = statusColors[record.status] || 'bg-slate-50 !text-slate-600';
-
-                                        return (
-                                            <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                                                <td className="py-2 px-4 whitespace-nowrap">
-                                                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{displayDate}</span>
-                                                </td>
-                                                <td className="py-2 px-4 whitespace-nowrap">
-                                                    <span className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full border ${styleClass}`}>
-                                                        {record.status.replace('_', ' ')}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2 px-4 whitespace-nowrap">
-                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                                        {formatTime(record.checkInAt)}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2 px-4 whitespace-nowrap">
-                                                    <span className="text-xs font-medium text-slate-600 dark:text-slate-300">
-                                                        {formatTime(record.checkOutAt)}
-                                                    </span>
-                                                </td>
-                                                <td className="py-2 px-4 whitespace-nowrap">
-                                                    <span className="text-xs text-slate-500 dark:text-slate-400 italic">
-                                                        {record.notes || '-'}
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                <div className="bg-white dark:bg-slate-800 rounded-[20px] shadow-[0_2px_16px_-4px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/50 p-4 overflow-hidden">
+                    {historyLoading ? (
+                        <div className="py-8 text-center text-slate-500 text-[13px] font-medium">Loading history...</div>
+                    ) : historyData.length === 0 ? (
+                        <div className="py-8 text-center text-slate-500 text-[13px] font-medium">No attendance records found for this month.</div>
+                    ) : (
+                        <div className="space-y-3">
+                            {historyData.map((record, i) => {
+                                const d = new Date(record.date);
+                                if (d > new Date()) return null;
+                                const displayDate = d.toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
+                                
+                                return (
+                                    <div key={i} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-700/50 last:border-0 last:pb-0 gap-3">
+                                        <div className="flex flex-col">
+                                            <span className="text-[13px] font-bold text-slate-900 dark:text-white leading-tight">{displayDate}</span>
+                                            <span className="text-[10px] font-bold text-slate-500 mt-0.5">
+                                                {formatTime(record.checkInAt)} - {formatTime(record.checkOutAt)}
+                                            </span>
+                                        </div>
+                                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[6px] uppercase tracking-wider ${statusColors[record.status] || 'bg-slate-100 text-slate-600'}`}>
+                                            {record.status.replace('_', ' ')}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Bottom Padding for Navbar */}
+            <div className="h-20 lg:h-0 flex-shrink-0" />
         </div>
     );
 }
