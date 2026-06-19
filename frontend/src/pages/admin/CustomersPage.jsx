@@ -461,8 +461,8 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* Add Customer Modal (Portal) */}
             {showAddModal && createPortal(
-                <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
-                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800" onClick={(e) => e.stopPropagation()}>
+                <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[200] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setShowAddModal(false)}>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl relative flex flex-col max-h-[85vh] overflow-hidden animate-in slide-in-from-top-4 duration-300 border border-slate-200/50 dark:border-slate-800 text-slate-900 dark:text-slate-100 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center shrink-0">
                             <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">
                                 <UserPlus className="w-4 h-4 text-slate-800 dark:text-slate-200" /> Add Customer
@@ -554,7 +554,7 @@ export default function CustomersPage({ tab = 'directory' }) {
 
             {/* WhatsApp Message Modal (Portal) */}
             {whatsappModal.isOpen && createPortal(
-                <div className="fixed inset-0 bg-[#0f172a]/80 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
+                <div className="fixed inset-0 bg-slate-900/20 backdrop-blur-sm z-[250] flex items-center justify-center p-4 animate-in fade-in duration-300" onClick={() => setWhatsappModal({ ...whatsappModal, isOpen: false })}>
                     <div className="bg-white dark:bg-[#1e293b] rounded-2xl w-full max-w-md mx-4 shadow-2xl border border-slate-200/50 dark:border-slate-800 overflow-y-auto max-h-[90vh] hide-scrollbar animate-in zoom-in-95 duration-200 admin-panel" onClick={(e) => e.stopPropagation()}>
                         <div className="p-5 bg-white dark:bg-[#1e293b] border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h4 className="text-[11px] font-black text-slate-900 dark:text-white uppercase flex items-center gap-2 tracking-widest">

@@ -1,57 +1,66 @@
 import React from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, UserCheck, Users, DollarSign, Menu } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Calendar, Clock, DollarSign, LayoutGrid } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function StylistMobileNavbar({ setMobileOpen }) {
     const location = useLocation();
+    const navigate = useNavigate();
 
     const navItems = [
-        { label: 'Overview', icon: LayoutDashboard, path: '/stylist', exact: true },
-        { label: 'Attendance', icon: UserCheck, path: '/stylist/attendance' },
-        { label: 'Clients', icon: Users, path: '/stylist/clients' },
-        { label: 'Earnings', icon: DollarSign, path: '/stylist/commissions' }
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, path: '/stylist', exact: true },
+        { id: 'appointments', label: 'Appointments', icon: Calendar, path: '/stylist/appointments' },
+        { id: 'earnings', label: 'Earnings', icon: DollarSign, path: '/stylist/commissions' },
+        { id: 'attendance', label: 'Attendance', icon: Clock, path: '/stylist/attendance' }
     ];
 
+    const isLight = !document.documentElement.classList.contains('dark');
+    const accentColor = '#1F2937'; // Dark text for active state, matching screenshot
+
     return (
-        <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around px-2 z-[90] pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            {navItems.map((item) => {
-                const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
-                const targetPath = item.path.toLowerCase().replace(/\/$/, '');
+        <nav className="fixed bottom-0 left-0 w-full lg:hidden z-[9999] bg-white/95 dark:bg-[#0F172A]/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 shadow-[0_-4px_25px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)] transition-colors duration-300">
+            <div className="flex items-center justify-around px-2 py-2 max-w-[800px] mx-auto w-full">
+                {navItems.map((item) => {
+                    const currentPath = location.pathname.toLowerCase().replace(/\/$/, '');
+                    const targetPath = item.path.toLowerCase().replace(/\/$/, '');
+                    const isActive = item.exact ? currentPath === targetPath : currentPath.startsWith(targetPath);
+                    const Icon = item.icon;
 
-                let isActive = false;
-                if (item.exact) {
-                    isActive = currentPath === targetPath;
-                } else {
-                    isActive = currentPath.startsWith(targetPath);
-                }
+                    return (
+                        <motion.button
+                            key={item.id}
+                            onClick={() => navigate(item.path)}
+                            whileTap={{ scale: 0.85 }}
+                            className="flex flex-col items-center gap-1 p-2 bg-transparent border-none cursor-pointer relative min-w-[64px]"
+                        >
+                            <div className="relative flex items-center justify-center">
+                                <Icon
+                                    size={22}
+                                    strokeWidth={isActive ? 2.5 : 1.8}
+                                    className={isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400'}
+                                />
+                            </div>
+                            <span className={`text-[10px] tracking-wide ${isActive ? 'font-bold text-slate-900 dark:text-white' : 'font-medium text-slate-500 dark:text-slate-400'}`}>
+                                {item.label}
+                            </span>
+                        </motion.button>
+                    );
+                })}
 
-                return (
-                    <NavLink
-                        key={item.path}
-                        to={item.path}
-                        className="group flex flex-col items-center justify-center w-full h-full gap-1 transition-colors"
-                    >
-                        <item.icon
-                            size={26}
-                            color={isActive ? '#B4912B' : '#000000'}
-                            className="shrink-0 mb-0.5"
-                        />
-                        <span className="text-[11px] font-bold" style={{ color: isActive ? '#B4912B' : '#000000' }}>
-                            {item.label}
-                        </span>
-                    </NavLink>
-                );
-            })}
-
-            {/* More / Menu button */}
-            <button
-                onClick={() => setMobileOpen(true)}
-                className="group flex flex-col items-center justify-center w-full h-full gap-1 transition-colors"
-                style={{ color: '#000000' }}
-            >
-                <Menu size={26} color="#000000" className="shrink-0 mb-0.5" />
-                <span className="text-[11px] font-bold" style={{ color: '#000000' }}>Menu</span>
-            </button>
-        </div>
+                {/* More / Menu button */}
+                <motion.button
+                    onClick={() => setMobileOpen(true)}
+                    whileTap={{ scale: 0.85 }}
+                    className="flex flex-col items-center gap-1 p-2 bg-transparent border-none cursor-pointer relative min-w-[64px]"
+                >
+                    <div className="relative flex items-center justify-center">
+                        <LayoutGrid size={22} strokeWidth={1.8} className="text-slate-500 dark:text-slate-400" />
+                    </div>
+                    <span className="text-[10px] tracking-wide font-medium text-slate-500 dark:text-slate-400">
+                        More
+                    </span>
+                </motion.button>
+            </div>
+        </nav>
     );
 }

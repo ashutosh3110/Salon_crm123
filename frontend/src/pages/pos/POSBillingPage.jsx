@@ -1760,7 +1760,7 @@ export default function POSBillingPage() {
                         onClick={() => setShowQuickInvoice(true)}
                         className="px-4 py-1.5 !bg-[#B4912B] hover:!bg-[#9e7f25] !text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-2 active:scale-95 transition-all shadow-lg shadow-[#B4912B]/20 rounded-lg"
                     >
-                        <Plus className="w-3.5 h-3.5" /> Quick Invoice
+                        <Plus className="w-3.5 h-3.5 !text-white" /> <span className="!text-white">Quick Invoice</span>
                     </button>
                 </div>
             </div>
@@ -2129,8 +2129,8 @@ export default function POSBillingPage() {
                                             <>
                                                 {/* Avatar */}
                                                 <div className={`w-11 h-11 rounded-full flex items-center justify-center text-[12px] font-black shrink-0 shadow-sm ${activeMembership
-                                                        ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
-                                                        : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
+                                                    ? 'bg-gradient-to-br from-emerald-500 to-teal-600 text-white'
+                                                    : 'bg-gradient-to-br from-[#cca839] to-amber-500 text-white'
                                                     }`}>
                                                     {selectedClient.name?.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) || 'CL'}
                                                 </div>
@@ -2281,8 +2281,8 @@ export default function POSBillingPage() {
                                                         <div className="text-right shrink-0">
                                                             <p className="text-[12px] font-black text-slate-900 dark:text-white">₹{lineTotal.toFixed(2)}</p>
                                                             <span className={`text-[7px] font-bold px-1 py-0.5 rounded uppercase ${(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax))
-                                                                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30'
-                                                                    : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30'
+                                                                ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30'
+                                                                : 'bg-orange-50 text-orange-600 dark:bg-orange-900/30'
                                                                 }`}>
                                                                 {(item.isInclusiveTax === true || String(item.isInclusiveTax) === 'true' || (item.isInclusiveTax === undefined && fiscal?.inclusiveTax)) ? 'Incl. GST' : 'Excl. GST'}
                                                             </span>
@@ -2585,8 +2585,8 @@ export default function POSBillingPage() {
                                             onClick={handleRedeemWallet}
                                             title={`Wallet: ₹${clientWalletBalance.toFixed(2)}`}
                                             className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${redeemWallet > 0
-                                                    ? 'bg-[#cca839] border-[#cca839] text-white shadow-md'
-                                                    : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-[#cca839]/60 hover:text-[#cca839]'
+                                                ? 'bg-[#cca839] border-[#cca839] text-white shadow-md'
+                                                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-[#cca839]/60 hover:text-[#cca839]'
                                                 }`}
                                         >
                                             <Wallet className="w-4 h-4" />
@@ -2597,8 +2597,8 @@ export default function POSBillingPage() {
                                         onClick={() => setShowDiscountModal(true)}
                                         title="Discount / Offers"
                                         className={`h-11 w-11 shrink-0 rounded-xl flex items-center justify-center transition-all border ${(manualDiscount?.value > 0 || appliedPromotion)
-                                                ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
-                                                : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600'
+                                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-md'
+                                            : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600'
                                             }`}
                                     >
                                         <Tag className="w-4 h-4" />
@@ -2609,8 +2609,8 @@ export default function POSBillingPage() {
                                         disabled={checkingOut || cart.length === 0 || isOverpaid}
                                         className="flex-1 h-11 rounded-xl bg-[#cca839] text-white text-xs font-black uppercase tracking-wider hover:bg-[#b8932c] active:scale-95 transition-all shadow-lg shadow-[#cca839]/20 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {checkingOut ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
-                                        {checkingOut ? 'Generating...' : 'Generate Bill'}
+                                        {checkingOut ? <Loader2 className="w-4 h-4 animate-spin !text-white" /> : <FileText className="w-4 h-4 !text-white" />}
+                                        <span className="!text-white">{checkingOut ? 'Generating...' : 'Generate Bill'}</span>
                                     </button>
                                 </div>
                             </div>
@@ -2975,8 +2975,8 @@ export default function POSBillingPage() {
                                             <button
                                                 onClick={handleRedeemWallet}
                                                 className={`px-4 py-3 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${redeemWallet > 0
-                                                        ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/10'
-                                                        : 'bg-[#cca839] hover:bg-[#b59533] text-white shadow-md shadow-[#cca839]/10'
+                                                    ? 'bg-rose-500 hover:bg-rose-600 text-white shadow-md shadow-rose-500/10'
+                                                    : 'bg-[#cca839] hover:bg-[#b59533] text-white shadow-md shadow-[#cca839]/10'
                                                     }`}
                                             >
                                                 {redeemWallet > 0 ? 'Reset' : 'Use Max'}
@@ -4231,8 +4231,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                     <Icon className={`w-5 h-5 ${iconColor}`} strokeWidth={2} style={{ display: cat.image ? 'none' : 'block' }} />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-[12px] font-black uppercase text-slate-800 dark:text-slate-100 tracking-wider truncate">{cat.name}</p>
-                                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate mt-0.5">{sub}</p>
+                                                    <p className="text-[12px] font-black uppercase !text-slate-900 dark:!text-slate-100 tracking-wider truncate">{cat.name}</p>
+                                                    <p className="text-[10px] font-bold !text-slate-600 dark:!text-slate-400 truncate mt-0.5">{sub}</p>
                                                 </div>
                                             </button>
                                         );
@@ -4522,12 +4522,12 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'percentage', item.membershipDiscountValue || 0)}
                                                     className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${(item.membershipDiscountType || 'percentage') === 'percentage' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
-                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#1e293b' : 'transparent' }}
+                                                    style={{ background: (item.membershipDiscountType || 'percentage') === 'percentage' ? '#cca839' : 'transparent' }}
                                                 >%</button>
                                                 <button type="button"
                                                     onClick={() => updateQItemMembershipDiscount(idx, 'fixed', item.membershipDiscountValue || 0)}
                                                     className={`px-1.5 text-[10px] font-black h-full border-r border-slate-200 ${item.membershipDiscountType === 'fixed' ? 'discount-btn-active' : 'discount-btn-inactive'}`}
-                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#1e293b' : 'transparent' }}
+                                                    style={{ background: item.membershipDiscountType === 'fixed' ? '#cca839' : 'transparent' }}
                                                 >&#8377;</button>
                                                 <input
                                                     type="number"
@@ -4686,8 +4686,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                 >
                                     {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                                         <>
-                                            <CreditCard className="w-5 h-5" />
-                                            <span>Finalize Bill</span>
+                                            <CreditCard className="w-5 h-5 !text-white" />
+                                            <span className="!text-white">Finalize Bill</span>
                                         </>
                                     )}
                                 </button>

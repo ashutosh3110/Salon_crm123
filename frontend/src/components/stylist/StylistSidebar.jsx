@@ -67,10 +67,12 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
                     font-style: normal !important;
                 }
-                /* Active state: gold bg, white text & icons */
+                /* Active state: purple bg, white text & icons */
                 .sidebar-container nav a.sidebar-active {
-                    background-color: #C89B2B !important;
+                    background: linear-gradient(135deg, #7C3AED 0%, #4F46E5 100%) !important;
                     color: #ffffff !important;
+                    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25) !important;
+                    border-color: transparent !important;
                 }
                 .sidebar-container nav a.sidebar-active svg,
                 .sidebar-container nav a.sidebar-active span {
@@ -84,8 +86,8 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                 }
                 html:not(.dark) .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
                 html:not(.dark) .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
-                    color: #C89B2B !important;
-                    stroke: #C89B2B !important;
+                    color: #7C3AED !important;
+                    stroke: #7C3AED !important;
                 }
                 /* Dark mode inactive icons */
                 .dark .sidebar-container nav a:not(.sidebar-active) svg.sidebar-svg-icon,
@@ -95,8 +97,8 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                 }
                 .dark .sidebar-container nav a:not(.sidebar-active):hover svg.sidebar-svg-icon,
                 .dark .sidebar-container nav button:not(.sidebar-active):hover svg.sidebar-svg-icon {
-                    color: #C89B2B !important;
-                    stroke: #C89B2B !important;
+                    color: #7C3AED !important;
+                    stroke: #7C3AED !important;
                 }
                 /* Logout hover */
                 .sidebar-container .logout-btn:hover svg {
@@ -145,7 +147,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
 
                     if (hasSubItems) {
                         return (
-                            <div key={item.label} className="space-y-0.5">
+                            <div key={item.id || item.label} className="space-y-0.5">
                                 <button
                                     onClick={() => toggleExpand(item.label)}
                                     title={effectiveCollapsed ? item.label : undefined}
@@ -205,7 +207,7 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
 
                     return (
                         <NavLink
-                            key={item.label || item.path}
+                            key={item.id || item.path}
                             to={item.path}
                             end={item.path === '/stylist'}
                             onClick={() => setMobileOpen(false)}

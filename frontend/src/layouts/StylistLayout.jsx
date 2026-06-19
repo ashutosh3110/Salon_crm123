@@ -20,7 +20,7 @@ export default function StylistLayout() {
     const location = useLocation();
 
     return (
-        <div className="min-h-screen bg-[#F8F9FB] dark:bg-[#0F172A] admin-panel">
+        <div className="h-[100dvh] bg-[#F8F9FB] dark:bg-[#0F172A] admin-panel overflow-hidden w-full pb-[70px] lg:pb-0">
             <style>{`
                 /* --- Global Theme, Colors & Font Assignment --- */
                 html {
@@ -684,18 +684,15 @@ export default function StylistLayout() {
                 mobileOpen={mobileOpen}
                 setMobileOpen={setMobileOpen}
             />
-
             {/* Main content area */}
-            <div
-                className={`transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[230px]'
-                    }`}
-            >
+            <div className={`flex flex-col h-full w-full transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[230px]'}`}>
                 <Topbar onMenuClick={() => setMobileOpen(true)} />
 
-                <main className="animate-reveal p-4 pb-4">
+                <main className="flex flex-col flex-1 animate-reveal p-4 lg:pb-4 overflow-y-auto scroll-smooth">
                     <Outlet />
                 </main>
             </div>
+            <StylistMobileNavbar setMobileOpen={setMobileOpen} />
         </div>
     );
 }
