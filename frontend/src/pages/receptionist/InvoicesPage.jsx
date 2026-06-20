@@ -28,6 +28,7 @@ import AnimatedCounter from '../../components/common/AnimatedCounter';
 import mockApi from '../../services/mock/mockApi';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 
 // Register Fonts
 Font.register({
@@ -61,7 +62,7 @@ const pdfStyles = StyleSheet.create({
     footer: { marginTop: 30, textAlign: 'center', borderTopWidth: 1, borderTopColor: '#EEE', paddingTop: 10, fontSize: 8, color: '#999' }
 });
 
-const SingleInvoicePDF = ({ invoice }) => (
+const SingleInvoicePDF = ({ invoice, role }) => (
     <Document>
         <Page size="A4" style={pdfStyles.page}>
             <View style={pdfStyles.header}>
@@ -76,7 +77,7 @@ const SingleInvoicePDF = ({ invoice }) => (
                 <View style={pdfStyles.metaBox}>
                     <Text style={pdfStyles.label}>Customer Name</Text>
                     <Text style={pdfStyles.value}>{invoice.clientId?.name || 'Walk-in Client'}</Text>
-                    <Text style={{ fontSize: 8 }}>{invoice.clientId?.phone || ''}</Text>
+                    <Text style={{ fontSize: 8 }}>{maskPhone(invoice.clientId?.phone || '', role)}</Text>
                 </View>
                 <View style={pdfStyles.metaBox}>
                     <Text style={pdfStyles.label}>Invoice Details</Text>
@@ -279,7 +280,7 @@ export default function InvoicesPage() {
             try {
                 const res = await mockApi.get(`/invoices/${id}`);
                 const inv = res.data;
-                const blob = await pdf(<SingleInvoicePDF invoice={inv} />).toBlob();
+                const blob = await pdf(<SingleInvoicePDF invoice={inv} role={user?.role} />).toBlob();
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;

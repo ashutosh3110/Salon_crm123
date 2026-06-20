@@ -12,6 +12,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import {
     Document, Page, Text, View, StyleSheet, pdf, Font
 } from '@react-pdf/renderer';
@@ -29,11 +30,6 @@ Font.register({
         { src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-bold-webfont.ttf', fontWeight: 700 },
     ],
 });
-
-const maskPhone = (phone) => {
-    if (!phone) return '-';
-    return phone.replace(/(\d{2})(\d{6})(\d{2})/, '$1XXXXXX$3');
-};
 
 const pdfStyles = StyleSheet.create({
     page: {
@@ -152,7 +148,7 @@ const pdfStyles = StyleSheet.create({
 });
 
 
-export const POSReceiptPDF = ({ invoice, salon }) => {
+export const POSReceiptPDF = ({ invoice, salon, role }) => {
     const createdAt = new Date(invoice.createdAt);
 
     const dateStr = createdAt.toLocaleDateString('en-GB', {
@@ -245,7 +241,7 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
                         </View>
                         <View style={{ flexDirection: 'row' }}>
                             <Text style={{ width: 75 }}>Mobile Number</Text>
-                            <Text>: {invoice.customerId?.phone || '-'}</Text>
+                            <Text>: {maskPhone(invoice.customerId?.phone, role) || '-'}</Text>
                         </View>
                     </View>
                 </View>
@@ -437,7 +433,7 @@ export const POSReceiptPDF = ({ invoice, salon }) => {
 };
 
 
-const StandardInvoicePDF = ({ invoice, salon }) => {
+const StandardInvoicePDF = ({ invoice, salon, role }) => {
     const createdAt = new Date(invoice.createdAt);
     const dateStr = createdAt.toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -487,7 +483,7 @@ const StandardInvoicePDF = ({ invoice, salon }) => {
                         </View>
                         <View style={{ flex: 1 }}>
                             <Text style={{ fontSize: 8, color: '#999', marginBottom: 2 }}>Mobile Number</Text>
-                            <Text style={{ fontWeight: 700 }}>{maskPhone(invoice.customerId?.phone)}</Text>
+                            <Text style={{ fontWeight: 700 }}>{maskPhone(invoice.customerId?.phone, role)}</Text>
                         </View>
                     </View>
                 </View>
@@ -740,7 +736,7 @@ export default function POSInvoicesPage() {
         setIsGeneratingPDF(type);
         try {
             const PDFComponent = type === 'pos' ? POSReceiptPDF : StandardInvoicePDF;
-            const blob = await pdf(<PDFComponent invoice={selectedInvoice} salon={salon} />).toBlob();
+            const blob = await pdf(<PDFComponent invoice={selectedInvoice} salon={salon} role={user?.role} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -760,7 +756,7 @@ export default function POSInvoicesPage() {
         setIsGeneratingPDF(`${inv._id}_${type}`);
         try {
             const PDFComponent = type === 'pos' ? POSReceiptPDF : StandardInvoicePDF;
-            const blob = await pdf(<PDFComponent invoice={inv} salon={salon} />).toBlob();
+            const blob = await pdf(<PDFComponent invoice={inv} salon={salon} role={user?.role} />).toBlob();
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
@@ -789,7 +785,7 @@ export default function POSInvoicesPage() {
         setIsSendingWhatsApp(inv._id);
         try {
             // 1. Generate PDF blob (using POS receipt for WhatsApp)
-            const blob = await pdf(<POSReceiptPDF invoice={inv} salon={salon} />).toBlob();
+            const blob = await pdf(<POSReceiptPDF invoice={inv} salon={salon} role={user?.role} />).toBlob();
             console.log(`[Frontend-POSInvoicesPage] Generated POS receipt PDF blob size: ${blob.size} bytes`);
 
             // 2. Prepare Form Data
@@ -825,7 +821,7 @@ export default function POSInvoicesPage() {
         setIsSendingEmail(inv._id);
         try {
             // Generate standard PDF
-            const blob = await pdf(<StandardInvoicePDF invoice={inv} salon={salon} />).toBlob();
+            const blob = await pdf(<StandardInvoicePDF invoice={inv} salon={salon} role={user?.role} />).toBlob();
             const formData = new FormData();
             formData.append('pdf', blob, `Invoice_${inv.invoiceNumber}.pdf`);
 

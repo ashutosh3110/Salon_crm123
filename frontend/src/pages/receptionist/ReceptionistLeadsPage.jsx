@@ -11,6 +11,7 @@ import {
 import api from '../../services/api';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import toast from 'react-hot-toast';
 
@@ -659,7 +660,7 @@ export default function ReceptionistLeadsPage() {
                                                     })()}
                                                     <div className="text-left">
                                                         <div className="font-black text-text text-[11px] uppercase italic">{inq.name}</div>
-                                                        <div className="text-[9.5px] text-text-muted font-bold tracking-wide mt-0.5">{inq.phone}</div>
+                                                        <div className="text-[9.5px] text-text-muted font-bold tracking-wide mt-0.5">{maskPhone(inq.phone, user?.role)}</div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -906,7 +907,7 @@ export default function ReceptionistLeadsPage() {
                                 </div>
                                 <div className="space-y-0.5">
                                     <span className="text-[8.5px] text-text-muted block tracking-wider">Contact Number</span>
-                                    <span className="text-[11px] font-black text-slate-900 dark:text-white">{viewingInquiry.phone}</span>
+                                    <span className="text-[11px] font-black text-slate-900 dark:text-white">{maskPhone(viewingInquiry.phone, user?.role)}</span>
                                 </div>
                             </div>
 

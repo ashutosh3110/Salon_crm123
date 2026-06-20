@@ -30,7 +30,7 @@ import {
 import { useAuth } from '../../contexts/AuthContext';
 import { useBusiness } from '../../contexts/BusinessContext';
 import { maskPhone } from '../../utils/phoneUtils';
-import mockApi from '../../services/mock/mockApi';
+// import mockApi from '../../services/mock/mockApi';
 import api from '../../services/api';
 export default function AppointmentsPage() {
     const { user } = useAuth();
@@ -187,11 +187,13 @@ export default function AppointmentsPage() {
             }
             setFetchingSlots(true);
             try {
-                const res = await mockApi.get(`/bookings?date=${newBooking.date}&outletId=${newBooking.outletId}`);
-                const dateBookings = res.data?.results || [];
+                const res = await api.get(`/bookings?date=${newBooking.date}&outletId=${newBooking.outletId}`);
+                const dateBookings = res.data?.data || res.data?.results || [];
                 const busy = dateBookings
                     .filter(b => {
-                        const bStaffId = b.staffId?._id || b.staffId?.id || b.staffId;
+                        const bStaffId = Array.isArray(b.staffId) 
+                            ? (b.staffId[0]?._id || b.staffId[0]?.id || b.staffId[0])
+                            : (b.staffId?._id || b.staffId?.id || b.staffId);
                         return bStaffId === newBooking.staffId;
                     })
                     .map(b => b.time);
@@ -215,47 +217,55 @@ export default function AppointmentsPage() {
             const outletToFetch = isReceptionistMode ? userOutletId : (activeOutletId || '');
 
             const [bookingsRes, servicesRes, staffRes, invoicesRes, clientsRes] = await Promise.all([
-                mockApi.get(`/bookings?date=${dateStr}&limit=100&outletId=${outletToFetch}`),
-                mockApi.get('/services?limit=100'),
+                api.get(`/bookings?date=${dateStr}&limit=100&outletId=${outletToFetch}`),
+                api.get('/services?limit=100'),
                 api.get('/users?role=stylist'),
-                mockApi.get('/invoices', { params: { limit: 100, outletId: outletToFetch } }),
-                mockApi.get('/client')
+                api.get('/pos/invoices', { params: { limit: 100, outletId: outletToFetch } }),
+                api.get('/clients?limit=1000')
             ]);
 
-            if (invoicesRes?.data?.results) {
-                setOrders(invoicesRes.data.results);
+            if (invoicesRes?.data) {
+                const invoiceList = invoicesRes.data.data || invoicesRes.data.results || [];
+                setOrders(invoiceList);
             }
 
-            if (clientsRes?.data?.results) {
-                setClients(clientsRes.data.results);
+            if (clientsRes?.data) {
+                const clientList = clientsRes.data.data || clientsRes.data.results || [];
+                setClients(clientList);
             }
 
-            if (bookingsRes.data.results) {
-                const allBookings = bookingsRes.data.results;
-                setAppointments(allBookings.map(b => ({
-                    id: b.id || b._id,
-                    client: b.clientId?.name || 'Walk-in',
-                    service: b.serviceId?.name || 'Unknown',
-                    time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
-                    professional: b.staffId?.name || 'Unassigned',
-                    staffId: b.staffId?._id || b.staffId?.id || null,
-                    status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
-                    price: `₹${b.price || 0}`,
-                    phone: b.clientId?.phone || b.phone || '',
-                    source: b.source || 'APP',
-                    paymentStatus: b.paymentStatus || 'unpaid',
-                    paymentMethod: b.paymentMethod || 'salon',
-                    isRegistry: false
-                })));
+            const bookingsList = bookingsRes?.data?.data || bookingsRes?.data?.results || [];
+            if (bookingsList) {
+                const allBookings = bookingsList;
+                setAppointments(allBookings.map(b => {
+                    const firstStaff = Array.isArray(b.staffId) ? b.staffId[0] : b.staffId;
+                    return {
+                        id: b._id || b.id,
+                        client: b.clientId?.name || 'Walk-in',
+                        service: b.serviceId?.name || 'Unknown',
+                        time: b.time || (b.appointmentDate ? new Date(b.appointmentDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—'),
+                        professional: firstStaff?.name || 'Unassigned',
+                        staffId: firstStaff?._id || firstStaff?.id || null,
+                        status: b.status ? (b.status.charAt(0).toUpperCase() + b.status.slice(1)) : 'Upcoming',
+                        price: `₹${b.totalPrice || b.price || 0}`,
+                        phone: b.clientId?.phone || b.phone || '',
+                        source: b.source || 'APP',
+                        paymentStatus: b.paymentStatus || 'unpaid',
+                        paymentMethod: b.paymentMethod || 'salon',
+                        isRegistry: false
+                    };
+                }));
 
                 // Determine busy staff (arrived or in-progress)
                 const busyStaffIds = allBookings
-                    .filter(b => ['arrived', 'in-progress'].includes(b.status.toLowerCase()))
-                    .map(b => b.staffId?._id || b.staffId?.id)
+                    .filter(b => ['arrived', 'in-progress'].includes((b.status || '').toLowerCase()))
+                    .map(b => {
+                        const firstStaff = Array.isArray(b.staffId) ? b.staffId[0] : b.staffId;
+                        return firstStaff?._id || firstStaff?.id;
+                    })
                     .filter(Boolean);
 
                 if (staffRes?.data?.success) {
-                    console.log("hvsvahv", staffRes)
                     const staffList = staffRes.data.data?.results || staffRes.data.results || staffRes.data.data || [];
                     const mappedStaffList = staffList.map(s => {
                         let staffOutletId = s.outletId?._id || s.outletId;
@@ -268,8 +278,9 @@ export default function AppointmentsPage() {
                 }
             }
 
-            if (servicesRes?.data?.success) {
-                setServices(servicesRes.data.data?.results || servicesRes.data.results || []);
+            if (servicesRes?.data) {
+                const sList = servicesRes.data.data || servicesRes.data.results || [];
+                setServices(Array.isArray(sList) ? sList : []);
             }
 
         } catch (err) {
@@ -354,7 +365,7 @@ export default function AppointmentsPage() {
 
     const handleCheckIn = async (id) => {
         try {
-            await mockApi.patch(`/bookings/${id}`, { status: 'arrived' });
+            await api.patch(`/bookings/${id}/status`, { status: 'arrived' });
             // Update local state
             setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: 'Arrived' } : a));
             alert(`Protocol Clearance: Appointment ${id} marked as ARRIVED.`);
@@ -370,9 +381,9 @@ export default function AppointmentsPage() {
     };
 
     const handleCancelAppointment = async (id) => {
-        if (confirm(`Authorize cancellation of ${id}? This action is permanent.`)) {
+        if (confirm(`Authorize cancellation of this appointment? This action is permanent.`)) {
             try {
-                await mockApi.patch(`/bookings/${id}`, { status: 'cancelled' });
+                await api.patch(`/bookings/${id}/status`, { status: 'cancelled' });
                 setAppointments(prev => prev.filter(a => a.id !== id));
                 setIsDetailsOpen(false);
                 alert('Security Clearance: Appointment protocol terminated.');
@@ -392,23 +403,26 @@ export default function AppointmentsPage() {
 
         try {
             const bookingData = {
+                clientId: selectedClientId || undefined,
                 clientName: newBooking.clientName,
                 phone: newBooking.phone,
                 serviceId: newBooking.serviceId,
-                staffId: newBooking.staffId,
+                staffId: [newBooking.staffId],
                 outletId: newBooking.outletId,
                 appointmentDate: new Date(`${newBooking.date} ${newBooking.time}`).toISOString(),
                 time: newBooking.time,
-                status: 'upcoming',
-                source: 'RECEPTION',
+                status: 'confirmed',
+                source: 'POS',
                 advancePaid: Number(advancePayment),
                 advancePaymentMethod,
                 couponCode: isPromoApplied ? couponCode : undefined,
                 totalPrice: priceCalculation.total,
-                price: priceCalculation.total
+                subtotal: priceCalculation.subtotal,
+                tax: priceCalculation.tax,
+                promoDiscount: priceCalculation.promoDiscount
             };
 
-            await mockApi.post('/bookings', bookingData);
+            await api.post('/bookings', bookingData);
 
             // Refresh
             fetchData();
@@ -495,22 +509,33 @@ export default function AppointmentsPage() {
                                                 <div
                                                     key={apt.id}
                                                     onClick={() => handleViewDetails(apt.id)}
-                                                    className={`absolute inset-1 p-2 border overflow-hidden cursor-pointer transition-all hover:scale-[1.02] hover:z-20 shadow-sm ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/30' :
-                                                        apt.status === 'Cancelled' ? 'bg-rose-500/10 border-rose-500/30 opacity-60' :
-                                                            'bg-primary/10 border-primary/30'
-                                                        }`}
+                                                    className="absolute inset-1 p-2 border overflow-hidden cursor-pointer transition-all hover:scale-[1.02] hover:z-20 shadow-sm"
+                                                    style={{
+                                                        backgroundColor: apt.status === 'Arrived' ? 'rgba(16, 185, 129, 0.1)' :
+                                                            apt.status === 'Cancelled' ? 'rgba(244, 63, 94, 0.1)' :
+                                                            'rgba(180, 145, 43, 0.1)',
+                                                        borderColor: apt.status === 'Arrived' ? 'rgba(16, 185, 129, 0.3)' :
+                                                            apt.status === 'Cancelled' ? 'rgba(244, 63, 94, 0.3)' :
+                                                            'rgba(180, 145, 43, 0.3)'
+                                                    }}
                                                 >
                                                     <div className="flex flex-col h-full justify-between">
                                                         <div>
                                                             <div className="flex items-center justify-between mb-1">
                                                                 <span className="text-[9px] font-black text-text uppercase tracking-tight truncate flex-1">{apt.client}</span>
-                                                                {apt.source === 'APP' && <Smartphone className="w-2 h-2 text-primary" />}
+                                                                {apt.source === 'APP' && <Smartphone className="w-2 h-2 text-primary" style={{ color: '#B4912B' }} />}
                                                             </div>
                                                             <p className="text-[7px] font-bold text-text-muted uppercase tracking-widest truncate">{apt.service}</p>
                                                         </div>
                                                         <div className="flex items-center justify-between mt-1">
-                                                            <span className={`text-[6px] font-black px-1 py-0.5 border ${apt.status === 'Arrived' ? 'border-emerald-500/50 text-emerald-600' : 'border-primary/50 text-primary'
-                                                                } uppercase`}>
+                                                            <span className="text-[6px] font-black px-1 py-0.5 border uppercase"
+                                                                style={{
+                                                                    color: apt.status === 'Arrived' ? '#059669' :
+                                                                        apt.status === 'Cancelled' ? '#e11d48' : '#B4912B',
+                                                                    borderColor: apt.status === 'Arrived' ? 'rgba(16, 185, 129, 0.5)' :
+                                                                        apt.status === 'Cancelled' ? 'rgba(244, 63, 94, 0.5)' : 'rgba(180, 145, 43, 0.5)'
+                                                                }}
+                                                            >
                                                                 {apt.status}
                                                             </span>
                                                             <span className="text-[7px] font-black text-text-muted">{apt.price}</span>
@@ -599,6 +624,48 @@ export default function AppointmentsPage() {
                     background-color: transparent !important;
                     color: #94a3b8 !important;
                     border: 1px solid rgba(255, 255, 255, 0.08) !important;
+                }
+                .admin-panel button.action-btn-circle,
+                .dark .admin-panel button.action-btn-circle {
+                    border-radius: 9999px !important;
+                    width: 32px !important;
+                    height: 32px !important;
+                    min-width: 32px !important;
+                    max-width: 32px !important;
+                    padding: 0 !important;
+                    display: inline-flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    background-color: transparent !important;
+                    transition: all 0.2s ease-in-out !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle svg,
+                html:not(.dark) .admin-panel button.action-btn-circle svg * {
+                    color: #B4912B !important;
+                    stroke: #B4912B !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle:hover {
+                    background-color: #B4912B !important;
+                    border-color: #B4912B !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle:hover svg,
+                html:not(.dark) .admin-panel button.action-btn-circle:hover svg * {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle.btn-emerald svg,
+                html:not(.dark) .admin-panel button.action-btn-circle.btn-emerald svg * {
+                    color: #059669 !important;
+                    stroke: #059669 !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle.btn-emerald:hover {
+                    background-color: #059669 !important;
+                    border-color: #059669 !important;
+                }
+                html:not(.dark) .admin-panel button.action-btn-circle.btn-emerald:hover svg,
+                html:not(.dark) .admin-panel button.action-btn-circle.btn-emerald:hover svg * {
+                    color: #ffffff !important;
+                    stroke: #ffffff !important;
                 }
             `}</style>
             <div className="space-y-6 animate-reveal">
@@ -712,7 +779,7 @@ export default function AppointmentsPage() {
                                                             </div>
                                                             <div>
                                                                 <p className="text-sm font-black text-text uppercase tracking-tight">{apt.client}</p>
-                                                                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(apt.phone)}</p>
+                                                                <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(apt.phone, user?.role)}</p>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -733,15 +800,15 @@ export default function AppointmentsPage() {
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center justify-center">
-                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600' :
-                                                                apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 text-blue-600' :
-                                                                    apt.status === 'Upcoming' ? 'bg-amber-500/10 border-amber-500/20 text-amber-600' :
-                                                                        'bg-rose-500/10 border-rose-500/20 text-rose-600'
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.status === 'Arrived' ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-700 dark:!text-emerald-400' :
+                                                                apt.status === 'Completed' ? 'bg-blue-500/10 border-blue-500/20 !text-blue-700 dark:!text-blue-400' :
+                                                                    apt.status === 'Upcoming' ? 'bg-amber-500/10 border-amber-500/20 !text-amber-700 dark:!text-amber-400' :
+                                                                        'bg-rose-500/10 border-rose-500/20 !text-rose-700 dark:!text-rose-400'
                                                                 }`}
                                                                 style={{
-                                                                    color: apt.status === 'Arrived' ? '#059669' :
-                                                                        apt.status === 'Completed' ? '#2563eb' :
-                                                                            apt.status === 'Upcoming' ? '#d97706' : '#e11d48'
+                                                                    color: apt.status === 'Arrived' ? '#047857' :
+                                                                        apt.status === 'Completed' ? '#1d4ed8' :
+                                                                            apt.status === 'Upcoming' ? '#b45309' : '#be123c'
                                                                 }}>
                                                                 <div className={`w-1.5 h-1.5 rounded-full ${apt.status === 'Arrived' ? 'bg-emerald-500' :
                                                                     apt.status === 'Completed' ? 'bg-blue-500' :
@@ -752,27 +819,31 @@ export default function AppointmentsPage() {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <div className="flex items-center justify-center">
-                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.paymentStatus === 'paid'
-                                                                ? 'bg-emerald-500/10 border-emerald-500/20 !text-emerald-600'
-                                                                : 'bg-primary/5 border-primary/20 !text-[#B4912B]'
-                                                                }`}
-                                                                style={{ color: apt.paymentStatus === 'paid' ? '#059669' : '#B4912B' }}
-                                                            >
-                                                                {apt.paymentStatus === 'paid' ? (
-                                                                    <>
-                                                                        <CheckCircle2 className="w-3 h-3" />
-                                                                        PAID
-                                                                    </>
-                                                                ) : (
-                                                                    <>
-                                                                        <Banknote className="w-3 h-3" />
-                                                                        PAY AT SALON
-                                                                    </>
-                                                                )}
-                                                            </span>
-                                                        </div>
-                                                    </td>
+                                                          <div className="flex items-center justify-center">
+                                                              <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[8px] font-black uppercase border ${apt.paymentStatus === 'paid'
+                                                                  ? '!text-emerald-600'
+                                                                  : '!text-[#B4912B]'
+                                                                  }`}
+                                                                  style={{
+                                                                      color: apt.paymentStatus === 'paid' ? '#059669' : '#B4912B',
+                                                                      backgroundColor: apt.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(180, 145, 43, 0.05)',
+                                                                      borderColor: apt.paymentStatus === 'paid' ? 'rgba(16, 185, 129, 0.2)' : 'rgba(180, 145, 43, 0.2)'
+                                                                  }}
+                                                              >
+                                                                  {apt.paymentStatus === 'paid' ? (
+                                                                      <>
+                                                                          <CheckCircle2 className="w-3 h-3" />
+                                                                          PAID
+                                                                      </>
+                                                                  ) : (
+                                                                      <>
+                                                                          <Banknote className="w-3 h-3" />
+                                                                          PAY AT SALON
+                                                                      </>
+                                                                  )}
+                                                              </span>
+                                                          </div>
+                                                      </td>
                                                     <td className="px-6 py-4 text-right">
                                                         <div className="flex items-center justify-end gap-2">
                                                             {apt.status === 'Arrived' && (
@@ -787,14 +858,14 @@ export default function AppointmentsPage() {
                                                             {apt.status === 'Upcoming' && (
                                                                 <button
                                                                     onClick={() => handleCheckIn(apt.id)}
-                                                                    className="p-2 border border-border hover:bg-emerald-500/5 hover:border-emerald-500/20 group transition-all rounded-full"
+                                                                    className="border border-border hover:bg-emerald-500/5 hover:border-emerald-500/20 group transition-all action-btn-circle btn-emerald"
                                                                     title="Mark Arrived"
                                                                 >
-                                                                    <CheckCircle2 className="w-4 h-4 group-hover:text-emerald-500" style={{ color: '#059669' }} />
+                                                                    <CheckCircle2 className="w-4 h-4 group-hover:text-emerald-500" />
                                                                 </button>
                                                             )}
-                                                            <button onClick={() => handleViewDetails(apt.id)} className="p-2 border border-border hover:bg-surface-alt transition-all group rounded-full" title="View Protocol">
-                                                                <MoreVertical className="w-4 h-4 group-hover:text-text" style={{ color: '#64748b' }} />
+                                                            <button onClick={() => handleViewDetails(apt.id)} className="border border-border hover:bg-surface-alt transition-all group action-btn-circle" title="View Protocol">
+                                                                <MoreVertical className="w-4 h-4 group-hover:text-text" />
                                                             </button>
                                                         </div>
                                                     </td>
@@ -843,7 +914,7 @@ export default function AppointmentsPage() {
                                                     </div>
                                                     <div>
                                                         <p className="text-sm font-black text-text uppercase tracking-tight">{order.clientId?.name || 'Walk-in'}</p>
-                                                        <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(order.clientId?.phone || '')}</p>
+                                                        <p className="text-[10px] font-bold text-text-secondary uppercase tracking-[0.1em]">{maskPhone(order.clientId?.phone || '', user?.role)}</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -924,7 +995,7 @@ export default function AppointmentsPage() {
                                             <option value="">-- SELECT CLIENT --</option>
                                             {clients.map(c => (
                                                 <option key={c._id || c.id} value={c._id || c.id}>
-                                                    {c.name} - {c.phone}
+                                                    {c.name} - {maskPhone(c.phone, user?.role)}
                                                 </option>
                                             ))}
                                         </select>
@@ -946,7 +1017,7 @@ export default function AppointmentsPage() {
                                                 <input
                                                     disabled
                                                     type="tel"
-                                                    value={newBooking.phone}
+                                                    value={maskPhone(newBooking.phone, user?.role)}
                                                     className="w-full px-4 py-3 bg-surface-alt border border-border text-sm font-black uppercase tracking-tight outline-none opacity-60 cursor-not-allowed"
                                                 />
                                             </div>
@@ -1186,7 +1257,7 @@ export default function AppointmentsPage() {
                                         </div>
                                         <div className="space-y-1">
                                             <p className="text-[10px] font-black text-text-muted uppercase tracking-widest mb-2 flex items-center gap-2"><Phone className="w-3 h-3" /> Contact</p>
-                                            <p className="text-sm font-black text-text uppercase">{maskPhone(selectedAppointment.phone)}</p>
+                                            <p className="text-sm font-black text-text uppercase">{maskPhone(selectedAppointment.phone, user?.role)}</p>
                                         </div>
                                     </div>
                                     <div className="pt-6 border-t border-border flex gap-3">

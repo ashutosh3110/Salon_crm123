@@ -3237,7 +3237,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                         <div className="flex-1 min-w-0">
                                                                             <p className="text-xs font-bold text-slate-900 truncate">{c.name}</p>
                                                                             <div className="flex items-center gap-2">
-                                                                                <p className="text-[10px] font-semibold text-slate-400">{c.phone}</p>
+                                                                                <p className="text-[10px] font-semibold text-slate-400">{maskPhone(c.phone, user?.role)}</p>
                                                                                 {Number(c.dueAmount || 0) > 0 && <span className="text-[9px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">Due ₹{Number(c.dueAmount).toFixed(0)}</span>}
                                                                             </div>
                                                                         </div>
@@ -3900,7 +3900,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     </div>
                                     <div>
                                         <p className="text-xs md:text-sm font-bold text-slate-900 uppercase tracking-tight">{pendingClientSelect.name}</p>
-                                        <p className="text-xs font-semibold text-slate-500 font-mono mt-0.5">{pendingClientSelect.phone}</p>
+                                        <p className="text-xs font-semibold text-slate-500 font-mono mt-0.5">{maskPhone(pendingClientSelect.phone, user?.role)}</p>
                                     </div>
                                     <div className="ml-auto text-right">
                                         <p className="text-xs font-semibold text-amber-500 uppercase tracking-wider">Owes</p>

@@ -818,8 +818,8 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                 {customers.map(c => (
                                     <tr key={c._id} className="hover:bg-surface transition-colors">
                                         <td className="p-3 w-[10%] text-center"><input type="checkbox" checked={selectedIds.includes(c._id)} onChange={() => setSelectedIds(prev => prev.includes(c._id) ? prev.filter(i => i !== c._id) : [...prev, c._id])} /></td>
-                                        <td className="p-3 w-[45%]" onClick={() => onCustomerClick(c)}>
-                                            <div className="flex items-center gap-4 cursor-pointer">
+                                        <td className="p-3 w-[45%]">
+                                            <div className="flex items-center gap-4">
                                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${getAvatarColors(c.name).bg} ${getAvatarColors(c.name).text} ${getAvatarColors(c.name).border} border`}>{c.name?.charAt(0) || '?'}</div>
                                                 <div>
                                                     <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>

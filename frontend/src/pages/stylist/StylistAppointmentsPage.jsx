@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Calendar, ChevronRight, RefreshCw, Loader2, Menu, Filter, X, Play, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import { useOutletContext } from 'react-router-dom';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
@@ -347,7 +348,7 @@ export default function StylistAppointmentsPage() {
                             <div className="flex justify-between">
                                 <span className="text-slate-400">Client Contact</span>
                                 <span className="font-bold text-slate-800 dark:text-slate-200">
-                                    {selectedBooking.client?.phone || 'N/A'}
+                                    {maskPhone(selectedBooking.client?.phone, user?.role) || 'N/A'}
                                 </span>
                             </div>
                         </div>

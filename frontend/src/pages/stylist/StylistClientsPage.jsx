@@ -476,7 +476,7 @@ export default function StylistClientsPage() {
                                     <div>
                                         <h2 className="text-xl font-black text-text uppercase tracking-tight">{selectedClient.name}</h2>
                                         <p className="text-[10px] font-black text-text-muted mt-1 uppercase tracking-widest italic">
-                                            {selectedClient.email || selectedClient.phone || '—'}
+                                            {selectedClient.email || maskPhone(selectedClient.phone, user?.role) || '—'}
                                         </p>
                                     </div>
                                 </div>

@@ -4028,7 +4028,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{qClient.name}</p>
-                                                <p className="text-xs font-mono" style={{ color: '#64748b' }}>{qClient.phone}</p>
+                                                <p className="text-xs font-mono" style={{ color: '#64748b' }}>{maskPhone(qClient.phone, user?.role)}</p>
                                             </div>
                                         </div>
                                         <button onClick={() => { setQClient(null); setQCollectedPrevDue(0); }} className="p-1 flex-shrink-0 ml-2 hover:text-red-500" style={{ color: '#94a3b8' }}>
@@ -4083,7 +4083,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                                                     </div>
                                                                     <div className="flex-1 min-w-0">
                                                                         <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{c.name}</p>
-                                                                        <p className="text-xs font-mono" style={{ color: '#94a3b8' }}>{c.phone}</p>
+                                                                        <p className="text-xs font-mono" style={{ color: '#94a3b8' }}>{maskPhone(c.phone, user?.role)}</p>
                                                                     </div>
                                                                     {Number(c.dueAmount || 0) > 0 && (
                                                                         <span className="text-[10px] font-bold bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-lg flex-shrink-0" style={{ color: '#d97706' }}>
@@ -4432,7 +4432,8 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                             <Wallet className="w-4 h-4 flex-shrink-0" />
                                             <input
                                                 type="number"
-                                                style={{ background: 'transparent', color: '#065f46' }}
+                                                className="flex-1 min-w-0 text-[13px] font-black outline-none font-mono text-center bg-transparent"
+                                                style={{ color: '#065f46' }}
                                                 value={qRedeemWallet || ''}
                                                 onChange={e => setQRedeemWallet(Math.min(qClientWalletBalance, Math.min(totals.totalWithPrevDue, Number(e.target.value))))}
                                                 placeholder="0"
@@ -4754,7 +4755,7 @@ function QuickInvoiceModal({ onClose, onSuccess, outlets, services, products, st
                                     </div>
                                     <div>
                                         <p className="text-sm font-bold uppercase text-slate-800 dark:text-slate-200">{pendingClientSelect.name}</p>
-                                        <p className="text-xs font-mono mt-0.5 text-slate-500 dark:text-slate-400">{pendingClientSelect.phone}</p>
+                                        <p className="text-xs font-mono mt-0.5 text-slate-500 dark:text-slate-400">{maskPhone(pendingClientSelect.phone, user?.role)}</p>
                                     </div>
                                     <div className="ml-auto text-right">
                                         <p className="text-xs font-semibold uppercase text-amber-500">Owes</p>

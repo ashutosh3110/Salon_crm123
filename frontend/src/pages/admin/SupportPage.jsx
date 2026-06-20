@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../contexts/AuthContext';
+import { maskPhone } from '../../utils/phoneUtils';
 import api from '../../services/api';
 import AnimatedCounter from '../../components/common/AnimatedCounter';
 
@@ -875,7 +876,7 @@ function CustomerCards({ tickets, userRole, openStatusDropdownId, setOpenStatusD
                                             {t.customerId?.name || 'Unknown Customer'}
                                         </div>
                                         {t.customerId?.phone && (
-                                            <div className="text-[10px] text-text-muted mt-0.5">{t.customerId.phone}</div>
+                                            <div className="text-[10px] text-text-muted mt-0.5">{maskPhone(t.customerId.phone, ['admin', 'superadmin'].includes(userRole) ? 'admin' : userRole)}</div>
                                         )}
                                     </div>
                                 </div>
