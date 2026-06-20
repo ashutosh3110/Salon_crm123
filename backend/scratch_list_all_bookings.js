@@ -30,19 +30,16 @@ async function run() {
         console.log(`Booking ID: ${b._id}, Date: ${b.appointmentDate}, Time: ${b.time}, Status: ${b.status}, StaffId: ${JSON.stringify(b.staffId)}`);
     });
 
-    const targetStaffIds = ["69fdd51189711943d0eca5df", "6a187949e4b295c7c59352f1"];
-    console.log("\n=== LOOKUP TARGET STAFF ===");
-    for (const id of targetStaffIds) {
-        try {
-            const s = await Staff.findById(id);
-            if (s) {
-                console.log(`Staff ID: ${s._id}, Name: ${s.name}, Role: ${s.role}`);
-            } else {
-                console.log(`Staff ID: ${id} NOT found in staffs collection.`);
-            }
-        } catch (e) {
-            console.error(e);
-        }
+    const stylistIds = ["6a3100643cea8dd0c579710c", "6a3288126889558554491fe6"];
+    console.log("\n=== BOOKINGS FOR CHIRAG & ASLAM ===");
+    for (const id of stylistIds) {
+        const bookingsForStylist = await Booking.find({
+            staffId: { $in: [id, new mongoose.Types.ObjectId(id)] }
+        });
+        console.log(`Stylist ID: ${id} has ${bookingsForStylist.length} bookings:`);
+        bookingsForStylist.forEach(b => {
+            console.log(`- Booking ID: ${b._id}, Date: ${b.appointmentDate}, Time: ${b.time}, Status: ${b.status}`);
+        });
     }
 
     await mongoose.disconnect();
