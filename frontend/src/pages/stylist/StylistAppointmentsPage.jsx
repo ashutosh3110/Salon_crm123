@@ -200,13 +200,13 @@ export default function StylistAppointmentsPage() {
             <div className="flex-1 overflow-y-auto no-scrollbar px-4 lg:px-6 py-4">
                 
                 {/* Horizontal Filter Tabs */}
-                <div className="no-scrollbar mb-5" style={{ overflowX: 'auto' }}>
-                    <div className="flex items-center justify-center gap-2.5 min-w-full pb-1">
+                <div className="no-scrollbar mb-5 -mx-4 px-4 lg:mx-0 lg:px-0" style={{ overflowX: 'auto' }}>
+                    <div className="flex items-center justify-start lg:justify-center gap-2.5 min-w-full pb-1">
                         {tabs.map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
-                                className={`px-5 py-2.5 rounded-[12px] text-[13px] font-bold transition-all border cursor-pointer ${
+                                className={`px-5 py-2.5 rounded-[12px] text-[13px] font-bold transition-all border cursor-pointer shrink-0 ${
                                     activeTab === tab
                                         ? '!bg-[#5D2EE6] !text-white border-transparent shadow-sm'
                                         : '!bg-white dark:!bg-slate-850 !text-slate-600 dark:!text-slate-400 border-slate-150 dark:border-slate-700'
