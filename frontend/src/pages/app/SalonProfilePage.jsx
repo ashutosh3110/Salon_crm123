@@ -310,7 +310,7 @@ export default function SalonProfilePage() {
             </div>
 
             {/* ── QUICK ACTION BUTTONS ── */}
-            <div style={{ padding: '24px 30px 24px', background: '#FFF', display: 'flex', justifyContent: 'space-between' }}>
+            <div style={{ padding: '24px 30px 24px', background: '#FFF', display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #F0F0F0', borderBottom: '1px solid #F0F0F0' }}>
                 {quickActions.map(({ label, icon: Icon, action }) => (
                     <motion.button
                         key={label}
@@ -336,29 +336,29 @@ export default function SalonProfilePage() {
 
             <div style={{ padding: '20px 30px' }}>
                     <motion.div key="services" {...fadeUp} style={{ padding: '20px 0' }}>
-                        {/* Top Services Header */}
+                        {/* Top Categories Header */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1A1A1A', margin: 0 }}>Services</h3>
+                            <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1A1A1A', margin: 0 }}>Categories</h3>
                             <button
-                                onClick={() => navigate(`/app/book?outletId=${id}`)}
+                                onClick={() => navigate(`/app/booking?outletId=${id}`)}
                                 style={{ background: 'none', border: 'none', color: accent, fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}
                             >
                                 See All
                             </button>
                         </div>
 
-                        {/* Horizontal Service Cards */}
+                        {/* Horizontal Category Cards */}
                         <div style={{ display: 'flex', gap: '12px', overflowX: 'auto', paddingBottom: '8px', margin: '0 -30px', paddingLeft: '30px', paddingRight: '30px' }} className="no-scrollbar">
-                            {outletServices.length === 0 && (
+                            {businessCategories.length === 0 && (
                                 <div style={{ width: '100%', textAlign: 'center', padding: '20px', color: '#AAA', fontSize: '13px' }}>
-                                    No services available for this outlet.
+                                    No categories available.
                                 </div>
                             )}
-                            {outletServices.slice(0, 8).map((service, idx) => (
+                            {businessCategories.slice(0, 8).map((category, idx) => (
                                 <motion.div
-                                    key={service._id}
+                                    key={category._id || idx}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => navigate(`/app/book?outletId=${id}&serviceId=${service._id}`)}
+                                    onClick={() => navigate(`/app/booking?outletId=${id}&category=${encodeURIComponent(category.name)}`)}
                                     style={{
                                         width: '105px', flexShrink: 0,
                                         borderRadius: '12px', border: '1px solid #F0F0F0',
@@ -368,29 +368,26 @@ export default function SalonProfilePage() {
                                 >
                                     <div style={{ width: '100%', height: '90px', background: '#F8F9FA' }}>
                                         <img
-                                            src={getImageUrl(service.image || heroImages[0])}
-                                            alt={service.name}
+                                            src={getImageUrl(category.image || heroImages[0])}
+                                            alt={category.name}
                                             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                             onError={e => {
                                                 e.target.onerror = null;
-                                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(service.name)}&background=f0f0f0&color=888&size=56`;
+                                                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(category.name)}&background=f0f0f0&color=888&size=56`;
                                             }}
                                         />
                                     </div>
-                                    <div style={{ padding: '8px 10px' }}>
-                                        <h4 style={{ fontSize: '12px', fontWeight: 500, color: '#333', margin: '0 0 4px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                            {service.name}
+                                    <div style={{ padding: '8px 10px', textAlign: 'center' }}>
+                                        <h4 style={{ fontSize: '12px', fontWeight: 500, color: '#333', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {category.name}
                                         </h4>
-                                        <p style={{ fontSize: '13px', color: '#1A1A1A', margin: 0, fontWeight: 800 }}>
-                                            {outlet?.showServicePrice !== false && salon?.showServicePrice !== false && service.price ? `₹${service.price}` : '-'}
-                                        </p>
                                     </div>
                                 </motion.div>
                             ))}
                         </div>
 
                         {/* ── OFFERS SECTION ── */}
-                        <div style={{ marginTop: '8px', marginBottom: '16px' }}>
+                        <div style={{ marginTop: '24px', paddingTop: '24px', marginBottom: '16px', borderTop: '1px solid #F0F0F0' }}>
                             <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#1A1A1A', margin: '0 0 12px' }}>Offers</h3>
                             <motion.div
                                 whileTap={{ scale: 0.98 }}
@@ -406,7 +403,7 @@ export default function SalonProfilePage() {
                         {/* Book Appointment CTA */}
                         <motion.button
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => navigate(`/app/book?outletId=${id}`)}
+                            onClick={() => navigate(`/app/booking?outletId=${id}`)}
                             style={{
                                 width: '100%', height: '54px',
                                 background: '#B4912B', color: '#FFF',
