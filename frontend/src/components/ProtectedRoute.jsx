@@ -20,6 +20,10 @@ export default function ProtectedRoute({ allowedRoles, feature, permission }) {
         if (window.location.pathname.startsWith('/superadmin')) {
             return <Navigate to="/superadmin/login" replace />;
         }
+        // Redirect stylist paths to stylist specific login
+        if (window.location.pathname.startsWith('/stylist')) {
+            return <Navigate to="/stylist/login" replace />;
+        }
         return <Navigate to="/login" replace />;
     }
 

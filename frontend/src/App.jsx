@@ -269,6 +269,7 @@ const StylistTimeOffPage = lazy(() => import('./pages/stylist/StylistTimeOffPage
 const StylistAttendance = lazy(() => import('./pages/stylist/StylistAttendance'));
 const StylistSettingsPage = lazy(() => import('./pages/stylist/StylistSettingsPage'));
 const StylistGalleryPage = lazy(() => import('./pages/stylist/StylistGalleryPage'));
+const StylistLoginPage = lazy(() => import('./pages/stylist/StylistLoginPage'));
 
 const AccountantLayout = lazy(() => import('./layouts/AccountantLayout'));
 const AccountantDashboard = lazy(() => import('./pages/accountant/AccountantDashboard'));
@@ -395,6 +396,7 @@ function App() {
                         <Route path="/terms" element={<TermsOfService />} />
                         <Route path="/cookies" element={<CookiePolicy />} />
                         <Route path="/superadmin/login" element={<SuperAdminLoginPage />} />
+                        <Route path="/stylist/login" element={<StylistLoginPage />} />
                         <Route path="/launchpad" element={<PanelLaunchpad />} />
                         <Route path="/c/:slug" element={<PublicCataloguePage />} />
 

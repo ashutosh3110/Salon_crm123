@@ -108,6 +108,7 @@ export function AuthProvider({ children }) {
         cancelAllRequests();
 
         const role = user?.role || localStorage.getItem('active_auth_role') || 'admin';
+        const roleType = user?.roleType || '';
 
         // 1. Clear ALL data from localStorage for security
         localStorage.clear();
@@ -118,6 +119,8 @@ export function AuthProvider({ children }) {
         // 5. Redirect based on role
         if (role === 'superadmin') {
             navigate('/superadmin/login');
+        } else if (role === 'stylish' || String(role).toLowerCase().includes('stylist') || String(roleType).toLowerCase() === 'stylist') {
+            navigate('/stylist/login');
         } else {
             navigate('/login');
         }
