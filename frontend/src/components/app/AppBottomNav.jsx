@@ -1,15 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { Home, Scissors, CalendarPlus, ShoppingBag, User, Wallet } from 'lucide-react';
+import { Home, CalendarPlus, ShoppingBag, User, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useCustomerTheme } from '../../contexts/CustomerThemeContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 
 const tabs = [
     { id: 'home', label: 'Home', icon: Home, path: '/app' },
-    { id: 'services', label: 'Services', icon: Scissors, path: '/app/services' },
-    { id: 'book', label: 'Booking', icon: CalendarPlus, path: '/app/bookings' },
+    { id: 'book', label: 'Book Appointment', icon: CalendarPlus, path: '/app/booking' },
     { id: 'shop', label: 'Shop', icon: ShoppingBag, path: '/app/shop' },
     { id: 'wallet', label: 'Wallet', icon: Wallet, path: '/app/wallet' },
     { id: 'profile', label: 'Profile', icon: User, path: '/app/profile' },
@@ -78,10 +77,11 @@ export default function AppBottomNav() {
                             whileTap={{ scale: 0.82 }}
                             style={{
                                 display: 'flex', flexDirection: 'column',
-                                alignItems: 'center', gap: '4px',
+                                alignItems: 'center', justifyContent: 'center', gap: '4px',
                                 background: 'none', border: 'none',
                                 cursor: 'pointer',
-                                padding: '6px 12px',
+                                padding: '6px 0',
+                                flex: 1,
                                 position: 'relative',
                             }}
                         >
@@ -100,7 +100,9 @@ export default function AppBottomNav() {
                                 )}
                             </div>
                             <span style={{
-                                fontSize: '10px',
+                                fontSize: '9px',
+                                lineHeight: '1.2',
+                                whiteSpace: 'nowrap',
                                 fontWeight: active ? 600 : 400,
                                 color: active ? colors.accent : (isLight ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.32)'),
                                 letterSpacing: '0.02em',

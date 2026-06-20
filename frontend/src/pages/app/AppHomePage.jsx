@@ -1334,7 +1334,7 @@ export default function AppHomePage() {
                 )}
 
                 {/* ── TRENDING SERVICES ── */}
-                <div style={{ padding: '24px 16px 0' }}>
+                {/* <div style={{ padding: '24px 16px 0' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
                         <h3 style={{ fontSize: '17px', fontWeight: 850, color: colors.text, fontFamily: "'Inter', sans-serif" }}>Trending Services</h3>
                         <span
@@ -1409,7 +1409,7 @@ export default function AppHomePage() {
                             ));
                         })()}
                     </div>
-                </div>
+                </div> */}
 
                 {/* ── 5.5 PRODUCTS (Luxe Essentials) ── */}
                 <div style={{ padding: '24px 16px 0' }}>
