@@ -88,15 +88,19 @@ export default function StylistLoginPage() {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#B4912B]/5 rounded-full blur-[140px]" />
             </div>
 
-            <main className="relative z-10 flex items-center justify-center p-4 pt-28 pb-12 min-h-screen">
+            <main className="relative z-10 flex items-center justify-center px-4 py-24 sm:py-16 min-h-screen">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    style={{ background: 'var(--wapixo-bg-alt)', borderColor: 'var(--wapixo-border)' }}
-                    className="w-full max-w-md border shadow-2xl rounded-[2.5rem] p-8 md:p-12 relative flex flex-col justify-center -mt-28 md:-mt-36"
+                    style={{
+                        background: 'var(--wapixo-bg-alt)',
+                        borderColor: 'var(--wapixo-border)',
+                        backdropFilter: 'blur(16px)'
+                    }}
+                    className="w-full max-w-md border shadow-2xl rounded-[1.8rem] sm:rounded-[2.5rem] px-5 py-7 sm:px-10 sm:py-10 md:px-12 md:py-12 relative bg-opacity-95"
                 >
-                    <div className="w-full max-w-xs mx-auto space-y-8">
+                    <div className="w-full space-y-7">
                         {/* Heading */}
                         <div className="text-center space-y-3">
                             <div className="w-12 h-12 rounded-2xl bg-[#B4912B]/10 border border-[#B4912B]/20 flex items-center justify-center mx-auto">
@@ -104,7 +108,7 @@ export default function StylistLoginPage() {
                             </div>
                             <div className="space-y-1">
                                 <span className="text-[9px] font-black uppercase tracking-[0.3em] text-[#B4912B]">Artist Workspace</span>
-                                <h2 className="text-3xl font-black uppercase tracking-tighter italic" style={{ color: 'var(--wapixo-text)' }}>
+                                <h2 className="text-xl xs:text-2xl sm:text-3xl font-black uppercase tracking-tight italic text-center" style={{ color: 'var(--wapixo-text)' }}>
                                     Stylist <span className="text-[#B4912B]">Login.</span>
                                 </h2>
                             </div>
@@ -117,8 +121,8 @@ export default function StylistLoginPage() {
                             </motion.div>
                         )}
 
-                        <form onSubmit={handleLogin} className="space-y-6">
-                            <div className="space-y-4">
+                        <form onSubmit={handleLogin} className="space-y-5">
+                            <div className="space-y-5">
                                 <div className="group space-y-1">
                                     <label className="text-[9px] font-black uppercase tracking-[0.2em] ml-1" style={{ color: 'var(--wapixo-text-muted)' }}>Email Address</label>
                                     <div className="relative border-b-2 transition-all duration-300" style={{ borderColor: 'var(--wapixo-border)' }}>
@@ -129,7 +133,7 @@ export default function StylistLoginPage() {
                                             value={form.email}
                                             onChange={handleChange}
                                             required
-                                            className="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
+                                            className="w-full pl-8 py-3.5 text-[15px] bg-transparent focus:outline-none font-medium"
                                             style={{ color: 'var(--wapixo-text)' }}
                                             placeholder="stylist@salon.com"
                                         />
@@ -145,7 +149,7 @@ export default function StylistLoginPage() {
                                         placeholder="••••••••"
                                         containerClassName="border-b-2 transition-all duration-300"
                                         style={{ borderColor: 'var(--wapixo-border)' }}
-                                        inputClassName="w-full pl-8 py-3 bg-transparent text-sm focus:outline-none font-medium"
+                                        inputClassName="w-full pl-8 py-3.5 text-[15px] bg-transparent focus:outline-none font-medium"
                                         buttonClassName="hover:text-[#B4912B]"
                                         inputStyle={{ color: 'var(--wapixo-text)', border: 'none' }}
                                     >
@@ -154,7 +158,11 @@ export default function StylistLoginPage() {
                                 </div>
                             </div>
 
-                            <button type="submit" disabled={loading} className="w-full h-14 bg-[#B4912B] text-white font-black uppercase tracking-[0.2em] text-[11px] hover:brightness-110 transition-all duration-500 shadow-xl shadow-[#B4912B]/10 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2">
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full h-12 sm:h-14 rounded-2xl bg-[#B4912B] text-white font-black uppercase tracking-[0.15em] text-[10px] sm:text-[11px] hover:brightness-110 transition-all duration-500 active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
                                 {loading ? (
                                     <>
                                         <Loader2 className="w-4 h-4 animate-spin text-white" />

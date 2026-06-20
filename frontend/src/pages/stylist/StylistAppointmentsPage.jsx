@@ -47,6 +47,7 @@ export default function StylistAppointmentsPage() {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [selectedBooking, setSelectedBooking] = useState(null);
+    const [showAllDates, setShowAllDates] = useState(false);
     const dateInputRef = useRef(null);
 
     // Helper to format date in local YYYY-MM-DD format
@@ -74,6 +75,18 @@ export default function StylistAppointmentsPage() {
             const res = await api.get('/bookings');
             if (res.data && res.data.success) {
                 const myBookings = res.data.data.filter(booking => {
+                    const getOutletId = (o) => {
+                        if (typeof o === 'object' && o !== null) {
+                            return o._id || o.id;
+                        }
+                        return o;
+                    };
+                    const myOutletId = user?.outletId || user?.outlet?._id || user?.outlet;
+                    const bookingOutletId = getOutletId(booking.outletId || booking.outlet);
+                    if (myOutletId && bookingOutletId && String(myOutletId) !== String(bookingOutletId)) {
+                        return false;
+                    }
+
                     const getStaffId = (s) => {
                         if (typeof s === 'object' && s !== null) {
                             return s._id || s.id;
@@ -123,8 +136,10 @@ export default function StylistAppointmentsPage() {
 
     // Filter logic
     const filteredAppointments = appointments.filter(app => {
-        const appDateStr = getLocalDateString(app.appointmentDate);
-        if (appDateStr !== selectedDate) return false;
+        if (!showAllDates) {
+            const appDateStr = getLocalDateString(app.appointmentDate);
+            if (appDateStr !== selectedDate) return false;
+        }
 
         const status = (app.status || '').toLowerCase();
         if (activeTab === 'All') return true;
@@ -219,12 +234,36 @@ export default function StylistAppointmentsPage() {
                     </div>
                 </div>
 
+                {/* Date Scope Selection Toggle */}
+                <div className="flex items-center justify-between mb-5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60 rounded-[16px] p-1.5 shadow-[0_2px_12px_rgba(0,0,0,0.01)]">
+                    <button
+                        onClick={() => setShowAllDates(false)}
+                        className={`flex-1 py-2 rounded-xl text-[12.5px] font-bold transition-all border-0 cursor-pointer text-center ${
+                            !showAllDates
+                                ? 'bg-[#5D2EE6] text-white shadow-sm font-extrabold'
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                        }`}
+                    >
+                        Single Date
+                    </button>
+                    <button
+                        onClick={() => setShowAllDates(true)}
+                        className={`flex-1 py-2 rounded-xl text-[12.5px] font-bold transition-all border-0 cursor-pointer text-center ${
+                            showAllDates
+                                ? 'bg-[#5D2EE6] text-white shadow-sm font-extrabold'
+                                : 'bg-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700'
+                        }`}
+                    >
+                        All Dates (Overall)
+                    </button>
+                </div>
+
                 {/* Date Row Bar (Interactive Native overlay) */}
                 <div className="relative mb-5 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/60 rounded-[16px] px-4 py-3.5 flex items-center justify-between cursor-pointer hover:shadow-sm transition-all" onClick={triggerDatePicker}>
                     <div className="flex items-center gap-3">
                         <Calendar className="w-5 h-5 text-slate-500 dark:text-slate-400 shrink-0" strokeWidth={2} />
                         <span className="text-[13.5px] font-bold text-slate-800 dark:text-slate-200">
-                            {formatDateString(selectedDate)}
+                            {showAllDates ? 'All Dates Selected' : formatDateString(selectedDate)}
                         </span>
                     </div>
                     <ChevronRight className="w-4.5 h-4.5 text-slate-400 dark:text-slate-500" />
@@ -268,8 +307,13 @@ export default function StylistAppointmentsPage() {
                                         className="flex items-center justify-between px-4 py-4 hover:bg-slate-50/50 dark:hover:bg-slate-750/30 transition-all cursor-pointer gap-3 active:scale-[0.99]"
                                     >
                                         {/* Time */}
-                                        <div className="text-[13px] font-bold w-[75px] text-[#5D2EE6] dark:text-[#8B5CF6] shrink-0">
-                                            {appTime}
+                                        <div className="text-[13px] font-bold w-[78px] text-[#5D2EE6] dark:text-[#8B5CF6] shrink-0 flex flex-col justify-center">
+                                            <span>{appTime}</span>
+                                            {showAllDates && app.appointmentDate && (
+                                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-0.5">
+                                                    {new Date(app.appointmentDate).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })}
+                                                </span>
+                                            )}
                                         </div>
 
                                         {/* Initials Avatar */}
@@ -339,6 +383,12 @@ export default function StylistAppointmentsPage() {
 
                         {/* Details */}
                         <div className="space-y-3 py-3 border-t border-b border-slate-100 dark:border-slate-750 my-4 text-[13px]">
+                            <div className="flex justify-between">
+                                <span className="text-slate-400">Date</span>
+                                <span className="font-bold text-slate-800 dark:text-slate-200">
+                                    {selectedBooking.appointmentDate ? new Date(selectedBooking.appointmentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A'}
+                                </span>
+                            </div>
                             <div className="flex justify-between">
                                 <span className="text-slate-400">Time Slot</span>
                                 <span className="font-bold text-slate-800 dark:text-slate-200">
