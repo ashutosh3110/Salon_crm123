@@ -687,10 +687,12 @@ export default function StylistLayout() {
             />
             {/* Main content area */}
             <div className={`flex flex-col h-full transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[60px] lg:w-[calc(100%-60px)]' : 'lg:ml-[230px] lg:w-[calc(100%-230px)]'} w-full`}>
-                <Topbar onMenuClick={() => setMobileOpen(true)} showMenuButton={false} />
+                <div className={location.pathname === '/stylist' || location.pathname === '/stylist/' || location.pathname.startsWith('/stylist/appointments') || location.pathname.startsWith('/stylist/commissions') || location.pathname.startsWith('/stylist/attendance') || location.pathname.startsWith('/stylist/timeoff') ? 'hidden lg:block' : ''}>
+                    <Topbar onMenuClick={() => setMobileOpen(true)} showMenuButton={false} />
+                </div>
 
-                <main className="flex flex-col flex-1 animate-reveal p-4 lg:pb-4 overflow-y-auto scroll-smooth">
-                    <Outlet />
+                <main className={`flex flex-col flex-1 animate-reveal overflow-y-auto scroll-smooth ${location.pathname === '/stylist' || location.pathname === '/stylist/' || location.pathname.startsWith('/stylist/appointments') || location.pathname.startsWith('/stylist/commissions') || location.pathname.startsWith('/stylist/attendance') || location.pathname.startsWith('/stylist/timeoff') ? 'p-0 lg:p-4' : 'p-4 lg:pb-4'}`}>
+                    <Outlet context={{ setMobileOpen }} />
                 </main>
             </div>
             <StylistMobileNavbar setMobileOpen={setMobileOpen} />

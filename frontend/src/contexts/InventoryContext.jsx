@@ -268,7 +268,8 @@ export const InventoryProvider = ({ children }) => {
         const isCustomerPath = window.location.pathname.startsWith('/app');
         if (isCustomerPath) return;
 
-        const canFetchPrivate = (dashboardUser && isPlanActive);
+        const isStaffWithInventoryAccess = dashboardUser && ['admin', 'manager', 'receptionist'].includes(String(dashboardUser.role).toLowerCase());
+        const canFetchPrivate = (dashboardUser && isPlanActive && isStaffWithInventoryAccess);
         const canFetchPublic = (salon?._id || activeSalonId || localStorage.getItem('active_salon_id'));
         const currentSalonId = dashboardUser?.salonId || salon?._id || activeSalonId || localStorage.getItem('active_salon_id');
 

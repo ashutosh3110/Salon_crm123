@@ -494,10 +494,10 @@ export default function StylistSidebar({ collapsed, setCollapsed, isHovered, mob
                                     logout();
                                     setMobileOpen(false);
                                 }}
-                                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 font-bold text-[13px] transition-colors border-0 cursor-pointer"
+                                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 !text-red-600 dark:!text-red-400 font-bold text-[13px] transition-colors border-0 cursor-pointer"
                             >
-                                <LogOut className="w-4 h-4" />
-                                Logout
+                                <LogOut className="w-4 h-4 !text-red-600 dark:!text-red-400" />
+                                <span className="!text-red-600 dark:!text-red-400">Logout</span>
                             </button>
                         </div>
                     </motion.div>
