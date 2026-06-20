@@ -14,7 +14,14 @@ export default function AuthPage() {
     const { theme } = useTheme();
     const location = useLocation();
     const navigate = useNavigate();
-    const { login, register, logout } = useAuth();
+    const { login, register, logout, isAuthenticated, user, loading: authLoading } = useAuth();
+
+    // Auto-redirect if already logged in
+    useEffect(() => {
+        if (!authLoading && isAuthenticated && user) {
+            navigate(getRedirectPath(user));
+        }
+    }, [isAuthenticated, user, authLoading, navigate]);
 
     // States
     const [view, setView] = useState(location.pathname === '/register' ? 'signup' : 'signin');

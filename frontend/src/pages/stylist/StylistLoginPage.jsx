@@ -9,7 +9,20 @@ import WapixoNavbar from '../../components/landing/wapixo/WapixoNavbar';
 
 export default function StylistLoginPage() {
     const navigate = useNavigate();
-    const { login, logout } = useAuth();
+    const { login, logout, isAuthenticated, user, loading: authLoading } = useAuth();
+
+    // Auto-redirect if already logged in
+    React.useEffect(() => {
+        if (!authLoading && isAuthenticated && user) {
+            const isStylist = (user.role || '').toLowerCase() === 'stylish' || 
+                             (user.role || '').toLowerCase().includes('stylist') || 
+                             (user.roleType || '').toLowerCase() === 'stylist';
+            if (isStylist) {
+                const path = typeof getRedirectPath === 'function' ? getRedirectPath(user) : '/stylist';
+                navigate(path);
+            }
+        }
+    }, [isAuthenticated, user, authLoading, navigate]);
 
     const [form, setForm] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);

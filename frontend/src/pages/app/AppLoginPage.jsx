@@ -120,10 +120,14 @@ export default function AppLoginPage() {
 
     useEffect(() => {
         if (!authLoading && isCustomerAuthenticated) {
-            setShowLocationModal(true);
-            goTo(0);
+            if (selectedOutlet) {
+                handleFinalRedirect(selectedOutlet);
+            } else {
+                setShowLocationModal(true);
+                goTo(0);
+            }
         }
-    }, [isCustomerAuthenticated, authLoading, navigate]);
+    }, [isCustomerAuthenticated, authLoading, navigate, selectedOutlet]);
 
 
     useEffect(() => {

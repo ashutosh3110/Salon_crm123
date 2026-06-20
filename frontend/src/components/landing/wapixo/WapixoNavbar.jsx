@@ -4,11 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Menu, X, Sun, Moon } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';
+import { useAuth, getRedirectPath } from '../../../contexts/AuthContext';
 
 const navItems = ['Features', 'Pricing', 'Blog', 'Contact'];
 
 export default function WapixoNavbar() {
     const { theme, toggleTheme } = useTheme();
+    const { isAuthenticated, user } = useAuth();
     const isDark = theme === 'dark';
     const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -124,7 +126,7 @@ export default function WapixoNavbar() {
                         {theme === 'dark' ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
                     </button>
 
-                    <Link to="/register" style={{ textDecoration: 'none' }}>
+                    <Link to={isAuthenticated ? getRedirectPath(user) : "/register"} style={{ textDecoration: 'none' }}>
                         <motion.button
                             whileHover={{ scale: 1.04 }}
                             whileTap={{ scale: 0.97 }}
@@ -143,7 +145,7 @@ export default function WapixoNavbar() {
                                 boxShadow: '0 4px 15px rgba(180, 145, 43, 0.2)'
                             }}
                         >
-                            Get Started
+                            {isAuthenticated ? 'Dashboard' : 'Get Started'}
                         </motion.button>
                     </Link>
                 </div>
@@ -260,7 +262,7 @@ export default function WapixoNavbar() {
                             transition={{ delay: navItems.length * 0.05 }}
                             style={{ marginTop: '1rem' }}
                         >
-                            <Link to="/register" style={{ textDecoration: 'none' }} onClick={() => setIsMenuOpen(false)}>
+                            <Link to={isAuthenticated ? getRedirectPath(user) : "/register"} style={{ textDecoration: 'none' }} onClick={() => setIsMenuOpen(false)}>
                                 <button
                                     style={{
                                         background: 'var(--wapixo-primary)',
@@ -274,7 +276,7 @@ export default function WapixoNavbar() {
                                         letterSpacing: '0.04em',
                                     }}
                                 >
-                                    Get Started
+                                    {isAuthenticated ? 'Dashboard' : 'Get Started'}
                                 </button>
                             </Link>
                         </motion.div>
