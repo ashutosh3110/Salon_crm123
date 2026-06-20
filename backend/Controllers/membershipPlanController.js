@@ -125,7 +125,7 @@ exports.getMembershipPlans = async (req, res) => {
             query.isActive = true;
         }
 
-        const plans = await MembershipPlan.find(query);
+        const plans = await MembershipPlan.find(query).populate('outletIds', 'name');
 
         res.status(200).json({
             success: true,

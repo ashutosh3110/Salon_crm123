@@ -77,6 +77,7 @@ export default function MembershipPlansTab() {
     const [showModal, setShowModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [outlets, setOutlets] = useState([]);
 
     const loadPlans = async () => {
         setLoading(true);
@@ -101,6 +102,7 @@ export default function MembershipPlansTab() {
                     isActive: p.isActive !== false,
                     isPopular: !!p.isPopular,
                     icon: p.icon || 'star',
+                    outletIds: Array.isArray(p.outletIds) ? p.outletIds : [],
                 })));
             } else { setPlans([]); }
         } catch (err) { 
@@ -119,6 +121,17 @@ export default function MembershipPlansTab() {
             } catch { setServiceOptions([]); }
         };
         loadServices();
+        
+        const loadOutlets = async () => {
+            try {
+                const res = await api.get('/outlets');
+                const list = res.data?.data || [];
+                setOutlets(list);
+            } catch (err) {
+                console.error('Failed to load outlets', err);
+            }
+        };
+        loadOutlets();
     }, []);
 
     const handleDelete = (id) => {
@@ -178,6 +191,7 @@ export default function MembershipPlansTab() {
                     <PlanModal
                         plan={editingPlan}
                         serviceOptions={serviceOptions}
+                        outlets={outlets}
                         onClose={() => setShowModal(false)}
                         onSave={async (data) => {
                             try {
@@ -248,6 +262,19 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
                     <div className="text-[8px] font-bold text-slate-500 dark:text-slate-400 uppercase">
                         {plan.taxType === 'including' ? `INCL. ${plan.taxRate}% GST` : `EXCL. ${plan.taxRate}% GST`}
                     </div>
+                    {plan.outletIds && plan.outletIds.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                            {plan.outletIds.map(out => (
+                                <span key={out._id || out} className={`px-1.5 py-0.5 text-[7px] font-bold rounded-md uppercase ${badgeBg}`}>
+                                    {out.name || 'Outlet'}
+                                </span>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className={`inline-block mt-1 px-1.5 py-0.5 text-[7px] font-bold rounded-md uppercase ${badgeBg}`}>
+                            ALL OUTLETS
+                        </div>
+                    )}
                 </div>
                 
                 <div className="space-y-2 mb-3.5">
@@ -288,7 +315,7 @@ function MembershipCard({ plan, onEdit, onDelete, onToggle }) {
     );
 }
 
-function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
+function PlanModal({ plan, serviceOptions = [], outlets = [], onClose, onSave }) {
     useEffect(() => {
         document.body.style.overflow = 'hidden';
         return () => {
@@ -301,7 +328,8 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
             return {
                 ...plan,
                 taxType: plan.taxType || 'excluding',
-                taxRate: plan.taxRate !== undefined ? plan.taxRate : 0
+                taxRate: plan.taxRate !== undefined ? plan.taxRate : 0,
+                outletIds: plan.outletIds ? plan.outletIds.map(o => o._id || o) : []
             };
         }
         return { 
@@ -317,7 +345,8 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
             taxRate: 0,
             icon: 'star', 
             gradient: 'linear-gradient(135deg, #1A1A1A 0%, #333 100%)', 
-            isPopular: false 
+            isPopular: false,
+            outletIds: []
         };
     });
 
@@ -672,6 +701,55 @@ function PlanModal({ plan, serviceOptions = [], onClose, onSave }) {
                                     ]}
                                 />
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Outlet Assignment */}
+                    <div className="space-y-3 pt-4 border-t border-border">
+                        <div className="flex justify-between items-center flex-wrap gap-2">
+                            <label className="text-[10px] font-bold text-text-muted uppercase tracking-widest">ASSIGN TO OUTLETS</label>
+                            <div className="flex items-center gap-3">
+                                <button 
+                                    type="button"
+                                    onClick={() => {
+                                        if (formData.outletIds.length === outlets.length && outlets.length > 0) {
+                                            setFormData({ ...formData, outletIds: [] });
+                                        } else {
+                                            setFormData({ ...formData, outletIds: outlets.map(o => o._id) });
+                                        }
+                                    }}
+                                    className="text-[9px] font-bold !text-[#B4912B] uppercase tracking-widest hover:underline"
+                                >
+                                    {formData.outletIds.length === outlets.length && outlets.length > 0 ? 'DESELECT ALL' : 'SELECT ALL'}
+                                </button>
+                                <span className="text-[8px] font-bold text-text-muted uppercase tracking-widest hidden sm:inline">(LEAVE EMPTY FOR ALL OUTLETS)</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            {outlets.map((outlet) => {
+                                const isSelected = formData.outletIds.includes(outlet._id);
+                                return (
+                                    <label 
+                                        key={outlet._id} 
+                                        className={`flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${isSelected ? 'border-primary bg-primary/5' : 'border-border bg-surface-alt hover:bg-surface'}`}
+                                    >
+                                        <input 
+                                            type="checkbox" 
+                                            className="w-3.5 h-3.5 accent-[#B4912B] rounded-sm cursor-pointer"
+                                            checked={isSelected}
+                                            onChange={(e) => {
+                                                const newOutletIds = e.target.checked 
+                                                    ? [...formData.outletIds, outlet._id] 
+                                                    : formData.outletIds.filter(id => id !== outlet._id);
+                                                setFormData({ ...formData, outletIds: newOutletIds });
+                                            }}
+                                        />
+                                        <span className={`text-[10px] font-bold uppercase truncate ${isSelected ? 'text-primary' : 'text-text-secondary'}`}>
+                                            {outlet.name}
+                                        </span>
+                                    </label>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>
