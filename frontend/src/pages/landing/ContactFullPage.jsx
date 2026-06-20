@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, MapPin, Printer, Send } from 'lucide-react';

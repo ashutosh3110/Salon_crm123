@@ -1,3 +1,4 @@
+import React from 'react';
 import LeaveApprovalManager from '../../components/admin/hr/LeaveApprovalManager';
 import { Calendar } from 'lucide-react';
 

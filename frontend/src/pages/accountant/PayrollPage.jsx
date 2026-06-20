@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Wallet, Search, Filter, Download, User, ArrowRight, CheckCircle2, MoreHorizontal, DollarSign, Calendar, TrendingUp, Zap, RefreshCcw, AlertCircle, X, Info, Plus, Minus, CreditCard, Banknote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Target, TrendingUp, Users, Zap, Plus, Loader2, CheckCircle2, RefreshCw, FileText

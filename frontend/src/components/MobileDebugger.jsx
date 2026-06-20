@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState, useRef } from 'react';
 // import eruda from 'eruda';
 import { Terminal } from 'lucide-react';

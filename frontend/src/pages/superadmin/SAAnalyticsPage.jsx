@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import {
     TrendingUp, Users, Building2, DollarSign,

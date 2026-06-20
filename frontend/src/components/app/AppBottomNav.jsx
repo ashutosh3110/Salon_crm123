@@ -1,3 +1,4 @@
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { Home, Scissors, CalendarPlus, ShoppingBag, User, Wallet } from 'lucide-react';

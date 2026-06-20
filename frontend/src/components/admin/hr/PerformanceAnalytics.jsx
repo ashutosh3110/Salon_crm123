@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
     TrendingUp, Star, Target, Zap, Search, BarChart3, Award, CheckCircle2,

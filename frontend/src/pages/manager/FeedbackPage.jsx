@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import {
     Star, MessageSquare, ThumbsUp, ThumbsDown,

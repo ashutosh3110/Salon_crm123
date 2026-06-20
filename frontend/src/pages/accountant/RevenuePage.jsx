@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, DollarSign, Calendar, Filter, Download, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';

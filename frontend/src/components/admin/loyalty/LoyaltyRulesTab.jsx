@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Save, RefreshCcw, Info, Zap } from 'lucide-react';
 import api from '../../../services/api';

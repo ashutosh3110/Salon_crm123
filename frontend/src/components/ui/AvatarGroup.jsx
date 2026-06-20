@@ -1,3 +1,4 @@
+import React from 'react';
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";

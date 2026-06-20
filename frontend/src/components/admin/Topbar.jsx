@@ -1,3 +1,4 @@
+import React from 'react';
 import { Menu, Bell, Search, Moon, Sun, LogOut, Clock, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { getImageUrl } from '../../utils/imageUtils';

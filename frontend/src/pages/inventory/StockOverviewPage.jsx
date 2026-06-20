@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Search, Plus, ArrowUpDown, X, Package, ShieldCheck, Barcode, Eye, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

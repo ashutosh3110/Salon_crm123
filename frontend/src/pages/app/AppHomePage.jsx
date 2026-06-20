@@ -1,3 +1,4 @@
+import React from 'react';
 // Updated at 22:45 for stability
 import { memo, useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';

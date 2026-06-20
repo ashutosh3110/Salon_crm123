@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Calendar, Clock, CheckCircle2, XCircle, Plus, Activity, X, ChevronDown, ListTodo, SunMedium, Thermometer, Briefcase } from 'lucide-react';

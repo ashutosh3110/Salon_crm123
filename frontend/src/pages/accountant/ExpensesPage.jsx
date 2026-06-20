@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { DollarSign, Plus, Search, Filter, Download, Calendar, ArrowUpRight, ArrowDownRight, MoreHorizontal, PieChart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

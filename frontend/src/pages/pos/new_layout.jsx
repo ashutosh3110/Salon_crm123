@@ -1,3 +1,4 @@
+import React from 'react';
         <div className="flex flex-col h-[calc(100vh-125px)] lg:h-[calc(100vh-115px)] mt-0 overflow-hidden bg-slate-50">
             {/* Top Bar: Outlet and Client */}
             <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-slate-200 shrink-0">

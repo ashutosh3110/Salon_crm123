@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Calculator, Search, Filter, ArrowLeftRight, CheckCircle2, AlertCircle, RefreshCcw, Download, Plus, MoreHorizontal, Link as LinkIcon, ExternalLink, Save, Scissors, Zap, X, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

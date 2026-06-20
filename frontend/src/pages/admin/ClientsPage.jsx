@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { Plus, Search, Phone, Mail, Star, Edit, Trash2, Users, TrendingUp, PieChart as PieIcon, BarChart3, ShieldAlert } from 'lucide-react';

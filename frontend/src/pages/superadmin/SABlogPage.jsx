@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import {
     Plus, Search, Filter, MoreHorizontal, Edit2,

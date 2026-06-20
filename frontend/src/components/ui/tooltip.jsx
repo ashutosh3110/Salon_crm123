@@ -1,3 +1,4 @@
+import React from 'react';
 import * as React from "react"
 import { Tooltip as TooltipPrimitive } from "radix-ui"
 

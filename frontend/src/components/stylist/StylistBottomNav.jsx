@@ -1,3 +1,4 @@
+import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, UserCheck, Users, DollarSign, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';

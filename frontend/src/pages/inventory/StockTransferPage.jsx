@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeftRight, Plus, Package, Calendar, MoreHorizontal, ChevronRight, Search, X, ShieldCheck, CheckCircle2, AlertCircle, MapPin } from 'lucide-react';

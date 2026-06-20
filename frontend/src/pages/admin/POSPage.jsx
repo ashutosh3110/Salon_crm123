@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { 
     Search, Plus, Minus, Trash2, CreditCard, Banknote, 

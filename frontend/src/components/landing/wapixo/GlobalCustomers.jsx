@@ -1,3 +1,4 @@
+import React from 'react';
 import { getImageUrl } from '../../../utils/imageUtils';
 import { useTheme } from '../../../contexts/ThemeContext';
 

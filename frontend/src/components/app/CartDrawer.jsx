@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect } from 'react';
 import { X, ShoppingBag, Plus, Minus, ArrowRight, Trash2 } from 'lucide-react';
 import { createPortal } from 'react-dom';

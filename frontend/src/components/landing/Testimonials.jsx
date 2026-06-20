@@ -1,3 +1,4 @@
+import React from 'react';
 import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Quote, Star, ArrowLeft, ArrowRight, PenLine } from 'lucide-react';

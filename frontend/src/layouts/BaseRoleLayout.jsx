@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useRef, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Menu, Moon, Sun, Search, Bell, LogOut, CheckCircle2, AlertTriangle, Info, Clock, X } from 'lucide-react';

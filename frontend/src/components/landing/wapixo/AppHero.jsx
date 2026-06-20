@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Smartphone, Download, Star, ShieldCheck, Zap, ArrowRight, PlayControl as Play } from 'lucide-react';

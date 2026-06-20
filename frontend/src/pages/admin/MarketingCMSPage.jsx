@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { useCMS } from '../../contexts/CMSContext';
 import { useBusiness } from '../../contexts/BusinessContext';

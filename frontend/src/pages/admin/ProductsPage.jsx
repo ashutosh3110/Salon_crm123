@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Package, AlertTriangle, IndianRupee, Store, CheckCircle2 } from 'lucide-react';
 import api from '../../services/api';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from 'react';
 import { Trophy, Star, Gift, Users, Save, Info, Zap, Share2 } from 'lucide-react';
 import api from '../../../services/api';

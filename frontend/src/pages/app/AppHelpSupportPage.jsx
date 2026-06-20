@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import { HelpCircle, MessageSquare, MessageCircle, ChevronRight, Search, Mail, FileText, Plus, Loader2, AlertCircle, Clock, CheckCircle2, X } from 'lucide-react';

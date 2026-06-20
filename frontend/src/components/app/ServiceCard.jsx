@@ -1,3 +1,4 @@
+import React from 'react';
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, ChevronRight, Armchair, DoorClosed, Heart } from 'lucide-react';

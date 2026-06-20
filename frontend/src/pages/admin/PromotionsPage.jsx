@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Plus, Search, Edit, Trash2, Tag, Calendar, Percent, TrendingUp, BarChart3, X, Share2, ChevronDown } from 'lucide-react';

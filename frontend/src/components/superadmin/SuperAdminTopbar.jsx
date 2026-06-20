@@ -1,3 +1,4 @@
+import React from 'react';
 import { Menu, Bell, Moon, Sun, LogOut, Check, X, Clock, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';

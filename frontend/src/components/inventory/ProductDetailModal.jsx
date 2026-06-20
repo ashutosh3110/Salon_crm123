@@ -1,3 +1,4 @@
+import React from 'react';
 import { useRef } from 'react';
 import { X, Printer, Package, Tag, Building2, IndianRupee, RefreshCw, MapPin, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';

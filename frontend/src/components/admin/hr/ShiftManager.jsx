@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect, useCallback } from 'react';
 import { Clock, Users, Plus, Edit2, Trash2, Store, Calendar, ArrowRight, Briefcase, X, CheckCircle2, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

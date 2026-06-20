@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Settings, Shield, Bell, DollarSign, Calculator, Lock, Globe, FileText, ChevronRight, Save, Trash2, Sliders } from 'lucide-react';
 import { motion } from 'framer-motion';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { AlertTriangle, Package, ShoppingCart, RefreshCw, Zap, X, CheckCircle2, Plus, Truck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

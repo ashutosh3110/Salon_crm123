@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useCallback } from 'react';
 import { Users, Search, Filter, Plus, MoreVertical, Mail, Phone, Calendar, Shield, CheckCircle2, Clock, Edit2, Eye, Trash2, UserPlus, Building2, X, ChevronLeft, ChevronRight, PieChart as PieChartIcon, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

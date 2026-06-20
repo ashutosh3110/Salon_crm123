@@ -1,3 +1,4 @@
+import React from 'react';
 import BaseRoleLayout from './BaseRoleLayout';
 import ManagerSidebar from '../components/manager/ManagerSidebar';
 

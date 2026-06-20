@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo, useEffect } from 'react';
 import { ClipboardList, Filter, Download, Calendar, ArrowUpRight, CheckCircle2, AlertCircle, FileText, PieChart, TrendingUp, ShieldCheck, FileDown, FileJson } from 'lucide-react';
 import { motion } from 'framer-motion';

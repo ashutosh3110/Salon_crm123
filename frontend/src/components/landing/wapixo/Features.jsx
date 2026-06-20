@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, BarChart3, Users, Gift, Clock, Shield, Star, Award, Zap, Heart } from 'lucide-react';
 import { useTheme } from '../../../contexts/ThemeContext';

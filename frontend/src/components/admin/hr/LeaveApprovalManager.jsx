@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect } from 'react';
 import { Calendar, Clock, CheckCircle2, XCircle, Search, Filter, Shield, Activity, ChevronRight, User, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

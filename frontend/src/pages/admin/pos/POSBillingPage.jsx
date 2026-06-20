@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useMemo } from 'react';
 import {
     Search, ShoppingCart, Plus, Minus, X, Trash2,

@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useMemo } from 'react';
 import {
     BarChart3, TrendingDown, TrendingUp, Calendar, Download,

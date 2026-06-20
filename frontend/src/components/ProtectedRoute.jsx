@@ -1,3 +1,4 @@
+import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth, getRedirectPath } from '../contexts/AuthContext';
 import { useBusiness } from '../contexts/BusinessContext';

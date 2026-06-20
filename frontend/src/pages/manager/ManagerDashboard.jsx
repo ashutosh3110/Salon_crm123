@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Users, Star, Target, Clock, Award, ArrowUpRight, RefreshCw } from 'lucide-react';
 import {

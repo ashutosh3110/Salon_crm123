@@ -4,7 +4,7 @@
  * Single source of truth for ALL bookings created via the Customer App.
  * Now fetches from the backend API for live data.
  */
-import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { useCustomerAuth } from './CustomerAuthContext';

@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, Calendar, Tag, Shield, CheckCircle2, Trash2, CheckCircle, Package, Star, ChevronLeft, Clock } from 'lucide-react';
 import { useNotifications } from '../../contexts/NotificationContext';

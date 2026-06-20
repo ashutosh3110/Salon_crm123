@@ -1,3 +1,4 @@
+import React from 'react';
 import { useState } from 'react';
 import { Package, AlertTriangle, Truck, ArrowLeftRight, TrendingDown, BarChart3, MapPin, IndianRupee } from 'lucide-react';
 import { motion } from 'framer-motion';

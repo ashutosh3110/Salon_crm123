@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { motion, useTransform, useMotionValue } from 'framer-motion';
 import { useTheme } from '../../../contexts/ThemeContext';
