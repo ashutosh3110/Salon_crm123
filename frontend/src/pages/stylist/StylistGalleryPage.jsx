@@ -1,25 +1,38 @@
-import React from 'react';
-import { useState } from 'react';
-import { Camera, Image as ImageIcon, Plus, Filter, LayoutGrid, List, Heart, MessageSquare, Share2, MoreHorizontal, Activity, Zap, Shield, X, CheckCircle2, Upload, Disc, Search, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { Camera, Image as ImageIcon, Plus, LayoutGrid, List, Heart, X, Upload, Disc, Search, ChevronDown, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import api, { API_BASE_URL } from '../../services/api';
+import toast from 'react-hot-toast';
 
-import stylistData from '../../data/stylistMockData.json';
+const defaultCategories = ['HAIR CUT', 'HAIR COLOR', 'BRIDAL', 'FACIAL', 'NAIL ART'];
 
-const galleryItems = stylistData.gallery.items;
-const categories = stylistData.gallery.categories;
+const getImageUrl = (url) => {
+    if (!url) return '';
+    if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+        return url;
+    }
+    const cleanUrl = url.startsWith('/') ? url.slice(1) : url;
+    return `${API_BASE_URL}/${cleanUrl}`;
+};
 
 export default function StylistGalleryPage() {
     const [searchTerm, setSearchTerm] = useState('');
     const [view, setView] = useState('grid');
-    const [activeCategory, setActiveCategory] = useState('ALL_VECTORS');
+    const [galleryItems, setGalleryItems] = useState([]);
+    const [categories, setCategories] = useState(['ALL']);
+    const [activeCategory, setActiveCategory] = useState('ALL');
     const [showUploadModal, setShowUploadModal] = useState(false);
-    const [toast, setToast] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [uploading, setUploading] = useState(false);
     const [likedItems, setLikedItems] = useState(new Set());
 
-    const showToast = (msg) => {
-        setToast(msg);
-        setTimeout(() => setToast(null), 3000);
-    };
+    // Form inputs
+    const [file, setFile] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState(null);
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState(defaultCategories[0]);
+    const [customCategory, setCustomCategory] = useState('');
 
     const toggleLike = (id) => {
         const newLiked = new Set(likedItems);
@@ -28,206 +41,409 @@ export default function StylistGalleryPage() {
         setLikedItems(newLiked);
     };
 
+    const fetchGallery = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/gallery/me');
+            if (res.data && res.data.success) {
+                const items = res.data.data || [];
+                setGalleryItems(items);
+
+                // Build unique categories list dynamically
+                const uniqCats = new Set(['ALL']);
+                items.forEach(item => {
+                    if (item.category) uniqCats.add(item.category.toUpperCase());
+                });
+                // Ensure default categories are present in the unique list
+                defaultCategories.forEach(c => uniqCats.add(c.toUpperCase()));
+                setCategories(Array.from(uniqCats));
+            }
+        } catch (err) {
+            console.error('Error fetching gallery:', err);
+            toast.error('Failed to load portfolio items');
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    useEffect(() => {
+        fetchGallery();
+    }, [fetchGallery]);
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            setFile(selectedFile);
+            setPreviewUrl(URL.createObjectURL(selectedFile));
+        }
+    };
+
+    const handleUploadSubmit = async (e) => {
+        e.preventDefault();
+        if (!file) {
+            toast.error('Please select an image file');
+            return;
+        }
+
+        const categoryToSend = selectedCategory === 'CUSTOM' 
+            ? customCategory.trim().toUpperCase() 
+            : selectedCategory.toUpperCase();
+
+        if (!categoryToSend) {
+            toast.error('Please specify a category');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            // 1. Upload file
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            const uploadRes = await api.post('/uploads', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            if (uploadRes.data && uploadRes.data.success) {
+                const imageUrl = uploadRes.data.url;
+
+                // 2. Create gallery document
+                const galleryRes = await api.post('/gallery', {
+                    title,
+                    description,
+                    category: categoryToSend,
+                    imageUrl
+                });
+
+                if (galleryRes.data && galleryRes.data.success) {
+                    toast.success('Portfolio item uploaded successfully!');
+                    setShowUploadModal(false);
+                    // Clear fields
+                    setFile(null);
+                    setPreviewUrl(null);
+                    setTitle('');
+                    setDescription('');
+                    setSelectedCategory(defaultCategories[0]);
+                    setCustomCategory('');
+                    // Refresh data
+                    fetchGallery();
+                }
+            }
+        } catch (err) {
+            console.error('Gallery upload error:', err);
+            toast.error(err.response?.data?.message || 'Failed to upload portfolio item');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this portfolio item?')) return;
+        try {
+            const res = await api.delete(`/gallery/${id}`);
+            if (res.data && res.data.success) {
+                toast.success('Portfolio item deleted');
+                setGalleryItems(prev => prev.filter(item => item._id !== id));
+            }
+        } catch (err) {
+            console.error('Gallery delete error:', err);
+            toast.error('Failed to delete item');
+        }
+    };
+
     const filteredItems = galleryItems.filter(item => {
-        const matchesCategory = activeCategory === 'ALL_VECTORS' || item.category === activeCategory;
-        const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.category.toLowerCase().includes(searchTerm.toLowerCase());
+        const itemCat = (item.category || '').toUpperCase();
+        const matchesCategory = activeCategory === 'ALL' || itemCat === activeCategory;
+        const matchesSearch = 
+            (item.title || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            itemCat.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
     return (
-        <div className="space-y-4 text-left font-black">
+        <div className="space-y-4 text-left font-sans">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-4">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
-                        <Camera className="w-3.5 h-3.5 text-primary" />
-                        <span className="text-[9px] font-black uppercase tracking-[0.3em] text-primary">My Portfolio</span>
+                        <Camera className="w-4 h-4 text-[#7C3AED]" />
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#7C3AED]">My Portfolio</span>
                     </div>
-                    <h1 className="text-2xl font-black text-text tracking-tighter uppercase">Hair Style Gallery</h1>
-                    <p className="text-[9px] text-text-muted font-bold uppercase tracking-widest mt-0.5 italic">Keep your best work updated</p>
+                    <h1 className="text-xl lg:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">Style Gallery</h1>
+                    <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mt-0.5 italic">Keep your portfolio updated with your best work</p>
                 </div>
                 <button
                     onClick={() => setShowUploadModal(true)}
-                    className="flex items-center gap-2 px-5 py-3.5 bg-primary text-white font-black text-[9px] uppercase tracking-[0.2em] shadow-xl shadow-primary/10 hover:scale-[1.02] transition-all active:scale-95"
+                    className="flex items-center gap-2 px-5 py-3 bg-[#7C3AED] text-white font-bold text-[11px] uppercase tracking-[0.1em] shadow-md shadow-[#7C3AED]/20 hover:scale-[1.02] transition-all active:scale-95 w-full md:w-auto rounded-xl justify-center shrink-0"
                 >
                     <Plus className="w-4 h-4" /> Add New Style
                 </button>
             </div>
 
             {/* Filter Bar */}
-            <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-surface border border-border p-1.5 shadow-inner">
-                <div className="flex flex-col md:flex-row items-center gap-3 w-full">
-                    <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-col gap-4 bg-slate-50 dark:bg-slate-850 border border-slate-200 dark:border-slate-800 p-3 rounded-2xl">
+                <div className="flex flex-col gap-3">
+                    <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto no-scrollbar">
                         {categories.map((cat) => (
                             <button
                                 key={cat}
                                 onClick={() => setActiveCategory(cat)}
-                                className={`px-4 py-2.5 text-[8px] font-black uppercase tracking-widest transition-all ${activeCategory === cat ? 'bg-primary text-white shadow-lg shadow-primary/10' : 'text-text-muted hover:text-text hover:bg-surface-alt'}`}
+                                className={`px-3 py-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider transition-all border ${
+                                    activeCategory === cat 
+                                        ? 'bg-[#7C3AED] border-[#7C3AED] text-white shadow' 
+                                        : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100'
+                                }`}
                             >
-                                {cat.replace('_VECTORS', '')}
+                                {cat}
                             </button>
                         ))}
                     </div>
 
-                    <div className="relative group/search flex-1 md:max-w-xs">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted dark:text-slate-400 group-focus-within/search:text-primary transition-colors" />
+                    <div className="relative group/search w-full">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                         <input
                             type="text"
                             placeholder="Search by category or style..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-4 py-2.5 bg-background dark:bg-slate-800 border border-border dark:border-slate-700 text-[8px] font-black uppercase tracking-widest focus:outline-none focus:border-primary transition-all placeholder:text-text-muted/30 shadow-inner text-text dark:text-slate-100"
+                            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold focus:outline-none focus:border-[#7C3AED] transition-all placeholder:text-slate-400 text-slate-900 dark:text-slate-100"
                         />
                     </div>
                 </div>
-                <div className="flex items-center gap-1 border-l border-border/20 pl-4 h-8">
+                <div className="flex items-center justify-end gap-1.5 border-t border-slate-200 dark:border-slate-800 pt-2 h-8">
                     <button
                         onClick={() => setView('grid')}
-                        className={`p-1.5 transition-all ${view === 'grid' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`p-1.5 rounded transition-all ${view === 'grid' ? 'text-[#7C3AED] bg-[#7C3AED]/10' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <LayoutGrid className="w-4.5 h-4.5" />
+                        <LayoutGrid className="w-4 h-4" />
                     </button>
                     <button
                         onClick={() => setView('list')}
-                        className={`p-1.5 transition-all ${view === 'list' ? 'text-primary' : 'text-text-muted hover:text-text'}`}
+                        className={`p-1.5 rounded transition-all ${view === 'list' ? 'text-[#7C3AED] bg-[#7C3AED]/10' : 'text-slate-400 hover:text-slate-600'}`}
                     >
-                        <List className="w-4.5 h-4.5" />
+                        <List className="w-4 h-4" />
                     </button>
                 </div>
             </div>
 
-            {/* Gallery Matrix */}
-            <div className={view === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
-                <AnimatePresence mode="popLayout">
-                    {filteredItems.map((item) => (
-                        <motion.div
-                            key={item.id}
-                            layout
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            exit={{ opacity: 0, scale: 0.9 }}
-                            className={`group bg-surface border border-border overflow-hidden relative ${view === 'list' ? 'flex items-center' : ''}`}
-                        >
-                            <div className={`relative overflow-hidden ${view === 'list' ? 'w-48 h-32 shrink-0' : 'aspect-square'}`}>
-                                <img src={item.image} alt={item.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0" />
-                                <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <div className="h-0.5 w-12 bg-white" />
-                                </div>
-                            </div>
+            {loading ? (
+                <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-500">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+                    <span className="text-[13px] font-medium">Loading portfolio...</span>
+                </div>
+            ) : filteredItems.length === 0 ? (
+                <div className="py-20 text-center text-slate-500 text-[13px] font-medium border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl">
+                    No portfolio styles found.
+                </div>
+            ) : (
+                /* Gallery Matrix */
+                <div className={view === 'grid' ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" : "space-y-3"}>
+                    <AnimatePresence mode="popLayout">
+                        {filteredItems.map((item) => {
+                            const isLiked = likedItems.has(item._id);
+                            return (
+                                <motion.div
+                                    key={item._id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    className={`group bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700/50 rounded-2xl overflow-hidden relative shadow-sm hover:shadow-md transition-all ${
+                                        view === 'list' ? 'flex items-center gap-3 p-2' : ''
+                                    }`}
+                                >
+                                    <div className={`relative overflow-hidden bg-slate-50 dark:bg-slate-900 ${
+                                        view === 'list' ? 'w-24 h-24 rounded-xl shrink-0' : 'aspect-square w-full'
+                                    }`}>
+                                        <img 
+                                            src={getImageUrl(item.imageUrl)} 
+                                            alt={item.title} 
+                                            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                                            onError={(e) => {
+                                                e.target.src = 'https://images.unsplash.com/photo-1522337660859-02fbefce4ffc?auto=format&fit=crop&q=80&w=1200';
+                                            }}
+                                        />
+                                    </div>
 
-                            <div className="p-6 flex-1 relative">
-                                <div className="flex items-start justify-between mb-4">
-                                    <div>
-                                        <p className="text-[8px] font-black text-primary uppercase tracking-[0.2em] mb-1 italic">[{item.category.replace('_VECTORS', '')}]</p>
-                                        <h3 className="text-sm font-black text-text uppercase tracking-tight group-hover:text-primary transition-colors">{item.title}</h3>
-                                        <p className="text-[9px] text-text-muted uppercase tracking-widest mt-1">DATE: {item.date}</p>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <button
-                                            onClick={() => toggleLike(item.id)}
-                                            className={`p-2 border border-border transition-all ${likedItems.has(item.id) ? 'bg-rose-500/10 border-rose-500 text-rose-500' : 'text-text-muted hover:text-rose-500'}`}
-                                        >
-                                            <Heart className={`w-4 h-4 ${likedItems.has(item.id) ? 'fill-rose-500' : ''}`} />
-                                        </button>
-                                    </div>
-                                </div>
+                                    <div className={`p-4 flex-1 relative flex flex-col justify-between ${view === 'list' ? 'h-full py-1' : ''}`}>
+                                        <div>
+                                            <div className="flex items-start justify-between gap-2 mb-1.5">
+                                                <div>
+                                                    <span className="text-[8px] font-black text-[#7C3AED] bg-[#7C3AED]/10 px-1.5 py-0.5 rounded uppercase tracking-wider block w-max">
+                                                        {item.category}
+                                                    </span>
+                                                    <h3 className="text-[13px] font-bold text-slate-800 dark:text-slate-100 mt-1 truncate">{item.title}</h3>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleDelete(item._id)}
+                                                    className="p-1 rounded bg-slate-50 hover:bg-red-50 hover:text-red-500 dark:bg-slate-700 dark:hover:bg-red-950/20 text-slate-400 transition"
+                                                    title="Delete Style"
+                                                >
+                                                    <X className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                            {item.description && (
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2">
+                                                    {item.description}
+                                                </p>
+                                            )}
+                                        </div>
 
-                                <div className="flex items-center justify-between pt-4 border-t border-border/10">
-                                    <div className="flex items-center gap-4">
-                                        <span className="text-[10px] font-black text-text-muted flex items-center gap-1.5 uppercase hover:text-primary cursor-pointer transition-colors">
-                                            <MessageSquare className="w-3.5 h-3.5" /> 24
-                                        </span>
-                                        <span className="text-[10px] font-black text-text-muted flex items-center gap-1.5 uppercase transition-colors">
-                                            <Heart className="w-3.5 h-3.5" /> {likedItems.has(item.id) ? item.likes + 1 : item.likes}
-                                        </span>
+                                        <div className="flex items-center justify-between pt-2 border-t border-slate-50 dark:border-slate-700/50 mt-1">
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => toggleLike(item._id)}
+                                                    className={`flex items-center gap-1 text-[10px] font-bold transition-all ${
+                                                        isLiked ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'
+                                                    }`}
+                                                >
+                                                    <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-rose-500 text-rose-500' : ''}`} />
+                                                    {isLiked ? (item.likes || 0) + 1 : (item.likes || 0)}
+                                                </button>
+                                            </div>
+                                            <span className="text-[9px] text-slate-400 font-bold">
+                                                {item.createdAt ? new Date(item.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short' }) : ''}
+                                            </span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => showToast(`Gallery link copied: ${item.title}`)}
-                                            className="p-1.5 hover:text-primary transition-colors"
-                                        >
-                                            <Share2 className="w-4 h-4" />
-                                        </button>
-                                        <button className="p-1.5 hover:text-primary transition-colors">
-                                            <MoreHorizontal className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </AnimatePresence>
-            </div>
+                                </motion.div>
+                            );
+                        })}
+                    </AnimatePresence>
+                </div>
+            )}
 
             {/* Upload Modal */}
             <AnimatePresence>
                 {showUploadModal && (
                     <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowUploadModal(false)} className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => !uploading && setShowUploadModal(false)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
                         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            className="bg-surface w-full max-w-lg rounded-none border border-border shadow-2xl relative p-10 overflow-hidden"
+                            className="bg-white dark:bg-slate-900 w-full max-w-md rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl relative p-6 overflow-hidden max-h-[90vh] flex flex-col"
                         >
-                            <div className="absolute top-0 right-0 p-10 opacity-[0.06] dark:opacity-[0.08] -translate-y-4 translate-x-4 animate-pulse">
-                                <Disc className="w-32 h-32 text-primary" />
+                            <div className="absolute top-0 right-0 p-6 opacity-[0.03] dark:opacity-[0.05] -translate-y-4 translate-x-4">
+                                <Disc className="w-24 h-24 text-[#7C3AED] animate-spin-slow" />
                             </div>
-                            <div className="flex items-center justify-between mb-10 relative z-10">
+                            <div className="flex items-center justify-between mb-6 relative z-10 shrink-0">
                                 <div>
-                                    <h2 className="text-xl font-black text-text uppercase tracking-tight">Upload Photo</h2>
-                                    <p className="text-[10px] font-black text-primary mt-1 uppercase tracking-widest">Add a photo of your recent work</p>
+                                    <h2 className="text-[16px] font-bold text-slate-950 dark:text-white uppercase tracking-tight">Upload Style</h2>
+                                    <p className="text-[9px] font-bold text-[#7C3AED] mt-0.5 uppercase tracking-widest">Add photo reference of your recent work</p>
                                 </div>
-                                <button onClick={() => setShowUploadModal(false)} className="w-10 h-10 border border-border flex items-center justify-center text-text-muted hover:text-text hover:border-text transition-all">
-                                    <X className="w-5 h-5" />
+                                <button disabled={uploading} onClick={() => setShowUploadModal(false)} className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-650 hover:bg-slate-50 transition-all">
+                                    <X className="w-4 h-4" />
                                 </button>
                             </div>
 
-                            <form
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    setShowUploadModal(false);
-                                    showToast("New photo successfully added to gallery.");
-                                }}
-                                className="space-y-6 relative z-10"
-                            >
-                                <div className="border-2 border-dashed border-border p-12 text-center hover:border-primary/50 transition-all group cursor-pointer bg-background/50">
-                                    <Upload className="w-10 h-10 text-text-muted group-hover:text-primary mx-auto mb-4 transition-all" />
-                                    <p className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] group-hover:text-text">Click to select image file</p>
-                                    <p className="text-[8px] text-text-muted/60 uppercase mt-2 italic">Supporting: JPEG, PNG, WEBP</p>
+                            <form onSubmit={handleUploadSubmit} className="space-y-4 relative z-10 flex-1 overflow-y-auto no-scrollbar">
+                                {/* File Uploader */}
+                                <div className="relative">
+                                    <input 
+                                        type="file" 
+                                        accept="image/*" 
+                                        onChange={handleFileChange} 
+                                        className="hidden" 
+                                        id="gallery-file-input"
+                                        disabled={uploading}
+                                    />
+                                    <label 
+                                        htmlFor="gallery-file-input"
+                                        className="block border-2 border-dashed border-slate-200 dark:border-slate-700 p-6 text-center hover:border-[#7C3AED]/50 rounded-xl transition-all group cursor-pointer bg-slate-50 dark:bg-slate-850/50"
+                                    >
+                                        {previewUrl ? (
+                                            <div className="relative aspect-video w-full rounded-lg overflow-hidden border border-slate-100 dark:border-slate-800 bg-black">
+                                                <img src={previewUrl} alt="Preview" className="w-full h-full object-contain" />
+                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-[10px] font-bold uppercase tracking-wider">
+                                                    Change Image
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <Upload className="w-8 h-8 text-slate-400 group-hover:text-[#7C3AED] mx-auto mb-2 transition-all" />
+                                                <p className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider group-hover:text-slate-800">Click to select image file</p>
+                                                <p className="text-[8px] text-slate-400 uppercase mt-1 italic">JPG, PNG, WEBP</p>
+                                            </>
+                                        )}
+                                    </label>
                                 </div>
 
-                                <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Style Name</label>
-                                        <input required type="text" placeholder="e.g. Blonde Balayage" className="w-full px-5 py-4 bg-background border border-border text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none" />
+                                <div className="space-y-3">
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Style Title</label>
+                                        <input 
+                                            required 
+                                            type="text" 
+                                            disabled={uploading}
+                                            value={title}
+                                            onChange={(e) => setTitle(e.target.value)}
+                                            placeholder="e.g. Blonde Balayage" 
+                                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold outline-none focus:border-[#7C3AED] text-slate-900 dark:text-slate-100" 
+                                        />
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-text-muted uppercase tracking-[0.2em] ml-1">Style Category</label>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Description (Optional)</label>
+                                        <textarea 
+                                            disabled={uploading}
+                                            value={description}
+                                            onChange={(e) => setDescription(e.target.value)}
+                                            placeholder="Describe the hair structure, technique or products used..." 
+                                            className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold outline-none focus:border-[#7C3AED] text-slate-900 dark:text-slate-100 h-16 resize-none" 
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Category</label>
                                         <div className="relative">
-                                            <select required className="w-full px-5 py-4 bg-background dark:bg-slate-800 border border-border dark:border-slate-700 text-[11px] font-black uppercase tracking-widest focus:border-primary outline-none appearance-none text-text dark:text-slate-100">
-                                                {categories.slice(1).map(c => <option key={c} value={c} className="bg-white dark:bg-slate-800 text-text dark:text-slate-100">{c.replace('_VECTORS', '')}</option>)}
+                                            <select 
+                                                required
+                                                disabled={uploading}
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold outline-none appearance-none rounded-xl text-slate-900 dark:text-slate-100"
+                                            >
+                                                {defaultCategories.map(c => <option key={c} value={c}>{c}</option>)}
+                                                <option value="CUSTOM">OTHER / CUSTOM CATEGORY...</option>
                                             </select>
-                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-text-muted dark:text-slate-400" />
+                                            <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-450" />
                                         </div>
                                     </div>
+
+                                    {selectedCategory === 'CUSTOM' && (
+                                        <div className="space-y-1">
+                                            <label className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider ml-1">Specify Custom Category</label>
+                                            <input 
+                                                required 
+                                                type="text" 
+                                                disabled={uploading}
+                                                value={customCategory}
+                                                onChange={(e) => setCustomCategory(e.target.value)}
+                                                placeholder="e.g. SHAVING" 
+                                                className="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[11px] font-bold outline-none focus:border-[#7C3AED] text-slate-900 dark:text-slate-100" 
+                                            />
+                                        </div>
+                                    )}
                                 </div>
 
-                                <button type="submit" className="w-full py-5 bg-primary text-white font-black text-[10px] uppercase tracking-[0.3em] shadow-xl shadow-primary/20 hover:bg-primary-dark transition-all">Upload to Gallery</button>
+                                <button 
+                                    type="submit" 
+                                    disabled={uploading}
+                                    className="w-full py-3 bg-[#7C3AED] text-white font-bold text-[11px] uppercase tracking-wider rounded-xl shadow-lg shadow-[#7C3AED]/10 hover:bg-[#6D28D9] transition-all flex items-center justify-center gap-2"
+                                >
+                                    {uploading ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin" />
+                                            Uploading style...
+                                        </>
+                                    ) : 'Upload to Gallery'}
+                                </button>
                             </form>
                         </motion.div>
                     </div>
                 )}
             </AnimatePresence>
 
-            {/* Toast */}
-            <AnimatePresence>
-                {toast && (
-                    <motion.div initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 40 }}
-                        className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-4 px-8 py-4 bg-text border border-border rounded-none shadow-2xl">
-                        <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                        <p className="text-[10px] font-black text-background uppercase tracking-[0.2em]">{toast}</p>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+            {/* Added extra padding at the bottom so it doesn't get covered by the mobile navbar */}
+            <div className="h-20 lg:h-0 flex-shrink-0" />
         </div>
     );
 }

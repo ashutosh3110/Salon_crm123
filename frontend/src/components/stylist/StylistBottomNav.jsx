@@ -42,7 +42,7 @@ const tabs = [
         icon: Settings,
         path: '/stylist/settings/profile',
         matchPath: '/stylist/settings',
-        activeColor: '#C89B2B',   // gold primary
+        activeColor: '#7C3AED',   // purple primary
         inactiveColor: '#6B7280',
     },
 ];

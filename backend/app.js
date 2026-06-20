@@ -121,6 +121,9 @@ app.use('/whatsapp-credits', whatsappCredits);
 const serviceReminders = require('./Routers/serviceReminderRoutes');
 app.use('/service-reminders', serviceReminders);
 
+const galleryRoutes = require('./Routers/galleryRoutes');
+app.use('/gallery', galleryRoutes);
+
 // Explicit Lazy Section Aliases
 const { getCustomerFavorites } = require('./Controllers/customerAuthController');
 const { getCustomerTransactions } = require('./Controllers/walletController');

@@ -838,6 +838,7 @@ exports.punchAttendance = async (req, res) => {
         }
         
         const normalizedDate = new Date(date).setHours(0, 0, 0, 0);
+        const normalizedStatus = status ? status.toLowerCase() : undefined;
         
         let attendance = await Attendance.findOne({ staffId, date: normalizedDate });
         
@@ -847,20 +848,20 @@ exports.punchAttendance = async (req, res) => {
                 salonId,
                 outletId,
                 date: normalizedDate,
-                status: status || 'present',
-                checkIn: type === 'in' || status === 'present' ? new Date().toISOString() : null,
+                status: normalizedStatus || 'present',
+                checkIn: type === 'in' || normalizedStatus === 'present' ? new Date().toISOString() : null,
                 checkOut: type === 'out' ? new Date().toISOString() : null,
-                notes: location ? `Punched at ${location}` : (status ? `Marked ${status}` : null),
+                notes: location ? `Punched at ${location}` : (normalizedStatus ? `Marked ${normalizedStatus}` : null),
                 performedBy: req.user._id
             });
         } else {
-            if (status) {
-                attendance.status = status;
-                if (status === 'present') {
+            if (normalizedStatus) {
+                attendance.status = normalizedStatus;
+                if (normalizedStatus === 'present') {
                     if (!attendance.checkIn) {
                         attendance.checkIn = new Date().toISOString();
                     }
-                } else if (status === 'absent') {
+                } else if (normalizedStatus === 'absent') {
                     attendance.checkIn = null;
                     attendance.checkOut = null;
                 }
@@ -874,8 +875,8 @@ exports.punchAttendance = async (req, res) => {
             }
             if (location) {
                 attendance.notes = attendance.notes ? `${attendance.notes}; Punched at ${location}` : `Punched at ${location}`;
-            } else if (status) {
-                attendance.notes = attendance.notes ? `${attendance.notes}; Marked ${status}` : `Marked ${status}`;
+            } else if (normalizedStatus) {
+                attendance.notes = attendance.notes ? `${attendance.notes}; Marked ${normalizedStatus}` : `Marked ${normalizedStatus}`;
             }
             attendance.performedBy = req.user._id;
         }
@@ -1410,12 +1411,19 @@ exports.getStylistOverview = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Staff not found' });
         }
 
-        // 1. Resolve selected date or default to today
-        const queryDate = req.query.date ? new Date(req.query.date) : new Date();
-        const startOfDay = new Date(queryDate);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(queryDate);
-        endOfDay.setHours(23, 59, 59, 999);
+        // 1. Resolve selected date or default to today in IST
+        const istOffset = 5.5 * 60 * 60 * 1000;
+        let baseDate;
+        if (req.query.date) {
+            baseDate = new Date(req.query.date + 'T00:00:00Z');
+        } else {
+            const now = new Date();
+            const localNow = new Date(now.getTime() + istOffset);
+            baseDate = new Date(Date.UTC(localNow.getUTCFullYear(), localNow.getUTCMonth(), localNow.getUTCDate()));
+        }
+
+        const startOfDay = new Date(baseDate.getTime() - istOffset);
+        const endOfDay = new Date(baseDate.getTime() + 24 * 60 * 60 * 1000 - 1 - istOffset);
 
         // 2. Fetch today's schedule for this stylist
         const bookings = await Booking.find({

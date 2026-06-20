@@ -394,7 +394,7 @@ export default function StylistSettingsPage() {
                 return (
                     <motion.div key="skills" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-widest">My Skills</h3>
+                            <h3 className="text-[14px] font-black text-slate-800 dark:text-white uppercase tracking-widest">My Skills</h3>
                             <button onClick={() => setShowAddSkill(!showAddSkill)} className="bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-300 px-4 py-2 rounded-full font-black text-[10px] uppercase tracking-widest flex items-center gap-1.5 transition-colors">
                                 <Plus className="w-3.5 h-3.5" /> Add Skill
                             </button>
@@ -555,7 +555,7 @@ export default function StylistSettingsPage() {
                                 <Activity className="w-5 h-5 text-slate-400" />
                             </div>
                             <div>
-                                <h4 className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Two-Factor Authentication</h4>
+                                <h4 className="text-[14px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Two-Factor Authentication</h4>
                                 <p className="text-[10px] font-bold text-slate-500 mt-1 leading-relaxed">
                                     Not available yet. Please use a strong password and keep it private.
                                 </p>

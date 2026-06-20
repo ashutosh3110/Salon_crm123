@@ -686,8 +686,8 @@ export default function StylistLayout() {
                 setMobileOpen={setMobileOpen}
             />
             {/* Main content area */}
-            <div className={`flex flex-col h-full w-full transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[60px]' : 'lg:ml-[230px]'}`}>
-                <Topbar onMenuClick={() => setMobileOpen(true)} />
+            <div className={`flex flex-col h-full transition-all duration-300 ${effectiveCollapsed ? 'lg:ml-[60px] lg:w-[calc(100%-60px)]' : 'lg:ml-[230px] lg:w-[calc(100%-230px)]'} w-full`}>
+                <Topbar onMenuClick={() => setMobileOpen(true)} showMenuButton={false} />
 
                 <main className="flex flex-col flex-1 animate-reveal p-4 lg:pb-4 overflow-y-auto scroll-smooth">
                     <Outlet />

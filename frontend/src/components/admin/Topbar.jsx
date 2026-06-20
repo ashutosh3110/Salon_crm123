@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
-export default function Topbar({ onMenuClick }) {
+export default function Topbar({ onMenuClick, showMenuButton = true }) {
     const { user, logout } = useAuth();
     const { theme, toggleTheme } = useTheme();
     const {
@@ -56,6 +56,23 @@ export default function Topbar({ onMenuClick }) {
         }
     };
 
+    const getMobileTitle = (path) => {
+        const p = path.toLowerCase();
+        if (p === '/stylist' || p === '/stylist/') return 'Overview';
+        if (p.startsWith('/stylist/appointments')) return 'Appointments';
+        if (p.startsWith('/stylist/commissions')) return 'Earnings';
+        if (p.startsWith('/stylist/attendance')) return 'Attendance';
+        if (p.startsWith('/stylist/timeoff')) return 'Time Off';
+        if (p.startsWith('/stylist/gallery')) return 'Gallery';
+        if (p.startsWith('/stylist/settings')) return 'Settings';
+        if (p.startsWith('/stylist/support')) return 'Support';
+        
+        if (p.startsWith('/admin')) return 'Admin';
+        if (p.startsWith('/manager')) return 'Manager';
+        if (p.startsWith('/receptionist')) return 'Receptionist';
+        return '';
+    };
+
     const initials = user?.name
         ? user.name
             .split(' ')
@@ -69,14 +86,17 @@ export default function Topbar({ onMenuClick }) {
         <header className="h-16 bg-white/80 dark:bg-surface/80 backdrop-blur-xl border-b border-border/40 flex items-center justify-between px-4 sticky top-0 z-[100]">
             {/* Left */}
             <div className="flex items-center gap-3">
-                <button
-                    onClick={onMenuClick}
-                    className="lg:hidden w-9 h-9 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors text-slate-900 dark:text-slate-300"
-                >
-                    <Menu className="w-5 h-5" />
-                </button>
-
-
+                {showMenuButton && (
+                    <button
+                        onClick={onMenuClick}
+                        className="lg:hidden w-9 h-9 rounded-xl bg-surface flex items-center justify-center hover:bg-surface-alt transition-colors text-slate-900 dark:text-slate-300"
+                    >
+                        <Menu className="w-5 h-5" />
+                    </button>
+                )}
+                <h1 className="lg:hidden text-2xl font-bold text-slate-900 dark:text-white capitalize">
+                    {getMobileTitle(location.pathname)}
+                </h1>
             </div>
 
             {/* Right */}

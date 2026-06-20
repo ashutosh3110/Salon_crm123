@@ -23,6 +23,7 @@ export default function StylistTimeOffPage() {
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [toast, setToast] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         type: 'CASUAL_LEAVE',
@@ -112,19 +113,43 @@ export default function StylistTimeOffPage() {
         { label: 'Short Leaves', used: '—', total: '—', colorClass: 'text-amber-500', icon: Clock },
     ];
 
+    if (error === 'Staff not found' || error?.includes('Staff not found')) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center bg-white dark:bg-slate-900 rounded-[24px]">
+                <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mb-4">
+                    <Calendar className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Staff Profile Pending</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-6">
+                    Your account is not linked to a staff profile in this salon yet. Please ask your administrator or manager to add you to the staff roster.
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2.5 bg-slate-900 dark:bg-[#7C3AED] text-white font-semibold rounded-xl text-sm hover:opacity-90 transition-all"
+                >
+                    Retry Connection
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 rounded-[24px] overflow-hidden shadow-sm font-sans relative">
             <style>{`
                 .hide-scrollbar::-webkit-scrollbar { display: none; }
                 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+                html:not(.dark) .timeoff-select-trigger,
+                html:not(.dark) .timeoff-select-trigger * {
+                    color: #0f172a !important;
+                }
             `}</style>
             
             {/* Vibrant Theme Hero Header */}
-            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 pt-8 pb-10 px-6 sm:px-10 relative shrink-0 rounded-b-[32px] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] z-10">
+            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 pt-4 pb-6 px-6 sm:px-10 relative shrink-0 rounded-b-[32px] shadow-[0_4px_20px_-10px_rgba(0,0,0,0.05)] z-10 lg:pt-8 lg:pb-10">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay"></div>
                 
-                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-                    <div>
+                <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 lg:gap-6">
+                    <div className="hidden lg:block">
                         <div className="flex items-center gap-2 mb-2">
                             <Calendar className="w-4 h-4 text-purple-200" />
                             <span className="text-[10px] uppercase tracking-[0.3em] text-purple-200 font-bold">Time Off</span>
@@ -140,7 +165,7 @@ export default function StylistTimeOffPage() {
                         type="button"
                         onClick={() => setShowForm(true)}
                         disabled={loading}
-                        className="flex items-center justify-center sm:justify-start gap-2 bg-white hover:bg-slate-50 text-purple-700 px-6 py-4 rounded-[16px] font-black uppercase text-[11px] tracking-widest shadow-[0_4px_14px_-4px_rgba(0,0,0,0.2)] transition-all disabled:opacity-50 hover:scale-105 active:scale-95"
+                        className="flex items-center justify-center sm:justify-start gap-2 bg-white hover:bg-slate-50 text-purple-700 px-6 py-4 rounded-[16px] font-black uppercase text-[11px] tracking-widest shadow-[0_4px_14px_-4px_rgba(0,0,0,0.25)] transition-all disabled:opacity-50 hover:scale-105 active:scale-95 w-full lg:w-auto"
                     >
                         <Plus className="w-4 h-4" strokeWidth={3} /> Apply for leave
                     </button>
@@ -208,7 +233,7 @@ export default function StylistTimeOffPage() {
                     <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
                             <ListTodo className="w-4 h-4 text-purple-600" />
-                            <h2 className="text-[12px] font-black text-slate-800 dark:text-white uppercase tracking-widest">Application History</h2>
+                            <h2 className="text-[14px] font-black text-slate-800 dark:text-white uppercase tracking-widest">Application History</h2>
                             <span className="hidden sm:inline-block text-[8px] font-black text-purple-600 bg-purple-100 dark:bg-purple-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">
                                 Server Records
                             </span>
@@ -291,7 +316,7 @@ export default function StylistTimeOffPage() {
                     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                         <motion.div
                             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                            onClick={() => !submitting && setShowForm(false)}
+                            onClick={() => { if (!submitting) { setShowForm(false); setDropdownOpen(false); } }}
                             className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
                         />
                         <motion.div
@@ -304,26 +329,43 @@ export default function StylistTimeOffPage() {
                                     <p className="text-[10px] font-bold text-purple-600 mt-1 uppercase tracking-widest">Sends request to your salon</p>
                                 </div>
                                 <button
-                                    onClick={() => setShowForm(false)} disabled={submitting}
+                                    onClick={() => { setShowForm(false); setDropdownOpen(false); }} disabled={submitting}
                                     className="w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 flex items-center justify-center text-slate-500 transition-colors disabled:opacity-50"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                            <form onSubmit={(e) => e.preventDefault()} className="space-y-5 relative z-10">
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Leave type</label>
                                     <div className="relative">
-                                        <select
-                                            required value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                            className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500/50 appearance-none"
+                                        <button
+                                            type="button"
+                                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                                            className="timeoff-select-trigger w-full px-5 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 rounded-[16px] text-[12px] font-bold text-slate-900 dark:text-white flex items-center justify-between focus:ring-2 focus:ring-purple-500/50 outline-none text-left"
                                         >
-                                            {leaveTypes.map((t) => (
-                                                <option key={t} value={t}>{formatTypeLabel(t)}</option>
-                                            ))}
-                                        </select>
-                                        <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none text-slate-400" />
+                                            <span>{formatTypeLabel(formData.type)}</span>
+                                            <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${dropdownOpen ? 'rotate-180' : ''}`} />
+                                        </button>
+                                        
+                                        {dropdownOpen && (
+                                            <div className="absolute z-20 w-full mt-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-[16px] shadow-xl overflow-hidden py-1 max-h-48 overflow-y-auto no-scrollbar">
+                                                {leaveTypes.map((t) => (
+                                                    <button
+                                                        key={t}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setFormData({ ...formData, type: t });
+                                                            setDropdownOpen(false);
+                                                        }}
+                                                        className="w-full px-5 py-3 text-left text-[12px] font-bold text-slate-900 dark:text-white hover:bg-purple-50 dark:hover:bg-slate-700 hover:text-purple-700 transition"
+                                                    >
+                                                        {formatTypeLabel(t)}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -332,14 +374,14 @@ export default function StylistTimeOffPage() {
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">From date</label>
                                         <input
                                             required type="date" value={formData.startDate} onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-                                            className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500/50"
+                                            className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/50"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">To date</label>
                                         <input
                                             required type="date" value={formData.endDate} onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-                                            className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500/50"
+                                            className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/50"
                                         />
                                     </div>
                                 </div>
@@ -348,12 +390,14 @@ export default function StylistTimeOffPage() {
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Reason</label>
                                     <textarea
                                         required placeholder="Why you need this leave…" value={formData.reason} onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                                        className="w-full p-5 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-800 dark:text-white focus:ring-2 focus:ring-purple-500/50 h-28 resize-none"
+                                        className="w-full p-5 bg-slate-50 dark:bg-slate-900 border-none rounded-[16px] text-[12px] font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-purple-500/50 h-28 resize-none"
                                     />
                                 </div>
 
                                 <button
-                                    type="submit" disabled={submitting}
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    disabled={submitting}
                                     className="w-full mt-4 py-4 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-[16px] font-black uppercase text-[12px] tracking-widest shadow-[0_4px_14px_-4px_rgba(124,58,237,0.4)] transition-all disabled:opacity-50"
                                 >
                                     {submitting ? 'Submitting…' : 'Submit Application'}

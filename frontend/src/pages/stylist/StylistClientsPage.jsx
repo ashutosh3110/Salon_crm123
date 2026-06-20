@@ -177,7 +177,7 @@ export default function StylistClientsPage() {
                 }
             `}</style>
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-border/20 pb-4">
-                <div>
+                <div className="hidden lg:block">
                     <div className="flex items-center gap-2 mb-1">
                         <Shield className="w-3.5 h-3.5 text-primary" />
                         <span className={`${csText} tracking-[0.3em] text-primary`}>Live roster</span>

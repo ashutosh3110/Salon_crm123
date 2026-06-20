@@ -96,6 +96,10 @@ export default function StylistDashboard() {
     const attendanceLog = overview?.attendanceLog || [];
     const shiftActive = !!overview?.shiftActive;
 
+    const todayAssigned = scheduleRows.length;
+    const todayCompleted = scheduleRows.filter(r => r.bookingStatus === 'completed').length;
+    const todayRemaining = Math.max(0, scheduleRows.filter(r => r.bookingStatus !== 'completed' && r.bookingStatus !== 'cancelled').length);
+
     const initials = (name) => {
         if (!name) return 'S';
         const parts = name.split(' ');
@@ -108,6 +112,26 @@ export default function StylistDashboard() {
             <Loader2 className="w-8 h-8 text-[#7C3AED] animate-spin" />
         </div>
     );
+
+    if (error === 'Staff not found' || error?.includes('Staff not found')) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center">
+                <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mb-4">
+                    <Users className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Staff Profile Pending</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-6">
+                    Your account is not linked to a staff profile in this salon yet. Please ask your administrator or manager to add you to the staff roster.
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2.5 bg-slate-900 dark:bg-[#7C3AED] text-white font-semibold rounded-xl text-sm hover:opacity-90 transition-all"
+                >
+                    Retry Connection
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="bg-[#F9FAFB] dark:bg-slate-900 min-h-screen pb-24 md:pb-8 font-sans text-slate-800 dark:text-slate-100 -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 transition-colors duration-200">
@@ -125,7 +149,7 @@ export default function StylistDashboard() {
 
 
 
-            <div className="px-5 sm:px-8 py-4 sm:py-6 space-y-6 max-w-5xl mx-auto">
+            <div className="px-5 sm:px-8 py-4 sm:py-6 space-y-6 w-full">
                 {/* Greeting */}
                 <div className="flex items-center justify-between mt-2 mb-2">
                     <div>
@@ -188,29 +212,29 @@ export default function StylistDashboard() {
 
                 {/* Today's Summary */}
                 <div>
-                    <h3 className="text-[15px] font-bold mb-4 text-slate-900 dark:text-slate-100">Today's Summary</h3>
+                    <h3 className="text-[16px] font-bold mb-4 text-slate-900 dark:text-slate-100">Today's Summary</h3>
                     <div className="grid grid-cols-4 gap-3">
                         <div className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
                             <CalendarCheck className="w-8 h-8 !text-purple-600 mb-3" strokeWidth={1.5} />
-                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{stats.totalAssigned || 8}</p>
+                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{todayAssigned}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Assigned</p>
                         </div>
                         <div className="bg-[#F0FDF4] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
                             <CheckCircle2 className="w-8 h-8 !text-emerald-600 mb-3" strokeWidth={1.5} />
-                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{stats.totalCompleted || 5}</p>
+                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{todayCompleted}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Completed</p>
                         </div>
                         <div className="bg-[#FFF7ED] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
                             <Clock className="w-8 h-8 !text-orange-600 mb-3" strokeWidth={1.5} />
-                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{Math.max(0, (stats.totalAssigned || 8) - (stats.totalCompleted || 5))}</p>
+                            <p className="text-[22px] font-black text-slate-900 dark:text-white leading-tight">{todayRemaining}</p>
                             <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1">Remaining</p>
                         </div>
                         <div className="bg-[#F0F7FF] dark:bg-slate-800 rounded-[20px] p-4 flex flex-col items-center justify-center text-center">
                             <div className="w-8 h-8 rounded-full bg-[#2563EB] text-white flex items-center justify-center mb-3">
                                 <IndianRupee className="w-4 h-4" strokeWidth={2} />
                             </div>
-                            <p className="text-[17px] font-black text-slate-900 dark:text-white leading-tight">₹{(stats.revenue || 1250).toLocaleString('en-IN')}</p>
-                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1 leading-tight">Today's Earnings</p>
+                            <p className="text-[17px] font-black text-slate-900 dark:text-white leading-tight">₹{(stats.revenue || 0).toLocaleString('en-IN')}</p>
+                            <p className="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1 leading-tight">MTD Revenue</p>
                         </div>
                     </div>
                 </div>
@@ -218,51 +242,13 @@ export default function StylistDashboard() {
                 {/* Today's Appointments */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Today's Appointments</h3>
-                        <button className="text-[11px] font-bold flex items-center !text-purple-600 dark:!text-purple-400">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
+                        <h3 className="text-[16px] font-bold text-slate-900 dark:text-white">Today's Appointments</h3>
+                        <Link to="/stylist/appointments" className="text-[11px] font-bold flex items-center !text-purple-600 dark:!text-purple-400">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></Link>
                     </div>
                     <div className="bg-white dark:bg-slate-800 rounded-[20px] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] border border-[#F3F4F6] dark:border-slate-700/50">
                         {scheduleRows.length === 0 ? (
-                            <div className="space-y-4">
-                                {[
-                                    { time: '10:00 AM', initial: 'PN', name: 'Priya Sharma', service: 'Hair Cut', status: 'completed', color: 'purple' },
-                                    { time: '11:30 AM', initial: 'NP', name: 'Neha Patel', service: 'Hair Color', status: 'in-progress', color: 'green' },
-                                    { time: '02:00 PM', initial: 'AK', name: 'Amit Kumar', service: 'Facial', status: 'upcoming', color: 'blue' },
-                                    { time: '04:00 PM', initial: 'RS', name: 'Ritika Singh', service: 'Hair Spa', status: 'upcoming', color: 'orange' },
-                                    { time: '06:00 PM', initial: 'SJ', name: 'Sneha Joshi', service: 'Hair Treatment', status: 'upcoming', color: 'purple' }
-                                ].map((mock, idx) => {
-                                    const statusStyle = getStatusStyle(mock.status);
-                                    
-                                    const colorMap = {
-                                        purple: { bg: '#F3E8FF', text: '#7C3AED' },
-                                        green: { bg: '#DCFCE7', text: '#059669' },
-                                        blue: { bg: '#DBEAFE', text: '#2563EB' },
-                                        orange: { bg: '#FFF7ED', text: '#DC2626' },
-                                    };
-                                    const cStyle = colorMap[mock.color] || colorMap.purple;
-
-                                    return (
-                                        <div key={idx} className="flex items-center justify-between py-2 border-b border-slate-50 dark:border-slate-700/50 last:border-0 last:pb-0 gap-3 group">
-                                            <div className="text-[13px] font-black w-[65px] !text-purple-600 dark:!text-purple-400">{mock.time}</div>
-                                            <div 
-                                                className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                                                style={{ backgroundColor: cStyle.bg, color: cStyle.text }}
-                                            >
-                                                {mock.initial}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-[12px] font-bold text-slate-900 dark:text-slate-100 leading-tight mb-0.5 truncate">{mock.service}</p>
-                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold truncate">{mock.name}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded-[6px] ${statusStyle.bg} ${statusStyle.text}`}>
-                                                    {mock.status === 'in-progress' ? 'In Progress' : mock.status.charAt(0).toUpperCase() + mock.status.slice(1)}
-                                                </span>
-                                                <ChevronRight className="w-4 h-4 text-slate-800 dark:text-slate-400" />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                            <div className="py-8 text-center text-slate-500 text-[13px] font-medium">
+                                No appointments scheduled for today.
                             </div>
                         ) : (
                             <div className="space-y-4">
@@ -308,38 +294,38 @@ export default function StylistDashboard() {
 
                 {/* Quick Actions */}
                 <div>
-                    <h3 className="text-[15px] font-bold mb-4 text-slate-900 dark:text-slate-100">Quick Actions</h3>
+                    <h3 className="text-[16px] font-bold mb-4 text-slate-900 dark:text-slate-100">Quick Actions</h3>
                     <div className="grid grid-cols-4 gap-3">
-                        <button className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
+                        <Link to="/stylist/appointments" className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
                             <div className="w-12 h-12 rounded-[14px] bg-[#7C3AED] text-white flex items-center justify-center mb-3 shadow-sm shadow-purple-500/20">
                                 <Scissors className="w-6 h-6" strokeWidth={1.5} />
                             </div>
                             <span className="text-[11px] font-bold text-slate-800 dark:text-slate-300 leading-tight">Start Service</span>
-                        </button>
-                        <button className="bg-[#F0FDF4] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
+                        </Link>
+                        <Link to="/stylist/appointments" className="bg-[#F0FDF4] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
                             <div className="w-12 h-12 rounded-full border-[1.5px] border-[#059669] text-[#059669] flex items-center justify-center mb-3 bg-white">
                                 <Check className="w-6 h-6" strokeWidth={2.5} />
                             </div>
                             <span className="text-[11px] font-bold text-slate-800 dark:text-slate-300 leading-tight">Mark Complete</span>
-                        </button>
-                        <button className="bg-[#FFF7ED] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
+                        </Link>
+                        <Link to="/stylist/appointments" className="bg-[#FFF7ED] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
                             <div className="w-12 h-12 rounded-[14px] border-[1.5px] border-[#EA580C] text-[#EA580C] flex items-center justify-center mb-3 bg-white">
                                 <Calendar className="w-6 h-6" strokeWidth={1.5} />
                             </div>
                             <span className="text-[11px] font-bold text-slate-800 dark:text-slate-300 leading-tight">View Appointments</span>
-                        </button>
-                        <button className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
+                        </Link>
+                        <Link to="/stylist/timeoff" className="bg-[#F8F5FF] dark:bg-slate-800 rounded-[20px] p-3 flex flex-col items-center justify-center text-center hover:opacity-90 transition-opacity">
                             <div className="w-12 h-12 rounded-[14px] border-[1.5px] border-[#7C3AED] text-[#7C3AED] flex items-center justify-center mb-3 bg-white">
                                 <UserCheck className="w-6 h-6" strokeWidth={1.5} />
                             </div>
                             <span className="text-[11px] font-bold text-slate-800 dark:text-slate-300 leading-tight">Request Leave</span>
-                        </button>
+                        </Link>
                     </div>
                 </div>
 
                 {/* My Performance */}
                 <div>
-                    <h3 className="text-[15px] font-black mb-3 flex items-center gap-1.5 text-slate-900 dark:text-slate-100">
+                    <h3 className="text-[16px] font-bold mb-3 flex items-center gap-1.5 text-slate-900 dark:text-slate-100">
                         My Performance <span className="text-[12px] font-semibold text-slate-500">(This Month)</span>
                     </h3>
                     <div className="grid grid-cols-3 gap-3">
@@ -348,16 +334,16 @@ export default function StylistDashboard() {
                                 <IndianRupee className="w-5 h-5" />
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.revenue || 28650).toLocaleString('en-IN')}</span>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.revenue || 0).toLocaleString('en-IN')}</span>
                                 <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Total Earnings</p>
                             </div>
                         </div>
                         <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[16px] p-3 flex flex-row items-center justify-center text-center shadow-sm gap-2.5">
                             <div className="w-[38px] h-[38px] rounded-full border-[3.5px] !border-emerald-600 !text-emerald-600 dark:!border-emerald-500 dark:!text-emerald-400 flex items-center justify-center shrink-0 relative">
-                                <span className="text-[11px] font-black">{stats.progressPercent || 87}%</span>
+                                <span className="text-[11px] font-black">{stats.progressPercent || 0}%</span>
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">{stats.progressPercent || 87}%</span>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">{stats.progressPercent || 0}%</span>
                                 <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Completion Rate</p>
                             </div>
                         </div>
@@ -366,7 +352,7 @@ export default function StylistDashboard() {
                                 <Percent className="w-[18px] h-[18px] stroke-[2.5]" />
                             </div>
                             <div className="flex flex-col items-start">
-                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.totalCommission || 3650).toLocaleString('en-IN')}</span>
+                                <span className="text-[16px] font-black !text-slate-900 dark:!text-white">₹{(stats.totalCommission || 0).toLocaleString('en-IN')}</span>
                                 <p className="text-[10px] !text-slate-500 dark:!text-slate-400 font-bold leading-tight mt-0.5">Commission Earned</p>
                             </div>
                         </div>
@@ -376,7 +362,7 @@ export default function StylistDashboard() {
                 {/* Recent Notifications */}
                 <div>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-[14px] font-bold text-slate-900 dark:text-slate-100">Recent Notifications</h3>
+                        <h3 className="text-[16px] font-bold text-slate-900 dark:text-slate-100">Recent Notifications</h3>
                         <button className="text-[11px] font-bold flex items-center !text-purple-600 dark:!text-purple-400">View All <ChevronRight className="w-3.5 h-3.5 ml-0.5" /></button>
                     </div>
                     <div className="bg-white dark:bg-slate-800 border border-[#F3F4F6] dark:border-slate-700/50 rounded-[20px] p-4 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.03)] space-y-4">

@@ -45,9 +45,11 @@ export default function StylistAttendance() {
     const [historyData, setHistoryData] = useState([]);
     const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, unmarked: 0 });
     const [isMarking, setIsMarking] = useState(false);
+    const [error, setError] = useState(null);
 
     const fetchHistory = useCallback(async (month, year) => {
         setHistoryLoading(true);
+        setError(null);
         try {
             const res = await api.get('/hr/attendance/history', { params: { month, year } });
             const data = res.data?.data || res.data;
@@ -66,6 +68,7 @@ export default function StylistAttendance() {
             setHistoryStats({ present, absent, unmarked });
         } catch (err) {
             console.error(err);
+            setError(err?.response?.data?.message || err?.message || 'Failed to load history');
         } finally {
             setHistoryLoading(false);
         }
@@ -120,6 +123,26 @@ export default function StylistAttendance() {
     const todayRecord = historyData.find(d => d.date === todayStr);
     const currentStatus = todayRecord ? todayRecord.status : 'UNMARKED';
 
+    if (error === 'Staff not found' || error?.includes('Staff not found')) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] px-4 text-center bg-white dark:bg-slate-900 rounded-[24px]">
+                <div className="w-16 h-16 bg-amber-500/10 text-amber-500 rounded-2xl flex items-center justify-center mb-4">
+                    <CalendarIcon className="w-8 h-8" />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Staff Profile Pending</h2>
+                <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-6">
+                    Your account is not linked to a staff profile in this salon yet. Please ask your administrator or manager to add you to the staff roster.
+                </p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-2.5 bg-slate-900 dark:bg-[#7C3AED] text-white font-semibold rounded-xl text-sm hover:opacity-90 transition-all"
+                >
+                    Retry Connection
+                </button>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-[24px] overflow-hidden shadow-sm font-sans">
             <style>{`
@@ -128,7 +151,7 @@ export default function StylistAttendance() {
             `}</style>
             
             {/* Header */}
-            <div className="flex items-center justify-center px-5 pt-6 pb-6 relative">
+            <div className="hidden lg:flex items-center justify-center px-5 pt-6 pb-6 relative">
                 <h1 className="text-[17px] font-bold text-slate-900 dark:text-white text-center">
                     Attendance
                 </h1>
@@ -175,7 +198,7 @@ export default function StylistAttendance() {
 
                 {/* Monthly History Section */}
                 <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-[15px] font-bold text-slate-900 dark:text-white px-1">Monthly History</h3>
+                    <h3 className="text-[16px] font-bold text-slate-900 dark:text-white px-1">Monthly History</h3>
                     <div className="flex items-center bg-slate-50 dark:bg-slate-800 rounded-full p-1 border border-slate-200 dark:border-slate-700">
                         <button onClick={prevMonth} className="w-6 h-6 flex items-center justify-center rounded-full hover:bg-white dark:hover:bg-slate-700 text-slate-600 transition-colors">
                             <ChevronLeft className="w-3.5 h-3.5" />
