@@ -47,68 +47,18 @@ export default function AppMembershipPage() {
         loadActiveMembership();
     }, []);
 
-    // Filter and map plans based on client requirement
     const membershipPlans = useMemo(() => {
-        // Find matching plans in rawPlans
-        const dbElite = rawPlans.find(p => {
-            const nameUpper = p.name.toUpperCase();
-            return nameUpper.includes('ELITE') || nameUpper.includes('GOLD') || p.price >= 2000;
-        });
-        const dbPlus = rawPlans.find(p => {
-            const nameUpper = p.name.toUpperCase();
-            return nameUpper.includes('PLUS') || nameUpper.includes('PLATINUM') || (p.price >= 1000 && p.price < 2000);
-        });
-        const dbBasic = rawPlans.find(p => {
-            const nameUpper = p.name.toUpperCase();
-            return !nameUpper.includes('ELITE') && !nameUpper.includes('GOLD') && !nameUpper.includes('PLUS') && !nameUpper.includes('PLATINUM') && p.price < 1000;
-        });
-
-        return [
-            {
-                id: dbElite?._id || dbElite?.id || 'elite-mock',
-                name: 'WAPIXO ELITE',
-                price: 2499,
-                duration: 365,
-                benefits: [
-                    '20% OFF on all services',
-                    '2 Free services (worth ₹1200)',
-                    'Priority booking',
-                    'Exclusive member offers',
-                    'Birthday special discount'
-                ],
-                isPopular: true,
-                saveAmount: 0,
-                rawPlan: dbElite
-            },
-            {
-                id: dbPlus?._id || dbPlus?.id || 'plus-mock',
-                name: 'WAPIXO PLUS',
-                price: 1499,
-                duration: 365,
-                benefits: [
-                    '15% OFF on all services',
-                    '1 Free service (worth ₹600)',
-                    'Priority booking',
-                    'Exclusive member offers'
-                ],
-                isPopular: false,
-                saveAmount: 1000,
-                rawPlan: dbPlus
-            },
-            {
-                id: dbBasic?._id || dbBasic?.id || 'basic-mock',
-                name: 'WAPIXO BASIC',
-                price: 799,
-                duration: 365,
-                benefits: [
-                    '10% OFF on all services',
-                    'Birthday special discount'
-                ],
-                isPopular: false,
-                saveAmount: 300,
-                rawPlan: dbBasic
-            }
-        ];
+        if (!rawPlans || rawPlans.length === 0) return [];
+        return rawPlans.map(plan => ({
+            id: plan._id || plan.id,
+            name: plan.name,
+            price: plan.price,
+            duration: plan.duration || 365,
+            benefits: plan.benefits || [],
+            isPopular: plan.isPopular || false,
+            saveAmount: plan.saveAmount || 0,
+            rawPlan: plan
+        }));
     }, [rawPlans]);
 
     const handleSelectPlan = (plan) => {
@@ -168,59 +118,8 @@ export default function AppMembershipPage() {
                 <div className="w-8"></div>
             </div>
 
-            {/* Toggle Switch: Plans / My Membership */}
-            <div className="flex justify-center my-6 px-4">
-                <div 
-                    style={{ 
-                        background: '#FAF9F6', 
-                        borderRadius: '9999px', 
-                        padding: '4px', 
-                        border: '1px solid #EAE5D9', 
-                        display: 'flex', 
-                        width: '100%', 
-                        maxWidth: '340px', 
-                        position: 'relative' 
-                    }}
-                >
-                    <button
-                        onClick={() => setActiveTab('plans')}
-                        style={{
-                            background: activeTab === 'plans' ? '#B4912B' : 'transparent',
-                            color: activeTab === 'plans' ? '#FFFFFF' : '#666666',
-                            borderRadius: '9999px',
-                            flex: 1,
-                            padding: '10px 0',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        Plans
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('my-membership')}
-                        style={{
-                            background: activeTab === 'my-membership' ? '#B4912B' : 'transparent',
-                            color: activeTab === 'my-membership' ? '#FFFFFF' : '#666666',
-                            borderRadius: '9999px',
-                            flex: 1,
-                            padding: '10px 0',
-                            fontWeight: 'bold',
-                            fontSize: '13px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease'
-                        }}
-                    >
-                        My Membership
-                    </button>
-                </div>
-            </div>
-
             {/* Render Views */}
-            <div className="px-4 flex flex-col gap-6 max-w-[480px] mx-auto">
+            <div className="px-4 flex flex-col gap-6 max-w-[480px] mx-auto mt-6">
                 {activeTab === 'plans' ? (
                     loading ? (
                         <div className="text-center py-20">

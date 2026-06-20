@@ -6,6 +6,10 @@ const membershipPlanSchema = new mongoose.Schema({
         ref: 'Salon',
         required: true
     },
+    outletIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Outlet'
+    }],
     name: {
         type: String,
         required: [true, 'Please add a plan name'],

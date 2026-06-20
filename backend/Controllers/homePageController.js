@@ -189,7 +189,15 @@ exports.getMembershipPlans = async (req, res) => {
         const outlet = await Outlet.findById(outletId);
         if (!outlet) return res.status(404).json({ success: false, message: 'Outlet not found' });
         
-        const plans = await MembershipPlan.find({ salonId: outlet.salonId, isActive: true });
+        const plans = await MembershipPlan.find({ 
+            salonId: outlet.salonId, 
+            isActive: true,
+            $or: [
+                { outletIds: outlet._id },
+                { outletIds: { $size: 0 } },
+                { outletIds: { $exists: false } }
+            ]
+        });
         res.json({ success: true, data: plans });
     } catch (error) {
         console.error('getMembershipPlans error:', error);
