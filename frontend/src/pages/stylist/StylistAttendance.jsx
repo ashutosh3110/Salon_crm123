@@ -41,7 +41,7 @@ export default function StylistAttendance() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [historyData, setHistoryData] = useState([]);
     const [historyStats, setHistoryStats] = useState({ present: 0, absent: 0, unmarked: 0 });
-    const [isMarking, setIsMarking] = useState(false);
+
     const [error, setError] = useState(null);
 
     const fetchHistory = useCallback(async (month, year) => {
@@ -71,25 +71,7 @@ export default function StylistAttendance() {
         }
     }, []);
 
-    const handleMarkAttendance = async (status) => {
-        setIsMarking(true);
-        try {
-            await api.post('/hr/attendance/punch', {
-                status: status,
-                date: todayLocalYmd(),
-                location: 'Marked manually',
-                latitude: 0,
-                longitude: 0,
-            });
-            await fetchHistory(currentMonth, currentYear);
-            alert(`Successfully marked ${status} for today!`);
-        } catch (e) {
-            console.error('Failed to mark attendance', e);
-            alert(e?.response?.data?.message || 'Failed to record attendance.');
-        } finally {
-            setIsMarking(false);
-        }
-    };
+
 
     useEffect(() => {
         fetchHistory(currentMonth, currentYear);
