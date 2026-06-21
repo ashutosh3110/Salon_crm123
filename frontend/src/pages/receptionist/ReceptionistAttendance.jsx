@@ -62,22 +62,7 @@ export default function ReceptionistAttendance() {
         }
     }, []);
 
-    const handleMarkAttendance = async (status) => {
-        try {
-            await api.post('/hr/attendance/punch', {
-                status: status,
-                date: todayLocalYmd(),
-                location: 'Marked manually',
-                latitude: 0,
-                longitude: 0,
-            });
-            fetchHistory(currentMonth, currentYear);
-            alert(`Successfully marked ${status} for today!`);
-        } catch (e) {
-            console.error('Failed to mark attendance', e);
-            alert(e?.response?.data?.message || 'Failed to record attendance.');
-        }
-    };
+
 
     useEffect(() => {
         fetchHistory(currentMonth, currentYear);
@@ -114,22 +99,7 @@ export default function ReceptionistAttendance() {
                         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">View your monthly attendance records.</p>
                     </div>
                     
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => handleMarkAttendance('absent')}
-                            className="flex items-center gap-2 px-6 py-3 bg-[#E11D48] hover:bg-[#BE123C] text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 transition-all active:scale-95"
-                        >
-                            <XCircle className="w-5 h-5" />
-                            <span>Mark Absent</span>
-                        </button>
-                        <button
-                            onClick={() => handleMarkAttendance('present')}
-                            className="flex items-center gap-2 px-6 py-3 bg-[#059669] hover:bg-[#047857] text-white font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
-                        >
-                            <CheckCircle2 className="w-5 h-5" />
-                            <span>Mark Present</span>
-                        </button>
-                    </div>
+
                 </div>
 
                 {/* Attendance Summary Cards */}
