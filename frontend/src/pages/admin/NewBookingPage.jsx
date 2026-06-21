@@ -347,7 +347,7 @@ export default function NewBookingPage() {
         const term = searchTerms.staff.trim().toLowerCase();
         return staff.filter(s => {
             const staffOutletId = s.outletId?._id || s.outletId;
-            const matchesOutlet = !staffOutletId || staffOutletId === selection.outletId;
+            const matchesOutlet = !staffOutletId || String(staffOutletId) === String(selection.outletId);
             const matchesSearch = s.name.toLowerCase().includes(term);
             const roleLower = (s.role || '').toLowerCase();
             const isExcludedRole = ['admin', 'accountant', 'receptionist'].includes(roleLower);

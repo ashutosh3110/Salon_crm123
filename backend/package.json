@@ -4,8 +4,8 @@
   "description": "Salon CRM Backend",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
+    "start": "node api.js && node index.js",
+    "dev": "node api.js && nodemon index.js",
     "seed:superadmin": "node scripts/createSuperAdmin.js"
   },
   "dependencies": {
