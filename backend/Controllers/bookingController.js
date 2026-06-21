@@ -267,6 +267,9 @@ exports.createBooking = async (req, res) => {
                 const staffName = (populated.staffId && populated.staffId.length > 0) ? populated.staffId[0].name : 'Any Stylist';
                 const salonName = populated.salonId?.businessName || populated.salonId?.name || 'Wapixo';
                 const contactPhone = populated.outletId?.phone || populated.salonId?.contactPhone || salonName;
+                const advancePaidStr = booking.advancePaid ? `₹${booking.advancePaid}` : '₹0';
+                const totalAmountStr = booking.totalPrice ? `₹${booking.totalPrice}` : '₹0';
+                
                 const params = [
                     populated.clientId.name,
                     salonName,
@@ -276,7 +279,9 @@ exports.createBooking = async (req, res) => {
                     populated.serviceId.name,
                     dateStr,
                     timeStr,
-                    salonName
+                    salonName,
+                    totalAmountStr,
+                    advancePaidStr
                 ];
 
                 const result = await sendWhatsAppTemplate(
@@ -287,8 +292,13 @@ exports.createBooking = async (req, res) => {
 
                 if (!result || !result.success) {
                     console.log('[Booking-WhatsApp] Template failed, sending plain text fallback...');
-                    const fallbackMsg = `Hi ${populated.clientId.name}, your booking for ${populated.serviceId.name} at ${populated.salonId.businessName || populated.salonId.name || 'Our Salon'} (${populated.outletId.name}) on ${dateStr} at ${timeStr} is confirmed. Thank you!`;
+                    const fallbackMsg = `Hi ${populated.clientId.name}, your booking for ${populated.serviceId.name} at ${populated.salonId.businessName || populated.salonId.name || 'Our Salon'} (${populated.outletId.name}) on ${dateStr} at ${timeStr} is confirmed. Bill Amount: ${totalAmountStr}, Advance Paid: ${advancePaidStr}. Thank you!`;
                     await sendWhatsAppMessage(populated.clientId.phone, fallbackMsg);
+                } else {
+                    // Send supplementary message with billing details since templates are strict with variables
+                    const remainingBalance = (booking.totalPrice || 0) - (booking.advancePaid || 0);
+                    const billingMsg = `*Billing Details*\n\nService: ${populated.serviceId.name}\nTotal Bill: ${totalAmountStr}\nAdvance Paid: ${advancePaidStr}\nRemaining Balance: ₹${remainingBalance}\n\nThank you for choosing ${salonName}!`;
+                    await sendWhatsAppMessage(populated.clientId.phone, billingMsg);
                 }
             } else {
                 console.log('[Booking-WhatsApp] WhatsApp notification skipped: No credits or disabled.');
