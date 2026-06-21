@@ -82,6 +82,8 @@ export default function CustomersPage({ tab = 'directory' }) {
     const navigate = useNavigate();
     const fileInputRef = React.useRef(null);
     const { user } = useAuth();
+    const isStaff = user?.role && !['admin', 'superadmin'].includes(String(user.role).toLowerCase());
+    const displayPhone = (phone) => { if (!phone) return ''; return isStaff ? phone.slice(0, 2) + '******' + phone.slice(-2) : phone; };
     const {
         customers: rawCustomers,
         customersMetadata,
@@ -571,7 +573,7 @@ export default function CustomersPage({ tab = 'directory' }) {
                                     </div>
                                     <div>
                                         <p className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">{whatsappModal.customer?.name}</p>
-                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 font-bold tracking-widest">{whatsappModal.customer?.phone}</p>
+                                        <p className="text-[10px] text-slate-600 dark:text-slate-400 font-bold tracking-widest">{displayPhone(whatsappModal.customer?.phone)}</p>
                                     </div>
                                 </div>
 
@@ -631,6 +633,9 @@ export default function CustomersPage({ tab = 'directory' }) {
 }
 
 function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentPage, onPageChange }) {
+    const { user } = useAuth();
+    const isStaff = user?.role && !['admin', 'superadmin'].includes(String(user.role).toLowerCase());
+    const displayPhone = (phone) => { if (!phone) return ''; return isStaff ? phone.slice(0, 2) + '******' + phone.slice(-2) : phone; };
     const { allWallets, bulkRecharge } = useWallet();
     const { fetchAllCustomerIds, globalStats, outlets, fetchOutlets } = useBusiness();
     const [selectedIds, setSelectedIds] = useState([]);
@@ -640,6 +645,7 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
     const [bulkOutlet, setBulkOutlet] = useState('');
     const [isProcessing, setIsProcessing] = useState(false);
     const [isSelectingAll, setIsSelectingAll] = useState(false);
+    const [viewOutlet, setViewOutlet] = useState('');
 
     // Ensure outlets are loaded
     useEffect(() => {
@@ -811,7 +817,21 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                         </div>
                                     </th>
                                     <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest w-[45%]">Customer Directory</th>
-                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest w-[45%] text-left">Available Balance</th>
+                                    <th className="p-3 text-[10px] font-black uppercase text-text-muted tracking-widest w-[45%] text-left">
+                                        <div className="flex items-center justify-between">
+                                            <span>Available Balance</span>
+                                            <select 
+                                                value={viewOutlet}
+                                                onChange={e => setViewOutlet(e.target.value)}
+                                                className="bg-surface-alt/30 border border-border px-2 py-1 rounded-lg text-[10px] font-bold text-text outline-none focus:border-primary transition-all cursor-pointer"
+                                            >
+                                                <option value="">All Outlets</option>
+                                                {outlets && outlets.map(o => (
+                                                    <option key={o._id} value={o._id}>{o.name}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-border">
@@ -823,41 +843,45 @@ function WalletMonitor({ customers, onCustomerClick, customersMetadata, currentP
                                                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm ${getAvatarColors(c.name).bg} ${getAvatarColors(c.name).text} ${getAvatarColors(c.name).border} border`}>{c.name?.charAt(0) || '?'}</div>
                                                 <div>
                                                     <p className="text-sm font-black text-text uppercase tracking-tight">{c.name}</p>
-                                                    <p className="text-[10px] text-text-muted font-bold tracking-widest">{c.phone}</p>
+                                                    <p className="text-[10px] text-text-muted font-bold tracking-widest">{displayPhone(c.phone)}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-3 w-[45%] text-left align-top">
                                             <div className="flex flex-col gap-2">
-                                                {/* Global Balance */}
-                                                {(c.walletBalance !== undefined) && (
-                                                    <div className={`flex justify-between items-center px-3 py-1.5 rounded-lg border w-fit min-w-[140px] ${c.walletBalance > 0 ? 'bg-blue-500/10 border-blue-500/20' : 'bg-gray-500/5 border-gray-500/20'}`}>
-                                                        <span className={`text-[9px] font-black uppercase tracking-widest truncate mr-3 ${c.walletBalance > 0 ? 'text-blue-700 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>
-                                                            Global Wallet
-                                                        </span>
-                                                        <span className={`text-xs font-black shrink-0 ${c.walletBalance > 0 ? 'text-blue-600 dark:text-blue-500' : 'text-gray-500 dark:text-gray-400'}`}>
-                                                            ₹{(c.walletBalance || 0).toLocaleString()}
-                                                        </span>
-                                                    </div>
-                                                )}
-
                                                 {/* Outlet Balances */}
-                                                {c.outletWallets && c.outletWallets.some(ow => ow.balance > 0) && (
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {c.outletWallets.filter(ow => ow.balance > 0).map(ow => {
-                                                            const outletObj = outlets?.find(o => o._id === ow.outletId);
-                                                            return (
-                                                                <div key={ow.outletId} className="flex justify-between items-center bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit min-w-[140px]">
-                                                                    <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 truncate mr-3">
-                                                                        {outletObj ? outletObj.name : 'Unknown Outlet'}
-                                                                    </span>
-                                                                    <span className="text-xs font-black text-emerald-600 dark:text-emerald-500 shrink-0">
-                                                                        ₹{ow.balance.toLocaleString()}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                    </div>
+                                                {viewOutlet ? (() => {
+                                                    const ow = c.outletWallets?.find(o => o.outletId === viewOutlet);
+                                                    const balance = ow ? ow.balance : 0;
+                                                    const outletObj = outlets?.find(o => o._id === viewOutlet);
+                                                    return (
+                                                        <div className={`flex justify-between items-center px-3 py-1.5 rounded-lg border w-fit min-w-[140px] ${balance > 0 ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-gray-500/5 border-gray-500/20'}`}>
+                                                            <span className={`text-[9px] font-black uppercase tracking-widest truncate mr-3 ${balance > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                                {outletObj ? outletObj.name : 'Unknown Outlet'}
+                                                            </span>
+                                                            <span className={`text-xs font-black shrink-0 ${balance > 0 ? 'text-emerald-600 dark:text-emerald-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                                ₹{balance.toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    );
+                                                })() : (
+                                                    c.outletWallets && c.outletWallets.some(ow => ow.balance > 0) && (
+                                                        <div className="flex flex-wrap gap-2">
+                                                            {c.outletWallets.filter(ow => ow.balance > 0).map(ow => {
+                                                                const outletObj = outlets?.find(o => o._id === ow.outletId);
+                                                                return (
+                                                                    <div key={ow.outletId} className="flex justify-between items-center bg-emerald-500/10 px-3 py-1.5 rounded-lg border border-emerald-500/20 w-fit min-w-[140px]">
+                                                                        <span className="text-[9px] font-black uppercase tracking-widest text-emerald-700 dark:text-emerald-400 truncate mr-3">
+                                                                            {outletObj ? outletObj.name : 'Unknown Outlet'}
+                                                                        </span>
+                                                                        <span className="text-xs font-black text-emerald-600 dark:text-emerald-500 shrink-0">
+                                                                            ₹{ow.balance.toLocaleString()}
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )
                                                 )}
                                             </div>
                                         </td>
@@ -1076,6 +1100,9 @@ function KPICard({ title, value, icon: Icon, color, trend }) {
 }
 
 function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, searchTerm, setSearchTerm }) {
+    const { user } = useAuth();
+    const isStaff = user?.role && !['admin', 'superadmin'].includes(String(user.role).toLowerCase());
+    const displayPhone = (phone) => { if (!phone) return ''; return isStaff ? phone.slice(0, 2) + '******' + phone.slice(-2) : phone; };
     const filtered = customers;
 
     return (
@@ -1126,7 +1153,7 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
                                                 )}
                                             </div>
                                             <div className="text-[10px] text-text-muted font-bold tracking-widest flex flex-wrap items-center gap-2 mt-0.5">
-                                                <span>{c.phone}</span>
+                                                <span>{displayPhone(c.phone)}</span>
                                                 {Number(c.dueAmount || 0) > 0 && (
                                                     <span className="text-[9px] font-black text-rose-600 bg-rose-500/5 dark:bg-rose-500/10 border border-rose-500/20 px-1.5 py-0.2 rounded-md uppercase tracking-tight">
                                                         Due: ₹{Number(c.dueAmount).toFixed(0)}
@@ -1184,6 +1211,9 @@ function CustomerDirectory({ customers, onCustomerClick, onDelete, onUpdate, sea
 }
 
 function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomers, currentPage }) {
+    const { user } = useAuth();
+    const isStaff = user?.role && !['admin', 'superadmin'].includes(String(user.role).toLowerCase());
+    const displayPhone = (phone) => { if (!phone) return ''; return isStaff ? phone.slice(0, 2) + '******' + phone.slice(-2) : phone; };
     const { salon, updateSalon, outlets, activeSalonId } = useBusiness();
     const filteredOutlets = React.useMemo(() => {
         const currentSalonId = salon?._id || activeSalonId;
@@ -1476,7 +1506,7 @@ function PaymentRemindersView({ onCustomerClick, setWhatsappModal, fetchCustomer
                                             </div>
                                             <div className="flex flex-col min-w-0">
                                                 <span className="text-[11px] font-black text-text uppercase tracking-tight leading-tight truncate">{c.name}</span>
-                                                <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none mt-0.5">{c.phone}</span>
+                                                <span className="text-[9px] font-bold text-text-muted tracking-wider leading-none mt-0.5">{displayPhone(c.phone)}</span>
                                             </div>
                                         </div>
                                     </td>

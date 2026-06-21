@@ -22,6 +22,7 @@ import {
 import { AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
+import { useBusiness } from '../../../contexts/BusinessContext';
 
 function CustomSelect({ value, onChange, options, className }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -77,7 +78,13 @@ export default function MembershipPlansTab() {
     const [showModal, setShowModal] = useState(false);
     const [editingPlan, setEditingPlan] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [outlets, setOutlets] = useState([]);
+    const { outlets, fetchOutlets } = useBusiness();
+
+    useEffect(() => {
+        if (outlets && outlets.length === 0 && fetchOutlets) {
+            fetchOutlets();
+        }
+    }, [outlets, fetchOutlets]);
 
     const loadPlans = async () => {
         setLoading(true);
@@ -121,17 +128,7 @@ export default function MembershipPlansTab() {
             } catch { setServiceOptions([]); }
         };
         loadServices();
-        
-        const loadOutlets = async () => {
-            try {
-                const res = await api.get('/outlets');
-                const list = res.data?.data || [];
-                setOutlets(list);
-            } catch (err) {
-                console.error('Failed to load outlets', err);
-            }
-        };
-        loadOutlets();
+
     }, []);
 
     const handleDelete = (id) => {
